@@ -1,98 +1,173 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 
+const INVITATION = {
+  bride: "Handenur ",
+  groom: "Haluk Can",
+  dateText: "Gelecek Tarih",
+  timeText: "19:00",
+  weddingDate: "2026-09-12T19:00:00",
+  venue: "Kır Bahçesi Düğün Alanı",
+  address: "Gebze / Kocaeli",
+  mapLink: "https://www.google.com/maps",
+  shareLink: typeof window !== "undefined" ? window.location.href : "",
+  whatsappNumber: "905551112233",
+  introImage: "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
+  heroImage: "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
+  gallery: [
+    "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
+    "https://unsplash.com/photos/BQZo2Hc76p0/download?force=true&w=3840",
+    "https://unsplash.com/photos/fJzmPe-a0eU/download?force=true&w=3840",
+    "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
+  ],
+  message:
+    "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
+};
+
+const COUPLE_NAME = `${INVITATION.bride} & ${INVITATION.groom}`;
+
+const INITIAL_GUEST_FORM = {
+  name: "",
+  attendance: "Katılacağım",
+  personCount: "1",
+  side: "Gelin Tarafı",
+  note: "",
+};
+
+const INITIAL_WISH_FORM = {
+  name: "",
+  message: "",
+};
+
+const ATTENDANCE_OPTIONS = [
+  { label: "Katılacağım", value: "Katılacağım" },
+  { label: "Katılamayacağım", value: "Katılamayacağım" },
+];
+
+const PERSON_COUNT_OPTIONS = [
+  { label: "1 Kişi", value: "1" },
+  { label: "2 Kişi", value: "2" },
+  { label: "3 Kişi", value: "3" },
+  { label: "4 Kişi", value: "4" },
+];
+
+const SIDE_OPTIONS = [
+  { label: "Gelin Tarafı", value: "Gelin Tarafı" },
+  { label: "Damat Tarafı", value: "Damat Tarafı" },
+  { label: "Ortak", value: "Ortak" },
+];
+
+const PROGRAM_ITEMS = [
+  { time: "18:30", title: "Misafir Karşılama" },
+  { time: "19:00", title: "Nikah Töreni" },
+  { time: "20:00", title: "Yemek ve Kutlama" },
+  { time: "21:00", title: "Eğlence" },
+];
+
+const loadStoredList = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key)) || [];
+  } catch {
+    return [];
+  }
+};
+
+const createGoogleCalendarLink = () => {
+  const start = new Date(INVITATION.weddingDate);
+  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+  const formatDate = (date) => date.toISOString().replace(/-|:|\.\d+/g, "");
+
+  const title = encodeURIComponent(`${COUPLE_NAME} Düğünü`);
+  const details = encodeURIComponent(INVITATION.message);
+  const location = encodeURIComponent(`${INVITATION.venue}, ${INVITATION.address}`);
+
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(
+    start
+  )}/${formatDate(end)}&details=${details}&location=${location}`;
+};
+
+function OptionGroup({ value, options, onChange, disabled = false }) {
+  return (
+    <div className={disabled ? "option-group disabled" : "option-group"}>
+      {options.map((option) => (
+        <button
+          type="button"
+          key={option.value}
+          disabled={disabled}
+          className={String(value) === String(option.value) ? "option-button active" : "option-button"}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function App() {
-  const audioRef = useRef(null);
-
-  const invitation = {
-    bride: "Handenur",
-    groom: "Haluk Can",
-    dateText: "Gelecek Tarih",
-    timeText: "19:00",
-    weddingDate: "2026-09-12T19:00:00",
-    venue: "Kır Bahçesi Düğün Alanı",
-    address: "Gebze / Kocaeli",
-    mapLink: "https://www.google.com/maps",
-    shareLink: window.location.href,
-    whatsappNumber: "905551112233",
-
-    introImage:
-      "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
-
-    heroImage:
-      "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
-
-    gallery: [
-      "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
-      "https://unsplash.com/photos/BQZo2Hc76p0/download?force=true&w=3840",
-      "https://unsplash.com/photos/fJzmPe-a0eU/download?force=true&w=3840",
-      "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
-    ],
-
-    message:
-      "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
-  };
-
+  const audioContextRef = useRef(null);
+  const musicIntervalRef = useRef(null);
+  const musicGainRef = useRef(null);
+  
   const [opened, setOpened] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
-
-  const [guestForm, setGuestForm] = useState({
-    name: "",
-    attendance: "Katılacağım",
-    personCount: 1,
-    side: "Gelin Tarafı",
-    note: "",
-  });
-
-  const [wishForm, setWishForm] = useState({
-    name: "",
-    message: "",
-  });
-
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
+  const [wishForm, setWishForm] = useState(INITIAL_WISH_FORM);
   const [guests, setGuests] = useState([]);
   const [wishes, setWishes] = useState([]);
 
-  useEffect(() => {
-  const imageUrls = [
-    invitation.introImage,
-    invitation.heroImage,
-    ...invitation.gallery,
-  ];
+  const isAttending = guestForm.attendance === "Katılacağım";
 
-  imageUrls.forEach((src) => {
-    const img = new Image();
-    img.src = src;
+  useEffect(() => {
+  return () => {
+    if (musicIntervalRef.current) {
+      clearInterval(musicIntervalRef.current);
+    }
+
+    if (
+      audioContextRef.current &&
+      audioContextRef.current.state !== "closed"
+    ) {
+      audioContextRef.current.close();
+        }
+      };
+  }, []);
+
+  const attendingGuests = guests.filter((guest) => guest.attendance === "Katılacağım");
+  const totalPersonCount = attendingGuests.reduce(
+    (total, guest) => total + Number(guest.personCount || 1),
+    0
+  );
+  const notAttendingCount = guests.filter(
+    (guest) => guest.attendance === "Katılamayacağım"
+  ).length;
+
+  const shareText = encodeURIComponent(
+    `${COUPLE_NAME} düğün davetiyesi 💍\n${INVITATION.shareLink}`
+  );
+  const rsvpWhatsappText = encodeURIComponent(
+    `Merhaba, ${COUPLE_NAME} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.`
+  );
+  const googleCalendarLink = createGoogleCalendarLink();
+
+  useEffect(() => {
+    [INVITATION.introImage, INVITATION.heroImage, ...INVITATION.gallery].forEach((src) => {
+      const img = new Image();
+      img.src = src;
     });
   }, []);
 
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-
   useEffect(() => {
-    const savedGuests = localStorage.getItem("wedding-guests");
-    const savedWishes = localStorage.getItem("wedding-wishes");
-
-    if (savedGuests) {
-      setGuests(JSON.parse(savedGuests));
-    }
-
-    if (savedWishes) {
-      setWishes(JSON.parse(savedWishes));
-    }
+    setGuests(loadStoredList("wedding-guests"));
+    setWishes(loadStoredList("wedding-wishes"));
   }, []);
 
   useEffect(() => {
-    const targetDate = new Date(invitation.weddingDate);
+    const targetDate = new Date(INVITATION.weddingDate);
 
     const updateCountdown = () => {
-      const now = new Date();
-      const diff = targetDate - now;
+      const diff = targetDate - new Date();
 
       if (diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -108,98 +183,111 @@ function App() {
     };
 
     updateCountdown();
-
     const interval = setInterval(updateCountdown, 1000);
+      return () => clearInterval(interval);
+    }, []);
 
-    return () => clearInterval(interval);
-  }, []);
+    const openInvitation = async () => {
+      setOpened(true);
+      await startMusic();
+    };
+    const startMusic = async () => {
+    if (musicIntervalRef.current) return;
 
-  const attendingGuests = guests.filter(
-    (guest) => guest.attendance === "Katılacağım"
-  );
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioContext = audioContextRef.current || new AudioContext();
 
-  const totalPersonCount = attendingGuests.reduce(
-    (total, guest) => total + Number(guest.personCount || 1),
-    0
-  );
+      audioContextRef.current = audioContext;
+      await audioContext.resume();
 
-  const notAttendingCount = guests.filter(
-    (guest) => guest.attendance === "Katılamayacağım"
-  ).length;
+      const masterGain = audioContext.createGain();
+      masterGain.gain.setValueAtTime(0.16, audioContext.currentTime);
+      masterGain.connect(audioContext.destination);
+      musicGainRef.current = masterGain;
 
-  const shareText = useMemo(() => {
-    return encodeURIComponent(
-      `${coupleName} düğün davetiyesi 💍\n${invitation.shareLink}`
-    );
-  }, [coupleName, invitation.shareLink]);
+      const notes = [
+        392.0, 440.0, 523.25, 659.25,
+        523.25, 440.0, 392.0, 329.63,
+      ];
 
-  const rsvpWhatsappText = useMemo(() => {
-    return encodeURIComponent(
-      `Merhaba, ${coupleName} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.`
-    );
-  }, [coupleName]);
+      let noteIndex = 0;
 
-  const googleCalendarLink = useMemo(() => {
-    const start = new Date(invitation.weddingDate);
-    const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+      const playNote = () => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
 
-    const formatDate = (date) =>
-      date.toISOString().replace(/-|:|\.\d+/g, "");
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(
+          notes[noteIndex % notes.length],
+          audioContext.currentTime
+        );
 
-    const title = encodeURIComponent(`${coupleName} Düğünü`);
-    const details = encodeURIComponent(invitation.message);
-    const location = encodeURIComponent(
-      `${invitation.venue}, ${invitation.address}`
-    );
+        gain.gain.setValueAtTime(0, audioContext.currentTime);
+        gain.gain.linearRampToValueAtTime(0.92, audioContext.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + 0.55
+        );
 
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(
-      start
-    )}/${formatDate(end)}&details=${details}&location=${location}`;
-  }, []);
+        oscillator.connect(gain);
+        gain.connect(masterGain);
 
-  const openInvitation = () => {
-    setOpened(true);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.6);
 
-    setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current
-          .play()
-          .then(() => setIsMusicPlaying(true))
-          .catch(() => setIsMusicPlaying(false));
-      }
-    }, 500);
+        noteIndex += 1;
+      };
+
+      playNote();
+      musicIntervalRef.current = setInterval(playNote, 650);
+      setIsMusicPlaying(true);
+    } catch (error) {
+      setIsMusicPlaying(false);
+      console.log("Müzik başlatılamadı:", error);
+    }
   };
 
-  const toggleMusic = () => {
-    if (!audioRef.current) return;
-
+  const toggleMusic = async () => {
     if (isMusicPlaying) {
-      audioRef.current.pause();
+      if (musicIntervalRef.current) {
+        clearInterval(musicIntervalRef.current);
+        musicIntervalRef.current = null;
+      }
+
+      if (musicGainRef.current) {
+        musicGainRef.current.disconnect();
+        musicGainRef.current = null;
+      }
+
       setIsMusicPlaying(false);
     } else {
-      audioRef.current
-        .play()
-        .then(() => setIsMusicPlaying(true))
-        .catch(() => setIsMusicPlaying(false));
+      await startMusic();
     }
   };
 
   const handleGuestChange = (e) => {
     const { name, value } = e.target;
-
-    setGuestForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setGuestForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleWishChange = (e) => {
     const { name, value } = e.target;
+    setWishForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-    setWishForm((prev) => ({
+  const updateAttendance = (attendance) => {
+    setGuestForm((prev) => ({
       ...prev,
-      [name]: value,
+      attendance,
+      personCount: attendance === "Katılacağım" ? "1" : "0",
+      side: attendance === "Katılacağım" ? "Gelin Tarafı" : "-",
     }));
+  };
+
+  const saveList = (key, list, setter) => {
+    setter(list);
+    localStorage.setItem(key, JSON.stringify(list));
   };
 
   const submitGuest = (e) => {
@@ -210,25 +298,9 @@ function App() {
       return;
     }
 
-    const newGuest = {
-      id: Date.now(),
-      ...guestForm,
-      createdAt: new Date().toLocaleString("tr-TR"),
-    };
-
-    const updatedGuests = [newGuest, ...guests];
-
-    setGuests(updatedGuests);
-    localStorage.setItem("wedding-guests", JSON.stringify(updatedGuests));
-
-    setGuestForm({
-      name: "",
-      attendance: "Katılacağım",
-      personCount: 1,
-      side: "Gelin Tarafı",
-      note: "",
-    });
-
+    const updatedGuests = [{ id: Date.now(), ...guestForm }, ...guests];
+    saveList("wedding-guests", updatedGuests, setGuests);
+    setGuestForm(INITIAL_GUEST_FORM);
     alert("Katılım bildirimin kaydedildi.");
   };
 
@@ -240,127 +312,29 @@ function App() {
       return;
     }
 
-    const newWish = {
-      id: Date.now(),
-      ...wishForm,
-      createdAt: new Date().toLocaleString("tr-TR"),
-    };
-
-    const updatedWishes = [newWish, ...wishes];
-
-    setWishes(updatedWishes);
-    localStorage.setItem("wedding-wishes", JSON.stringify(updatedWishes));
-
-    setWishForm({
-      name: "",
-      message: "",
-    });
-
+    const updatedWishes = [{ id: Date.now(), ...wishForm }, ...wishes];
+    saveList("wedding-wishes", updatedWishes, setWishes);
+    setWishForm(INITIAL_WISH_FORM);
     alert("Güzel dileğin kaydedildi.");
   };
 
   const copyInvitationLink = async () => {
     try {
-      await navigator.clipboard.writeText(invitation.shareLink);
+      await navigator.clipboard.writeText(INVITATION.shareLink);
       alert("Davetiye linki kopyalandı.");
     } catch {
       alert("Link kopyalanamadı.");
     }
   };
 
-  function CustomSelect({ value, options, onChange }) {
-    const [open, setOpen] = useState(false);
-
-    const selectedOption = options.find(
-      (option) => String(option.value) === String(value)
-    );
-
-    return (
-      <div className={`custom-select ${open ? "open" : ""}`}>
-        <button
-          type="button"
-          className="custom-select-button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpen((prev) => !prev);
-          }}
-        >
-          <span>{selectedOption?.label}</span>
-          <span className="custom-select-arrow">⌄</span>
-        </button>
-
-        {open && (
-          <div
-            className="custom-select-menu"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            {options.map((option) => (
-              <button
-                type="button"
-                key={option.value}
-                className={
-                  String(option.value) === String(value)
-                    ? "custom-select-option selected"
-                    : "custom-select-option"
-                }
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-
-                  onChange(option.value);
-
-                  setTimeout(() => {
-                    setOpen(false);
-                  }, 80);
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const OptionGroup = ({ value, options, onChange, disabled = false }) => {
-    return (
-      <div className={disabled ? "option-group disabled" : "option-group"}>
-        {options.map((option) => (
-          <button
-            type="button"
-            key={option.value}
-            disabled={disabled}
-            className={
-              String(value) === String(option.value)
-                ? "option-button active"
-                : "option-button"
-            }
-            onClick={() => {
-              if (disabled) return;
-              onChange(option.value);
-            }}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-    );
-  };
-
-  const isAttending = guestForm.attendance === "Katılacağım";
-
   return (
     <div
       className="app"
       style={{
-        "--intro-image": `url(${invitation.introImage})`,
-        "--hero-image": `url(${invitation.heroImage})`,
+        "--intro-image": `url(${INVITATION.introImage})`,
+        "--hero-image": `url(${INVITATION.heroImage})`,
       }}
     >
-      <audio ref={audioRef} src="/music.mp3" loop />
 
       {!opened ? (
         <section className="intro-page">
@@ -368,14 +342,13 @@ function App() {
           <div className="ribbon ribbon-right"></div>
 
           <div className="intro-card">
-            <div className="leaf-mark">🌿</div>
-
+            <div className="leaf-mark" aria-hidden="true"></div>
             <p className="intro-small">Düğün Davetiyesi</p>
 
             <h1 className="couple-title">
-              <span>{invitation.bride}</span>
+              <span>{INVITATION.bride}</span>
               <em>&</em>
-              <span>{invitation.groom}</span>
+              <span>{INVITATION.groom}</span>
             </h1>
 
             <p className="intro-text">
@@ -389,19 +362,71 @@ function App() {
         </section>
       ) : (
         <>
-          <div className="floating-actions">
-            <button onClick={toggleMusic}>
-              {isMusicPlaying ? "Müziği Durdur" : "Müzik Aç"}
-            </button>
+        
+        <div className="floating-actions">
+          <a
+            className="share-button"
+            href={`https://wa.me/?text=${shareText}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Paylaş
+          </a>
 
-            <a
-              href={`https://wa.me/?text=${shareText}`}
-              target="_blank"
-              rel="noreferrer"
+          <button
+            className="music-toggle-button"
+            onClick={toggleMusic}
+            aria-label={isMusicPlaying ? "Müziği Kapat" : "Müziği Aç"}
+            title={isMusicPlaying ? "Müziği Kapat" : "Müziği Aç"}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="25"
+              height="25"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
             >
-              Paylaş
-            </a>
-          </div>
+              <path
+                d="M4 9V15H8L13 19V5L8 9H4Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+
+              {isMusicPlaying ? (
+                <>
+                  <path
+                    d="M17 9L21 13"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M21 9L17 13"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </>
+              ) : (
+                <>
+                  <path
+                    d="M16 9C17 10 17 14 16 15"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M18.5 7C21 10 21 14 18.5 17"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </>
+              )}
+            </svg>
+          </button>
+        </div>
 
           <main className="invitation-page">
             <section className="hero-section">
@@ -409,13 +434,13 @@ function App() {
                 <p className="small-title">Biz Evleniyoruz</p>
 
                 <h1 className="couple-title">
-                  <span>{invitation.bride}</span>
+                  <span>{INVITATION.bride}</span>
                   <em>&</em>
-                  <span>{invitation.groom}</span>
+                  <span>{INVITATION.groom}</span>
                 </h1>
 
-                <p className="hero-date">{invitation.dateText}</p>
-                <p className="hero-time">Saat {invitation.timeText}</p>
+                <p className="hero-date">{INVITATION.dateText}</p>
+                <p className="hero-time">Saat {INVITATION.timeText}</p>
               </div>
             </section>
 
@@ -428,17 +453,14 @@ function App() {
                   <strong>{timeLeft.days}</strong>
                   <span>Gün</span>
                 </div>
-
                 <div className="count-box">
                   <strong>{timeLeft.hours}</strong>
                   <span>Saat</span>
                 </div>
-
                 <div className="count-box">
                   <strong>{timeLeft.minutes}</strong>
                   <span>Dakika</span>
                 </div>
-
                 <div className="count-box">
                   <strong>{timeLeft.seconds}</strong>
                   <span>Saniye</span>
@@ -449,7 +471,7 @@ function App() {
             <section className="card invitation-card">
               <p className="section-label">Davet</p>
               <h2>Mutluluğumuza Ortak Olur Musunuz?</h2>
-              <p>{invitation.message}</p>
+              <p>{INVITATION.message}</p>
             </section>
 
             <section className="card">
@@ -459,22 +481,19 @@ function App() {
               <div className="info-list">
                 <div className="info-row">
                   <span>Tarih</span>
-                  <strong>{invitation.dateText}</strong>
+                  <strong>{INVITATION.dateText}</strong>
                 </div>
-
                 <div className="info-row">
                   <span>Saat</span>
-                  <strong>{invitation.timeText}</strong>
+                  <strong>{INVITATION.timeText}</strong>
                 </div>
-
                 <div className="info-row">
                   <span>Yer</span>
-                  <strong>{invitation.venue}</strong>
+                  <strong>{INVITATION.venue}</strong>
                 </div>
-
                 <div className="info-row">
                   <span>Adres</span>
-                  <strong>{invitation.address}</strong>
+                  <strong>{INVITATION.address}</strong>
                 </div>
               </div>
 
@@ -482,7 +501,7 @@ function App() {
                 <iframe
                   title="Düğün Konumu"
                   src={`https://www.google.com/maps?q=${encodeURIComponent(
-                    `${invitation.venue} ${invitation.address}`
+                    `${INVITATION.venue} ${INVITATION.address}`
                   )}&z=15&output=embed`}
                   loading="lazy"
                   allowFullScreen
@@ -491,21 +510,10 @@ function App() {
               </div>
 
               <div className="button-group">
-                <a
-                  className="main-button"
-                  href={invitation.mapLink}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a className="main-button" href={INVITATION.mapLink} target="_blank" rel="noreferrer">
                   Konuma Git
                 </a>
-
-                <a
-                  className="secondary-button"
-                  href={googleCalendarLink}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a className="secondary-button" href={googleCalendarLink} target="_blank" rel="noreferrer">
                   Takvime Ekle
                 </a>
               </div>
@@ -516,35 +524,22 @@ function App() {
               <h2>Akış</h2>
 
               <div className="timeline">
-                <div className="timeline-item">
-                  <span>18:30</span>
-                  <p>Misafir Karşılama</p>
-                </div>
-
-                <div className="timeline-item">
-                  <span>19:00</span>
-                  <p>Nikah Töreni</p>
-                </div>
-
-                <div className="timeline-item">
-                  <span>20:00</span>
-                  <p>Yemek ve Kutlama</p>
-                </div>
-
-                <div className="timeline-item">
-                  <span>21:00</span>
-                  <p>Eğlence</p>
-                </div>
+                {PROGRAM_ITEMS.map((item) => (
+                  <div className="timeline-item" key={item.time}>
+                    <span>{item.time}</span>
+                    <p>{item.title}</p>
+                  </div>
+                ))}
               </div>
             </section>
 
-            <section className="card gallery-card">
+            <section className="card">
               <p className="section-label">Fotoğraflar</p>
               <h2>Kır Düğünü Atmosferi</h2>
 
               <div className="gallery-grid">
-                {invitation.gallery.map((image, index) => (
-                  <img key={index} src={image} alt={`Galeri ${index + 1}`} />
+                {INVITATION.gallery.map((image, index) => (
+                  <img key={image} src={image} alt={`Galeri ${index + 1}`} />
                 ))}
               </div>
             </section>
@@ -552,10 +547,7 @@ function App() {
             <section className="card rsvp-card">
               <p className="section-label">Katılım</p>
               <h2>Katılım Bildirimi</h2>
-              <p>
-                Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı
-                olabilirsiniz.
-              </p>
+              <p>Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.</p>
 
               <form className="rsvp-form" onSubmit={submitGuest}>
                 <input
@@ -567,51 +559,22 @@ function App() {
 
                 <OptionGroup
                   value={guestForm.attendance}
-                  options={[
-                    { label: "Katılacağım", value: "Katılacağım" },
-                    { label: "Katılamayacağım", value: "Katılamayacağım" },
-                  ]}
-                  onChange={(value) =>
-                    setGuestForm((prev) => ({
-                      ...prev,
-                      attendance: value,
-                      personCount: value === "Katılacağım" ? "1" : "0",
-                      side: value === "Katılacağım" ? "Gelin Tarafı" : "-",
-                    }))
-                  }
+                  options={ATTENDANCE_OPTIONS}
+                  onChange={updateAttendance}
                 />
 
                 <OptionGroup
                   disabled={!isAttending}
                   value={guestForm.personCount}
-                  options={[
-                    { label: "1 Kişi", value: "1" },
-                    { label: "2 Kişi", value: "2" },
-                    { label: "3 Kişi", value: "3" },
-                    { label: "4 Kişi", value: "4" },
-                  ]}
-                  onChange={(value) =>
-                    setGuestForm((prev) => ({
-                      ...prev,
-                      personCount: value,
-                    }))
-                  }
+                  options={PERSON_COUNT_OPTIONS}
+                  onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))}
                 />
 
                 <OptionGroup
                   disabled={!isAttending}
                   value={guestForm.side}
-                  options={[
-                    { label: "Gelin Tarafı", value: "Gelin Tarafı" },
-                    { label: "Damat Tarafı", value: "Damat Tarafı" },
-                    { label: "Ortak", value: "Ortak" },
-                  ]}
-                  onChange={(value) =>
-                    setGuestForm((prev) => ({
-                      ...prev,
-                      side: value,
-                    }))
-                  }
+                  options={SIDE_OPTIONS}
+                  onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))}
                 />
 
                 <textarea
@@ -628,7 +591,7 @@ function App() {
 
               <a
                 className="secondary-button whatsapp-button"
-                href={`https://wa.me/${invitation.whatsappNumber}?text=${rsvpWhatsappText}`}
+                href={`https://wa.me/${INVITATION.whatsappNumber}?text=${rsvpWhatsappText}`}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -636,7 +599,7 @@ function App() {
               </a>
             </section>
 
-            <section className="card guest-panel">
+            <section className="card">
               <p className="section-label">Misafirler</p>
               <h2>Misafir Listesi</h2>
 
@@ -645,12 +608,10 @@ function App() {
                   <strong>{guests.length}</strong>
                   <span>Toplam Yanıt</span>
                 </div>
-
                 <div>
                   <strong>{totalPersonCount}</strong>
                   <span>Katılacak Kişi</span>
                 </div>
-
                 <div>
                   <strong>{notAttendingCount}</strong>
                   <span>Katılamayacak</span>
@@ -669,7 +630,6 @@ function App() {
                           {guest.side} · {guest.personCount} kişi
                         </span>
                       </div>
-
                       <em>{guest.attendance}</em>
                     </div>
                   ))
@@ -715,21 +675,15 @@ function App() {
               </div>
             </section>
 
-            <section className="card share-card">
+            <section className="card">
               <p className="section-label">Paylaş</p>
               <h2>Davetiyeyi Paylaş</h2>
               <p>Davetiyemizi sevdiklerinizle paylaşabilirsiniz.</p>
 
               <div className="button-group">
-                <a
-                  className="main-button"
-                  href={`https://wa.me/?text=${shareText}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">
                   WhatsApp ile Paylaş
                 </a>
-
                 <button className="secondary-button" onClick={copyInvitationLink}>
                   Linki Kopyala
                 </button>
@@ -737,8 +691,8 @@ function App() {
             </section>
 
             <footer className="footer">
-              <p>{coupleName}</p>
-              <span>{invitation.dateText}</span>
+              <p>{COUPLE_NAME}</p>
+              <span>{INVITATION.dateText}</span>
               <small>Made with love</small>
             </footer>
           </main>
