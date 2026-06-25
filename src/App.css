@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
 
 * {
   box-sizing: border-box;
@@ -25,10 +25,11 @@ body,
   min-height: 100%;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 body {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Cormorant Garamond", "Noto Serif", Georgia, serif;
   color: var(--text);
   background:
     radial-gradient(circle at top left, rgba(244, 196, 210, 0.28), transparent 34%),
@@ -59,7 +60,7 @@ button {
 
 .intro-page {
   position: relative;
-  width: 100vw;
+  width: 100%;
   min-height: 100vh;
   padding: 24px;
   display: flex;
@@ -127,7 +128,7 @@ button {
 .small-title,
 .section-label {
   margin: 0 0 14px;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   color: var(--rose-dark);
   letter-spacing: 4px;
   font-size: 14px;
@@ -143,7 +144,7 @@ button {
 .couple-title {
   margin: 0;
   padding: 18px 10px 12px;
-  font-family: "Great Vibes", cursive;
+  font-family: "Great Vibes", "Noto Serif", cursive;
   color: #fffafb;
   font-size: clamp(64px, 10vw, 122px);
   line-height: 1.2;
@@ -161,7 +162,7 @@ button {
 
 .couple-title em {
   margin: 0 18px;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Cormorant Garamond", "Noto Serif", Georgia, serif;
   font-style: normal;
   font-size: 0.54em;
   color: #f0cf88;
@@ -183,7 +184,7 @@ button {
   border-radius: 999px;
   background: linear-gradient(135deg, #fff1f5, #ebb4c4, #c97b93);
   color: #5b3340;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 1px;
@@ -224,7 +225,7 @@ button {
   border: 1px solid rgba(217, 140, 161, 0.28);
   text-decoration: none;
 
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 16px;
   font-weight: 800;
   line-height: 1;
@@ -352,7 +353,7 @@ button {
   position: relative;
   margin: 0 0 20px;
   color: var(--rose-deep);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: clamp(32px, 4vw, 46px);
   font-weight: 800;
 }
@@ -375,7 +376,7 @@ button {
   max-width: 820px;
   margin: 0 auto;
   color: #5a2f3c;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 22px;
   font-weight: 600;
   line-height: 1.9;
@@ -407,7 +408,7 @@ button {
 .guest-stats strong {
   display: block;
   color: var(--rose-dark);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 46px;
   font-weight: 800;
 }
@@ -417,7 +418,7 @@ button {
   display: block;
   margin-top: 10px;
   color: #7a4a58;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 2px;
@@ -451,7 +452,7 @@ button {
 .info-row span,
 .timeline-item span {
   color: var(--rose-dark);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-weight: 800;
 }
 
@@ -463,7 +464,7 @@ button {
 
 .info-row strong {
   color: var(--text);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 22px;
   font-weight: 700;
 }
@@ -502,7 +503,7 @@ button {
   padding: 16px 36px;
   border-radius: 999px;
   text-decoration: none;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.8px;
@@ -569,7 +570,7 @@ button {
   border-radius: 20px;
   background: var(--paper-soft);
   color: var(--text);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 21px;
   font-weight: 700;
 }
@@ -628,7 +629,7 @@ button {
   outline: none;
   background: #fff8fa;
   color: var(--text);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 18px;
   font-weight: 700;
   box-shadow: 0 10px 24px rgba(111, 47, 67, 0.07);
@@ -655,7 +656,7 @@ button {
 .wish-form textarea::placeholder {
   color: #a65a70;
   opacity: 1;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 17px;
   font-weight: 700;
 }
@@ -675,7 +676,7 @@ button {
   border-radius: 18px;
   background: #fff8fa;
   color: var(--text);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 17px;
   font-weight: 700;
   box-shadow: 0 10px 24px rgba(111, 47, 67, 0.07);
@@ -765,7 +766,7 @@ button {
 .wish-item strong {
   display: block;
   color: var(--rose-deep);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 21px;
   font-weight: 800;
 }
@@ -774,13 +775,13 @@ button {
   display: block;
   margin-top: 4px;
   color: var(--text-soft);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-weight: 600;
 }
 
 .guest-item em {
   color: var(--rose-dark);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-style: normal;
   font-weight: 800;
 }
@@ -796,7 +797,7 @@ button {
 
 .wish-item p {
   color: var(--text);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 21px;
   font-weight: 600;
 }
@@ -815,7 +816,7 @@ button {
 .footer p {
   margin: 0;
   color: var(--rose-dark);
-  font-family: "Great Vibes", cursive;
+  font-family: "Great Vibes", "Noto Serif", cursive;
   font-size: clamp(48px, 7vw, 86px);
   line-height: 1.2;
   text-shadow: 0 8px 24px rgba(217, 140, 161, 0.28);
@@ -825,7 +826,7 @@ button {
   display: block;
   margin-top: 8px;
   color: var(--rose-dark);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 3px;
@@ -843,9 +844,17 @@ button {
     padding: 22px 16px 60px;
   }
 
-  .hero-section {
-    min-height: 620px;
-    border-radius: 34px;
+ .hero-section {
+    min-height: 560px;
+    padding: 64px 18px;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.10) 0%,
+        rgba(120, 52, 78, 0.20) 48%,
+        rgba(60, 24, 38, 0.30) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
   }
 
   .gallery-grid {
@@ -894,7 +903,7 @@ button {
     flex: 1;
     padding: 12px 8px;
     text-align: center;
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: "Playfair Display", "Noto Serif", Georgia, serif;
     font-size: 15px;
     font-weight: 800;
     line-height: 1;
@@ -902,8 +911,40 @@ button {
   }
 
   .hero-section {
-    min-height: 540px;
-    padding: 54px 20px;
+    min-height: 560px;
+    padding: 64px 18px;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(70, 24, 40, 0.24) 0%,
+        rgba(70, 24, 40, 0.42) 46%,
+        rgba(35, 14, 22, 0.66) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+
+  .hero-section .couple-title {
+    color: #fff;
+    font-size: clamp(68px, 8vw, 118px);
+    line-height: 1.04;
+    text-shadow:
+      0 3px 5px rgba(0, 0, 0, 0.75),
+      0 8px 22px rgba(0, 0, 0, 0.42),
+      0 0 24px rgba(255, 220, 230, 0.22);
+  }
+
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+
+  .hero-date {
+    font-size: 20px;
+    padding: 10px 24px;
+  }
+
+  .hero-time {
+    font-size: 19px;
   }
 
   .hero-date {
@@ -996,10 +1037,10 @@ button {
   }
 
   .floating-actions .share-button {
-    width: 112px;
-    height: 50px;
+    width: 135px;
+    height: 62px;
     font-size: 15px;
-  }
+}
 
   .floating-actions .music-toggle-button {
     width: 44px !important;
@@ -1009,6 +1050,7 @@ button {
 
   }
 }
+
 .floating-actions {
   position: fixed;
   top: 22px;
@@ -1023,9 +1065,6 @@ button {
 
 /* Paylaş butonu */
 .floating-actions .share-button {
-  width: 124px;
-  height: 54px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1037,8 +1076,8 @@ button {
   color: #9f4f68;
   border: 1px solid rgba(217, 140, 161, 0.32);
 
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 16px;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 28px;
   font-weight: 800;
   line-height: 1;
 
@@ -1048,9 +1087,10 @@ button {
 
 /* Müzik ikon butonu */
 .floating-actions .music-toggle-button {
-  width: 46px !important;
-  height: 46px !important;
-  min-width: 46px !important;
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+
   padding: 0 !important;
 
   display: inline-flex !important;
@@ -1069,4 +1109,3947 @@ button {
   line-height: 1 !important;
   align-self: flex-end;
 
+}
+
+.floating-actions .music-toggle-button svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Açılış ekranında & işaretini ortala */
+.intro-page .couple-title span {
+  display: block;
+}
+
+.intro-page .couple-title em {
+  display: block;
+  margin: -8px 0 -6px;
+  font-size: 0.48em;
+  text-align: center;
+  color: #f0cf88;
+}
+
+/* Ana sayfadaki büyük görselde & işaretini ortala */
+.hero-section .couple-title span {
+  display: block;
+}
+
+.hero-section .couple-title em {
+  display: block;
+  margin: -10px 0 -8px;
+  font-size: 0.46em;
+  text-align: center;
+  color: #f0cf88;
+}
+
+.hero-section .couple-title {
+  font-size: clamp(54px, 8vw, 104px);
+}
+
+/* SON DÜZENLEME - Paylaş ve ses butonu */
+.floating-actions {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  bottom: auto;
+  left: auto;
+  z-index: 20;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.floating-actions button,
+.floating-actions a {
+  flex: unset;
+  width: auto;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  text-align: center;
+}
+
+.floating-actions .share-button {
+  width: 145px;
+  height: 62px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  text-decoration: none;
+
+  background: rgba(255, 250, 251, 0.9);
+  color: #9f4f68;
+  border: 1px solid rgba(217, 140, 161, 0.34);
+
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+
+  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.floating-actions .music-toggle-button {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  padding: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+
+  border-radius: 50% !important;
+  border: 1px solid rgba(217, 140, 161, 0.36) !important;
+
+  background: rgba(255, 250, 251, 0.82) !important;
+  color: #9f4f68 !important;
+
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
+  backdrop-filter: blur(10px);
+
+  line-height: 1 !important;
+}
+
+.floating-actions .music-toggle-button svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* Çok küçük ekranlarda butonlar taşmasın */
+@media (max-width: 650px) {
+  .floating-actions {
+    top: auto;
+    right: 14px;
+    bottom: 16px;
+    left: auto;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .floating-actions .share-button {
+    width: 132px;
+    height: 58px;
+    font-size: 17px;
+  }
+
+  .floating-actions .music-toggle-button {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    align-self: flex-end;
+  }
+
+  .floating-actions .music-toggle-button svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+
+/* =============================
+   YENİ EKLENEN ÖZELLİKLER
+   ============================= */
+
+.petal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.petal-layer span {
+  position: absolute;
+  top: -40px;
+  width: 16px;
+  height: 12px;
+  border-radius: 60% 40% 60% 40%;
+  background: rgba(255, 205, 220, 0.82);
+  box-shadow: 0 0 16px rgba(255, 230, 238, 0.42);
+  animation: petalFall 9s linear infinite;
+}
+
+.petal-layer span:nth-child(1) { left: 7%; animation-delay: 0s; animation-duration: 8s; }
+.petal-layer span:nth-child(2) { left: 14%; animation-delay: 2s; animation-duration: 10s; }
+.petal-layer span:nth-child(3) { left: 22%; animation-delay: 1s; animation-duration: 9s; }
+.petal-layer span:nth-child(4) { left: 30%; animation-delay: 3s; animation-duration: 11s; }
+.petal-layer span:nth-child(5) { left: 38%; animation-delay: 0.5s; animation-duration: 8.5s; }
+.petal-layer span:nth-child(6) { left: 46%; animation-delay: 2.5s; animation-duration: 10.5s; }
+.petal-layer span:nth-child(7) { left: 54%; animation-delay: 1.5s; animation-duration: 9.5s; }
+.petal-layer span:nth-child(8) { left: 62%; animation-delay: 3.5s; animation-duration: 12s; }
+.petal-layer span:nth-child(9) { left: 70%; animation-delay: 0.8s; animation-duration: 8.8s; }
+.petal-layer span:nth-child(10) { left: 78%; animation-delay: 2.8s; animation-duration: 10.8s; }
+.petal-layer span:nth-child(11) { left: 86%; animation-delay: 1.8s; animation-duration: 9.8s; }
+.petal-layer span:nth-child(12) { left: 94%; animation-delay: 3.8s; animation-duration: 11.8s; }
+.petal-layer span:nth-child(13) { left: 4%; animation-delay: 4.5s; animation-duration: 12.5s; }
+.petal-layer span:nth-child(14) { left: 34%; animation-delay: 5s; animation-duration: 13s; }
+.petal-layer span:nth-child(15) { left: 66%; animation-delay: 4.2s; animation-duration: 12.2s; }
+.petal-layer span:nth-child(16) { left: 90%; animation-delay: 5.4s; animation-duration: 13.4s; }
+
+@keyframes petalFall {
+  0% {
+    transform: translate3d(0, -40px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(42px, 110vh, 0) rotate(260deg);
+    opacity: 0;
+  }
+}
+
+.family-grid,
+.ceremony-grid,
+.admin-stats {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  margin: 30px auto 0;
+}
+
+.family-grid {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 820px;
+}
+
+.family-grid div,
+.ceremony-item,
+.schedule-item,
+.admin-stats div {
+  border: 1px solid rgba(217, 140, 161, 0.3);
+  background: var(--paper-soft);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
+}
+
+.family-grid div {
+  padding: 28px 18px;
+  border-radius: 26px;
+}
+
+.family-grid span,
+.ceremony-item span,
+.schedule-item span,
+.admin-list h3 {
+  display: block;
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.family-grid span,
+.ceremony-item span {
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.family-grid strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--rose-deep);
+  font-family: "Great Vibes", "Noto Serif", cursive;
+  font-size: clamp(42px, 5vw, 64px);
+  font-weight: normal;
+  line-height: 1.15;
+}
+
+.ceremony-grid {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 980px;
+}
+
+.ceremony-item {
+  padding: 30px 24px;
+  border-radius: 28px;
+}
+
+.ceremony-item strong {
+  display: block;
+  margin: 8px 0 12px;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 44px;
+  font-weight: 800;
+}
+
+.ceremony-item p {
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.ceremony-item em {
+  display: block;
+  margin-top: 14px;
+  color: var(--dark-gold);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.schedule-list {
+  position: relative;
+  max-width: 880px;
+  margin: 32px auto 0;
+  display: grid;
+  gap: 14px;
+}
+
+.schedule-item {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  border-radius: 24px;
+  text-align: left;
+}
+
+.schedule-item > strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.schedule-item p {
+  margin: 6px 0 0;
+  max-width: none;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.field-with-counter {
+  position: relative;
+  display: grid;
+}
+
+.field-with-counter span {
+  justify-self: end;
+  margin-top: 6px;
+  color: #a65a70;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.guest-item small {
+  display: block;
+  margin-top: 5px;
+  color: #9a6d78;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-card {
+  overflow: visible;
+}
+
+.admin-open-button {
+  margin-top: 24px;
+}
+
+.admin-login {
+  position: relative;
+  max-width: 520px;
+  margin: 28px auto 0;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-login input {
+  width: 100%;
+  padding: 17px 18px;
+  border: 1.5px solid rgba(217, 140, 161, 0.48);
+  border-radius: 20px;
+  outline: none;
+  background: #fff8fa;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-login span {
+  color: #a0445f;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 800;
+}
+
+.admin-content {
+  position: relative;
+  margin-top: 30px;
+}
+
+.admin-stats {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 1000px;
+}
+
+.admin-stats div {
+  padding: 22px 14px;
+  border-radius: 22px;
+}
+
+.admin-stats strong {
+  display: block;
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.admin-stats span {
+  display: block;
+  margin-top: 8px;
+  color: #7a4a58;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.admin-columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.admin-list {
+  padding: 22px;
+  border: 1px solid rgba(217, 140, 161, 0.3);
+  border-radius: 26px;
+  background: var(--paper-soft);
+  text-align: left;
+}
+
+.admin-list h3 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.admin-row {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(217, 140, 161, 0.2);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+}
+
+.admin-row:last-of-type {
+  border-bottom: none;
+}
+
+.admin-row strong {
+  color: var(--rose-deep);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-row span,
+.admin-row em {
+  color: var(--text-soft);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.danger-button {
+  width: 100%;
+  margin-top: 18px;
+  color: #9f4f68;
+}
+
+.footer-thanks {
+  display: block;
+  max-width: 760px;
+  margin: 18px auto 0;
+  color: var(--text-soft);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+/* Floating butonlar için son ayar */
+.floating-actions {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  left: auto;
+  bottom: auto;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.floating-actions .share-button {
+  width: 145px;
+  height: 62px;
+  min-width: 145px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  text-decoration: none;
+  background: rgba(255, 250, 251, 0.88);
+  color: #9f4f68;
+  border: 1px solid rgba(217, 140, 161, 0.32);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.floating-actions .music-toggle-button {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  border-radius: 50% !important;
+  border: 1px solid rgba(217, 140, 161, 0.34) !important;
+  background: rgba(255, 250, 251, 0.78) !important;
+  color: #9f4f68 !important;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
+  backdrop-filter: blur(10px);
+  line-height: 1 !important;
+}
+
+.floating-actions .music-toggle-button svg {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 900px) {
+  .family-grid,
+  .ceremony-grid,
+  .admin-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .family-grid,
+  .ceremony-grid,
+  .schedule-list,
+  .admin-content {
+    margin-top: 24px;
+  }
+
+  .family-grid strong {
+    font-size: 44px;
+  }
+
+  .ceremony-item strong {
+    font-size: 34px;
+  }
+
+  .schedule-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .schedule-item > strong {
+    font-size: 26px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-list {
+    padding: 18px;
+  }
+
+  .floating-actions {
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    left: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .floating-actions .share-button {
+    width: 135px;
+    height: 58px;
+    min-width: 135px;
+    font-size: 18px;
+    flex: unset;
+  }
+
+  .floating-actions .music-toggle-button {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    align-self: flex-end;
+    flex: unset;
+  }
+
+  .floating-actions .music-toggle-button svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* TÜRKÇE KARAKTER DÜZELTME
+   Google Fonts latin-ext yüklenir, metinler Türkçe dil kurallarına göre büyür.
+   i / İ / ı / ü / Ü / ş / Ş / ğ / Ğ karakterlerinin bozuk görünmesini engeller. */
+html,
+body,
+.app {
+  lang: tr;
+  font-variant-ligatures: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.intro-small,
+.small-title,
+.section-label,
+.info-row span,
+.count-box span,
+.guest-stats span,
+.admin-stats span,
+.footer span {
+  font-family: "Playfair Display", "Noto Serif", "Cormorant Garamond", Georgia, serif;
+}
+
+.couple-title {
+  font-family: "Great Vibes", "Noto Serif", "Cormorant Garamond", cursive;
+}
+
+/* CSS uppercase bazı tarayıcılarda Türkçe i/İ dönüşümünü bozabiliyor.
+   Bu yüzden küçük üst başlıklar elle yazıldığı haliyle gösteriliyor. */
+.intro-small,
+.small-title,
+.section-label,
+.info-row span,
+.count-box span,
+.guest-stats span,
+.admin-stats span,
+.footer span {
+  text-transform: none !important;
+}
+
+/* Ana görsel yazı okunurluğu - kutusuz şık tasarım */
+.hero-section {
+  align-items: center;
+  padding: 80px 38px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(70, 24, 40, 0.18) 0%,
+      rgba(70, 24, 40, 0.34) 42%,
+      rgba(35, 14, 22, 0.58) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(30, 10, 18, 0.18),
+      rgba(30, 10, 18, 0.48)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+.hero-content {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* Üst küçük yazı */
+.hero-section .small-title {
+  color: #fff7fa;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(80, 20, 42, 0.7);
+}
+
+/* İsimleri kutusuz ama çok daha net yap */
+.hero-section .couple-title {
+  color: #fff;
+  font-size: clamp(68px, 8vw, 118px);
+  line-height: 1.04;
+  text-shadow:
+    0 3px 4px rgba(0, 0, 0, 0.85),
+    0 10px 26px rgba(0, 0, 0, 0.55),
+    0 0 34px rgba(255, 220, 230, 0.28);
+}
+
+.hero-section .couple-title em {
+  margin: -6px 0 -8px;
+  color: #f4cf82;
+  font-size: 0.42em;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(244, 207, 130, 0.32);
+}
+
+/* Tarih kutusu daha zarif */
+.hero-date {
+  margin-top: 18px;
+  padding: 11px 34px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.65);
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
+}
+
+/* Saat daha net */
+.hero-time {
+  margin-top: 14px;
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.75),
+    0 0 16px rgba(60, 20, 36, 0.6);
+}
+/* =============================
+   SON DÜZENLEME - ADMIN AYRI LİNK VE AÇIK HERO
+   ============================= */
+
+/* Admin panel artık ana sayfada görünmez, sadece #admin linkinde ayrı sayfa gibi açılır. */
+.admin-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 34px 42px 76px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.admin-page-card {
+  width: min(100%, 1180px);
+  margin-top: 0;
+  overflow: visible;
+}
+
+.admin-back-button {
+  position: relative;
+  z-index: 2;
+  width: fit-content;
+  margin: 0 auto 24px;
+}
+
+.admin-page .admin-stats {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.admin-page .admin-login .main-button {
+  width: fit-content;
+  min-width: 160px;
+  margin: 0 auto;
+}
+
+/* Ana görsel okunurluğu: arka plan fazla kararmadan yazılar net kalır. */
+.hero-section {
+  align-items: center;
+  padding: 80px 38px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(120, 52, 78, 0.08) 0%,
+      rgba(120, 52, 78, 0.16) 45%,
+      rgba(60, 24, 38, 0.26) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255, 240, 245, 0.04),
+      rgba(80, 30, 48, 0.18)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+.hero-content {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hero-section .small-title {
+  color: #fff7fa;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.72),
+    0 0 14px rgba(80, 20, 42, 0.46);
+}
+
+.hero-section .couple-title {
+  color: #fff;
+  font-size: clamp(68px, 8vw, 118px);
+  line-height: 1.04;
+  text-shadow:
+    0 3px 5px rgba(0, 0, 0, 0.75),
+    0 8px 22px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(255, 220, 230, 0.22);
+}
+
+.hero-section .couple-title em {
+  margin: -6px 0 -8px;
+  color: #f4cf82;
+  font-size: 0.42em;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.78),
+    0 0 18px rgba(244, 207, 130, 0.32);
+}
+
+.hero-date {
+  margin-top: 18px;
+  padding: 11px 34px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.65);
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero-time {
+  margin-top: 14px;
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.68),
+    0 0 16px rgba(60, 20, 36, 0.48);
+}
+
+@media (max-width: 900px) {
+  .admin-page {
+    padding: 24px 16px 60px;
+  }
+
+  .admin-page .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-page {
+    padding: 18px 14px 60px;
+  }
+
+  .admin-back-button {
+    width: 100%;
+  }
+
+  .admin-page .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-section {
+    min-height: 560px;
+    padding: 64px 18px;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.10) 0%,
+        rgba(120, 52, 78, 0.20) 48%,
+        rgba(60, 24, 38, 0.30) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+
+  .hero-section .couple-title {
+    font-size: 58px;
+    line-height: 1.08;
+  }
+
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+
+  .hero-date {
+    font-size: 20px;
+    padding: 10px 24px;
+  }
+
+  .hero-time {
+    font-size: 19px;
+  }
+}
+
+/* =============================
+   ADMIN PANEL - TAM SAYFA DÜZENLEME
+   ============================= */
+
+.admin-actions-sticky {
+  position: sticky;
+  top: 16px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 28px auto 30px;
+  padding: 16px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 24px;
+  background: rgba(255, 250, 251, 0.86);
+  box-shadow: 0 16px 36px rgba(111, 47, 67, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.admin-actions-sticky .main-button,
+.admin-actions-sticky .secondary-button {
+  width: auto;
+}
+
+.admin-actions-sticky span {
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-editor {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  margin: 28px auto 34px;
+  text-align: left;
+}
+
+.admin-editor-section {
+  position: relative;
+  padding: 24px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 28px;
+  background: rgba(255, 247, 249, 0.82);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
+}
+
+.admin-editor-section h3,
+.admin-repeat-title strong {
+  margin: 0 0 18px;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.admin-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-field {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-field-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-field span {
+  color: #8f5062;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid rgba(217, 140, 161, 0.38);
+  border-radius: 16px;
+  outline: none;
+  background: #fffafb;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(111, 47, 67, 0.05);
+}
+
+.admin-field textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-login input:focus {
+  border-color: var(--rose-dark);
+  box-shadow: 0 0 0 4px rgba(217, 140, 161, 0.15);
+}
+
+.admin-repeat-list {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-repeat-item,
+.admin-gallery-row {
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.24);
+  border-radius: 22px;
+  background: rgba(255, 250, 251, 0.72);
+}
+
+.admin-repeat-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-gallery-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.small-admin-button,
+.admin-add-button {
+  width: fit-content !important;
+  min-width: unset !important;
+  padding: 12px 18px !important;
+  font-size: 14px !important;
+}
+
+.admin-add-button {
+  justify-self: center;
+  margin-top: 4px;
+}
+
+.admin-content .admin-stats {
+  margin-top: 42px;
+}
+
+.admin-columns {
+  align-items: start;
+}
+
+.admin-list {
+  max-height: 620px;
+  overflow: auto;
+}
+
+.admin-row {
+  word-break: break-word;
+}
+
+/* Admin panelde ana sayfa içeriklerini düzenleme alanı uzun olduğu için kart daha geniş kalsın. */
+.admin-page-card {
+  width: min(100%, 1320px);
+}
+
+/* Hero görseli açık kalsın, sadece yazı okunurluğu artsın. */
+.hero-section {
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(120, 52, 78, 0.08) 0%,
+      rgba(120, 52, 78, 0.16) 45%,
+      rgba(60, 24, 38, 0.26) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255, 240, 245, 0.04),
+      rgba(80, 30, 48, 0.18)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+@media (max-width: 900px) {
+  .admin-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-actions-sticky {
+    position: relative;
+    top: auto;
+  }
+
+  .admin-gallery-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-editor-section {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .admin-repeat-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .small-admin-button,
+  .admin-add-button,
+  .admin-actions-sticky .main-button,
+  .admin-actions-sticky .secondary-button {
+    width: 100% !important;
+  }
+
+  .hero-section {
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.1) 0%,
+        rgba(120, 52, 78, 0.2) 48%,
+        rgba(60, 24, 38, 0.3) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+}
+
+/* =============================
+   ADMIN PANEL - GÖRSEL YÜKLEME
+   ============================= */
+
+.admin-image-field {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed rgba(217, 140, 161, 0.42);
+  border-radius: 22px;
+  background: rgba(255, 250, 251, 0.72);
+}
+
+.admin-image-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-image-header > span {
+  color: #8f5062;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-image-preview {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 18px;
+  background: #fffafb;
+  box-shadow: 0 12px 26px rgba(111, 47, 67, 0.08);
+}
+
+.admin-image-empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(217, 140, 161, 0.22);
+  border-radius: 18px;
+  background: rgba(255, 247, 249, 0.8);
+  color: #a65a70;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-upload-button {
+  width: fit-content;
+  min-width: 210px;
+  padding: 13px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e69aae, var(--rose-dark));
+  color: white;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(159, 79, 104, 0.24);
+}
+
+.admin-upload-button input {
+  display: none;
+}
+
+.admin-image-field small {
+  color: #9a6d78;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.admin-gallery-upload-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.24);
+  border-radius: 22px;
+  background: rgba(255, 250, 251, 0.72);
+}
+
+.admin-gallery-upload-row .admin-image-field {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.admin-gallery-upload-row .admin-image-preview {
+  max-height: 220px;
+}
+
+@media (max-width: 900px) {
+  .admin-gallery-upload-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-image-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-upload-button {
+    width: 100%;
+  }
+
+  .admin-image-preview {
+    max-height: 220px;
+  }
+}
+
+/* =============================
+   ADMIN PANEL - SOL MENÜLÜ BÖLÜM SEÇİMİ
+   ============================= */
+
+.admin-shell-card {
+  width: min(100%, 1480px);
+  padding: 34px;
+}
+
+.admin-page-header {
+  position: relative;
+  text-align: center;
+}
+
+.admin-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 285px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 34px;
+  align-items: start;
+  text-align: left;
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 18px;
+  z-index: 6;
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(248, 199, 211, 0.34), transparent 28%),
+    rgba(255, 250, 251, 0.9);
+  box-shadow: 0 18px 42px rgba(111, 47, 67, 0.1);
+  backdrop-filter: blur(14px);
+}
+
+.admin-sidebar-title {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(217, 140, 161, 0.2);
+}
+
+.admin-sidebar-title span {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span {
+  color: #9a6d78;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.admin-sidebar-menu {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-nav-button {
+  width: 100%;
+  min-height: 72px;
+  padding: 13px 14px;
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(217, 140, 161, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--text);
+  text-align: left;
+  box-shadow: 0 10px 22px rgba(111, 47, 67, 0.05);
+  transition: 0.2s ease;
+}
+
+.admin-nav-button span {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.admin-nav-button:hover {
+  transform: translateX(3px);
+  border-color: rgba(159, 79, 104, 0.48);
+  background: rgba(255, 240, 244, 0.82);
+}
+
+.admin-nav-button.active {
+  border-color: rgba(159, 79, 104, 0.64);
+  background: linear-gradient(135deg, rgba(230, 154, 174, 0.95), rgba(159, 79, 104, 0.95));
+  box-shadow: 0 14px 30px rgba(159, 79, 104, 0.22);
+}
+
+.admin-nav-button.active span,
+.admin-nav-button.active small {
+  color: #ffffff;
+}
+
+.admin-main-panel {
+  min-width: 0;
+}
+
+.admin-main-panel .admin-actions-sticky {
+  top: 18px;
+  margin: 0 0 22px;
+  justify-content: flex-start;
+}
+
+.admin-current-section {
+  min-width: min(100%, 260px);
+  display: grid;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.admin-current-section strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.admin-save-message {
+  width: 100%;
+}
+
+.admin-editor-single {
+  margin: 0;
+}
+
+.admin-editor-single .admin-editor-section {
+  margin: 0;
+}
+
+.admin-gallery-list {
+  margin-top: 18px;
+}
+
+.admin-stats-inside {
+  max-width: none;
+  margin: 0 0 22px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.admin-list-full {
+  max-height: 680px;
+}
+
+@media (max-width: 1100px) {
+  .admin-layout {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .admin-shell-card {
+    padding: 28px 22px;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-nav-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .admin-main-panel .admin-actions-sticky {
+    position: sticky;
+    top: 10px;
+  }
+
+  .admin-stats-inside {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-shell-card {
+    padding: 24px 16px;
+  }
+
+  .admin-sidebar {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav-button {
+    min-height: auto;
+    padding: 12px 14px;
+  }
+
+  .admin-main-panel .admin-actions-sticky {
+    position: relative;
+    top: auto;
+  }
+
+  .admin-current-section {
+    width: 100%;
+  }
+
+  .admin-stats-inside {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* SON DÜZENLEME - Admin panel yazıları daha belirgin */
+.admin-page,
+.admin-page p,
+.admin-page small,
+.admin-page span,
+.admin-page input,
+.admin-page textarea,
+.admin-page button {
+  font-weight: 700;
+}
+
+.admin-page h2,
+.admin-editor-section h3,
+.admin-current-section strong,
+.admin-sidebar-title span,
+.admin-nav-button span,
+.admin-field > span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-row strong {
+  font-weight: 900 !important;
+}
+
+.admin-page h2 {
+  letter-spacing: 0.2px;
+}
+
+.admin-page-header > p:not(.section-label),
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span,
+.admin-field small,
+.admin-image-field small,
+.admin-music-field small,
+.admin-row span,
+.admin-row em {
+  font-weight: 700 !important;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input {
+  font-weight: 800;
+}
+
+/* Admin panel müzik yükleme alanı */
+.admin-music-field {
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.32);
+  border-radius: 24px;
+  background: rgba(255, 247, 249, 0.72);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.07);
+}
+
+.admin-music-preview {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 20px;
+  background: #fffafb;
+}
+
+.admin-music-preview strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.admin-music-preview audio {
+  width: 100%;
+}
+
+.admin-music-field .admin-upload-button {
+  margin-top: 14px;
+}
+
+/* Admin panel başlık adı */
+.admin-page-header h2 {
+  text-transform: none;
+}
+
+
+/* =============================
+   FINAL - ADMIN PANEL OKUNURLUK VE FORM KAYITLARI
+   ============================= */
+.admin-page {
+  color: #3f1f2c;
+}
+
+.admin-page .card,
+.admin-shell-card,
+.admin-sidebar,
+.admin-main-panel,
+.admin-editor-section,
+.admin-repeat-item,
+.admin-image-field,
+.admin-music-field,
+.admin-list,
+.admin-row,
+.admin-stats div {
+  color: #3f1f2c;
+}
+
+.admin-page-header > p:not(.section-label),
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span,
+.admin-field small,
+.admin-image-field small,
+.admin-music-field small,
+.admin-save-message,
+.admin-row span,
+.admin-row em,
+.admin-image-empty,
+.admin-music-preview strong {
+  color: #5c2f3f !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}
+
+.admin-page h2,
+.admin-editor-section h3,
+.admin-current-section strong,
+.admin-sidebar-title span,
+.admin-nav-button span,
+.admin-field > span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-row strong,
+.admin-stats strong {
+  color: #651f3a !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+}
+
+.admin-page .section-label {
+  color: #8e3455 !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input {
+  color: #3f1f2c !important;
+  background: #fff9fb !important;
+  border-color: rgba(159, 79, 104, 0.46) !important;
+  font-weight: 850 !important;
+}
+
+.admin-field input::placeholder,
+.admin-field textarea::placeholder,
+.admin-login input::placeholder {
+  color: #8e5165 !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+.admin-sidebar,
+.admin-editor-section,
+.admin-repeat-item,
+.admin-image-field,
+.admin-music-field,
+.admin-row,
+.admin-stats div {
+  background-color: rgba(255, 250, 251, 0.96) !important;
+  border-color: rgba(159, 79, 104, 0.34) !important;
+}
+
+.admin-nav-button {
+  color: #3f1f2c !important;
+  background: rgba(255, 250, 251, 0.9) !important;
+  border-color: rgba(159, 79, 104, 0.3) !important;
+}
+
+.admin-nav-button span {
+  color: #651f3a !important;
+}
+
+.admin-nav-button small {
+  color: #6a3446 !important;
+}
+
+.admin-nav-button.active {
+  background: linear-gradient(135deg, #c96f89, #8f3657) !important;
+  border-color: rgba(122, 47, 73, 0.75) !important;
+}
+
+.admin-nav-button.active span,
+.admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+.admin-list-full .admin-row {
+  border-left: 5px solid rgba(159, 79, 104, 0.55);
+}
+
+.admin-row span,
+.admin-row em {
+  display: block;
+  line-height: 1.55;
+}
+
+.admin-actions-sticky {
+  background: rgba(255, 250, 251, 0.94) !important;
+  border: 1px solid rgba(159, 79, 104, 0.28);
+  border-radius: 22px;
+  padding: 14px;
+  box-shadow: 0 12px 28px rgba(111, 47, 67, 0.10);
+}
+
+.admin-upload-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #c96f89, #8f3657) !important;
+  border-color: rgba(122, 47, 73, 0.4) !important;
+  font-weight: 900 !important;
+}
+
+/* =============================
+   GELİŞMİŞ ÖZELLİKLER
+   ============================= */
+
+html[data-theme="sage"] {
+  --paper: #fbfff7;
+  --paper-soft: #f4faec;
+  --rose-light: #dce8c8;
+  --rose: #9cad75;
+  --rose-dark: #607244;
+  --rose-deep: #40502e;
+  --gold: #c5a461;
+  --dark-gold: #8b6b32;
+  --text: #34402c;
+  --text-soft: #58674c;
+  --shadow: 0 20px 48px rgba(76, 94, 57, 0.13);
+}
+
+html[data-theme="gold"] {
+  --paper: #fffdf4;
+  --paper-soft: #fff8df;
+  --rose-light: #f4dfad;
+  --rose: #c9a45d;
+  --rose-dark: #9b7433;
+  --rose-deep: #6e4b1e;
+  --gold: #c59a45;
+  --dark-gold: #7e5520;
+  --text: #4b3620;
+  --text-soft: #725b3c;
+  --shadow: 0 20px 48px rgba(126, 85, 32, 0.13);
+}
+
+html[data-theme="burgundy"] {
+  --paper: #fff8fa;
+  --paper-soft: #fbeaf0;
+  --rose-light: #e2b6c4;
+  --rose: #b55b79;
+  --rose-dark: #7f2747;
+  --rose-deep: #53182e;
+  --gold: #d0aa68;
+  --dark-gold: #936c34;
+  --text: #3f1d2b;
+  --text-soft: #6b3a4d;
+  --shadow: 0 20px 48px rgba(83, 24, 46, 0.14);
+}
+
+html[data-theme="minimal"] {
+  --paper: #ffffff;
+  --paper-soft: #f8f8f8;
+  --rose-light: #e8e1dc;
+  --rose: #b69f91;
+  --rose-dark: #775e50;
+  --rose-deep: #45362e;
+  --gold: #b99d72;
+  --dark-gold: #796247;
+  --text: #2f2926;
+  --text-soft: #665d58;
+  --shadow: 0 20px 48px rgba(47, 41, 38, 0.10);
+}
+
+html[data-theme="sage"] body,
+html[data-theme="gold"] body,
+html[data-theme="burgundy"] body,
+html[data-theme="minimal"] body {
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--rose-light) 35%, transparent), transparent 34%),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--rose) 22%, transparent), transparent 36%),
+    linear-gradient(180deg, var(--paper), var(--paper-soft));
+}
+
+.guest-greeting,
+.hero-guest-greeting {
+  position: relative;
+  max-width: 620px;
+  margin: 16px auto 0;
+  color: #fffdfd;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.7;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.48);
+}
+
+.hero-guest-greeting {
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.36);
+  backdrop-filter: blur(4px);
+}
+
+.countdown-animated strong {
+  animation: countSoftPulse 1s ease;
+}
+
+@keyframes countSoftPulse {
+  0% { transform: scale(0.98); opacity: 0.75; }
+  45% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.qr-public-card {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 28px auto 0;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  border-radius: 24px;
+  background: rgba(255, 250, 251, 0.72);
+  border: 1px solid rgba(217, 140, 161, 0.26);
+  box-shadow: 0 14px 34px rgba(111, 47, 67, 0.10);
+}
+
+.qr-public-card img {
+  width: 150px;
+  height: 150px;
+  border-radius: 18px;
+  background: #fff;
+  padding: 10px;
+}
+
+.qr-public-card span {
+  color: var(--text-soft);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-field select,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-personal-link-box input,
+.admin-check-field {
+  width: 100%;
+  border: 1.5px solid rgba(159, 79, 104, 0.46);
+  border-radius: 18px;
+  background: #fff9fb;
+  color: #3f1f2c;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 850;
+  outline: none;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.06);
+}
+
+.admin-field select,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-personal-link-box input {
+  min-height: 54px;
+  padding: 14px 16px;
+}
+
+.admin-check-field {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.admin-check-field input {
+  width: 20px;
+  height: 20px;
+  accent-color: #9f4f68;
+}
+
+.admin-check-field span,
+.admin-help-text,
+.admin-personal-link-box span,
+.admin-qr-panel span {
+  color: #3f1f2c !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 850 !important;
+  line-height: 1.65;
+}
+
+.admin-toolbar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+  align-items: center;
+}
+
+.admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-row-actions .small-admin-button {
+  min-width: 110px;
+}
+
+.admin-qr-panel {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.admin-qr-panel > div,
+.admin-personal-link-box {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 250, 251, 0.96);
+  border: 1px solid rgba(159, 79, 104, 0.28);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
+}
+
+.admin-qr-panel img {
+  width: 220px;
+  height: 220px;
+  display: block;
+  margin: 14px auto;
+  padding: 12px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.admin-personal-link-box {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-personal-link-box .admin-field {
+  margin: 0;
+}
+
+.admin-save-message {
+  color: #4f1b31 !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 900px) {
+  .admin-toolbar,
+  .admin-qr-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-toolbar .secondary-button {
+    width: 100%;
+  }
+
+  .qr-public-card img {
+    width: 128px;
+    height: 128px;
+  }
+}
+
+/* =============================
+   FINAL DÜZENLEME - QR, EXCEL/CSV VE TEMA UYUMU
+   ============================= */
+:root {
+  --theme-rgb: 159, 79, 104;
+  --theme-strong-rgb: 122, 47, 73;
+  --theme-soft-rgb: 248, 215, 223;
+  --theme-faint-rgb: 255, 250, 251;
+  --theme-overlay-center: rgba(var(--theme-rgb), 0.10);
+  --theme-overlay-mid: rgba(var(--theme-rgb), 0.17);
+  --theme-overlay-edge: rgba(var(--theme-strong-rgb), 0.28);
+  --theme-overlay-bottom: rgba(var(--theme-strong-rgb), 0.16);
+}
+
+html[data-theme="sage"] {
+  --theme-rgb: 96, 114, 68;
+  --theme-strong-rgb: 64, 80, 46;
+  --theme-soft-rgb: 220, 232, 200;
+  --theme-faint-rgb: 251, 255, 247;
+}
+
+html[data-theme="gold"] {
+  --theme-rgb: 155, 116, 51;
+  --theme-strong-rgb: 110, 75, 30;
+  --theme-soft-rgb: 244, 223, 173;
+  --theme-faint-rgb: 255, 253, 244;
+}
+
+html[data-theme="burgundy"] {
+  --theme-rgb: 127, 39, 71;
+  --theme-strong-rgb: 83, 24, 46;
+  --theme-soft-rgb: 226, 182, 196;
+  --theme-faint-rgb: 255, 248, 250;
+}
+
+html[data-theme="minimal"] {
+  --theme-rgb: 119, 94, 80;
+  --theme-strong-rgb: 69, 54, 46;
+  --theme-soft-rgb: 232, 225, 220;
+  --theme-faint-rgb: 255, 255, 255;
+}
+
+/* Görsellerin üzerindeki renk katmanı seçilen temaya göre değişir */
+.intro-page {
+  background:
+    linear-gradient(
+      rgba(var(--theme-rgb), 0.08),
+      rgba(var(--theme-rgb), 0.22)
+    ),
+    var(--intro-image) center/cover no-repeat !important;
+}
+
+.hero-section {
+  align-items: center !important;
+  padding: 80px 38px !important;
+  background:
+    radial-gradient(
+      circle at center,
+      var(--theme-overlay-center) 0%,
+      var(--theme-overlay-mid) 48%,
+      var(--theme-overlay-edge) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(var(--theme-soft-rgb), 0.05),
+      var(--theme-overlay-bottom)
+    ),
+    var(--hero-image) center/cover no-repeat !important;
+}
+
+.hero-section::before {
+  border-color: rgba(var(--theme-faint-rgb), 0.58) !important;
+}
+
+.hero-section::after,
+.leaf-mark::before {
+  color: rgba(var(--theme-soft-rgb), 0.95) !important;
+}
+
+.hero-section .small-title,
+.intro-small {
+  color: #fffafc !important;
+  text-shadow: 0 3px 12px rgba(var(--theme-strong-rgb), 0.55);
+}
+
+.hero-section .couple-title,
+.intro-page .couple-title {
+  color: #ffffff !important;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.56),
+    0 10px 24px rgba(var(--theme-strong-rgb), 0.34),
+    0 0 26px rgba(var(--theme-soft-rgb), 0.22) !important;
+}
+
+.hero-section .couple-title em,
+.intro-page .couple-title em {
+  color: var(--gold) !important;
+  text-shadow: 0 3px 10px rgba(var(--theme-strong-rgb), 0.48);
+}
+
+.hero-date {
+  background: rgba(var(--theme-faint-rgb), 0.22) !important;
+  border-color: rgba(var(--theme-soft-rgb), 0.74) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 10px rgba(var(--theme-strong-rgb), 0.58);
+}
+
+.hero-time,
+.hero-guest-greeting,
+.guest-greeting {
+  color: #ffffff !important;
+  text-shadow: 0 3px 12px rgba(var(--theme-strong-rgb), 0.58);
+}
+
+.open-button,
+.main-button,
+.admin-upload-button,
+.admin-nav-button.active {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+}
+
+.secondary-button,
+.share-button,
+.music-toggle-button {
+  color: var(--rose-dark) !important;
+  border-color: rgba(var(--theme-rgb), 0.36) !important;
+}
+
+.card::after,
+.hero-section::after {
+  color: rgba(var(--theme-rgb), 0.42) !important;
+}
+
+/* Tema seçimi artık native select değil; daha temiz seçim kartları */
+.theme-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.theme-option-card {
+  min-height: 132px;
+  padding: 18px 16px;
+  display: grid;
+  gap: 9px;
+  justify-items: start;
+  text-align: left;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.28);
+  border-radius: 22px;
+  background: rgba(var(--theme-faint-rgb), 0.92);
+  color: var(--text);
+  box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.08);
+  transition: 0.2s ease;
+}
+
+.theme-option-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--theme-rgb), 0.55);
+}
+
+.theme-option-card.active {
+  border-color: rgba(var(--theme-rgb), 0.8);
+  box-shadow: 0 16px 34px rgba(var(--theme-strong-rgb), 0.16);
+}
+
+.theme-option-card strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.theme-option-card small {
+  color: var(--text-soft);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.theme-swatch {
+  width: 52px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 18px rgba(40, 20, 30, 0.12);
+  background: linear-gradient(135deg, #f8d7df, #d98ca1, #9f4f68);
+}
+
+.theme-option-card[data-theme-preview="sage"] .theme-swatch {
+  background: linear-gradient(135deg, #dce8c8, #9cad75, #607244);
+}
+
+.theme-option-card[data-theme-preview="gold"] .theme-swatch {
+  background: linear-gradient(135deg, #fff8df, #c9a45d, #9b7433);
+}
+
+.theme-option-card[data-theme-preview="burgundy"] .theme-swatch {
+  background: linear-gradient(135deg, #e2b6c4, #b55b79, #7f2747);
+}
+
+.theme-option-card[data-theme-preview="minimal"] .theme-swatch {
+  background: linear-gradient(135deg, #ffffff, #b69f91, #45362e);
+}
+
+.admin-theme-check-row {
+  margin-top: 18px;
+}
+
+/* QR alanı sadece QR için; özel link ayrı bölümde */
+.qr-only-panel {
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+}
+
+.admin-qr-actions,
+.admin-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.admin-link-preview-box {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-link-preview-box input,
+.personal-link-standalone input {
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 16px;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.46);
+  border-radius: 18px;
+  background: #fff9fb;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.admin-link-preview-box small {
+  color: var(--text-soft) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 850 !important;
+}
+
+.personal-link-standalone {
+  max-width: 760px;
+}
+
+/* Veri indirme alanı: JSON tek kalmasın, Excel/CSV açık görünsün */
+.admin-export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.admin-export-card,
+.admin-import-box {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(var(--theme-faint-rgb), 0.96);
+  border: 1px solid rgba(var(--theme-rgb), 0.30);
+  box-shadow: 0 14px 30px rgba(var(--theme-strong-rgb), 0.08);
+}
+
+.admin-export-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.admin-export-card strong {
+  color: var(--rose-deep) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 18px;
+  font-weight: 950 !important;
+}
+
+.admin-export-card span {
+  color: var(--text-soft) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 850 !important;
+  line-height: 1.55;
+}
+
+.admin-import-box {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+/* Admin alanındaki hardcode pembe renkleri seçilen temaya bağla */
+.admin-page {
+  color: var(--text) !important;
+}
+
+.admin-page .card,
+.admin-shell-card,
+.admin-sidebar,
+.admin-main-panel,
+.admin-editor-section,
+.admin-repeat-item,
+.admin-image-field,
+.admin-music-field,
+.admin-list,
+.admin-row,
+.admin-stats div,
+.admin-qr-panel > div,
+.admin-personal-link-box {
+  color: var(--text) !important;
+  background-color: rgba(var(--theme-faint-rgb), 0.96) !important;
+  border-color: rgba(var(--theme-rgb), 0.34) !important;
+}
+
+.admin-page h2,
+.admin-editor-section h3,
+.admin-current-section strong,
+.admin-sidebar-title span,
+.admin-nav-button span,
+.admin-field > span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-row strong,
+.admin-stats strong,
+.admin-qr-panel span,
+.admin-personal-link-box span {
+  color: var(--rose-deep) !important;
+}
+
+.admin-page-header > p:not(.section-label),
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span,
+.admin-field small,
+.admin-image-field small,
+.admin-music-field small,
+.admin-save-message,
+.admin-row span,
+.admin-row em,
+.admin-image-empty,
+.admin-help-text,
+.admin-music-preview strong {
+  color: var(--text-soft) !important;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input,
+.admin-field select,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-personal-link-box input,
+.admin-check-field {
+  color: var(--text) !important;
+  background: rgba(var(--theme-faint-rgb), 0.98) !important;
+  border-color: rgba(var(--theme-rgb), 0.46) !important;
+}
+
+.admin-check-field input {
+  accent-color: var(--rose-dark) !important;
+}
+
+.admin-nav-button.active {
+  border-color: rgba(var(--theme-strong-rgb), 0.72) !important;
+}
+
+.admin-list-full .admin-row {
+  border-left-color: rgba(var(--theme-rgb), 0.62) !important;
+}
+
+@media (max-width: 1100px) {
+  .theme-picker-grid,
+  .admin-export-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-section {
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(var(--theme-rgb), 0.10) 0%,
+        rgba(var(--theme-rgb), 0.18) 50%,
+        rgba(var(--theme-strong-rgb), 0.30) 100%
+      ),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+
+  .qr-only-panel,
+  .admin-export-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .hero-section {
+    min-height: 560px !important;
+    padding: 64px 18px !important;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(var(--theme-rgb), 0.12) 0%,
+        rgba(var(--theme-rgb), 0.22) 50%,
+        rgba(var(--theme-strong-rgb), 0.34) 100%
+      ),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+
+  .theme-picker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-qr-actions,
+  .admin-export-actions {
+    flex-direction: column;
+  }
+
+  .admin-qr-actions .secondary-button,
+  .admin-export-actions .secondary-button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   FINAL TEMA SİSTEMİ - HER ALANI SEÇİLEN TEMAYA BAĞLAR
+   ========================================================= */
+
+html[data-theme="rose"] {
+  --theme-rgb: 159, 79, 104;
+  --theme-strong-rgb: 122, 47, 73;
+  --theme-soft-rgb: 248, 215, 223;
+  --theme-faint-rgb: 255, 250, 251;
+  --theme-page-start: #fff8fa;
+  --theme-page-end: #fbeef2;
+  --theme-surface: rgba(255, 252, 253, 0.98);
+  --theme-surface-soft: rgba(255, 247, 249, 0.98);
+  --theme-input: rgba(255, 248, 250, 0.98);
+  --theme-text-main: #55303b;
+  --theme-text-muted: #6f4451;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(159, 79, 104, 0.08);
+  --theme-hero-mid: rgba(159, 79, 104, 0.15);
+  --theme-hero-edge: rgba(122, 47, 73, 0.26);
+}
+
+html[data-theme="sage"] {
+  --paper: #fbfff7;
+  --paper-soft: #f4faec;
+  --rose-light: #dce8c8;
+  --rose: #9cad75;
+  --rose-dark: #607244;
+  --rose-deep: #40502e;
+  --gold: #c5a461;
+  --dark-gold: #7b652e;
+  --text: #34402c;
+  --text-soft: #58674c;
+  --shadow: 0 20px 48px rgba(76, 94, 57, 0.13);
+  --theme-rgb: 96, 114, 68;
+  --theme-strong-rgb: 64, 80, 46;
+  --theme-soft-rgb: 220, 232, 200;
+  --theme-faint-rgb: 251, 255, 247;
+  --theme-page-start: #fbfff7;
+  --theme-page-end: #edf6e5;
+  --theme-surface: rgba(251, 255, 247, 0.98);
+  --theme-surface-soft: rgba(244, 250, 236, 0.98);
+  --theme-input: rgba(251, 255, 247, 0.98);
+  --theme-text-main: #34402c;
+  --theme-text-muted: #58674c;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(96, 114, 68, 0.08);
+  --theme-hero-mid: rgba(96, 114, 68, 0.16);
+  --theme-hero-edge: rgba(64, 80, 46, 0.28);
+}
+
+html[data-theme="gold"] {
+  --paper: #fffdf4;
+  --paper-soft: #fff8df;
+  --rose-light: #f4dfad;
+  --rose: #c9a45d;
+  --rose-dark: #9b7433;
+  --rose-deep: #6e4b1e;
+  --gold: #c59a45;
+  --dark-gold: #7e5520;
+  --text: #4b3620;
+  --text-soft: #725b3c;
+  --shadow: 0 20px 48px rgba(126, 85, 32, 0.13);
+  --theme-rgb: 155, 116, 51;
+  --theme-strong-rgb: 110, 75, 30;
+  --theme-soft-rgb: 244, 223, 173;
+  --theme-faint-rgb: 255, 253, 244;
+  --theme-page-start: #fffdf4;
+  --theme-page-end: #f7edd0;
+  --theme-surface: rgba(255, 253, 244, 0.98);
+  --theme-surface-soft: rgba(255, 248, 223, 0.98);
+  --theme-input: rgba(255, 253, 244, 0.98);
+  --theme-text-main: #4b3620;
+  --theme-text-muted: #725b3c;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(155, 116, 51, 0.08);
+  --theme-hero-mid: rgba(155, 116, 51, 0.16);
+  --theme-hero-edge: rgba(110, 75, 30, 0.28);
+}
+
+html[data-theme="burgundy"] {
+  --paper: #fff8fa;
+  --paper-soft: #fbeaf0;
+  --rose-light: #e2b6c4;
+  --rose: #b55b79;
+  --rose-dark: #7f2747;
+  --rose-deep: #53182e;
+  --gold: #d0aa68;
+  --dark-gold: #936c34;
+  --text: #3f1d2b;
+  --text-soft: #6b3a4d;
+  --shadow: 0 20px 48px rgba(83, 24, 46, 0.14);
+  --theme-rgb: 127, 39, 71;
+  --theme-strong-rgb: 83, 24, 46;
+  --theme-soft-rgb: 226, 182, 196;
+  --theme-faint-rgb: 255, 248, 250;
+  --theme-page-start: #fff8fa;
+  --theme-page-end: #f4dbe4;
+  --theme-surface: rgba(255, 248, 250, 0.98);
+  --theme-surface-soft: rgba(251, 234, 240, 0.98);
+  --theme-input: rgba(255, 248, 250, 0.98);
+  --theme-text-main: #3f1d2b;
+  --theme-text-muted: #6b3a4d;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(127, 39, 71, 0.08);
+  --theme-hero-mid: rgba(127, 39, 71, 0.17);
+  --theme-hero-edge: rgba(83, 24, 46, 0.30);
+}
+
+html[data-theme="minimal"] {
+  --paper: #ffffff;
+  --paper-soft: #f8f8f8;
+  --rose-light: #e8e1dc;
+  --rose: #b69f91;
+  --rose-dark: #775e50;
+  --rose-deep: #45362e;
+  --gold: #b99d72;
+  --dark-gold: #796247;
+  --text: #2f2926;
+  --text-soft: #665d58;
+  --shadow: 0 20px 48px rgba(47, 41, 38, 0.10);
+  --theme-rgb: 119, 94, 80;
+  --theme-strong-rgb: 69, 54, 46;
+  --theme-soft-rgb: 232, 225, 220;
+  --theme-faint-rgb: 255, 255, 255;
+  --theme-page-start: #ffffff;
+  --theme-page-end: #eeeeee;
+  --theme-surface: rgba(255, 255, 255, 0.98);
+  --theme-surface-soft: rgba(248, 248, 248, 0.98);
+  --theme-input: rgba(255, 255, 255, 0.98);
+  --theme-text-main: #2f2926;
+  --theme-text-muted: #665d58;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(119, 94, 80, 0.06);
+  --theme-hero-mid: rgba(119, 94, 80, 0.14);
+  --theme-hero-edge: rgba(69, 54, 46, 0.24);
+}
+
+html[data-theme="dark"] {
+  --paper: #241a21;
+  --paper-soft: #2d222a;
+  --rose-light: #8f5269;
+  --rose: #c47b96;
+  --rose-dark: #e6a7bc;
+  --rose-deep: #ffd8e4;
+  --gold: #d9ba75;
+  --dark-gold: #f0cf88;
+  --text: #fff4f8;
+  --text-soft: #e2cbd4;
+  --shadow: 0 22px 54px rgba(0, 0, 0, 0.36);
+  --theme-rgb: 196, 123, 150;
+  --theme-strong-rgb: 255, 216, 228;
+  --theme-soft-rgb: 143, 82, 105;
+  --theme-faint-rgb: 45, 34, 42;
+  --theme-page-start: #130e12;
+  --theme-page-end: #281d25;
+  --theme-surface: rgba(36, 26, 33, 0.98);
+  --theme-surface-soft: rgba(45, 34, 42, 0.98);
+  --theme-input: rgba(30, 22, 28, 0.98);
+  --theme-text-main: #fff4f8;
+  --theme-text-muted: #e2cbd4;
+  --theme-on-accent: #22151b;
+  --theme-hero-center: rgba(0, 0, 0, 0.10);
+  --theme-hero-mid: rgba(0, 0, 0, 0.24);
+  --theme-hero-edge: rgba(0, 0, 0, 0.44);
+}
+
+html[data-theme] body,
+html[data-theme] .app,
+html[data-theme] .admin-page {
+  color: var(--theme-text-main) !important;
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-rgb), 0.18), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(var(--theme-soft-rgb), 0.18), transparent 36%),
+    linear-gradient(180deg, var(--theme-page-start), var(--theme-page-end)) !important;
+}
+
+html[data-theme] .invitation-page::before {
+  background:
+    radial-gradient(circle at 8% 18%, rgba(var(--theme-rgb), 0.10), transparent 12%),
+    radial-gradient(circle at 90% 28%, rgba(var(--theme-soft-rgb), 0.16), transparent 13%),
+    radial-gradient(circle at 18% 82%, rgba(var(--theme-rgb), 0.08), transparent 12%),
+    radial-gradient(circle at 88% 86%, rgba(var(--theme-soft-rgb), 0.14), transparent 12%) !important;
+}
+
+html[data-theme] .intro-page {
+  background:
+    linear-gradient(rgba(var(--theme-rgb), 0.08), rgba(var(--theme-rgb), 0.26)),
+    var(--intro-image) center/cover no-repeat !important;
+}
+
+html[data-theme] .hero-section {
+  background:
+    radial-gradient(
+      circle at center,
+      var(--theme-hero-center) 0%,
+      var(--theme-hero-mid) 52%,
+      var(--theme-hero-edge) 100%
+    ),
+    linear-gradient(to bottom, rgba(var(--theme-rgb), 0.04), rgba(var(--theme-rgb), 0.12)),
+    var(--hero-image) center/cover no-repeat !important;
+}
+
+html[data-theme] .intro-card,
+html[data-theme] .card,
+html[data-theme] .countdown-section,
+html[data-theme] .info-list,
+html[data-theme] .count-box,
+html[data-theme] .timeline-item p,
+html[data-theme] .gallery-grid img,
+html[data-theme] .rsvp-card,
+html[data-theme] .guest-stats div,
+html[data-theme] .guest-item,
+html[data-theme] .wish-item,
+html[data-theme] .family-grid div,
+html[data-theme] .ceremony-item,
+html[data-theme] .schedule-item,
+html[data-theme] .mini-map,
+html[data-theme] .admin-shell-card,
+html[data-theme] .admin-sidebar,
+html[data-theme] .admin-editor-section,
+html[data-theme] .admin-repeat-item,
+html[data-theme] .admin-gallery-row,
+html[data-theme] .admin-image-field,
+html[data-theme] .admin-music-field,
+html[data-theme] .admin-list,
+html[data-theme] .admin-row,
+html[data-theme] .admin-stats div,
+html[data-theme] .admin-export-card,
+html[data-theme] .admin-import-box,
+html[data-theme] .admin-qr-panel > div,
+html[data-theme] .admin-personal-link-box,
+html[data-theme] .theme-option-card,
+html[data-theme] .admin-theme-check-row {
+  color: var(--theme-text-main) !important;
+  background: var(--theme-surface) !important;
+  border-color: rgba(var(--theme-rgb), 0.34) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+html[data-theme] .card,
+html[data-theme] .countdown-section,
+html[data-theme] .rsvp-card,
+html[data-theme] .admin-shell-card {
+  background:
+    radial-gradient(circle at top right, rgba(var(--theme-soft-rgb), 0.18), transparent 28%),
+    linear-gradient(145deg, var(--theme-surface), var(--theme-surface-soft)) !important;
+}
+
+html[data-theme] .section-label,
+html[data-theme] .card h2,
+html[data-theme] .countdown-section h2,
+html[data-theme] .count-box strong,
+html[data-theme] .guest-stats strong,
+html[data-theme] .info-row span,
+html[data-theme] .timeline-item span,
+html[data-theme] .family-grid span,
+html[data-theme] .family-grid strong,
+html[data-theme] .ceremony-item span,
+html[data-theme] .ceremony-item strong,
+html[data-theme] .schedule-item > strong,
+html[data-theme] .schedule-item span,
+html[data-theme] .guest-item strong,
+html[data-theme] .wish-item strong,
+html[data-theme] .footer p,
+html[data-theme] .footer span,
+html[data-theme] .admin-page h2,
+html[data-theme] .admin-editor-section h3,
+html[data-theme] .admin-sidebar-title span,
+html[data-theme] .admin-current-section strong,
+html[data-theme] .admin-nav-button span,
+html[data-theme] .admin-field > span,
+html[data-theme] .admin-row strong,
+html[data-theme] .admin-export-card strong,
+html[data-theme] .theme-option-card strong {
+  color: var(--rose-deep) !important;
+}
+
+html[data-theme] .card p,
+html[data-theme] .countdown-section p,
+html[data-theme] .intro-text,
+html[data-theme] .info-row strong,
+html[data-theme] .timeline-item p,
+html[data-theme] .schedule-item p,
+html[data-theme] .ceremony-item p,
+html[data-theme] .ceremony-item em,
+html[data-theme] .guest-stats span,
+html[data-theme] .guest-item span,
+html[data-theme] .guest-item small,
+html[data-theme] .wish-item p,
+html[data-theme] .footer small,
+html[data-theme] .admin-help-text,
+html[data-theme] .admin-page p,
+html[data-theme] .admin-page small,
+html[data-theme] .admin-nav-button small,
+html[data-theme] .admin-current-section span,
+html[data-theme] .admin-field small,
+html[data-theme] .admin-export-card span,
+html[data-theme] .theme-option-card small,
+html[data-theme] .admin-save-message {
+  color: var(--theme-text-muted) !important;
+}
+
+html[data-theme] .intro-small,
+html[data-theme] .hero-section .small-title,
+html[data-theme] .hero-section .couple-title,
+html[data-theme] .hero-date,
+html[data-theme] .hero-time,
+html[data-theme] .hero-guest-greeting,
+html[data-theme] .guest-greeting {
+  color: #ffffff !important;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.62),
+    0 0 22px rgba(var(--theme-rgb), 0.28) !important;
+}
+
+html[data-theme] .couple-title em,
+html[data-theme] .hero-section .couple-title em,
+html[data-theme] .intro-page .couple-title em {
+  color: var(--gold) !important;
+}
+
+html[data-theme] .hero-date,
+html[data-theme] .floating-actions .share-button,
+html[data-theme] .floating-actions .music-toggle-button,
+html[data-theme] .secondary-button {
+  background: rgba(var(--theme-faint-rgb), 0.82) !important;
+  border-color: rgba(var(--theme-rgb), 0.42) !important;
+  color: var(--rose-dark) !important;
+}
+
+html[data-theme="dark"] .hero-date,
+html[data-theme="dark"] .floating-actions .share-button,
+html[data-theme="dark"] .floating-actions .music-toggle-button,
+html[data-theme="dark"] .secondary-button {
+  background: rgba(36, 26, 33, 0.78) !important;
+  color: var(--rose-deep) !important;
+}
+
+html[data-theme] .open-button,
+html[data-theme] .main-button,
+html[data-theme] .admin-upload-button,
+html[data-theme] .admin-nav-button.active,
+html[data-theme] .option-button.active {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: rgba(var(--theme-rgb), 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 34px rgba(var(--theme-rgb), 0.24) !important;
+}
+
+html[data-theme="dark"] .open-button,
+html[data-theme="dark"] .main-button,
+html[data-theme="dark"] .admin-upload-button,
+html[data-theme="dark"] .admin-nav-button.active,
+html[data-theme="dark"] .option-button.active {
+  color: #241a21 !important;
+}
+
+html[data-theme] input,
+html[data-theme] textarea,
+html[data-theme] select,
+html[data-theme] .admin-field input,
+html[data-theme] .admin-field textarea,
+html[data-theme] .admin-login input,
+html[data-theme] .admin-field select,
+html[data-theme] .admin-toolbar select,
+html[data-theme] .admin-toolbar input,
+html[data-theme] .admin-personal-link-box input,
+html[data-theme] .admin-link-preview-box input,
+html[data-theme] .option-button,
+html[data-theme] .admin-check-field,
+html[data-theme] .admin-nav-button {
+  background: var(--theme-input) !important;
+  color: var(--theme-text-main) !important;
+  border-color: rgba(var(--theme-rgb), 0.42) !important;
+}
+
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder {
+  color: var(--theme-text-muted) !important;
+  opacity: 0.82 !important;
+}
+
+html[data-theme] .option-button:hover,
+html[data-theme] .admin-nav-button:hover,
+html[data-theme] .secondary-button:hover,
+html[data-theme] .theme-option-card:hover {
+  border-color: rgba(var(--theme-rgb), 0.68) !important;
+  background: var(--theme-surface-soft) !important;
+}
+
+html[data-theme] .card::before,
+html[data-theme] .countdown-section::before {
+  background: rgba(var(--theme-soft-rgb), 0.22) !important;
+}
+
+html[data-theme] .card::after,
+html[data-theme] .hero-section::after,
+html[data-theme] .leaf-mark::before {
+  color: rgba(var(--theme-rgb), 0.52) !important;
+}
+
+html[data-theme] .card h2::after,
+html[data-theme] .countdown-section h2::after,
+html[data-theme] .timeline::before {
+  background: linear-gradient(90deg, transparent, var(--rose), transparent) !important;
+}
+
+html[data-theme] .petal-layer span {
+  background: rgba(var(--theme-soft-rgb), 0.78) !important;
+  box-shadow: 0 0 16px rgba(var(--theme-rgb), 0.20) !important;
+}
+
+html[data-theme] .theme-picker-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+html[data-theme] .theme-option-card[data-theme-preview="dark"] .theme-swatch {
+  background: linear-gradient(135deg, #130e12, #c47b96, #ffd8e4) !important;
+}
+
+html[data-theme="dark"] .theme-swatch {
+  border-color: rgba(255, 255, 255, 0.32) !important;
+}
+
+html[data-theme="dark"] img,
+html[data-theme="dark"] .gallery-grid img {
+  filter: saturate(0.96) brightness(0.88);
+}
+
+@media (max-width: 900px) {
+  html[data-theme] .hero-section {
+    background:
+      radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 52%, var(--theme-hero-edge) 100%),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+}
+
+@media (max-width: 650px) {
+  html[data-theme] .hero-section {
+    background:
+      radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 54%, var(--theme-hero-edge) 100%),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+}
+
+/* =========================================================
+   FINAL DÜZELTME - ADMİN PANEL AÇILIR MENÜLERİ
+   Native select yerine özel menü kullanıldığı için mavi seçim sorunu biter.
+   ========================================================= */
+.admin-content,
+.admin-editor-section,
+.admin-toolbar,
+.admin-field,
+.admin-shell-card,
+.admin-layout,
+.admin-main-panel {
+  overflow: visible !important;
+}
+
+.admin-custom-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  z-index: 1;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+}
+
+.admin-custom-select.open {
+  z-index: 10000;
+}
+
+.admin-custom-select-button {
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.46) !important;
+  border-radius: 18px !important;
+  background: var(--theme-input) !important;
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: left;
+  box-shadow: 0 10px 24px rgba(var(--theme-rgb), 0.08);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-custom-select-button:hover,
+.admin-custom-select.open .admin-custom-select-button {
+  border-color: rgba(var(--theme-strong-rgb), 0.72) !important;
+  box-shadow: 0 12px 28px rgba(var(--theme-rgb), 0.14);
+}
+
+.admin-custom-select-arrow {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(var(--theme-rgb), 0.12);
+  color: var(--rose-deep);
+  font-size: 18px;
+  font-weight: 900;
+  transform: translateY(-1px);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.admin-custom-select.open .admin-custom-select-arrow {
+  transform: rotate(180deg) translateY(1px);
+  background: rgba(var(--theme-rgb), 0.20);
+}
+
+.admin-custom-select-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 10001;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.42);
+  border-radius: 18px;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text-main) !important;
+  box-shadow: 0 22px 54px rgba(40, 22, 31, 0.20);
+  backdrop-filter: blur(14px);
+}
+
+.admin-custom-select-option {
+  width: 100%;
+  min-height: 42px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border: none !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.admin-custom-select-option:hover,
+.admin-custom-select-option.selected {
+  background: linear-gradient(135deg, rgba(var(--theme-rgb), 0.20), rgba(var(--theme-soft-rgb), 0.26)) !important;
+  color: var(--rose-deep) !important;
+}
+
+.admin-custom-select-option.selected {
+  border: 1px solid rgba(var(--theme-rgb), 0.34) !important;
+  font-weight: 900;
+}
+
+html[data-theme="dark"] .admin-custom-select-menu {
+  background: #2d222a !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.44);
+}
+
+html[data-theme="dark"] .admin-custom-select-button,
+html[data-theme="dark"] .admin-custom-select-option {
+  color: #fff4f8 !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-option:hover,
+html[data-theme="dark"] .admin-custom-select-option.selected {
+  background: rgba(196, 123, 150, 0.24) !important;
+  color: #ffd8e4 !important;
+}
+
+/* Eski native select kalırsa bile tarayıcı mavisi yerine tema renkleri kullanılmaya çalışılır. */
+.admin-field select,
+.admin-toolbar select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--rose-deep) 50%),
+    linear-gradient(135deg, var(--rose-deep) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.admin-field select option,
+.admin-toolbar select option {
+  background: var(--theme-surface);
+  color: var(--theme-text-main);
+  font-weight: 800;
+}
+
+/* Açılış kartındaki küçük yazılar da açık arka planda kaybolmasın. */
+html[data-theme] .intro-card {
+  background:
+    radial-gradient(circle at top right, rgba(var(--theme-soft-rgb), 0.24), transparent 30%),
+    rgba(var(--theme-faint-rgb), 0.72) !important;
+  border-color: rgba(var(--theme-rgb), 0.30) !important;
+}
+
+html[data-theme="dark"] .intro-card {
+  background:
+    radial-gradient(circle at top right, rgba(196, 123, 150, 0.18), transparent 30%),
+    rgba(36, 26, 33, 0.78) !important;
+}
+
+html[data-theme] .intro-small {
+  color: var(--rose-deep) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] .intro-text {
+  color: var(--theme-text-muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] .intro-page .couple-title {
+  color: #ffffff !important;
+  text-shadow:
+    0 3px 5px rgba(0, 0, 0, 0.72),
+    0 9px 22px rgba(0, 0, 0, 0.30),
+    0 0 22px rgba(var(--theme-rgb), 0.18) !important;
+}
+
+@media (max-width: 650px) {
+  .admin-custom-select-button {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .admin-custom-select-menu {
+    max-height: 220px;
+  }
+
+  .admin-custom-select-option {
+    min-height: 40px;
+    font-size: 14px;
+  }
+}
+
+/* =========================================================
+   FINAL DÜZELTME - Admin panel tema uyumu, checkbox, dropdown ve şifre
+   ========================================================= */
+html[data-theme] .admin-help-text {
+  margin: 18px 0 24px !important;
+  padding: 18px 22px !important;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.28) !important;
+  border-left: 6px solid rgba(var(--theme-rgb), 0.72) !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-soft-rgb), 0.34), transparent 34%),
+    rgba(var(--theme-faint-rgb), 0.84) !important;
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  line-height: 1.75 !important;
+  text-align: left !important;
+  box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.07) !important;
+}
+
+html[data-theme="dark"] .admin-help-text {
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-rgb), 0.18), transparent 34%),
+    rgba(36, 26, 33, 0.92) !important;
+  color: #fff4f8 !important;
+}
+
+html[data-theme] .admin-theme-check-row {
+  margin-top: 20px !important;
+}
+
+html[data-theme] .admin-check-field {
+  min-height: 62px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 16px 18px !important;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.38) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-faint-rgb), 0.96), rgba(var(--theme-soft-rgb), 0.18)) !important;
+  color: var(--theme-text-main) !important;
+  box-shadow: 0 12px 26px rgba(var(--theme-strong-rgb), 0.07) !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease !important;
+}
+
+html[data-theme] .admin-check-field:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--theme-rgb), 0.68) !important;
+  box-shadow: 0 16px 34px rgba(var(--theme-strong-rgb), 0.11) !important;
+}
+
+html[data-theme] .admin-check-field input {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  margin: 0 !important;
+  border: 2px solid rgba(var(--theme-rgb), 0.58) !important;
+  border-radius: 8px !important;
+  background: var(--theme-input) !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+}
+
+html[data-theme] .admin-check-field input::after {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border-left: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  transform: rotate(-45deg) scale(0);
+  transform-origin: center;
+  transition: transform 0.16s ease;
+}
+
+html[data-theme] .admin-check-field input:checked {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 8px 16px rgba(var(--theme-rgb), 0.22) !important;
+}
+
+html[data-theme] .admin-check-field input:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+html[data-theme] .admin-check-field span {
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 16px !important;
+  font-weight: 950 !important;
+  line-height: 1.45 !important;
+}
+
+html[data-theme="dark"] .admin-check-field {
+  background: rgba(36, 26, 33, 0.92) !important;
+}
+
+/* Filtre ve açılır menüleri daha premium hale getirir */
+html[data-theme] .admin-toolbar {
+  align-items: stretch !important;
+}
+
+html[data-theme] .admin-toolbar .admin-custom-select {
+  min-width: 170px !important;
+}
+
+html[data-theme] .admin-custom-select-button {
+  min-height: 56px !important;
+  padding: 0 14px 0 18px !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-faint-rgb), 0.98), rgba(var(--theme-soft-rgb), 0.14)) !important;
+  color: var(--theme-text-main) !important;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.44) !important;
+  font-size: 15px !important;
+  font-weight: 950 !important;
+  box-shadow: 0 12px 24px rgba(var(--theme-strong-rgb), 0.08) !important;
+}
+
+html[data-theme] .admin-custom-select-button > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-theme] .admin-custom-select-arrow {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  background: rgba(var(--theme-rgb), 0.14) !important;
+  color: var(--rose-deep) !important;
+  font-size: 16px !important;
+}
+
+html[data-theme] .admin-custom-select-menu {
+  padding: 10px !important;
+  border-radius: 22px !important;
+  border-color: rgba(var(--theme-rgb), 0.42) !important;
+  background: var(--theme-surface) !important;
+  box-shadow: 0 24px 60px rgba(var(--theme-strong-rgb), 0.20) !important;
+}
+
+html[data-theme] .admin-custom-select-option {
+  min-height: 46px !important;
+  padding: 12px 14px !important;
+  border-radius: 15px !important;
+  color: var(--theme-text-main) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme] .admin-custom-select-option:hover,
+html[data-theme] .admin-custom-select-option.selected {
+  background: linear-gradient(135deg, rgba(var(--theme-rgb), 0.22), rgba(var(--theme-soft-rgb), 0.34)) !important;
+  color: var(--rose-deep) !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-button,
+html[data-theme="dark"] .admin-custom-select-menu,
+html[data-theme="dark"] .admin-custom-select-option {
+  color: #fff4f8 !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-button {
+  background: rgba(36, 26, 33, 0.95) !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-menu {
+  background: #241a21 !important;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.55) !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-option:hover,
+html[data-theme="dark"] .admin-custom-select-option.selected {
+  background: rgba(196, 123, 150, 0.28) !important;
+  color: #ffd8e4 !important;
+}
+
+/* Admin şifre değiştirme alanı */
+.admin-password-form {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-password-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.admin-password-message {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(var(--theme-soft-rgb), 0.34);
+  color: var(--theme-text-main) !important;
+  border: 1px solid rgba(var(--theme-rgb), 0.28);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 950 !important;
+}
+
+/* Üstteki değişken açıklaması gibi metinler tema dışı kalmasın */
+html[data-theme] .admin-editor-section > p,
+html[data-theme] .admin-current-section span,
+html[data-theme] .admin-link-preview-box small,
+html[data-theme] .admin-export-card span,
+html[data-theme] .admin-import-box small {
+  color: var(--theme-text-muted) !important;
+  font-weight: 850 !important;
+}
+
+@media (max-width: 650px) {
+  html[data-theme] .admin-toolbar .admin-custom-select {
+    min-width: 100% !important;
+  }
+
+  .admin-password-actions .main-button {
+    width: 100%;
+  }
+
+  .admin-password-message {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Supabase admin giriş / şifre sıfırlama düzeltmeleri */
+.admin-link-button {
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong, #8f3657);
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-link-button:hover {
+  background: rgba(255, 255, 255, 0.65);
+  transform: translateY(-1px);
+}
+
+.admin-login-note {
+  display: block;
+  width: 100%;
+  color: var(--text-muted, #6f3c4d);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(185, 111, 135, 0.26);
+  border-radius: 18px;
+  padding: 12px 14px;
+  margin: 4px 0 8px;
+}
+
+.admin-forgot-form,
+.admin-recovery-form {
+  gap: 14px;
+}
+
+.admin-login span {
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+  padding: 11px 13px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(185, 111, 135, 0.22);
+  color: var(--accent-strong, #8f3657);
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+}
+
+html[data-theme="dark"] .admin-link-button {
+  color: #f3d7b7;
+}
+
+html[data-theme="dark"] .admin-link-button:hover,
+html[data-theme="dark"] .admin-login-note,
+html[data-theme="dark"] .admin-login span {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8efe7;
+}
+
+/* Admin giriş ekranı okunabilirlik ve Supabase hata kutuları */
+.admin-page .admin-login {
+  width: min(100%, 560px);
+  padding: 26px;
+  border-radius: 28px;
+  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-soft-rgb, 243, 215, 223), 0.34), transparent 38%),
+    linear-gradient(145deg, rgba(255, 252, 253, 0.98), rgba(255, 246, 249, 0.95));
+  box-shadow: 0 22px 55px rgba(83, 39, 55, 0.16);
+}
+
+.admin-page .admin-login input {
+  min-height: 58px;
+  background: #ffffff !important;
+  color: #3b1f2a !important;
+  border: 1.6px solid rgba(var(--theme-rgb, 143, 54, 87), 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 24px rgba(83, 39, 55, 0.08);
+}
+
+.admin-page .admin-login input::placeholder {
+  color: #7d5362 !important;
+  opacity: 1 !important;
+}
+
+.admin-page .admin-login .main-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  transform: none;
+}
+
+.admin-login-message,
+.admin-login span.admin-login-message {
+  display: block;
+  width: 100%;
+  border-radius: 18px;
+  padding: 13px 15px;
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.94) !important;
+  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.26) !important;
+  color: #5c2639 !important;
+  font-weight: 850;
+  line-height: 1.55;
+  text-align: center;
+  word-break: break-word;
+}
+
+.admin-login-message.error,
+.admin-login span.admin-login-message.error {
+  background: #fff0f0 !important;
+  border-color: rgba(176, 54, 54, 0.35) !important;
+  color: #8a2525 !important;
+}
+
+.admin-page .admin-login-note {
+  color: #4f2b38 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(var(--theme-rgb, 143, 54, 87), 0.28) !important;
+  font-weight: 800;
+}
+
+.admin-page .admin-link-button {
+  width: fit-content;
+  justify-self: center;
+  color: var(--rose-dark, #8f3657) !important;
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.78);
+  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.2);
+  text-decoration: none;
+}
+
+.admin-page .admin-link-button:hover {
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 1);
+}
+
+html[data-theme="dark"] .admin-page .admin-login {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 38%),
+    linear-gradient(145deg, rgba(36, 26, 33, 0.98), rgba(28, 20, 26, 0.98));
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .admin-page .admin-login input {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #251a20 !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+html[data-theme="dark"] .admin-page .admin-login input::placeholder {
+  color: #66515b !important;
+}
+
+html[data-theme="dark"] .admin-login-message,
+html[data-theme="dark"] .admin-login span.admin-login-message {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #fff4f8 !important;
+}
+
+html[data-theme="dark"] .admin-login-message.error,
+html[data-theme="dark"] .admin-login span.admin-login-message.error {
+  background: rgba(255, 91, 91, 0.14) !important;
+  border-color: rgba(255, 91, 91, 0.32) !important;
+  color: #ffd9d9 !important;
+}
+
+html[data-theme="dark"] .admin-page .admin-login-note {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #fff4f8 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+html[data-theme="dark"] .admin-page .admin-link-button {
+  color: #f6d5b0 !important;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Şifre değiştikten sonra giriş ekranında gösterilen başarılı işlem mesajı */
+.admin-login-message.success,
+.admin-login span.admin-login-message.success {
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.96) !important;
+  border-color: rgba(var(--theme-rgb, 143, 54, 87), 0.34) !important;
+  color: var(--rose-dark, #8f3657) !important;
+  box-shadow: 0 12px 26px rgba(var(--theme-rgb, 143, 54, 87), 0.10);
+}
+
+html[data-theme="dark"] .admin-login-message.success,
+html[data-theme="dark"] .admin-login span.admin-login-message.success {
+  background: rgba(255, 255, 255, 0.13) !important;
+  border-color: rgba(246, 213, 176, 0.36) !important;
+  color: #f6d5b0 !important;
+}
+
+
+/* Admin çıkış butonu */
+.admin-logout-button {
+  color: #ffffff !important;
+  border-color: rgba(126, 37, 53, 0.42) !important;
+  background: linear-gradient(135deg, #9f3f58, #6d2639) !important;
+  box-shadow: 0 12px 24px rgba(109, 38, 57, 0.18) !important;
+  font-weight: 900 !important;
+}
+
+.admin-logout-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+html[data-theme="sage"] .admin-logout-button {
+  background: linear-gradient(135deg, #607244, #334220) !important;
+  border-color: rgba(51, 66, 32, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(51, 66, 32, 0.18) !important;
+}
+
+html[data-theme="gold"] .admin-logout-button {
+  background: linear-gradient(135deg, #a97827, #654113) !important;
+  border-color: rgba(101, 65, 19, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(101, 65, 19, 0.18) !important;
+}
+
+html[data-theme="burgundy"] .admin-logout-button {
+  background: linear-gradient(135deg, #7d1830, #3d0c19) !important;
+  border-color: rgba(61, 12, 25, 0.5) !important;
+  box-shadow: 0 12px 24px rgba(61, 12, 25, 0.22) !important;
+}
+
+html[data-theme="minimal"] .admin-logout-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #3d4856, #111827) !important;
+  border-color: rgba(17, 24, 39, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(17, 24, 39, 0.16) !important;
+}
+
+html[data-theme="dark"] .admin-logout-button {
+  color: #fff7f9 !important;
+  background: linear-gradient(135deg, #d36a86, #7a203b) !important;
+  border-color: rgba(255, 177, 194, 0.38) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Tema uyumlu özel popup / uyarı / onay / düzenleme pencereleri */
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(var(--theme-rgb, 217, 140, 161), 0.18), transparent 34%),
+    rgba(25, 14, 18, 0.46);
+  backdrop-filter: blur(10px);
+  animation: modalBackdropIn 0.18s ease both;
+}
+
+.app-modal-card {
+  position: relative;
+  width: min(92vw, 460px);
+  margin: 0;
+  padding: 30px 28px 24px;
+  display: grid;
+  gap: 18px;
+  color: var(--theme-text-main, var(--text));
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.45)),
+    var(--theme-surface, var(--paper));
+  border: 1px solid rgba(var(--theme-rgb, 217, 140, 161), 0.32);
+  border-radius: 30px;
+  box-shadow:
+    0 32px 90px rgba(36, 18, 25, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.50);
+  overflow: hidden;
+  animation: modalCardIn 0.22s ease both;
+}
+
+.app-modal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 7px;
+  background: linear-gradient(90deg, var(--rose), var(--rose-dark), var(--gold));
+}
+
+.app-modal-icon {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  color: var(--theme-on-accent, #ffffff);
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  box-shadow: 0 16px 30px rgba(var(--theme-rgb, 217, 140, 161), 0.26);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.app-modal-content {
+  display: grid;
+  gap: 9px;
+}
+
+.app-modal-content h3 {
+  margin: 0;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: clamp(24px, 4vw, 31px);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.app-modal-content p {
+  margin: 0;
+  color: var(--theme-text-muted, var(--text-soft));
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.app-modal-input {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  color: var(--theme-text-main, var(--text));
+  background: var(--theme-input, rgba(255, 250, 251, 0.96));
+  border: 1px solid rgba(var(--theme-rgb, 217, 140, 161), 0.32);
+  border-radius: 17px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
+  font-size: 17px;
+  font-weight: 750;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.app-modal-input:focus {
+  border-color: rgba(var(--theme-rgb, 217, 140, 161), 0.72);
+  box-shadow:
+    0 0 0 4px rgba(var(--theme-rgb, 217, 140, 161), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.44);
+  transform: translateY(-1px);
+}
+
+.app-modal-textarea {
+  min-height: 116px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.app-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.app-modal-actions .main-button,
+.app-modal-actions .secondary-button {
+  min-height: 46px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.app-modal-cancel {
+  color: var(--rose-deep) !important;
+  background: rgba(var(--theme-rgb, 217, 140, 161), 0.10) !important;
+  border-color: rgba(var(--theme-rgb, 217, 140, 161), 0.24) !important;
+}
+
+.app-modal-danger-button {
+  background: linear-gradient(135deg, #c94f67, #7a203b) !important;
+  color: #fff !important;
+}
+
+.app-modal-warning .app-modal-icon {
+  background: linear-gradient(135deg, var(--gold), var(--rose-dark));
+}
+
+.app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #8fb46b, var(--rose-dark));
+}
+
+.app-modal-danger .app-modal-icon,
+.app-modal-danger .app-modal-card::before {
+  background: linear-gradient(135deg, #e06d7f, #8d263f);
+}
+
+.app-modal-success .app-modal-card::before {
+  background: linear-gradient(90deg, #9fc47d, var(--rose), var(--rose-dark));
+}
+
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+html[data-theme="sage"] .app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #9cad75, #4d6335);
+}
+
+html[data-theme="gold"] .app-modal-warning .app-modal-icon,
+html[data-theme="gold"] .app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #d4b35d, #8a6122);
+}
+
+html[data-theme="minimal"] .app-modal-icon {
+  background: linear-gradient(135deg, #9f8b7c, #45362e);
+}
+
+html[data-theme="dark"] .app-modal-backdrop {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(196, 123, 150, 0.18), transparent 36%),
+    rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme="dark"] .app-modal-card {
+  color: #fff4f8;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    #241a21;
+  border-color: rgba(255, 216, 228, 0.18);
+  box-shadow:
+    0 34px 96px rgba(0, 0, 0, 0.54),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="dark"] .app-modal-content h3 {
+  color: #ffd8e4;
+}
+
+html[data-theme="dark"] .app-modal-content p {
+  color: #ead0da;
+}
+
+html[data-theme="dark"] .app-modal-input {
+  color: #fff4f8;
+  background: rgba(18, 13, 17, 0.92);
+  border-color: rgba(255, 216, 228, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .app-modal-input::placeholder {
+  color: rgba(255, 244, 248, 0.54);
+}
+
+html[data-theme="dark"] .app-modal-cancel {
+  color: #ffd8e4 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+@media (max-width: 560px) {
+  .app-modal-backdrop {
+    align-items: flex-end;
+    padding: 14px;
+  }
+
+  .app-modal-card {
+    width: 100%;
+    padding: 28px 20px 20px;
+    border-radius: 28px;
+  }
+
+  .app-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .app-modal-actions .main-button,
+  .app-modal-actions .secondary-button {
+    width: 100%;
+  }
+}
+
+
+/* === Ghostwriter fixes: remove popup icon block and improve sidebar layout === */
+.app-modal-card {
+  width: min(92vw, 440px);
+  padding: 26px 26px 22px;
+  gap: 14px;
+}
+
+.app-modal-card::before {
+  height: 6px;
+}
+
+.app-modal-content {
+  gap: 8px;
+}
+
+.app-modal-content h3 {
+  font-size: clamp(23px, 3.2vw, 29px);
+}
+
+.app-modal-content p {
+  font-size: 17px;
+}
+
+/* Hide the old icon area completely */
+.app-modal-icon {
+  display: none !important;
+}
+
+/* Stronger, cleaner admin layout */
+.admin-layout {
+  grid-template-columns: 332px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.admin-sidebar {
+  top: 14px;
+  max-height: calc(100vh - 28px);
+  overflow: hidden;
+  padding: 18px 16px;
+}
+
+.admin-sidebar-title {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+}
+
+.admin-sidebar-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-height: calc(100vh - 180px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.admin-sidebar-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(var(--theme-rgb, 217, 140, 161), 0.34);
+  border-radius: 999px;
+}
+
+.admin-nav-button {
+  min-height: 86px;
+  padding: 13px 13px 12px;
+  align-content: start;
+}
+
+.admin-nav-button span {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.admin-nav-button small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* Make the long highlighted button less overpowering */
+.admin-nav-button.active {
+  background: linear-gradient(135deg, rgba(var(--theme-rgb, 217, 140, 161), 0.96), rgba(var(--theme-dark-rgb, 159, 79, 104), 0.96));
+}
+
+@media (max-width: 1200px) {
+  .admin-layout {
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+    max-height: calc(100vh - 190px);
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 650px) {
+  .app-modal-card {
+    width: min(94vw, 420px);
+    padding: 24px 20px 20px;
+    border-radius: 24px;
+  }
+
+  .admin-shell-card {
+    padding: 18px 12px;
+  }
+
+  .admin-layout {
+    gap: 18px;
+  }
+
+  .admin-sidebar {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .admin-nav-button {
+    min-height: auto;
+    padding: 12px 14px;
+  }
+
+  .admin-nav-button span {
+    font-size: 15px;
+  }
 }
