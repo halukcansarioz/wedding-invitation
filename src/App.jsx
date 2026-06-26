@@ -2,9 +2,54 @@ import { useEffect, useRef, useState } from "react";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 
+const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
+const DEFAULT_WEDDING_MUSIC_FILE = "/music/default-wedding.mp3";
+const DEFAULT_WEDDING_MUSIC_NAME = "Varsayılan evlilik müziği";
+
 const getCurrentShareLink = () => {
-  if (typeof window === "undefined") return "";
-  return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+  return DEFAULT_SHARE_LINK;
+};
+
+const fixShareLink = (data) => {
+  if (!data?.invitation) return data;
+
+  const currentLink = String(data.invitation.shareLink || "").trim();
+
+  const isLocalhostLink =
+    currentLink.includes("localhost") ||
+    currentLink.includes("127.0.0.1") ||
+    currentLink === "";
+
+  return {
+    ...data,
+    invitation: {
+      ...data.invitation,
+      shareLink: isLocalhostLink ? DEFAULT_SHARE_LINK : currentLink,
+    },
+  };
+};
+
+const applyDefaultWeddingMusic = (data) => {
+  if (!data?.invitation) return data;
+
+  const currentMusicFile = String(data.invitation.musicFile || "").trim();
+  const currentMusicName = String(data.invitation.musicName || "").trim();
+
+  const shouldUseDefaultMusic =
+    currentMusicFile === "" ||
+    currentMusicFile === "Tarayıcı melodisi" ||
+    currentMusicName === "Tarayıcı melodisi";
+
+  return {
+    ...data,
+    invitation: {
+      ...data.invitation,
+      musicFile: shouldUseDefaultMusic ? DEFAULT_WEDDING_MUSIC_FILE : currentMusicFile,
+      musicName: shouldUseDefaultMusic
+        ? DEFAULT_WEDDING_MUSIC_NAME
+        : currentMusicName || "Yüklenen müzik",
+    },
+  };
 };
 
 const DEFAULT_SITE_DATA = {
@@ -18,11 +63,11 @@ const DEFAULT_SITE_DATA = {
     address: "Gebze / Kocaeli",
     mapLink: "https://www.google.com/maps",
     shareLink: getCurrentShareLink(),
-    whatsappNumber: "905551112233",
+    whatsappNumber: "905394933614",
     introImage: "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
     heroImage: "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
-    musicFile: "",
-    musicName: "Tarayıcı melodisi",
+    musicFile: DEFAULT_WEDDING_MUSIC_FILE,
+    musicName: DEFAULT_WEDDING_MUSIC_NAME,
     gallery: [
       "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
       "https://unsplash.com/photos/BQZo2Hc76p0/download?force=true&w=3840",
@@ -221,6 +266,9 @@ const mergeSiteData = (storedData) => {
   };
 };
 
+const normalizeSiteData = (data) => applyDefaultWeddingMusic(fixShareLink(mergeSiteData(data)));
+
+
 const loadStoredList = (key) => {
   try {
     return JSON.parse(localStorage.getItem(key)) || [];
@@ -231,9 +279,9 @@ const loadStoredList = (key) => {
 
 const loadStoredSiteData = () => {
   try {
-    return mergeSiteData(JSON.parse(localStorage.getItem(SITE_DATA_KEY)));
+    return normalizeSiteData(JSON.parse(localStorage.getItem(SITE_DATA_KEY)));
   } catch {
-    return mergeSiteData(null);
+    return normalizeSiteData(null);
   }
 };
 
@@ -522,7 +570,7 @@ const loadSettingsFromDatabase = async () => {
     return null;
   }
 
-  return mergeSiteData(data?.content || null);
+  return normalizeSiteData(data?.content || null);
 };
 
 const saveSettingsToDatabase = async (settings) => {
@@ -926,7 +974,7 @@ function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
         </div>
       ) : (
         <div className="admin-image-empty">
-          Henüz müzik seçilmedi. Müzik seçmezsen tarayıcı melodisi çalar.
+          Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar.
         </div>
       )}
 
@@ -1177,8 +1225,10 @@ function App() {
         ]);
 
         if (databaseSettings) {
-          setSiteData(databaseSettings);
-          setAdminDraft(databaseSettings);
+          const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
+
+          setSiteData(normalizedDatabaseSettings);
+          setAdminDraft(normalizedDatabaseSettings);
         }
 
         setGuests(adminGuests);
@@ -1245,7 +1295,7 @@ function App() {
       }
 
       if (musicIntervalRef.current) {
-        clearInterval(musicIntervalRef.current);
+        clearTimeout(musicIntervalRef.current);
         musicIntervalRef.current = null;
       }
 
@@ -1315,8 +1365,10 @@ function App() {
       const databaseSettings = await loadSettingsFromDatabase();
 
       if (databaseSettings) {
-        setSiteData(databaseSettings);
-        setAdminDraft(databaseSettings);
+        const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
+
+        setSiteData(normalizedDatabaseSettings);
+        setAdminDraft(normalizedDatabaseSettings);
       }
 
       const publishedWishes = await loadPublishedWishesFromDatabase();
@@ -1356,7 +1408,7 @@ function App() {
     }
 
     if (musicIntervalRef.current) {
-      clearInterval(musicIntervalRef.current);
+      clearTimeout(musicIntervalRef.current);
       musicIntervalRef.current = null;
     }
 
@@ -1383,44 +1435,79 @@ function App() {
     await audioContext.resume();
 
     const masterGain = audioContext.createGain();
-    masterGain.gain.setValueAtTime(0.16, audioContext.currentTime);
+    masterGain.gain.setValueAtTime(0.13, audioContext.currentTime);
     masterGain.connect(audioContext.destination);
     musicGainRef.current = masterGain;
 
-    const notes = [392.0, 440.0, 523.25, 659.25, 523.25, 440.0, 392.0, 329.63];
+    /*
+      Varsayılan evlilik müziği tarzı yumuşak melodi.
+      MP3 dosyası seçilmezse bu çalar.
+    */
+    const weddingMelody = [
+      { frequency: 523.25, duration: 0.55 }, // C5
+      { frequency: 659.25, duration: 0.55 }, // E5
+      { frequency: 783.99, duration: 0.85 }, // G5
+      { frequency: 659.25, duration: 0.55 }, // E5
+      { frequency: 698.46, duration: 0.55 }, // F5
+      { frequency: 783.99, duration: 1.05 }, // G5
+
+      { frequency: 523.25, duration: 0.55 }, // C5
+      { frequency: 587.33, duration: 0.55 }, // D5
+      { frequency: 659.25, duration: 0.85 }, // E5
+      { frequency: 587.33, duration: 0.55 }, // D5
+      { frequency: 523.25, duration: 1.05 }, // C5
+
+      { frequency: 659.25, duration: 0.55 }, // E5
+      { frequency: 783.99, duration: 0.55 }, // G5
+      { frequency: 880.0, duration: 0.85 },  // A5
+      { frequency: 783.99, duration: 0.55 }, // G5
+      { frequency: 659.25, duration: 1.1 },  // E5
+
+      { frequency: 523.25, duration: 0.6 },  // C5
+      { frequency: 659.25, duration: 0.6 },  // E5
+      { frequency: 783.99, duration: 1.25 }, // G5
+    ];
+
     let noteIndex = 0;
 
     const playNote = () => {
+      if (!musicGainRef.current) return;
+
+      const note = weddingMelody[noteIndex % weddingMelody.length];
+      const now = audioContext.currentTime;
+
       const oscillator = audioContext.createOscillator();
       const gain = audioContext.createGain();
 
-      oscillator.type = "triangle";
-      oscillator.frequency.setValueAtTime(
-        notes[noteIndex % notes.length],
-        audioContext.currentTime
-      );
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(note.frequency, now);
 
-      gain.gain.setValueAtTime(0, audioContext.currentTime);
-      gain.gain.linearRampToValueAtTime(0.28, audioContext.currentTime + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.55);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.32, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + note.duration);
 
       oscillator.connect(gain);
       gain.connect(masterGain);
 
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.6);
+      oscillator.start(now);
+      oscillator.stop(now + note.duration + 0.05);
+
       noteIndex += 1;
+
+      musicIntervalRef.current = window.setTimeout(
+        playNote,
+        note.duration * 1000 + 90
+      );
     };
 
     playNote();
-    musicIntervalRef.current = setInterval(playNote, 650);
   };
 
   const startMusic = async () => {
     try {
       if (invitation.musicFile && audioRef.current) {
         if (musicIntervalRef.current) {
-          clearInterval(musicIntervalRef.current);
+          clearTimeout(musicIntervalRef.current);
           musicIntervalRef.current = null;
         }
 
@@ -1429,10 +1516,18 @@ function App() {
           musicGainRef.current = null;
         }
 
-        audioRef.current.volume = 0.55;
-        await audioRef.current.play();
-        setIsMusicPlaying(true);
-        return;
+        try {
+          audioRef.current.volume = 0.55;
+          await audioRef.current.play();
+          setIsMusicPlaying(true);
+          return;
+        } catch (audioError) {
+          console.log("Müzik dosyası çalınamadı, yedek melodi deneniyor:", audioError);
+
+          if (invitation.musicFile !== DEFAULT_WEDDING_MUSIC_FILE) {
+            throw audioError;
+          }
+        }
       }
 
       await startGeneratedMusic();
@@ -1684,10 +1779,12 @@ function App() {
       ]);
 
       if (databaseSettings) {
-        setSiteData(databaseSettings);
-        setAdminDraft(databaseSettings);
+        const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
+
+        setSiteData(normalizedDatabaseSettings);
+        setAdminDraft(normalizedDatabaseSettings);
       } else {
-        setAdminDraft(siteData);
+        setAdminDraft(normalizeSiteData(siteData));
       }
 
       setGuests(adminGuests);
@@ -1982,11 +2079,13 @@ function App() {
       ...prev,
       invitation: {
         ...prev.invitation,
-        musicFile: "",
-        musicName: "Tarayıcı melodisi",
+        musicFile: DEFAULT_WEDDING_MUSIC_FILE,
+        musicName: DEFAULT_WEDDING_MUSIC_NAME,
       },
     }));
-    setAdminSaveMessage("Müzik kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
+    setAdminSaveMessage(
+      "Özel müzik kaldırıldı. Varsayılan evlilik müziği kullanılacak. Canlı sayfaya yansıtmak için kaydet."
+    );
   };
 
   const updateDraftArrayItem = (arrayKey, index, key, value) => {
@@ -2058,7 +2157,7 @@ function App() {
   };
 
   const saveSiteContent = async () => {
-    const cleanedData = mergeSiteData({
+    const cleanedData = normalizeSiteData({
       ...adminDraft,
       invitation: {
         ...adminDraft.invitation,
@@ -2082,7 +2181,7 @@ function App() {
     const confirmed = await showAppConfirm("Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" });
     if (!confirmed) return;
 
-    const defaultData = mergeSiteData(null);
+    const defaultData = normalizeSiteData(null);
 
     try {
       await saveSettingsToDatabase(defaultData);
