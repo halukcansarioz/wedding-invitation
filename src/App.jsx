@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import "./App.css";
+import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 
 const getCurrentShareLink = () => {
@@ -103,6 +103,30 @@ const DEFAULT_SITE_DATA = {
 
 const DEFAULT_ADMIN_PASSWORD = "1234";
 const ADMIN_PASSWORD_KEY = "wedding-admin-password";
+const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 dakika
+const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
+const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
+
+const touchAdminSession = () => {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(ADMIN_SESSION_LAST_ACTIVE_KEY, String(Date.now()));
+};
+
+const clearAdminSessionTimestamp = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(ADMIN_SESSION_LAST_ACTIVE_KEY);
+};
+
+const isAdminSessionFresh = () => {
+  if (typeof window === "undefined") return false;
+
+  const lastActive = Number(localStorage.getItem(ADMIN_SESSION_LAST_ACTIVE_KEY) || 0);
+
+  if (!lastActive) return false;
+
+  return Date.now() - lastActive < ADMIN_SESSION_TIMEOUT_MS;
+};
+
 const NOTE_MAX_LENGTH = 160;
 const WISH_MAX_LENGTH = 220;
 const SITE_DATA_KEY = "wedding-site-data";
@@ -508,11 +532,14 @@ const saveSettingsToDatabase = async (settings) => {
 
   const { error } = await supabase
     .from("invitation_settings")
-    .update({
-      content: settings,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", "main");
+    .upsert(
+      {
+        id: "main",
+        content: settings,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
 
   if (error) {
     throw error;
@@ -628,6 +655,16 @@ const uploadMediaFile = async (file, folder = "media") => {
     });
 
   if (error) {
+    const message = String(error.message || "").toLocaleLowerCase("tr-TR");
+
+    if (message.includes("bucket") || message.includes("not found")) {
+      throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");
+    }
+
+    if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) {
+      throw new Error("Görsel/müzik yüklenemedi. wedding-media Storage bucket için authenticated upload/update/delete policy eksik görünüyor.");
+    }
+
     throw error;
   }
 
@@ -1096,16 +1133,56 @@ function App() {
           return;
         }
 
-        await supabase.auth.signOut();
-        setAdminUser(null);
-        setIsAdminUnlocked(false);
+        const sessionUser = data.session?.user;
+
+        if (!sessionUser) {
+          clearAdminSessionTimestamp();
+          setAdminUser(null);
+          setIsAdminUnlocked(false);
+          setIsPasswordRecovery(false);
+          setShowForgotPassword(false);
+          setAdminPassword("");
+          setAdminError("");
+          setAdminLoginNotice("Admin paneline girmek için giriş yapmalısın.");
+          return;
+        }
+
+        if (!isAdminSessionFresh()) {
+          await supabase.auth.signOut();
+          clearAdminSessionTimestamp();
+          setAdminUser(null);
+          setIsAdminUnlocked(false);
+          setIsPasswordRecovery(false);
+          setShowForgotPassword(false);
+          setAdminPassword("");
+          setAdminError("");
+          setAdminLoginNotice("Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
+          return;
+        }
+
+        touchAdminSession();
+        setAdminUser(sessionUser);
+        setAdminEmail(sessionUser.email || adminEmail);
+        setIsAdminUnlocked(true);
         setIsPasswordRecovery(false);
         setShowForgotPassword(false);
         setAdminPassword("");
         setAdminError("");
-        setAdminLoginNotice(
-          "Güvenlik için admin panel her açıldığında tekrar giriş yapmalısın."
-        );
+        setAdminLoginNotice("Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
+
+        const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadGuestsFromDatabase(),
+          loadAllWishesFromDatabase(),
+        ]);
+
+        if (databaseSettings) {
+          setSiteData(databaseSettings);
+          setAdminDraft(databaseSettings);
+        }
+
+        setGuests(adminGuests);
+        setWishes(adminWishes);
       } catch (error) {
         console.error("Supabase oturumu kontrol edilemedi:", error);
         setAdminError(getReadableAuthError(error));
@@ -1113,7 +1190,52 @@ function App() {
     };
 
     loadSessionForAdmin();
-  }, [isAdminPage]);
+  }, [isAdminPage, adminEmail]);
+
+  useEffect(() => {
+    if (!isAdminPage || !isAdminUnlocked) return undefined;
+
+    const markActivity = () => touchAdminSession();
+
+    const checkSessionTimeout = async () => {
+      if (isAdminSessionFresh()) return;
+
+      try {
+        if (isSupabaseReady()) {
+          await supabase.auth.signOut();
+        }
+      } catch (error) {
+        console.error("Admin oturumu kapatılamadı:", error);
+      }
+
+      clearAdminSessionTimestamp();
+      setAdminUser(null);
+      setIsAdminUnlocked(false);
+      setActiveAdminTab("general");
+      setAdminPassword("");
+      setAdminError("");
+      setAdminSaveMessage("");
+      setAdminPasswordMessage("");
+      setShowForgotPassword(false);
+      setForgotPasswordEmail("");
+      setForgotPasswordMessage("");
+      setAdminLoginNotice("Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
+    };
+
+    markActivity();
+    ADMIN_ACTIVITY_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, markActivity, { passive: true });
+    });
+
+    const timeoutCheckInterval = window.setInterval(checkSessionTimeout, 60 * 1000);
+
+    return () => {
+      ADMIN_ACTIVITY_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, markActivity);
+      });
+      window.clearInterval(timeoutCheckInterval);
+    };
+  }, [isAdminPage, isAdminUnlocked]);
 
   useEffect(() => {
     return () => {
@@ -1420,23 +1542,36 @@ function App() {
       return;
     }
 
-    const { error } = await supabase
-      .from("guests")
-      .insert(uiGuestToDb(guestForm));
-
-    if (error) {
-      console.error("Katılım kaydedilemedi:", error);
-      await showAppAlert("Katılım bildirimi kaydedilemedi. Supabase ayarlarını ve RLS policy'lerini kontrol et.", { title: "Kayıt hatası", tone: "danger", icon: "!" });
+    if (!isSupabaseReady()) {
+      await showAppAlert(getSupabaseSetupMessage(), { title: "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
       return;
     }
 
-    setGuests((prev) => [
-      { id: `local-${Date.now()}`, ...guestForm },
-      ...prev,
-    ]);
+    try {
+      const { data, error } = await supabase
+        .from("guests")
+        .insert(uiGuestToDb(guestForm))
+        .select("*")
+        .single();
 
-    setGuestForm(INITIAL_GUEST_FORM);
-    await showAppAlert("Katılım bildirimin kaydedildi.", { title: "Kaydedildi", tone: "success", icon: "✓" });
+      if (error) {
+        throw error;
+      }
+
+      setGuests((prev) => [
+        data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...guestForm },
+        ...prev,
+      ]);
+
+      setGuestForm(INITIAL_GUEST_FORM);
+      await showAppAlert("Katılım bildirimin kaydedildi.", { title: "Kaydedildi", tone: "success", icon: "✓" });
+    } catch (error) {
+      console.error("Katılım kaydedilemedi:", error);
+      await showAppAlert(
+        `Katılım bildirimi kaydedilemedi. Supabase guests tablosu insert/select RLS policy'lerini kontrol et. Detay: ${error?.message || "Bilinmeyen hata"}`,
+        { title: "Kayıt hatası", tone: "danger", icon: "!" }
+      );
+    }
   };
 
   const submitWish = async (e) => {
@@ -1447,28 +1582,44 @@ function App() {
       return;
     }
 
-    const shouldPublishNow = !settings.requireWishApproval;
-    const { error } = await supabase.from("wishes").insert({
-      name: wishForm.name.trim(),
-      message: wishForm.message.trim(),
-      approved: shouldPublishNow,
-    });
-
-    if (error) {
-      console.error("Mesaj kaydedilemedi:", error);
-      await showAppAlert("Mesaj kaydedilemedi. Supabase ayarlarını ve RLS policy'lerini kontrol et.", { title: "Kayıt hatası", tone: "danger", icon: "!" });
+    if (!isSupabaseReady()) {
+      await showAppAlert(getSupabaseSetupMessage(), { title: "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
       return;
     }
 
-    if (shouldPublishNow) {
-      setWishes((prev) => [
-        { id: `local-${Date.now()}`, ...wishForm, approved: true },
-        ...prev,
-      ]);
-    }
+    const shouldPublishNow = !settings.requireWishApproval;
 
-    setWishForm(INITIAL_WISH_FORM);
-    await showAppAlert(settings.requireWishApproval ? "Güzel dileğin admin onayına gönderildi." : "Güzel dileğin kaydedildi.", { title: settings.requireWishApproval ? "Onaya gönderildi" : "Kaydedildi", tone: "success", icon: "✓" });
+    try {
+      const { data, error } = await supabase
+        .from("wishes")
+        .insert({
+          name: wishForm.name.trim(),
+          message: wishForm.message.trim(),
+          approved: shouldPublishNow,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (shouldPublishNow) {
+        setWishes((prev) => [
+          data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...wishForm, approved: true },
+          ...prev,
+        ]);
+      }
+
+      setWishForm(INITIAL_WISH_FORM);
+      await showAppAlert(settings.requireWishApproval ? "Güzel dileğin admin onayına gönderildi." : "Güzel dileğin kaydedildi.", { title: settings.requireWishApproval ? "Onaya gönderildi" : "Kaydedildi", tone: "success", icon: "✓" });
+    } catch (error) {
+      console.error("Mesaj kaydedilemedi:", error);
+      await showAppAlert(
+        `Mesaj kaydedilemedi. Supabase wishes tablosu insert/select RLS policy'lerini kontrol et. Detay: ${error?.message || "Bilinmeyen hata"}`,
+        { title: "Kayıt hatası", tone: "danger", icon: "!" }
+      );
+    }
   };
 
   const copyInvitationLink = async () => {
@@ -1517,6 +1668,7 @@ function App() {
         return;
       }
 
+      touchAdminSession();
       setAdminUser(data.user);
       setIsAdminUnlocked(true);
       setActiveAdminTab("general");
@@ -1641,6 +1793,7 @@ function App() {
 
       const recoveredEmail = sessionData.session.user?.email || adminEmail;
       const { error: signOutError } = await supabase.auth.signOut();
+      clearAdminSessionTimestamp();
 
       if (signOutError) {
         console.error("Şifre sıfırlandı ama oturum kapatılamadı:", signOutError);
@@ -1718,6 +1871,7 @@ function App() {
     }
 
     const { error: signOutError } = await supabase.auth.signOut();
+    clearAdminSessionTimestamp();
 
     if (signOutError) {
       console.error("Şifre değişti ama oturum kapatılamadı:", signOutError);
@@ -1731,6 +1885,7 @@ function App() {
     setAdminNewPassword("");
     setAdminNewPasswordAgain("");
     setAdminPassword("");
+    clearAdminSessionTimestamp();
     setAdminUser(null);
     setIsAdminUnlocked(false);
     setShowForgotPassword(false);
@@ -1761,6 +1916,7 @@ function App() {
       return;
     }
 
+    clearAdminSessionTimestamp();
     setAdminUser(null);
     setIsAdminUnlocked(false);
     setActiveAdminTab("general");
@@ -1906,7 +2062,7 @@ function App() {
       ...adminDraft,
       invitation: {
         ...adminDraft.invitation,
-        gallery: adminDraft.invitation.gallery.filter((image) => image.trim()),
+        gallery: adminDraft.invitation.gallery.map((image) => String(image || "").trim()).filter(Boolean),
       },
     });
 
@@ -1918,7 +2074,7 @@ function App() {
       setTimeout(() => setAdminSaveMessage(""), 3000);
     } catch (error) {
       console.error("Ayarlar kaydedilemedi:", error);
-      setAdminSaveMessage("Değişiklikler kaydedilemedi. Supabase ayarlarını ve admin yetkisini kontrol et.");
+      setAdminSaveMessage(`Değişiklikler kaydedilemedi. Detay: ${error?.message || "Supabase ayarlarını ve admin yetkisini kontrol et."}`);
     }
   };
 
@@ -1935,7 +2091,7 @@ function App() {
       setAdminSaveMessage("Davetiyedeki içerikler varsayılan hale getirildi.");
     } catch (error) {
       console.error("Varsayılan ayarlar kaydedilemedi:", error);
-      setAdminSaveMessage("Varsayılan ayarlar kaydedilemedi.");
+      setAdminSaveMessage(`Varsayılan ayarlar kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
     }
   };
 
@@ -2144,6 +2300,10 @@ function App() {
     try {
       const parsed = JSON.parse(dataImportText);
 
+      if (!parsed || typeof parsed !== "object") {
+        throw new Error("JSON içeriği geçerli bir yedek nesnesi değil.");
+      }
+
       if (parsed.siteData) {
         const nextSiteData = mergeSiteData(parsed.siteData);
         await saveSettingsToDatabase(nextSiteData);
@@ -2152,19 +2312,25 @@ function App() {
       }
 
       if (Array.isArray(parsed.guests)) {
-        await supabase.from("guests").delete().not("id", "is", null);
+        const deleteResult = await supabase.from("guests").delete().not("id", "is", null);
+        if (deleteResult.error) throw deleteResult.error;
+
         const guestRows = parsed.guests.map(uiGuestToDb);
         if (guestRows.length > 0) {
-          await supabase.from("guests").insert(guestRows);
+          const insertResult = await supabase.from("guests").insert(guestRows);
+          if (insertResult.error) throw insertResult.error;
         }
         setGuests(await loadGuestsFromDatabase());
       }
 
       if (Array.isArray(parsed.wishes)) {
-        await supabase.from("wishes").delete().not("id", "is", null);
+        const deleteResult = await supabase.from("wishes").delete().not("id", "is", null);
+        if (deleteResult.error) throw deleteResult.error;
+
         const wishRows = parsed.wishes.map(uiWishToDb);
         if (wishRows.length > 0) {
-          await supabase.from("wishes").insert(wishRows);
+          const insertResult = await supabase.from("wishes").insert(wishRows);
+          if (insertResult.error) throw insertResult.error;
         }
         setWishes(await loadAllWishesFromDatabase());
       }
@@ -2173,17 +2339,29 @@ function App() {
       setAdminSaveMessage("Yedek başarıyla Supabase'e aktarıldı.");
     } catch (error) {
       console.error("Yedek içe aktarılamadı:", error);
-      setAdminSaveMessage("Yedek içe aktarılamadı. JSON formatını ve Supabase yetkilerini kontrol et.");
+      setAdminSaveMessage(`Yedek içe aktarılamadı. Detay: ${error?.message || "JSON formatını ve Supabase yetkilerini kontrol et."}`);
     }
   };
 
-  const downloadQrCode = () => {
-    const link = document.createElement("a");
-    link.href = qrImageUrl;
-    link.download = "dugun-davetiye-qr.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadQrCode = async () => {
+    try {
+      const response = await fetch(qrImageUrl);
+      if (!response.ok) throw new Error("QR kod indirilemedi.");
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "dugun-davetiye-qr.png";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("QR kod indirilemedi:", error);
+      window.open(qrImageUrl, "_blank", "noopener,noreferrer");
+      setAdminSaveMessage("QR kod yeni sekmede açıldı. Görsele sağ tıklayıp kaydedebilirsin.");
+    }
   };
 
   const closeAdminPage = () => {
@@ -2203,7 +2381,11 @@ function App() {
     setOpened(true);
 
     if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search.replace(/[?&]admin=1/, "")}`);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("admin");
+      url.searchParams.delete("reset");
+      url.searchParams.delete("type");
+      window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
     }
   };
 
@@ -2314,7 +2496,7 @@ function App() {
           return (
             <AdminSection title="Admin Panel Şifresi">
               <p className="admin-help-text">
-                Admin panel linkini bilen kişiler giriş ekranını görebilir. Bu yüzden varsayılan 1234 şifresini değiştirmen daha güvenli olur. Yeni şifre aynı tarayıcıda saklanır.
+                Admin panel Supabase Auth ile korunur. Buradan giriş yaptığın admin kullanıcısının şifresini güncellersin. Şifre değişince güvenlik için oturum kapatılır ve yeni şifreyle tekrar giriş yapılır.
               </p>
 
               <form className="admin-password-form" onSubmit={changeAdminPassword}>

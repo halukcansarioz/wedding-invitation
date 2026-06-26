@@ -1,0 +1,794 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
+
+@import "./base-layout.css";
+@import "./new-features.css";
+@import "./turkish-hero-admin-link.css";
+@import "./admin-full-page-editor.css";
+@import "./admin-image-upload.css";
+@import "./admin-sidebar.css";
+@import "./advanced-features.css";
+@import "./export-qr-theme.css";
+@import "./theme-system.css";
+@import "./final-admin-fixes.css";
+
+/* =========================================================
+   INDEX.CSS - TEMİZ SON DÜZENLEMELER
+   Bu dosya importlardan sonra gelen tüm son düzeltmeleri tek yerde toplar.
+   Tekrarlanan popup, RSVP, admin menü, dropdown, çiçek ve & kodları kaldırıldı.
+   ========================================================= */
+
+
+/* =============================
+   POPUP ÜST ÇİZGİ KALDIRMA
+   ============================= */
+
+.app-modal-card {
+  border-top: 0 !important;
+}
+
+.app-modal-card::before,
+.app-modal-card::after {
+  display: none !important;
+  content: none !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+
+/* =============================
+   ADMIN ÇIKIŞ BUTONU
+   ============================= */
+
+.admin-actions-sticky .admin-logout-button,
+.admin-actions-sticky .secondary-button.admin-logout-button {
+  background: var(--paper) !important;
+  color: var(--rose-dark) !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 45%, transparent) !important;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.08) !important;
+}
+
+.admin-actions-sticky .admin-logout-button:hover,
+.admin-actions-sticky .secondary-button.admin-logout-button:hover {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--rose-dark) 28%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-theme="dark"] .admin-actions-sticky .admin-logout-button,
+[data-theme="dark"] .admin-actions-sticky .secondary-button.admin-logout-button {
+  background: rgba(255, 250, 251, 0.08) !important;
+  color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 42%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-actions-sticky .admin-logout-button:hover,
+[data-theme="dark"] .admin-actions-sticky .secondary-button.admin-logout-button:hover {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-light) !important;
+}
+
+
+/* =============================
+   RSVP / SEÇENEK BUTONLARI
+   ============================= */
+
+.rsvp-form .option-button,
+.wish-form .option-button,
+.option-group .option-button {
+  color: var(--text) !important;
+  background: var(--paper) !important;
+  border-color: color-mix(in srgb, var(--rose-dark) 32%, transparent) !important;
+}
+
+.rsvp-form .option-button:hover:not(.active):not(:disabled),
+.wish-form .option-button:hover:not(.active):not(:disabled),
+.option-group .option-button:hover:not(.active):not(:disabled) {
+  color: var(--rose-dark) !important;
+  background: color-mix(in srgb, var(--rose-light) 28%, var(--paper)) !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 16%, transparent) !important;
+}
+
+.rsvp-form .option-button.active,
+.wish-form .option-button.active,
+.option-group .option-button.active,
+.rsvp-form .option-button.active:hover,
+.wish-form .option-button.active:hover,
+.option-group .option-button.active:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--rose-dark) 28%, transparent) !important;
+}
+
+.rsvp-form .option-button.active:hover,
+.wish-form .option-button.active:hover,
+.option-group .option-button.active:hover {
+  transform: translateY(-2px) !important;
+}
+
+/* Katılamayacağım seçiliyken pasif seçenekler aktif gibi görünmesin */
+.option-group.disabled {
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+.option-group.disabled .option-button,
+.option-group.disabled .option-button.active,
+.option-group.disabled .option-button:hover,
+.option-group.disabled .option-button.active:hover,
+.option-button:disabled,
+.option-button:disabled.active,
+.option-button:disabled:hover {
+  color: color-mix(in srgb, var(--text-soft) 45%, transparent) !important;
+  background: color-mix(in srgb, var(--paper) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--rose-dark) 16%, transparent) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: not-allowed !important;
+}
+
+
+/* =============================
+   TEMA SEÇİMİ - SEÇİLİ KART
+   ============================= */
+
+.theme-option-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-option-card.active {
+  transform: translateY(-6px) scale(1.03) !important;
+  border: 2.5px solid var(--rose-dark) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 45%, transparent), transparent 38%),
+    linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 28%, var(--paper)), var(--paper)) !important;
+  box-shadow:
+    0 20px 42px color-mix(in srgb, var(--rose-dark) 22%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--rose) 14%, transparent) !important;
+}
+
+.theme-option-card.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.55), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 55%);
+}
+
+.theme-option-card.active::after {
+  content: "✓";
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 900;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--rose-dark) 26%, transparent);
+}
+
+.theme-option-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.theme-option-card.active .theme-swatch {
+  width: 62px;
+  height: 36px;
+  border: 3px solid #ffffff;
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--rose-dark) 24%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--rose) 16%, transparent);
+}
+
+.theme-option-card.active small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rose-dark) 18%, transparent);
+}
+
+.theme-option-card:not(.active) {
+  opacity: 0.82;
+}
+
+.theme-option-card:not(.active):hover {
+  opacity: 1;
+  transform: translateY(-3px) !important;
+}
+
+
+/* =============================
+   KART ÇİÇEKLERİ
+   ============================= */
+
+.card::after,
+.countdown-section::after {
+  content: "❀" !important;
+  position: absolute !important;
+  top: 26px !important;
+  left: 30px !important;
+  z-index: 1 !important;
+  color: rgba(var(--theme-strong-rgb, 159, 79, 104), 0.28) !important;
+  opacity: 1 !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+  pointer-events: none !important;
+}
+
+.card h2,
+.card p,
+.card .section-label,
+.countdown-section h2,
+.countdown-section p,
+.countdown-section .section-label,
+.countdown-section .countdown-grid {
+  position: relative;
+  z-index: 2;
+}
+
+
+/* =============================
+   ADMIN SOL MENÜ BUTONLARI
+   ============================= */
+
+.admin-sidebar .admin-nav-button {
+  position: relative;
+  min-height: 94px;
+  padding: 18px 18px 18px 20px !important;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--paper) 88%, transparent) !important;
+  color: var(--rose-dark) !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 30%, transparent) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 8%, transparent) !important;
+  transition:
+    transform 0.22s ease,
+    background 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    color 0.22s ease !important;
+}
+
+/* Eski sağ üst tik ikonunu kapat; yazının üstüne binmesin */
+.admin-sidebar .admin-nav-button.active::after {
+  display: none !important;
+  content: none !important;
+}
+
+.admin-sidebar .admin-nav-button::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 0;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(180deg, var(--rose), var(--rose-dark));
+  opacity: 0;
+  transition: 0.22s ease;
+}
+
+.admin-sidebar .admin-nav-button:hover::before,
+.admin-sidebar .admin-nav-button.active::before {
+  width: 5px;
+  opacity: 1;
+}
+
+.admin-sidebar .admin-nav-button span,
+.admin-sidebar .admin-nav-button small {
+  position: relative;
+  z-index: 2;
+  color: var(--rose-dark) !important;
+}
+
+.admin-sidebar .admin-nav-button:hover:not(.active) {
+  transform: translateY(-3px) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 36%, transparent), transparent 40%),
+    linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 22%, var(--paper)), var(--paper)) !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow:
+    0 14px 30px color-mix(in srgb, var(--rose-dark) 14%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--rose) 9%, transparent) !important;
+}
+
+.admin-sidebar .admin-nav-button:hover:not(.active) span {
+  color: var(--rose-deep) !important;
+}
+
+.admin-sidebar .admin-nav-button:hover:not(.active) small {
+  color: var(--text-soft) !important;
+}
+
+.admin-sidebar .admin-nav-button.active,
+.admin-sidebar .admin-nav-button.active:hover {
+  transform: translateY(-3px) !important;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow:
+    0 18px 38px color-mix(in srgb, var(--rose-dark) 25%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--rose) 12%, transparent) !important;
+}
+
+.admin-sidebar .admin-nav-button.active:hover {
+  transform: translateY(-3px) scale(1.01) !important;
+}
+
+.admin-sidebar .admin-nav-button.active span,
+.admin-sidebar .admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 28%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button span,
+[data-theme="dark"] .admin-sidebar .admin-nav-button small {
+  color: var(--rose-light) !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button:hover:not(.active) {
+  background: color-mix(in srgb, var(--rose-dark) 38%, rgba(255, 255, 255, 0.08)) !important;
+  border-color: var(--rose-light) !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active,
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active:hover {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active span,
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+
+/* =============================
+   ADMIN GÖRSEL / MÜZİK ALANI
+   ============================= */
+
+.admin-music-field {
+  display: grid;
+  gap: 12px;
+  padding: 16px !important;
+  border: 1px dashed color-mix(in srgb, var(--rose-dark) 34%, transparent) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 250, 251, 0.72) !important;
+}
+
+.admin-music-field .admin-image-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-music-field .admin-image-header > span {
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-music-preview,
+.admin-music-field .admin-image-empty {
+  width: 100%;
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 247, 249, 0.8) !important;
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--rose-dark) 7%, transparent);
+}
+
+.admin-music-preview strong {
+  color: var(--rose-dark) !important;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.admin-music-preview audio {
+  width: min(100%, 520px);
+}
+
+.admin-music-field .admin-upload-button {
+  width: fit-content;
+  min-width: 230px;
+  margin-top: 2px;
+  padding: 13px 22px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px !important;
+  border: none !important;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--rose-dark) 24%, transparent);
+  cursor: pointer;
+}
+
+.admin-music-field .admin-upload-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--rose-dark) 30%, transparent);
+}
+
+.admin-music-field small {
+  display: block;
+  color: var(--text-soft) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+
+/* =============================
+   ADMIN FİLTRE / DROPDOWN / EXPORT BUTONLARI
+   ============================= */
+
+.admin-filters,
+.admin-filter-row,
+.admin-list-controls,
+.admin-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-content input[type="search"],
+.admin-content input[placeholder*="ara"],
+.admin-content input[placeholder*="Ara"],
+.admin-content input[placeholder*="Kayıtlarda"] {
+  min-height: 56px;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent) !important;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--paper) 94%, var(--rose-light) 6%),
+      var(--paper)
+    ) !important;
+  color: var(--text) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
+}
+
+.admin-content input[type="search"]:focus,
+.admin-content input[placeholder*="ara"]:focus,
+.admin-content input[placeholder*="Ara"]:focus,
+.admin-content input[placeholder*="Kayıtlarda"]:focus {
+  border-color: var(--rose-dark) !important;
+  box-shadow:
+    0 14px 30px color-mix(in srgb, var(--rose-dark) 12%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--rose) 10%, transparent) !important;
+}
+
+.admin-custom-select {
+  position: relative;
+  width: 100%;
+  min-width: 190px;
+}
+
+.admin-custom-select-button {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 12px 0 22px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent) !important;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--paper) 94%, var(--rose-light) 6%),
+      var(--paper)
+    ) !important;
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.admin-custom-select-button:hover {
+  transform: translateY(-2px);
+  border-color: var(--rose-dark) !important;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--rose-light) 28%, var(--paper)),
+      color-mix(in srgb, var(--rose) 12%, var(--paper))
+    ) !important;
+  box-shadow:
+    0 16px 32px color-mix(in srgb, var(--rose-dark) 15%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--rose) 9%, transparent) !important;
+}
+
+.admin-custom-select-button > span:first-child {
+  flex: 1;
+  text-align: left;
+  color: inherit !important;
+  white-space: nowrap;
+}
+
+/* Sağdaki ok: dolu renk yerine sade çerçeveli görünüm */
+.admin-custom-select-arrow {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: transparent !important;
+  color: var(--rose-dark) !important;
+  border: 1px solid color-mix(in srgb, var(--rose-dark) 20%, transparent);
+  box-shadow: none !important;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+  transition: 0.2s ease;
+}
+
+.admin-custom-select-button:hover .admin-custom-select-arrow {
+  background: color-mix(in srgb, var(--rose-light) 28%, var(--paper)) !important;
+  border-color: color-mix(in srgb, var(--rose-dark) 32%, transparent);
+}
+
+.admin-custom-select.open .admin-custom-select-arrow {
+  transform: rotate(180deg);
+  background: color-mix(in srgb, var(--rose-light) 38%, var(--paper)) !important;
+  color: var(--rose-dark) !important;
+  border-color: color-mix(in srgb, var(--rose-dark) 34%, transparent);
+}
+
+.admin-custom-select-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: 8px;
+  border-radius: 22px;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 22%, transparent);
+  background: var(--paper);
+  box-shadow: 0 22px 46px color-mix(in srgb, var(--rose-dark) 17%, transparent);
+  overflow: hidden;
+}
+
+.admin-custom-select-option {
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-custom-select-option:hover {
+  background: color-mix(in srgb, var(--rose-light) 34%, var(--paper));
+  color: var(--rose-dark);
+}
+
+.admin-custom-select-option.selected {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: #ffffff;
+}
+
+.admin-content .secondary-button,
+.admin-list .secondary-button,
+.admin-editor .secondary-button {
+  min-height: 56px;
+  padding: 0 26px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 28%, transparent) !important;
+  background: var(--paper) !important;
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
+}
+
+.admin-content .secondary-button:hover,
+.admin-list .secondary-button:hover,
+.admin-editor .secondary-button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-custom-select-button {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 28%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-custom-select-menu {
+  background: color-mix(in srgb, var(--paper) 92%, #000 8%);
+  border-color: color-mix(in srgb, var(--rose-light) 28%, transparent);
+}
+
+[data-theme="dark"] .admin-custom-select-option {
+  color: var(--rose-light);
+}
+
+[data-theme="dark"] .admin-custom-select-option:hover {
+  background: color-mix(in srgb, var(--rose-dark) 34%, transparent);
+  color: #ffffff;
+}
+
+
+/* =============================
+   & SİMGESİ - TEMAYA GÖRE RENK
+   ============================= */
+
+:root {
+  --amp-color: var(--rose-dark);
+  --amp-glow: color-mix(in srgb, var(--rose-dark) 36%, transparent);
+}
+
+[data-theme="rose"] {
+  --amp-color: #c36f8b;
+  --amp-glow: rgba(195, 111, 139, 0.38);
+}
+
+[data-theme="sage"] {
+  --amp-color: #6f8650;
+  --amp-glow: rgba(111, 134, 80, 0.42);
+}
+
+[data-theme="gold"] {
+  --amp-color: #c69b5c;
+  --amp-glow: rgba(198, 155, 92, 0.42);
+}
+
+[data-theme="burgundy"] {
+  --amp-color: #9f354f;
+  --amp-glow: rgba(159, 53, 79, 0.42);
+}
+
+[data-theme="minimal"] {
+  --amp-color: #7c6f64;
+  --amp-glow: rgba(124, 111, 100, 0.38);
+}
+
+[data-theme="dark"] {
+  --amp-color: #e3b6c7;
+  --amp-glow: rgba(227, 182, 199, 0.46);
+}
+
+.couple-title em,
+.intro-page .couple-title em,
+.intro-card .couple-title em,
+.hero-section .couple-title em {
+  color: var(--amp-color) !important;
+  -webkit-text-fill-color: var(--amp-color) !important;
+  background: transparent !important;
+  background-image: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.55),
+    0 0 18px var(--amp-glow) !important;
+}
+
+.intro-page .couple-title em,
+.intro-card .couple-title em {
+  text-shadow:
+    0 2px 6px rgba(255, 255, 255, 0.48),
+    0 0 16px var(--amp-glow) !important;
+}
+
+.couple-title em::selection {
+  background: transparent;
+  color: var(--amp-color);
+  -webkit-text-fill-color: var(--amp-color);
+}
+
+
+/* =============================
+   MOBİL
+   ============================= */
+
+@media (max-width: 650px) {
+  .theme-option-card.active {
+    transform: translateY(-3px) scale(1.01) !important;
+  }
+
+  .theme-option-card.active::after {
+    width: 30px;
+    height: 30px;
+    font-size: 17px;
+  }
+
+  .card::after,
+  .countdown-section::after {
+    top: 22px !important;
+    left: 24px !important;
+    font-size: 23px !important;
+  }
+
+  .admin-music-field .admin-upload-button,
+  .admin-content input[type="search"],
+  .admin-content input[placeholder*="ara"],
+  .admin-content input[placeholder*="Ara"],
+  .admin-content input[placeholder*="Kayıtlarda"],
+  .admin-content .secondary-button,
+  .admin-list .secondary-button,
+  .admin-editor .secondary-button {
+    width: 100%;
+  }
+
+  .admin-custom-select {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .admin-custom-select-button {
+    min-height: 52px;
+  }
+
+  .admin-custom-select-arrow {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+}

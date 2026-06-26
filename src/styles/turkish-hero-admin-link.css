@@ -1,0 +1,297 @@
+/* TÜRKÇE KARAKTER DÜZELTME
+   Google Fonts latin-ext yüklenir, metinler Türkçe dil kurallarına göre büyür.
+   i / İ / ı / ü / Ü / ş / Ş / ğ / Ğ karakterlerinin bozuk görünmesini engeller. */
+html,
+body,
+.app {
+  lang: tr;
+  font-variant-ligatures: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.intro-small,
+.small-title,
+.section-label,
+.info-row span,
+.count-box span,
+.guest-stats span,
+.admin-stats span,
+.footer span {
+  font-family: "Playfair Display", "Noto Serif", "Cormorant Garamond", Georgia, serif;
+}
+
+.couple-title {
+  font-family: "Great Vibes", "Noto Serif", "Cormorant Garamond", cursive;
+}
+
+/* CSS uppercase bazı tarayıcılarda Türkçe i/İ dönüşümünü bozabiliyor.
+   Bu yüzden küçük üst başlıklar elle yazıldığı haliyle gösteriliyor. */
+.intro-small,
+.small-title,
+.section-label,
+.info-row span,
+.count-box span,
+.guest-stats span,
+.admin-stats span,
+.footer span {
+  text-transform: none !important;
+}
+
+/* Ana görsel yazı okunurluğu - kutusuz şık tasarım */
+.hero-section {
+  align-items: center;
+  padding: 80px 38px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(70, 24, 40, 0.18) 0%,
+      rgba(70, 24, 40, 0.34) 42%,
+      rgba(35, 14, 22, 0.58) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(30, 10, 18, 0.18),
+      rgba(30, 10, 18, 0.48)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+.hero-content {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* Üst küçük yazı */
+.hero-section .small-title {
+  color: #fff7fa;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(80, 20, 42, 0.7);
+}
+
+/* İsimleri kutusuz ama çok daha net yap */
+.hero-section .couple-title {
+  color: #fff;
+  font-size: clamp(68px, 8vw, 118px);
+  line-height: 1.04;
+  text-shadow:
+    0 3px 4px rgba(0, 0, 0, 0.85),
+    0 10px 26px rgba(0, 0, 0, 0.55),
+    0 0 34px rgba(255, 220, 230, 0.28);
+}
+
+.hero-section .couple-title em {
+  margin: -6px 0 -8px;
+  color: #f4cf82;
+  font-size: 0.42em;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(244, 207, 130, 0.32);
+}
+
+/* Tarih kutusu daha zarif */
+.hero-date {
+  margin-top: 18px;
+  padding: 11px 34px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.65);
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
+}
+
+/* Saat daha net */
+.hero-time {
+  margin-top: 14px;
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.75),
+    0 0 16px rgba(60, 20, 36, 0.6);
+}
+/* =============================
+   SON DÜZENLEME - ADMIN AYRI LİNK VE AÇIK HERO
+   ============================= */
+
+/* Admin panel artık ana sayfada görünmez, sadece #admin linkinde ayrı sayfa gibi açılır. */
+.admin-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 34px 42px 76px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.admin-page-card {
+  width: min(100%, 1180px);
+  margin-top: 0;
+  overflow: visible;
+}
+
+.admin-back-button {
+  position: relative;
+  z-index: 2;
+  width: fit-content;
+  margin: 0 auto 24px;
+}
+
+.admin-page .admin-stats {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.admin-page .admin-login .main-button {
+  width: fit-content;
+  min-width: 160px;
+  margin: 0 auto;
+}
+
+/* Ana görsel okunurluğu: arka plan fazla kararmadan yazılar net kalır. */
+.hero-section {
+  align-items: center;
+  padding: 80px 38px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(120, 52, 78, 0.08) 0%,
+      rgba(120, 52, 78, 0.16) 45%,
+      rgba(60, 24, 38, 0.26) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255, 240, 245, 0.04),
+      rgba(80, 30, 48, 0.18)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+.hero-content {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hero-section .small-title {
+  color: #fff7fa;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.72),
+    0 0 14px rgba(80, 20, 42, 0.46);
+}
+
+.hero-section .couple-title {
+  color: #fff;
+  font-size: clamp(68px, 8vw, 118px);
+  line-height: 1.04;
+  text-shadow:
+    0 3px 5px rgba(0, 0, 0, 0.75),
+    0 8px 22px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(255, 220, 230, 0.22);
+}
+
+.hero-section .couple-title em {
+  margin: -6px 0 -8px;
+  color: #f4cf82;
+  font-size: 0.42em;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.78),
+    0 0 18px rgba(244, 207, 130, 0.32);
+}
+
+.hero-date {
+  margin-top: 18px;
+  padding: 11px 34px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.65);
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero-time {
+  margin-top: 14px;
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.68),
+    0 0 16px rgba(60, 20, 36, 0.48);
+}
+
+@media (max-width: 900px) {
+  .admin-page {
+    padding: 24px 16px 60px;
+  }
+
+  .admin-page .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-page {
+    padding: 18px 14px 60px;
+  }
+
+  .admin-back-button {
+    width: 100%;
+  }
+
+  .admin-page .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-section {
+    min-height: 560px;
+    padding: 64px 18px;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.10) 0%,
+        rgba(120, 52, 78, 0.20) 48%,
+        rgba(60, 24, 38, 0.30) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+
+  .hero-section .couple-title {
+    font-size: 58px;
+    line-height: 1.08;
+  }
+
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+
+  .hero-date {
+    font-size: 20px;
+    padding: 10px 24px;
+  }
+
+  .hero-time {
+    font-size: 19px;
+  }
+}
+
