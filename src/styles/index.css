@@ -792,3 +792,23 @@
     min-width: 28px;
   }
 }
+
+/* =============================
+   ANA GÖRSELDEKİ & HEP BEYAZ KALSIN
+   ============================= */
+
+html[data-theme] .app .hero-section .couple-title em,
+[data-theme] .hero-section .couple-title em,
+.app[data-theme] .hero-section .couple-title em,
+.app .hero-section .couple-title em,
+.hero-section .couple-title em {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+
+  background: transparent !important;
+  background-image: none !important;
+
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.78),
+    0 0 16px rgba(255, 255, 255, 0.35) !important;
+}
