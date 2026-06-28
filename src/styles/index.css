@@ -812,3 +812,179 @@ html[data-theme] .app .hero-section .couple-title em,
     0 3px 8px rgba(0, 0, 0, 0.78),
     0 0 16px rgba(255, 255, 255, 0.35) !important;
 }
+
+/* =========================================================
+   AÇILIŞ SAYFASI / SES BUTONU / FAVICON DÜZELTMELERİ
+   ========================================================= */
+
+/* 1) Sadece ilk açılış ekranını küçültür; diğer davetiye bölümlerine dokunmaz. */
+.intro-page {
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  padding: clamp(10px, 1.8vh, 18px) clamp(12px, 3vw, 34px) !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.intro-page .intro-card {
+  width: min(91vw, 900px) !important;
+  max-height: calc(100dvh - 28px) !important;
+  box-sizing: border-box !important;
+  padding: clamp(28px, 4.6vh, 54px) clamp(24px, 5.5vw, 66px) !important;
+  border-radius: clamp(24px, 4vw, 48px) !important;
+}
+
+.intro-page .leaf-mark {
+  margin-bottom: clamp(8px, 1.4vh, 14px) !important;
+  transform: scale(0.9) !important;
+}
+
+.intro-page .intro-small {
+  margin-bottom: clamp(10px, 1.8vh, 18px) !important;
+  font-size: clamp(13px, 1.5vw, 17px) !important;
+  letter-spacing: clamp(4px, 0.8vw, 8px) !important;
+}
+
+.intro-page .couple-title {
+  margin: clamp(12px, 2.4vh, 24px) 0 !important;
+  gap: clamp(4px, 1vh, 10px) !important;
+  font-size: clamp(56px, 10vw, 118px) !important;
+  line-height: 0.88 !important;
+}
+
+.intro-page .couple-title span {
+  line-height: 0.88 !important;
+}
+
+.intro-page .couple-title em {
+  font-size: clamp(42px, 6vw, 74px) !important;
+  line-height: 0.8 !important;
+  margin: clamp(4px, 1vh, 10px) 0 !important;
+}
+
+.intro-page .intro-text,
+.intro-page .guest-greeting {
+  margin-top: clamp(10px, 2vh, 20px) !important;
+  font-size: clamp(17px, 2.2vw, 24px) !important;
+  line-height: 1.35 !important;
+}
+
+.intro-page .open-button {
+  margin-top: clamp(18px, 3vh, 30px) !important;
+  min-height: 56px !important;
+  padding: 14px 48px !important;
+}
+
+@media (max-height: 760px) {
+  .intro-page .intro-card {
+    width: min(89vw, 860px) !important;
+    padding: 24px clamp(20px, 5vw, 56px) !important;
+  }
+
+  .intro-page .couple-title {
+    font-size: clamp(50px, 9vw, 96px) !important;
+  }
+
+  .intro-page .couple-title em {
+    font-size: clamp(36px, 5.2vw, 62px) !important;
+  }
+
+  .intro-page .intro-text,
+  .intro-page .guest-greeting {
+    font-size: clamp(16px, 2vw, 21px) !important;
+  }
+
+  .intro-page .open-button {
+    min-height: 52px !important;
+    padding: 12px 42px !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .intro-page {
+    padding: 10px !important;
+  }
+
+  .intro-page .intro-card {
+    width: min(94vw, 420px) !important;
+    padding: 28px 20px !important;
+  }
+
+  .intro-page .couple-title {
+    font-size: clamp(50px, 16vw, 74px) !important;
+  }
+
+  .intro-page .couple-title em {
+    font-size: clamp(34px, 11vw, 48px) !important;
+  }
+}
+
+/* 2) Ses ikonunu sabit, merkezli ve durumuna göre net gösterir. */
+.floating-actions {
+  position: fixed !important;
+  top: clamp(14px, 2vw, 24px) !important;
+  right: clamp(14px, 2vw, 24px) !important;
+  z-index: 12000 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.music-toggle-button {
+  width: 62px !important;
+  height: 62px !important;
+  min-width: 62px !important;
+  min-height: 62px !important;
+  padding: 0 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 36%, transparent) !important;
+  background: color-mix(in srgb, var(--paper) 86%, #ffffff 14%) !important;
+  color: var(--rose-dark) !important;
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease !important;
+}
+
+.music-toggle-button svg {
+  width: 27px !important;
+  height: 27px !important;
+  display: block !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+}
+
+.music-toggle-button:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+  box-shadow: 0 18px 38px color-mix(in srgb, var(--rose-dark) 26%, transparent) !important;
+}
+
+.music-toggle-button.music-on {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-dark) !important;
+}
+
+.music-toggle-button.music-off {
+  background: color-mix(in srgb, var(--paper) 88%, #ffffff 12%) !important;
+  color: var(--rose-dark) !important;
+}
+
+/* 3) Çiçek artık sayfa içinde gösterilmez; tarayıcı sekme ikonu App.jsx içinde ayarlanır. */
+@media (max-width: 650px) {
+  .music-toggle-button {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+    min-height: 54px !important;
+  }
+}
+

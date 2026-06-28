@@ -3,8 +3,20 @@ import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 
 const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
-const DEFAULT_WEDDING_MUSIC_FILE = "/music/default-wedding.mp3";
-const DEFAULT_WEDDING_MUSIC_NAME = "Varsayılan evlilik müziği";
+const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
+const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
+
+const FLOWER_FAVICON_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="17" fill="#fff5f8"/>
+  <circle cx="32" cy="32" r="21" fill="#f8d7e2" opacity="0.72"/>
+  <g fill="#cf7c9a" stroke="#9f4f68" stroke-width="2" stroke-linejoin="round">
+    <path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/>
+  </g>
+  <circle cx="32" cy="32" r="6" fill="#fff1b8" stroke="#9f4f68" stroke-width="2"/>
+</svg>`;
+
+const FLOWER_FAVICON_URL = `data:image/svg+xml,${encodeURIComponent(FLOWER_FAVICON_SVG)}`;
 
 const getCurrentShareLink = () => {
   return DEFAULT_SHARE_LINK;
@@ -32,22 +44,14 @@ const fixShareLink = (data) => {
 const applyDefaultWeddingMusic = (data) => {
   if (!data?.invitation) return data;
 
-  const currentMusicFile = String(data.invitation.musicFile || "").trim();
-  const currentMusicName = String(data.invitation.musicName || "").trim();
-
-  const shouldUseDefaultMusic =
-    currentMusicFile === "" ||
-    currentMusicFile === "Tarayıcı melodisi" ||
-    currentMusicName === "Tarayıcı melodisi";
-
+  // Eski müzik localStorage veya Supabase içinde kayıtlı kaldıysa bile
+  // davetiyede her zaman yeni varsayılan müzik çalsın.
   return {
     ...data,
     invitation: {
       ...data.invitation,
-      musicFile: shouldUseDefaultMusic ? DEFAULT_WEDDING_MUSIC_FILE : currentMusicFile,
-      musicName: shouldUseDefaultMusic
-        ? DEFAULT_WEDDING_MUSIC_NAME
-        : currentMusicName || "Yüklenen müzik",
+      musicFile: DEFAULT_WEDDING_MUSIC_FILE,
+      musicName: DEFAULT_WEDDING_MUSIC_NAME,
     },
   };
 };
@@ -1064,6 +1068,18 @@ function App() {
       meta.setAttribute("charset", "UTF-8");
       document.head.prepend(meta);
     }
+
+    const favicon =
+      document.querySelector("link[rel='icon'], link[rel='shortcut icon']") ||
+      document.createElement("link");
+
+    favicon.setAttribute("rel", "icon");
+    favicon.setAttribute("type", "image/svg+xml");
+    favicon.setAttribute("href", FLOWER_FAVICON_URL);
+
+    if (!favicon.parentNode) {
+      document.head.appendChild(favicon);
+    }
   }, []);
 
   useEffect(() => {
@@ -1351,14 +1367,8 @@ function App() {
 
   useEffect(() => {
     if (!audioRef.current) return;
-
     audioRef.current.load();
-
-    if (isMusicPlaying && invitation.musicFile) {
-      audioRef.current.volume = 0.55;
-      audioRef.current.play().catch(() => setIsMusicPlaying(false));
-    }
-  }, [invitation.musicFile, isMusicPlaying]);
+  }, [invitation.musicFile]);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -3133,7 +3143,16 @@ function App() {
         "--hero-image": `url(${invitation.heroImage})`,
       }}
     >
-      <audio ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
+      <audio
+        key={invitation.musicFile}
+        ref={audioRef}
+        src={invitation.musicFile || ""}
+        loop
+        preload="auto"
+        onPlay={() => setIsMusicPlaying(true)}
+        onPause={() => setIsMusicPlaying(false)}
+        onEnded={() => setIsMusicPlaying(false)}
+      />
       <AppModal
         modal={appModal}
         onInputChange={(value) => setAppModal((prev) => (prev ? { ...prev, inputValue: value } : prev))}
@@ -3180,8 +3199,10 @@ function App() {
             </a>
 
             <button
-              className="music-toggle-button"
+              type="button"
+              className={`music-toggle-button ${isMusicPlaying ? "music-on" : "music-off"}`}
               onClick={toggleMusic}
+              aria-pressed={isMusicPlaying}
               aria-label={isMusicPlaying ? "Müziği Kapat" : "Müziği Aç"}
               title={isMusicPlaying ? "Müziği Kapat" : "Müziği Aç"}
             >
