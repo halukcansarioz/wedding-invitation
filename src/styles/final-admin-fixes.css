@@ -678,6 +678,13 @@ html[data-theme="minimal"] .admin-logout-button {
   box-shadow: 0 12px 24px rgba(17, 24, 39, 0.16) !important;
 }
 
+/* Admin panel çıkış butonu gradyanı */
+html[data-theme="lavanta"] .admin-logout-button {
+  background: linear-gradient(135deg, #7a6ba3, #4c3f70) !important;
+  border-color: rgba(76, 63, 112, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(76, 63, 112, 0.18) !important;
+}
+
 html[data-theme="dark"] .admin-logout-button {
   color: #fff7f9 !important;
   background: linear-gradient(135deg, #d36a86, #7a203b) !important;
@@ -862,13 +869,17 @@ html[data-theme="sage"] .app-modal-success .app-modal-icon {
   background: linear-gradient(135deg, #9cad75, #4d6335);
 }
 
-html[data-theme="gold"] .app-modal-warning .app-modal-icon,
 html[data-theme="gold"] .app-modal-success .app-modal-icon {
   background: linear-gradient(135deg, #d4b35d, #8a6122);
 }
 
 html[data-theme="minimal"] .app-modal-icon {
   background: linear-gradient(135deg, #9f8b7c, #45362e);
+}
+
+/* Başarılı işlem (Success) modallarındaki ikon rengi */
+html[data-theme="lavanta"] .app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #a696c8, #4c3f70);
 }
 
 html[data-theme="dark"] .app-modal-backdrop {

@@ -206,6 +206,10 @@ html[data-theme="minimal"] {
   background: linear-gradient(135deg, #ffffff, #b69f91, #45362e);
 }
 
+.theme-option-card[data-theme-preview="lavanta"] .theme-swatch {
+  background: linear-gradient(135deg, #dcd6eb, #a696c8, #7a6ba3);
+}
+
 .admin-theme-check-row {
   margin-top: 18px;
 }

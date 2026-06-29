@@ -136,6 +136,36 @@ html[data-theme="minimal"] {
   --theme-hero-edge: rgba(69, 54, 46, 0.24);
 }
 
+html[data-theme="lavanta"] {
+  --paper: #fcfbfd;
+  --paper-soft: #f6f4fa;
+  --rose-light: #dcd6eb;
+  --rose: #a696c8;
+  --rose-dark: #7a6ba3;
+  --rose-deep: #4c3f70;
+  --gold: #c5a461;
+  --dark-gold: #7b652e;
+  --text: #393545;
+  --text-soft: #635d73;
+  --shadow: 0 20px 48px rgba(122, 107, 163, 0.13);
+  
+  --theme-rgb: 122, 107, 163;
+  --theme-strong-rgb: 76, 63, 112;
+  --theme-soft-rgb: 220, 214, 235;
+  --theme-faint-rgb: 252, 251, 253;
+  --theme-page-start: #fcfbfd;
+  --theme-page-end: #eeeaf5;
+  --theme-surface: rgba(252, 251, 253, 0.98);
+  --theme-surface-soft: rgba(246, 244, 250, 0.98);
+  --theme-input: rgba(252, 251, 253, 0.98);
+  --theme-text-main: #393545;
+  --theme-text-muted: #635d73;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(122, 107, 163, 0.08);
+  --theme-hero-mid: rgba(122, 107, 163, 0.16);
+  --theme-hero-edge: rgba(76, 63, 112, 0.28);
+}
+
 html[data-theme="dark"] {
   --paper: #241a21;
   --paper-soft: #2d222a;

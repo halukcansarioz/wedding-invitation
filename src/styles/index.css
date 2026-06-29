@@ -710,6 +710,12 @@
   --amp-glow: rgba(124, 111, 100, 0.38);
 }
 
+/* Açılış ekranı ve ana görseldeki & sembolünün ışıltısı */
+[data-theme="lavanta"] {
+  --amp-color: #8f7fb8;
+  --amp-glow: rgba(143, 127, 184, 0.42);
+}
+
 [data-theme="dark"] {
   --amp-color: #e3b6c7;
   --amp-glow: rgba(227, 182, 199, 0.46);

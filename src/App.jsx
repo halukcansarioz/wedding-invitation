@@ -186,6 +186,7 @@ const THEMES = [
   { label: "Yeşil Kır Düğünü", value: "sage" },
   { label: "Altın Krem", value: "gold" },
   { label: "Bordo", value: "burgundy" },
+  { label: "Lavanta", value: "lavanta" },
   { label: "Minimal Beyaz", value: "minimal" },
   { label: "Koyu Tema", value: "dark" },
 ];
