@@ -1012,6 +1012,7 @@ function App() {
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
+  const [isOpening, setIsOpening] = useState(false); // ZARF ANİMASYONU İÇİN EKLENDİ
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
@@ -1445,7 +1446,7 @@ function App() {
     await audioContext.resume();
 
     const masterGain = audioContext.createGain();
-    masterGain.gain.setValueAtTime(0.13, audioContext.currentTime);
+    masterGain.gain.setValueAtTime(0.06, audioContext.currentTime);
     masterGain.connect(audioContext.destination);
     musicGainRef.current = masterGain;
 
@@ -1527,7 +1528,7 @@ function App() {
         }
 
         try {
-          audioRef.current.volume = 0.55;
+          audioRef.current.volume = 0.15;
           await audioRef.current.play();
           setIsMusicPlaying(true);
           return;
@@ -1548,10 +1549,17 @@ function App() {
     }
   };
 
-  const openInvitation = async () => {
-    setOpened(true);
-    await startMusic();
+  const openInvitation = () => {
+    setIsOpening(true); 
+    
+    startMusic().catch((err) => console.log("Müzik başlatılamadı:", err));
+
+    // Animasyonun tüm adımlarının (yukarı çıkma ve büyüme) bitmesini bekle
+    setTimeout(() => {
+      setOpened(true);
+    }, 2100); 
   };
+
 
   const toggleMusic = async () => {
     if (isMusicPlaying) {
@@ -3163,8 +3171,8 @@ function App() {
       {isAdminPage ? (
         renderAdminPage()
       ) : !opened ? (
-        <section className="intro-page">
-          <div className="petal-layer" aria-hidden="true">
+            <section className={`intro-page ${isOpening ? "opening" : ""}`}>
+            <div className="petal-layer" aria-hidden="true">
             {Array.from({ length: 16 }).map((_, index) => (
               <span key={index}></span>
             ))}
@@ -3173,20 +3181,29 @@ function App() {
           <div className="ribbon ribbon-left"></div>
           <div className="ribbon ribbon-right"></div>
 
-          <div className="intro-card">
-            <div className="leaf-mark" aria-hidden="true"></div>
-            <p className="intro-small">{copy.introLabel}</p>
+          {/* ZARF KONTEYNERİ */}
+          <div className="envelope-container">
+            <div className="envelope-back"></div>
 
-            <h1 className="couple-title">
-              <span>{invitation.bride}</span>
-              <em>&</em>
-              <span>{invitation.groom}</span>
-            </h1>
+            {/* Davetiye Kartımız (Zarfın içinde) */}
+            <div className="intro-card">
+              <div className="leaf-mark" aria-hidden="true"></div>
+              <p className="intro-small">{copy.introLabel}</p>
 
-            <p className="intro-text">{copy.introText}</p>
-            {guestGreeting && <p className="guest-greeting">{guestGreeting}</p>}
+              <h1 className="couple-title">
+                <span>{invitation.bride}</span>
+                <em>&</em>
+                <span>{invitation.groom}</span>
+              </h1>
 
-            <button className="open-button" onClick={openInvitation}>
+              <p className="intro-text">{copy.introText}</p>
+              {guestGreeting && <p className="guest-greeting">{guestGreeting}</p>}
+            </div>
+
+            <div className="envelope-front"></div>
+            <div className="envelope-flap"></div>
+
+            <button className="envelope-seal" onClick={openInvitation}>
               {copy.openButton}
             </button>
           </div>

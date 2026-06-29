@@ -988,3 +988,211 @@ html[data-theme] .app .hero-section .couple-title em,
   }
 }
 
+/* =============================
+   ZARF AÇILIŞ ANİMASYONU (PÜRÜZSÜZ VE 3D UYUMLU)
+   ============================= */
+.envelope-container {
+  position: relative;
+  width: min(90vw, 550px);
+  height: min(65vh, 360px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  perspective: 2000px; /* 3D derinlik artırıldı */
+  transform-style: preserve-3d; /* Katmanların düzgün görünmesi için şart */
+  margin: 0 auto;
+  z-index: 10;
+}
+
+.envelope-back {
+  position: absolute;
+  inset: 0;
+  /* Ortası hafif aydınlık, köşeleri çok karanlık bir iç cep derinliği */
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--paper) 70%, var(--rose-dark) 30%), color-mix(in srgb, var(--paper) 40%, var(--rose-dark) 60%));
+  border-radius: 12px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.3); /* Zarfın yere vuran ana gölgesi güçlendirildi */
+  z-index: 1;
+}
+
+.intro-page .envelope-container .intro-card {
+  position: absolute !important;
+  bottom: 10px !important;
+  width: 96% !important;
+  height: 96% !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  background: var(--paper) !important;
+  border-radius: 8px !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.1) !important;
+  
+  /* Başlangıç pozisyonu eklendi ki bir anda fırlamasın */
+  transform: translateY(0) scale(1) !important; 
+  /* Zarf kapağı açıldıktan sonra (0.4s gecikmeli) yukarı süzülür */
+  transition: transform 1s ease-in-out 0.4s, opacity 0.5s ease 1.5s !important; 
+}
+
+/* Yazı boyutları */
+.intro-page .envelope-container .intro-card .couple-title {
+  font-size: clamp(32px, 8vw, 48px) !important;
+  margin: 10px 0 !important;
+  gap: 0 !important;
+}
+.intro-page .envelope-container .intro-card .couple-title em {
+  font-size: clamp(22px, 6vw, 32px) !important;
+  margin: 0 !important;
+}
+.intro-page .envelope-container .intro-card .intro-text,
+.intro-page .envelope-container .intro-card .guest-greeting {
+  font-size: clamp(14px, 3.5vw, 16px) !important;
+  margin-top: 10px !important;
+}
+.intro-page .envelope-container .intro-card .leaf-mark {
+  transform: scale(0.6) !important;
+  margin-bottom: 5px !important;
+}
+
+.envelope-front {
+  position: absolute;
+  inset: 0;
+  /* Işığın sol üstten vurduğu hissini veren zarif kağıt dokusu */
+  background: linear-gradient(135deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 85%, var(--rose-dark) 15%) 100%);
+  border-radius: 12px;
+  clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+  z-index: 4;
+  /* Hafif bir sınır çizgisi ile ön yüzeyin belirginleştirilmesi */
+  border: 1px solid color-mix(in srgb, var(--rose-light) 50%, transparent);
+}
+
+.envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  /* Katlanma yerinde aydınlık, ucuna doğru hafifçe koyulaşan 3D ışık */
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 95%, #ffffff 5%) 0%, color-mix(in srgb, var(--paper) 80%, var(--rose-dark) 20%) 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center; 
+  z-index: 5;
+  transition: transform 0.6s ease-in-out, z-index 0s 0.3s;
+  border-radius: 12px 12px 0 0;
+  /* Katlanma izini vurgulayan çok ince bir üst parlaklık (Highlight) */
+  border-top: 1.5px solid rgba(255, 255, 255, 0.7);
+}
+
+.envelope-seal {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 90px; /* Zerafeti artırmak için 5px büyütüldü */
+  height: 90px;
+  border-radius: 50%;
+  /* Mühre bombeli ve parlak bir mum görünümü (3D yansıma) veren degrade */
+  background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--rose-light) 60%, #fff 40%), var(--rose) 40%, var(--rose-dark) 85%);
+  color: #ffffff;
+  border: none;
+  z-index: 6;
+  cursor: pointer;
+  font-family: "Playfair Display", "Noto Serif", serif;
+  font-weight: 800;
+  font-size: 16px;
+  /* Mührün altında dışa doğru gölge, üstünde içe doğru yansıma */
+  box-shadow: 
+    0 12px 30px color-mix(in srgb, var(--rose-dark) 50%, transparent),
+    inset 0 4px 6px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, opacity 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Mum mührün içindeki klasik altın-gümüş çerçeve izi */
+.envelope-seal::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.15);
+  pointer-events: none;
+}
+
+/* Mühre tıklandığındaki tepki */
+.envelope-seal:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  box-shadow: 
+    0 16px 36px color-mix(in srgb, var(--rose-dark) 60%, transparent),
+    inset 0 4px 8px rgba(255, 255, 255, 0.5),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.25);
+}
+/* =============================
+   ANİMASYON DURUMLARI (Tetiklendiğinde)
+   ============================= */
+.intro-page.opening .envelope-seal {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.intro-page.opening .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 1; /* Kapak açılınca arkaya düşer, böylece kart önünden çıkabilir */
+}
+
+.intro-page.opening .envelope-container .intro-card {
+  transform: translateY(-50%) scale(1.05) !important;
+  opacity: 0 !important; 
+}
+
+@keyframes cardExtractAndZoom {
+  0% {
+    /* Başlangıç: Zarfın içinde bekler */
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    z-index: 2;
+  }
+  35% {
+    /* 1. AŞAMA: Zarfın içinden tamamen yukarı süzülerek çıkar */
+    transform: translateY(-75%) scale(1.05);
+    opacity: 1;
+    z-index: 2;
+  }
+  36% {
+    /* Zarftan kurtulduğu an z-index öne geçer ki ön cebe takılmasın */
+    transform: translateY(-75%) scale(1.05);
+    opacity: 1;
+    z-index: 100;
+  }
+  100% {
+    /* 2. AŞAMA: Ekrana doğru devasa büyür ve şeffaflaşarak kaybolur */
+    transform: translateY(-15vh) scale(4);
+    opacity: 0;
+    z-index: 100;
+  }
+}
+
+/* ANA DAVETİYE SAYFASINA GEÇİŞ (Fade-In) */
+.invitation-page {
+  animation: smoothPageFadeIn 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes smoothPageFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
