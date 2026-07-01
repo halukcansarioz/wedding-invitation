@@ -19,14 +19,14 @@ const THEME_FAVICON_COLORS = {
 const getFaviconUrl = (theme) => {
   const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.rose;
   const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="17" fill="${colors.bg}"/>
-  <circle cx="32" cy="32" r="21" fill="${colors.circle}" opacity="0.72"/>
-  <g fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="2" stroke-linejoin="round">
-    <path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/>
-  </g>
-  <circle cx="32" cy="32" r="6" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="2"/>
-</svg>`;
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+      <rect width="64" height="64" rx="17" fill="${colors.bg}"/>
+      <circle cx="32" cy="32" r="21" fill="${colors.circle}" opacity="0.72"/>
+      <g fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="2" stroke-linejoin="round">
+        <path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/>
+      </g>
+      <circle cx="32" cy="32" r="6" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="2"/>
+    </svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg.trim())}`;
 };
 
