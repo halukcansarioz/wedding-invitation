@@ -1214,3 +1214,19 @@ html[data-theme] .app .hero-section .couple-title em,
 [data-theme="lavanta"] .field-with-counter span { color: #664b8a; }
 [data-theme="minimal"] .field-with-counter span { color: #737373; }
 [data-theme="dark"] .field-with-counter span { color: #bfbfbf; }
+
+.admin-visibility-card {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-sidebar-menu .admin-nav-button {
+  clip-path: inset(0 round 8px);
+}
+

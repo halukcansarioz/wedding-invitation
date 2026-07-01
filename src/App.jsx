@@ -152,9 +152,21 @@ const DEFAULT_SITE_DATA = {
     { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
   ],
   settings: {
-    theme: "lavanta",
+    theme: "lavanta", // Sende yazan teman kalsın
     defaultTheme: "lavanta",
     requireWishApproval: true,
+    // BUNU EKLİYORUZ: Hangi bölümlerin açık olacağını belirler
+    visibility: {
+      countdown: true,
+      family: true,
+      ceremony: true,
+      schedule: true,
+      location: true,
+      gallery: true,
+      rsvp: true,
+      guests: true,
+      wishes: true,
+    },
   },
   messages: {
     whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
@@ -321,25 +333,29 @@ const CHILD_OPTIONS = [
 ];
 
 const mergeSiteData = (storedData) => {
+  
   const stored = storedData && typeof storedData === "object" ? storedData : {};
 
   return {
     invitation: {
       ...DEFAULT_SITE_DATA.invitation,
       ...(stored.invitation || {}),
-      gallery:
-        Array.isArray(stored.invitation?.gallery) && stored.invitation.gallery.length > 0
-          ? stored.invitation.gallery
-          : DEFAULT_SITE_DATA.invitation.gallery,
+      // BURASI DEĞİŞTİ: Artık liste tamamen boş [ ] gelse bile bunu kabul edecek
+      gallery: Array.isArray(stored.invitation?.gallery)
+        ? stored.invitation.gallery
+        : DEFAULT_SITE_DATA.invitation.gallery,
     },
+
     familyInfo: {
       ...DEFAULT_SITE_DATA.familyInfo,
       ...(stored.familyInfo || {}),
     },
+
     copy: {
       ...DEFAULT_SITE_DATA.copy,
       ...(stored.copy || {}),
     },
+
     eventDetails:
       Array.isArray(stored.eventDetails) && stored.eventDetails.length > 0
         ? stored.eventDetails
@@ -351,7 +367,12 @@ const mergeSiteData = (storedData) => {
     settings: {
       ...DEFAULT_SITE_DATA.settings,
       ...(stored.settings || {}),
+      visibility: {
+        ...(DEFAULT_SITE_DATA.settings.visibility || {}),
+        ...(stored.settings?.visibility || {}),
+      },
     },
+
     messages: {
       ...DEFAULT_SITE_DATA.messages,
       ...(stored.messages || {}),
@@ -2158,9 +2179,16 @@ function App() {
   const updateDraftImage = async (group, key, file) => {
     try {
       if (!file) return;
-      const url = await uploadMediaFile(file, "images");
+      
+      // 1. Resmi küçült ve Base64 formatına çevir
+      const compressedDataUrl = await readImageFileAsDataUrl(file);
+      // 2. Base64'ü Supabase'in kabul edeceği Blob/File formatına geri çevir
+      const compressedBlob = await (await fetch(compressedDataUrl)).blob();
+      const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
+
+      const url = await uploadMediaFile(compressedFile, "images");
       updateDraftObject(group, key, url);
-      setAdminSaveMessage("Görsel Supabase Storage'a yüklendi. Canlı sayfaya yansıtmak için Değişiklikleri Kaydet butonuna bas.");
+      setAdminSaveMessage("Görsel küçültüldü ve Supabase Storage'a yüklendi. Canlı sayfaya yansıtmak için Değişiklikleri Kaydet butonuna bas.");
     } catch (error) {
       console.error("Görsel yüklenemedi:", error);
       setAdminSaveMessage(error.message || "Görsel yüklenemedi.");
@@ -2175,6 +2203,12 @@ function App() {
   const updateDraftMusic = async (file) => {
     try {
       if (!file) return;
+
+      if (file.size > MAX_AUDIO_FILE_SIZE) {
+        setAdminSaveMessage("Müzik dosyası çok büyük. Lütfen 4 MB altında bir MP3/M4A dosyası seçin.");
+        return;
+      }
+
       const url = await uploadMediaFile(file, "music");
       setAdminDraft((prev) => ({
         ...prev,
@@ -2244,9 +2278,14 @@ function App() {
   const updateGalleryImageFile = async (index, file) => {
     try {
       if (!file) return;
-      const url = await uploadMediaFile(file, "gallery");
+      
+      const compressedDataUrl = await readImageFileAsDataUrl(file);
+      const compressedBlob = await (await fetch(compressedDataUrl)).blob();
+      const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
+
+      const url = await uploadMediaFile(compressedFile, "gallery");
       updateGalleryItem(index, url);
-      setAdminSaveMessage("Galeri görseli Supabase Storage'a yüklendi. Canlı sayfada görünmesi için Değişiklikleri Kaydet butonuna bas.");
+      setAdminSaveMessage("Galeri görseli küçültüldü ve yüklendi. Canlı sayfada görünmesi için Değişiklikleri Kaydet butonuna bas.");
     } catch (error) {
       console.error("Galeri görseli yüklenemedi:", error);
       setAdminSaveMessage(error.message || "Galeri görseli yüklenemedi.");
@@ -2565,6 +2604,8 @@ function App() {
   };
 
   const importAllDataJson = async () => {
+    const confirmed = await showAppConfirm("DİKKAT: Bu işlem mevcut tüm davetiye ayarlarını, katılım kayıtlarını ve anı defteri mesajlarını SİLECEK ve yerine yedeği yükleyecektir. Emin misiniz?", { title: "Yedeği Geri Yükle", confirmText: "Evet, Geri Yükle", tone: "danger", icon: "!" });
+    if (!confirmed) return;
     try {
       const parsed = JSON.parse(dataImportText);
 
@@ -2711,6 +2752,10 @@ function App() {
         case "general":
           return (
             <AdminSection title="Genel Davetiye Bilgileri">
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Geri Sayım bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.countdown !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
+                <AdminCheckbox label="Tarih ve Konum (Harita) bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.location !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
+              </div>
               <div className="admin-edit-grid">
                 <AdminField label="Gelin adı" value={adminDraft.invitation.bride} onChange={(value) => updateDraftObject("invitation", "bride", value)} />
                 <AdminField label="Damat adı" value={adminDraft.invitation.groom} onChange={(value) => updateDraftObject("invitation", "groom", value)} />
@@ -2759,15 +2804,22 @@ function App() {
               </div>
 
               <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-                <AdminSelect
-                  label="Sistem Varsayılan Sıfırlama Teması"
-                  value={adminDraft.settings.defaultTheme || "lavanta"}
-                  options={THEMES}
-                  onChange={(value) => updateDraftObject("settings", "defaultTheme", value)}
-                />
-                <small className="admin-help-text" style={{ display: "block", marginTop: "6px" }}>
-                  <strong>"Varsayılana Döndür"</strong> butonuna basıldığında sitenin fabrika ayarı olarak hangi temaya, renklere ve o temanın resimlerine döneceğini buradan belirleyebilirsiniz.
-                </small>
+                <h4 style={{ marginBottom: "12px", color: "var(--text-h)" }}>Bölüm Görünürlüğü (Aç/Kapat)</h4>
+                <p className="admin-help-text" style={{ marginBottom: "16px" }}>
+                  Davetiyenizde görünmesini istemediğiniz bölümleri buradan kapatabilirsiniz. Kapattığınız bölümler sayfadan tamamen gizlenir.
+                </p>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
+                  <AdminCheckbox label="Geri Sayım" checked={adminDraft.settings.visibility?.countdown !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
+                  <AdminCheckbox label="Aile Bilgileri" checked={adminDraft.settings.visibility?.family !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
+                  <AdminCheckbox label="Nikah / Düğün Detayları" checked={adminDraft.settings.visibility?.ceremony !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
+                  <AdminCheckbox label="Düğün Takvimi (Akış)" checked={adminDraft.settings.visibility?.schedule !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
+                  <AdminCheckbox label="Tarih ve Harita" checked={adminDraft.settings.visibility?.location !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
+                  <AdminCheckbox label="Fotoğraf Galerisi" checked={adminDraft.settings.visibility?.gallery !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
+                  <AdminCheckbox label="Katılım (LCV) Formu" checked={adminDraft.settings.visibility?.rsvp !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+                  <AdminCheckbox label="Misafir Listesi" checked={adminDraft.settings.visibility?.guests !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+                  <AdminCheckbox label="Anı Defteri Formu" checked={adminDraft.settings.visibility?.wishes !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+                </div>
               </div>
             </AdminSection>
           );
@@ -2844,6 +2896,11 @@ function App() {
         case "family":
           return (
             <AdminSection title="Aile Bilgileri">
+              
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Aile Bilgileri bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.family !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
+              </div>
+
               <div className="admin-edit-grid">
                 <AdminField label="Gelin ailesi başlığı" value={adminDraft.familyInfo.brideFamilyTitle} onChange={(value) => updateDraftObject("familyInfo", "brideFamilyTitle", value)} />
                 <AdminField label="Gelin ailesi adı" value={adminDraft.familyInfo.brideFamilyName} onChange={(value) => updateDraftObject("familyInfo", "brideFamilyName", value)} />
@@ -2857,6 +2914,11 @@ function App() {
         case "ceremony":
           return (
             <AdminSection title="Nikah / Düğün Ayrımı">
+              
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Nikah / Düğün bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.ceremony !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
+              </div>
+
               <div className="admin-repeat-list">
                 {adminDraft.eventDetails.map((event, index) => (
                   <div className="admin-repeat-item" key={`event-${index}`}>
@@ -2884,6 +2946,11 @@ function App() {
         case "schedule":
           return (
             <AdminSection title="Düğün Takvimi / Akış">
+              
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Düğün Takvimi bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.schedule !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
+              </div>
+
               <div className="admin-repeat-list">
                 {adminDraft.scheduleItems.map((item, index) => (
                   <div className="admin-repeat-item" key={`schedule-${index}`}>
@@ -2910,6 +2977,11 @@ function App() {
         case "gallery":
           return (
             <AdminSection title="Görsel Yönetimi">
+
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Fotoğraf Galerisi bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.gallery !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
+              </div>
+
               <div className="admin-edit-grid">
                 <AdminImageField
                   label="Açılış ekranı resmi"
@@ -2955,6 +3027,12 @@ function App() {
         case "guests":
           return (
             <AdminSection title="Katılım Formu Kayıtları">
+              
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Katılım (LCV) Formunu davetiyede göster" checked={adminDraft.settings.visibility?.rsvp !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+                <AdminCheckbox label="Misafir Listesini davetiyede göster" checked={adminDraft.settings.visibility?.guests !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+              </div>
+
               <div className="admin-stats admin-stats-inside">
                 <div><strong>{guests.length}</strong><span>Toplam Yanıt</span></div>
                 <div><strong>{totalPersonCount}</strong><span>Katılacak Kişi</span></div>
@@ -3026,6 +3104,11 @@ function App() {
         case "wishes":
           return (
             <AdminSection title="Anı Defteri Formu Mesajları">
+
+              <div className="admin-visibility-card">
+                <AdminCheckbox label="Anı Defteri bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.wishes !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+              </div>
+              
               <div className="admin-toolbar">
                 <input value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder="Mesajlarda ara" />
                 <AdminDropdown
@@ -3405,234 +3488,229 @@ function App() {
           </div>
 
           <main className="invitation-page">
-            <section className="hero-section">
-              <div className="hero-content">
-                <p className="small-title">{copy.heroLabel}</p>
+                      <section className="hero-section">
+                        <div className="hero-content">
+                          <p className="small-title">{copy.heroLabel}</p>
+                          <h1 className="couple-title">
+                            <span>{invitation.bride}</span>
+                            <em>&</em>
+                            <span>{invitation.groom}</span>
+                          </h1>
+                          <p className="hero-date">{invitation.dateText}</p>
+                          <p className="hero-time">Saat {invitation.timeText}</p>
+                          {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+                        </div>
+                      </section>
 
-                <h1 className="couple-title">
-                  <span>{invitation.bride}</span>
-                  <em>&</em>
-                  <span>{invitation.groom}</span>
-                </h1>
+                      {settings.visibility?.countdown !== false && (
+                        <section className="countdown-section">
+                          <p className="section-label">{copy.countdownLabel}</p>
+                          <h2>{copy.countdownTitle}</h2>
+                          <div className="countdown-grid">
+                            <div className="count-box countdown-animated"><strong>{timeLeft.days}</strong><span>Gün</span></div>
+                            <div className="count-box countdown-animated"><strong>{timeLeft.hours}</strong><span>Saat</span></div>
+                            <div className="count-box countdown-animated"><strong>{timeLeft.minutes}</strong><span>Dakika</span></div>
+                            <div className="count-box countdown-animated"><strong>{timeLeft.seconds}</strong><span>Saniye</span></div>
+                          </div>
+                        </section>
+                      )}
 
-                <p className="hero-date">{invitation.dateText}</p>
-                <p className="hero-time">Saat {invitation.timeText}</p>
-                {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-              </div>
-            </section>
+                      <section className="card invitation-card">
+                        <p className="section-label">{copy.invitationLabel}</p>
+                        <h2>{copy.invitationTitle}</h2>
+                        <p>{invitation.message}</p>
+                      </section>
 
-            <section className="countdown-section">
-              <p className="section-label">{copy.countdownLabel}</p>
-              <h2>{copy.countdownTitle}</h2>
+                      {settings.visibility?.family !== false && (
+                        <section className="card family-card">
+                          <p className="section-label">{copy.familyLabel}</p>
+                          <h2>{copy.familyTitle}</h2>
+                          <p>{familyInfo.text}</p>
+                          <div className="family-grid">
+                            <div>
+                              <span>{familyInfo.brideFamilyTitle}</span>
+                              <strong>{familyInfo.brideFamilyName}</strong>
+                            </div>
+                            <div>
+                              <span>{familyInfo.groomFamilyTitle}</span>
+                              <strong>{familyInfo.groomFamilyName}</strong>
+                            </div>
+                          </div>
+                        </section>
+                      )}
 
-              <div className="countdown-grid">
-                <div className="count-box countdown-animated"><strong>{timeLeft.days}</strong><span>Gün</span></div>
-                <div className="count-box countdown-animated"><strong>{timeLeft.hours}</strong><span>Saat</span></div>
-                <div className="count-box countdown-animated"><strong>{timeLeft.minutes}</strong><span>Dakika</span></div>
-                <div className="count-box countdown-animated"><strong>{timeLeft.seconds}</strong><span>Saniye</span></div>
-              </div>
-            </section>
+                      {settings.visibility?.ceremony !== false && (
+                        <section className="card ceremony-card">
+                          <p className="section-label">{copy.ceremonyLabel}</p>
+                          <h2>{copy.ceremonyTitle}</h2>
+                          <div className="ceremony-grid">
+                            {siteData.eventDetails.map((event, index) => (
+                              <div className="ceremony-item" key={`${event.label}-${index}`}>
+                                <span>{event.label}</span>
+                                <strong>{event.time}</strong>
+                                <p>{event.description}</p>
+                                <em>{event.location}</em>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      )}
 
-            <section className="card invitation-card">
-              <p className="section-label">{copy.invitationLabel}</p>
-              <h2>{copy.invitationTitle}</h2>
-              <p>{invitation.message}</p>
-            </section>
+                      {settings.visibility?.schedule !== false && (
+                        <section className="card schedule-card">
+                          <p className="section-label">{copy.scheduleLabel}</p>
+                          <h2>{invitation.dateText}</h2>
+                          <div className="schedule-list">
+                            {siteData.scheduleItems.map((item, index) => (
+                              <div className="schedule-item" key={`${item.time}-${index}`}>
+                                <strong>{item.time}</strong>
+                                <div>
+                                  <span>{item.title}</span>
+                                  <p>{item.description}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </section>
+                      )}
 
-            <section className="card family-card">
-              <p className="section-label">{copy.familyLabel}</p>
-              <h2>{copy.familyTitle}</h2>
-              <p>{familyInfo.text}</p>
+                      {settings.visibility?.location !== false && (
+                        <section className="card">
+                          <p className="section-label">{copy.locationLabel}</p>
+                          <h2>{copy.locationTitle}</h2>
+                          <div className="info-list">
+                            <div className="info-row"><span>Tarih</span><strong>{invitation.dateText}</strong></div>
+                            <div className="info-row"><span>Saat</span><strong>{invitation.timeText}</strong></div>
+                            <div className="info-row"><span>Yer</span><strong>{invitation.venue}</strong></div>
+                            <div className="info-row"><span>Adres</span><strong>{invitation.address}</strong></div>
+                          </div>
+                          <div className="mini-map">
+                            <iframe
+                              title="Düğün Konumu"
+                              src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation.venue} ${invitation.address}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                              loading="lazy"
+                              allowFullScreen
+                              referrerPolicy="no-referrer-when-downgrade"
+                            ></iframe>
+                          </div>
+                          <div className="button-group">
+                            <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">Konuma Git</a>
+                            <a className="secondary-button" href={googleCalendarLink} target="_blank" rel="noreferrer">Takvime Ekle</a>
+                          </div>
+                        </section>
+                      )}
 
-              <div className="family-grid">
-                <div>
-                  <span>{familyInfo.brideFamilyTitle}</span>
-                  <strong>{familyInfo.brideFamilyName}</strong>
-                </div>
-                <div>
-                  <span>{familyInfo.groomFamilyTitle}</span>
-                  <strong>{familyInfo.groomFamilyName}</strong>
-                </div>
-              </div>
-            </section>
+                      {settings.visibility?.gallery !== false && (
+                        <section className="card">
+                          <p className="section-label">{copy.galleryLabel}</p>
+                          <h2>{copy.galleryTitle}</h2>
+                          <div className="gallery-grid">
+                            {invitation.gallery.map((image, index) => (
+                              <img key={`${image}-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
+                            ))}
+                          </div>
+                        </section>
+                      )}
 
-            <section className="card ceremony-card">
-              <p className="section-label">{copy.ceremonyLabel}</p>
-              <h2>{copy.ceremonyTitle}</h2>
+                      {settings.visibility?.rsvp !== false && (
+                        <section className="card rsvp-card">
+                          <p className="section-label">{copy.rsvpLabel}</p>
+                          <h2>{copy.rsvpTitle}</h2>
+                          <p>{copy.rsvpText}</p>
+                          <form className="rsvp-form" onSubmit={submitGuest}>
+                            <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder="Ad Soyad" />
+                            <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder="Telefon Numaranız" maxLength="20" />
+                            <OptionGroup value={guestForm.attendance} options={ATTENDANCE_OPTIONS} onChange={updateAttendance} />
+                            <OptionGroup disabled={!isAttending} value={guestForm.personCount} options={PERSON_COUNT_OPTIONS} onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))} />
+                            <OptionGroup disabled={!isAttending} value={guestForm.side} options={SIDE_OPTIONS} onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))} />
+                            <OptionGroup disabled={!isAttending} value={guestForm.hasChild} options={CHILD_OPTIONS} onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))} />
+                            <div className="field-with-counter">
+                              <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder="Notunuz" maxLength={NOTE_MAX_LENGTH}></textarea>
+                              <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
+                            </div>
+                            <button type="submit" className="main-button form-button">Katılımı Gönder</button>
+                          </form>
+                          <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+                            WhatsApp ile Bildir
+                          </a>
+                        </section>
+                      )}
 
-              <div className="ceremony-grid">
-                {siteData.eventDetails.map((event, index) => (
-                  <div className="ceremony-item" key={`${event.label}-${index}`}>
-                    <span>{event.label}</span>
-                    <strong>{event.time}</strong>
-                    <p>{event.description}</p>
-                    <em>{event.location}</em>
-                  </div>
-                ))}
-              </div>
-            </section>
+                      {settings.visibility?.guests !== false && (
+                        <section className="card">
+                          <p className="section-label">{copy.guestsLabel}</p>
+                          <h2>{copy.guestsTitle}</h2>
+                          <div className="guest-stats">
+                            <div><strong>{guests.length}</strong><span>Toplam Yanıt</span></div>
+                            <div><strong>{totalPersonCount}</strong><span>Katılacak Kişi</span></div>
+                            <div><strong>{notAttendingCount}</strong><span>Katılamayacak</span></div>
+                          </div>
+                          <div className="guest-list">
+                            {guests.length === 0 ? (
+                              <p className="empty-text">Henüz katılım bildirimi yok.</p>
+                            ) : (
+                              guests.slice(0, 6).map((guest) => (
+                                <div className="guest-item" key={guest.id}>
+                                  <div>
+                                    <strong>{guest.name}</strong>
+                                    <span>{guest.side} · {guest.personCount} kişi · Çocuk: {guest.hasChild || "Hayır"}</span>
+                                    {guest.phone && <small>{guest.phone}</small>}
+                                  </div>
+                                  <em>{guest.attendance}</em>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </section>
+                      )}
 
-            <section className="card schedule-card">
-              <p className="section-label">{copy.scheduleLabel}</p>
-              <h2>{invitation.dateText}</h2>
+                      {settings.visibility?.wishes !== false && (
+                        <section className="card">
+                          <p className="section-label">{copy.wishesLabel}</p>
+                          <h2>{copy.wishesTitle}</h2>
+                          <form className="wish-form" onSubmit={submitWish}>
+                            <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder="Ad Soyad" />
+                            <div className="field-with-counter">
+                              <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder="Mesajınız" maxLength={WISH_MAX_LENGTH}></textarea>
+                              <span>{wishForm.message.length}/{WISH_MAX_LENGTH}</span>
+                            </div>
+                            <button type="submit" className="main-button form-button">Mesajı Gönder</button>
+                          </form>
+                          <div className="wish-list">
+                            {approvedWishes.length === 0 ? (
+                              <p className="empty-text">Henüz güzel dilek yok.</p>
+                            ) : (
+                              approvedWishes.slice(0, 4).map((wish) => (
+                                <div className="wish-item" key={wish.id}>
+                                  <p>“{wish.message}”</p>
+                                  <strong>{wish.name}</strong>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </section>
+                      )}
 
-              <div className="schedule-list">
-                {siteData.scheduleItems.map((item, index) => (
-                  <div className="schedule-item" key={`${item.time}-${index}`}>
-                    <strong>{item.time}</strong>
-                    <div>
-                      <span>{item.title}</span>
-                      <p>{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                      <section className="card">
+                        <p className="section-label">{copy.shareLabel}</p>
+                        <h2>{copy.shareTitle}</h2>
+                        <p>{copy.shareDescription}</p>
+                        <div className="qr-public-card">
+                          <img src={qrImageUrl} alt="Davetiye QR kodu" loading="lazy" />
+                          <span>QR kod ile hızlıca paylaşabilirsiniz.</span>
+                        </div>
+                        <div className="button-group">
+                          <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">WhatsApp ile Paylaş</a>
+                          <button className="secondary-button" onClick={copyInvitationLink}>Linki Kopyala</button>
+                        </div>
+                      </section>
 
-            <section className="card">
-              <p className="section-label">{copy.locationLabel}</p>
-              <h2>{copy.locationTitle}</h2>
-
-              <div className="info-list">
-                <div className="info-row"><span>Tarih</span><strong>{invitation.dateText}</strong></div>
-                <div className="info-row"><span>Saat</span><strong>{invitation.timeText}</strong></div>
-                <div className="info-row"><span>Yer</span><strong>{invitation.venue}</strong></div>
-                <div className="info-row"><span>Adres</span><strong>{invitation.address}</strong></div>
-              </div>
-
-              <div className="mini-map">
-                <iframe
-                  title="Düğün Konumu"
-                  src={`https://www.google.com/maps?q=${encodeURIComponent(`${invitation.venue} ${invitation.address}`)}&z=15&output=embed`}
-                  loading="lazy"
-                  allowFullScreen
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-              </div>
-
-              <div className="button-group">
-                <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">Konuma Git</a>
-                <a className="secondary-button" href={googleCalendarLink} target="_blank" rel="noreferrer">Takvime Ekle</a>
-              </div>
-            </section>
-
-            <section className="card">
-              <p className="section-label">{copy.galleryLabel}</p>
-              <h2>{copy.galleryTitle}</h2>
-
-              <div className="gallery-grid">
-                {invitation.gallery.map((image, index) => (
-                  <img key={`${image}-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
-                ))}
-              </div>
-            </section>
-
-            <section className="card rsvp-card">
-              <p className="section-label">{copy.rsvpLabel}</p>
-              <h2>{copy.rsvpTitle}</h2>
-              <p>{copy.rsvpText}</p>
-
-              <form className="rsvp-form" onSubmit={submitGuest}>
-                <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder="Ad Soyad" />
-                <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder="Telefon Numaranız" maxLength="20" />
-
-                <OptionGroup value={guestForm.attendance} options={ATTENDANCE_OPTIONS} onChange={updateAttendance} />
-                <OptionGroup disabled={!isAttending} value={guestForm.personCount} options={PERSON_COUNT_OPTIONS} onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))} />
-                <OptionGroup disabled={!isAttending} value={guestForm.side} options={SIDE_OPTIONS} onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))} />
-                <OptionGroup disabled={!isAttending} value={guestForm.hasChild} options={CHILD_OPTIONS} onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))} />
-
-                <div className="field-with-counter">
-                  <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder="Notunuz" maxLength={NOTE_MAX_LENGTH}></textarea>
-                  <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
-                </div>
-
-                <button type="submit" className="main-button form-button">Katılımı Gönder</button>
-              </form>
-
-              <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation.whatsappNumber}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-                WhatsApp ile Bildir
-              </a>
-            </section>
-
-            <section className="card">
-              <p className="section-label">{copy.guestsLabel}</p>
-              <h2>{copy.guestsTitle}</h2>
-
-              <div className="guest-stats">
-                <div><strong>{guests.length}</strong><span>Toplam Yanıt</span></div>
-                <div><strong>{totalPersonCount}</strong><span>Katılacak Kişi</span></div>
-                <div><strong>{notAttendingCount}</strong><span>Katılamayacak</span></div>
-              </div>
-
-              <div className="guest-list">
-                {guests.length === 0 ? (
-                  <p className="empty-text">Henüz katılım bildirimi yok.</p>
-                ) : (
-                  guests.slice(0, 6).map((guest) => (
-                    <div className="guest-item" key={guest.id}>
-                      <div>
-                        <strong>{guest.name}</strong>
-                        <span>{guest.side} · {guest.personCount} kişi · Çocuk: {guest.hasChild || "Hayır"}</span>
-                        {guest.phone && <small>{guest.phone}</small>}
-                      </div>
-                      <em>{guest.attendance}</em>
-                    </div>
-                  ))
-                )}
-              </div>
-            </section>
-
-            <section className="card">
-              <p className="section-label">{copy.wishesLabel}</p>
-              <h2>{copy.wishesTitle}</h2>
-
-              <form className="wish-form" onSubmit={submitWish}>
-                <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder="Ad Soyad" />
-
-                <div className="field-with-counter">
-                  <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder="Mesajınız" maxLength={WISH_MAX_LENGTH}></textarea>
-                  <span>{wishForm.message.length}/{WISH_MAX_LENGTH}</span>
-                </div>
-
-                <button type="submit" className="main-button form-button">Mesajı Gönder</button>
-              </form>
-
-              <div className="wish-list">
-                {approvedWishes.length === 0 ? (
-                  <p className="empty-text">Henüz güzel dilek yok.</p>
-                ) : (
-                  approvedWishes.slice(0, 4).map((wish) => (
-                    <div className="wish-item" key={wish.id}>
-                      <p>“{wish.message}”</p>
-                      <strong>{wish.name}</strong>
-                    </div>
-                  ))
-                )}
-              </div>
-            </section>
-
-            <section className="card">
-              <p className="section-label">{copy.shareLabel}</p>
-              <h2>{copy.shareTitle}</h2>
-              <p>{copy.shareDescription}</p>
-
-              <div className="qr-public-card">
-                <img src={qrImageUrl} alt="Davetiye QR kodu" loading="lazy" />
-                <span>QR kod ile hızlıca paylaşabilirsiniz.</span>
-              </div>
-
-              <div className="button-group">
-                <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">WhatsApp ile Paylaş</a>
-                <button className="secondary-button" onClick={copyInvitationLink}>Linki Kopyala</button>
-              </div>
-            </section>
-
-            <footer className="footer">
-              <p>{coupleName}</p>
-              <span>{invitation.dateText}</span>
-              <small>{copy.thanksText}</small>
-              <small>{copy.footerSmall}</small>
-            </footer>
+                      <footer className="footer">
+                        <p>{coupleName}</p>
+                        <span>{invitation.dateText}</span>
+                        <small>{copy.thanksText}</small>
+                        <small>{copy.footerSmall}</small>
+                      </footer>
           </main>
         </>
       )}
