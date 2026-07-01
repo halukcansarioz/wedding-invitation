@@ -1039,12 +1039,12 @@ html[data-theme="dark"] .app-modal-cancel {
   background: transparent;
 }
 
-..admin-sidebar-menu::-webkit-scrollbar-thumb {
+.admin-sidebar-menu::-webkit-scrollbar-thumb {
   background: rgba(var(--theme-rgb, 217, 140, 161), 0.34);
   border-radius: 999px;
 }
 
-..admin-layout .admin-sidebar {
+.admin-layout .admin-sidebar {
   top: 14px !important;
   max-height: calc(100vh - 28px) !important;
   overflow: hidden !important;
