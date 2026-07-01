@@ -313,6 +313,12 @@ html[data-theme] .admin-toolbar {
   align-items: stretch !important;
 }
 
+html[data-theme] .admin-actions-sticky {
+  background: var(--theme-surface) !important;
+  border-color: rgba(var(--theme-rgb), 0.28) !important;
+  box-shadow: var(--shadow) !important;
+}
+
 html[data-theme] .admin-toolbar .admin-custom-select {
   min-width: 170px !important;
 }
