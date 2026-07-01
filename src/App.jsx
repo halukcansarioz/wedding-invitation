@@ -6,17 +6,29 @@ const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
 const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
 const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
 
-const FLOWER_FAVICON_SVG = `
+const THEME_FAVICON_COLORS = {
+  rose: { bg: "#fff5f8", circle: "#f8d7e2", petal: "#cf7c9a", stroke: "#9f4f68", center: "#fff1b8" },
+  sage: { bg: "#f5f8f5", circle: "#d7ebd7", petal: "#8cb38c", stroke: "#597359", center: "#fff1b8" },
+  gold: { bg: "#fdfbf7", circle: "#f3e9d2", petal: "#d4b872", stroke: "#9c8346", center: "#fff1b8" },
+  burgundy: { bg: "#fcf5f6", circle: "#ebccd2", petal: "#a3495d", stroke: "#702838", center: "#fff1b8" },
+  lavanta: { bg: "#f9f7fc", circle: "#e6dcf2", petal: "#9b7cbf", stroke: "#664b8a", center: "#fff1b8" },
+  minimal: { bg: "#ffffff", circle: "#f0f0f0", petal: "#b3b3b3", stroke: "#737373", center: "#ffffff" },
+  dark: { bg: "#2a2a2a", circle: "#404040", petal: "#8c8c8c", stroke: "#bfbfbf", center: "#404040" },
+};
+
+const getFaviconUrl = (theme) => {
+  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.rose;
+  const svg = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="17" fill="#fff5f8"/>
-  <circle cx="32" cy="32" r="21" fill="#f8d7e2" opacity="0.72"/>
-  <g fill="#cf7c9a" stroke="#9f4f68" stroke-width="2" stroke-linejoin="round">
+  <rect width="64" height="64" rx="17" fill="${colors.bg}"/>
+  <circle cx="32" cy="32" r="21" fill="${colors.circle}" opacity="0.72"/>
+  <g fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="2" stroke-linejoin="round">
     <path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/>
   </g>
-  <circle cx="32" cy="32" r="6" fill="#fff1b8" stroke="#9f4f68" stroke-width="2"/>
+  <circle cx="32" cy="32" r="6" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="2"/>
 </svg>`;
-
-const FLOWER_FAVICON_URL = `data:image/svg+xml,${encodeURIComponent(FLOWER_FAVICON_SVG)}`;
+  return `data:image/svg+xml,${encodeURIComponent(svg.trim())}`;
+};
 
 const getCurrentShareLink = () => {
   return DEFAULT_SHARE_LINK;
@@ -71,7 +83,7 @@ const DEFAULT_SITE_DATA = {
     introImage: "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
     heroImage: "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
     musicFile: DEFAULT_WEDDING_MUSIC_FILE,
-    musicName: DEFAULT_WEDDING_MUSIC_NAME,
+    musicName: DEFAULT_WEDDING_MUSIC_NAME,    
     gallery: [
       "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
       "https://unsplash.com/photos/BQZo2Hc76p0/download?force=true&w=3840",
@@ -190,6 +202,81 @@ const THEMES = [
   { label: "Minimal Beyaz", value: "minimal" },
   { label: "Koyu Tema", value: "dark" },
 ];
+
+const THEME_DEFAULT_IMAGES = {
+  rose: {
+    introImage: "/images/themes/rose/1.jpg",
+    heroImage: "/images/themes/rose/2.jpg",
+    gallery: [
+      "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
+      "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
+      "/images/themes/rose/sergey-semin-3gpzjLWHb0I-unsplash.jpg",
+      "/images/themes/rose/thomas-curryer-UDfxsawmiKk-unsplash.jpg",
+    ],
+  },
+  sage: {
+    introImage: "/images/themes/sage/3.jpg",
+    heroImage: "/images/themes/sage/4.jpg",
+    gallery: [
+      "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
+      "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
+      "/images/themes/sage/matthew-PmFCYjRqHN8-unsplash.jpg",
+      "/images/themes/sage/silvia-mara-Hi69z0dFLjA-unsplash.jpg",
+    ],
+  },
+  gold: {
+    introImage: "/images/themes/gold/5.jpg",
+    heroImage: "/images/themes/gold/12.jpg",
+    gallery: [
+      "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
+      "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
+      "/images/themes/gold/charlotte-cowell-cHzTNuMAIJs-unsplash.jpg",
+      "/images/themes/gold/thlt-lcx-R5d7yOCkPJU-unsplash.jpg",
+    ],
+  },
+  burgundy: {
+    introImage: "/images/themes/burgundy/7.jpg",
+    heroImage: "/images/themes/burgundy/anita-austvika-6l9m9pFoL8g-unsplash.jpg",
+    gallery: [
+      "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
+      "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
+      "/images/themes/burgundy/11.jpg",
+      "/images/themes/burgundy/6.jpg",
+
+    ],
+  },
+  lavanta: {
+    introImage: "/images/themes/lavanta/8.jpg",
+    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
+    gallery: [
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
+      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
+      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
+    ],
+  },
+  minimal: {
+    introImage: "/images/themes/minimal/9.jpg",
+    heroImage: "/images/themes/minimal/dan-lefebvre-mPyqJAwMAs0-unsplash.jpg",
+    gallery: [
+      "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
+      "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
+      "/images/themes/minimal/max-letek-_zH2qqQ1dHA-unsplash.jpg",
+      "/images/themes/minimal/micah-sammie-chaffin-ECZeV9L7Pc4-unsplash.jpg",
+    ],
+  },
+  dark: {
+    introImage: "/images/themes/dark/10.jpg",
+    heroImage: "/images/themes/dark/adi-albulescu-Q6bt8Ri7Uog-unsplash.jpg",
+    gallery: [
+      "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
+      "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
+      "/images/themes/dark/13.jpg",
+      "/images/themes/dark/mike-marrah-1kCJYMKROiU-unsplash.jpg",
+    ],
+  },
+};
+
 const MAX_IMAGE_DIMENSION = 1400;
 const IMAGE_QUALITY = 0.78;
 const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
@@ -1063,26 +1150,35 @@ function App() {
   const isAttending = guestForm.attendance === "Katılacağım";
 
   useEffect(() => {
-    document.documentElement.lang = "tr";
+      document.documentElement.lang = "tr";
 
-    if (!document.querySelector("meta[charset]")) {
-      const meta = document.createElement("meta");
-      meta.setAttribute("charset", "UTF-8");
-      document.head.prepend(meta);
-    }
+      if (!document.querySelector("meta[charset]")) {
+        const meta = document.createElement("meta");
+        meta.setAttribute("charset", "UTF-8");
+        document.head.prepend(meta);
+      }
+    }, []);
 
-    const favicon =
-      document.querySelector("link[rel='icon'], link[rel='shortcut icon']") ||
-      document.createElement("link");
+    // 2. Hem CSS temasını hem de Favicon'u güncelleyen Effect
+    useEffect(() => {
+      const currentTheme = settings.theme || "rose";
+      
+      // Tema rengini body'e uygula
+      document.documentElement.dataset.theme = currentTheme;
 
-    favicon.setAttribute("rel", "icon");
-    favicon.setAttribute("type", "image/svg+xml");
-    favicon.setAttribute("href", FLOWER_FAVICON_URL);
+      // Favicon'u güncelle
+      const favicon =
+        document.querySelector("link[rel='icon'], link[rel='shortcut icon']") ||
+        document.createElement("link");
 
-    if (!favicon.parentNode) {
-      document.head.appendChild(favicon);
-    }
-  }, []);
+      favicon.setAttribute("rel", "icon");
+      favicon.setAttribute("type", "image/svg+xml");
+      favicon.setAttribute("href", getFaviconUrl(currentTheme)); // Dinamik fonksiyonu çağırdık
+
+      if (!favicon.parentNode) {
+        document.head.appendChild(favicon);
+      }
+    }, [settings.theme]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = settings.theme || "rose";
@@ -2196,6 +2292,40 @@ function App() {
     }
   };
 
+  const handleThemeChange = async (themeValue) => {
+    // 1. Önce sadece temayı değiştir (arka plan, buton renkleri vs. anında değişsin)
+    updateDraftObject("settings", "theme", themeValue);
+
+    // 2. Kullanıcıya görselleri de değiştirmek isteyip istemediğini sor
+    const confirmed = await showAppConfirm(
+      "Seçtiğiniz temaya uygun varsayılan davetiye resimleri yüklensin mi?\n(Mevcut ana ekran ve galeri resimleriniz değişecektir)",
+      { 
+        title: "Tema Resimlerini Yükle", 
+        confirmText: "Evet, Resimleri Yükle", 
+        cancelText: "Hayır, Sadece Tema Değişsin",
+        tone: "info"
+      }
+    );
+
+    // 3. Kullanıcı onaylarsa taslağı resimlerle güncelle
+    if (confirmed) {
+      const themeImages = THEME_DEFAULT_IMAGES[themeValue];
+      
+      if (themeImages) {
+        setAdminDraft((prev) => ({
+          ...prev,
+          invitation: {
+            ...prev.invitation,
+            introImage: themeImages.introImage,
+            heroImage: themeImages.heroImage,
+            gallery: themeImages.gallery,
+          }
+        }));
+        setAdminSaveMessage("Tema resimleri uygulandı. Sayfada kalıcı olması için sağ üstten 'Değişiklikleri Kaydet' butonuna basmalısın.");
+      }
+    }
+  };
+
   const resetSiteContent = async () => {
     const confirmed = await showAppConfirm("Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" });
     if (!confirmed) return;
@@ -2591,7 +2721,7 @@ function App() {
                     key={theme.value}
                     className={adminDraft.settings.theme === theme.value ? "theme-option-card active" : "theme-option-card"}
                     data-theme-preview={theme.value}
-                    onClick={() => updateDraftObject("settings", "theme", theme.value)}
+                    onClick={() => handleThemeChange(theme.value)}
                   >
                     <span className="theme-swatch" aria-hidden="true"></span>
                     <strong>{theme.label}</strong>
