@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 
@@ -1160,8 +1160,7 @@ function App() {
       }
     }, []);
 
-  useEffect(() => {
-      // Buradaki "rose" yazısını "lavanta" yapıyoruz
+  useLayoutEffect(() => {
       const currentTheme = settings.theme || "lavanta"; 
       
       document.documentElement.dataset.theme = currentTheme;
@@ -1476,6 +1475,8 @@ function App() {
 
         setSiteData(normalizedDatabaseSettings);
         setAdminDraft(normalizedDatabaseSettings);
+
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
       }
 
       const publishedWishes = await loadPublishedWishesFromDatabase();
@@ -1897,6 +1898,8 @@ function App() {
 
         setSiteData(normalizedDatabaseSettings);
         setAdminDraft(normalizedDatabaseSettings);
+
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
       } else {
         setAdminDraft(normalizeSiteData(siteData));
       }
@@ -2281,6 +2284,7 @@ function App() {
 
     try {
       await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData)); // BURAYI EKLE
       setSiteData(cleanedData);
       setAdminDraft(cleanedData);
       setAdminSaveMessage("Davetiyedeki yazılar, bilgiler ve görseller Supabase'e kaydedildi.");
@@ -2349,6 +2353,7 @@ function App() {
 
     try {
       await saveSettingsToDatabase(defaultData);
+      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(defaultData));
       setSiteData(defaultData);
       setAdminDraft(defaultData);
       setAdminSaveMessage("Davetiyedeki içerikler seçtiğiniz varsayılan temaya göre başarıyla sıfırlandı.");
