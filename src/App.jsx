@@ -1349,24 +1349,31 @@ function App() {
     setAdminLoginNotice("Admin şifresi güncellendi. Güvenlik için oturum kapatıldı. Yeni şifrenle tekrar giriş yapmalısın.");
   };
 
+  const performAdminSignOut = async () => {
+    try {
+      if (!isSupabaseReady()) return true;
+
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Admin çıkışı yapılamadı:", error);
+        setAdminSaveMessage(getReadableAuthError(error));
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Admin çıkışı bağlantı hatası:", error);
+      setAdminSaveMessage(getReadableAuthError(error));
+      return false;
+    }
+  };
+
   const logoutAdmin = async () => {
     const confirmed = await showAppConfirm("Admin panelden çıkış yapmak istiyor musun?", { title: "Çıkış yap", confirmText: "Çıkış Yap", tone: "warning" });
     if (!confirmed) return;
 
-    try {
-      if (isSupabaseReady()) {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-          console.error("Admin çıkışı yapılamadı:", error);
-          setAdminSaveMessage(getReadableAuthError(error));
-          return;
-        }
-      }
-    } catch (error) {
-      console.error("Admin çıkışı bağlantı hatası:", error);
-      setAdminSaveMessage(getReadableAuthError(error));
-      return;
-    }
+    const signedOut = await performAdminSignOut();
+    if (!signedOut) return;
 
     clearAdminSessionTimestamp();
     setAdminUser(null);
@@ -1879,9 +1886,14 @@ function App() {
     }
   };
 
-  const closeAdminPage = () => {
+  const closeAdminPage = async () => {
+    const signedOut = await performAdminSignOut();
+    if (!signedOut) return;
+
+    clearAdminSessionTimestamp();
     setIsAdminPage(false);
     setIsAdminUnlocked(false);
+    setAdminUser(null);
     setAdminPassword("");
     setAdminError("");
     setAdminLoginNotice("");
