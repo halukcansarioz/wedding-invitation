@@ -11,17 +11,6 @@
 @import "./theme-system.css";
 @import "./final-admin-fixes.css";
 
-/* =========================================================
-   INDEX.CSS - TEMİZ SON DÜZENLEMELER
-   Bu dosya importlardan sonra gelen tüm son düzeltmeleri tek yerde toplar.
-   Tekrarlanan popup, RSVP, admin menü, dropdown, çiçek ve & kodları kaldırıldı.
-   ========================================================= */
-
-
-/* =============================
-   POPUP ÜST ÇİZGİ KALDIRMA
-   ============================= */
-
 .app-modal-card {
   border-top: 0 !important;
 }
@@ -34,11 +23,6 @@
   background: transparent !important;
 }
 
-
-/* =============================
-   ADMIN ÇIKIŞ BUTONU
-   ============================= */
-
 .admin-actions-sticky .admin-logout-button,
 .admin-actions-sticky .secondary-button.admin-logout-button {
   background: var(--paper) !important;
@@ -48,7 +32,9 @@
 }
 
 .admin-actions-sticky .admin-logout-button:hover,
-.admin-actions-sticky .secondary-button.admin-logout-button:hover {
+.admin-actions-sticky .secondary-button.admin-logout-button:hover,
+[data-theme="dark"] .admin-actions-sticky .admin-logout-button:hover,
+[data-theme="dark"] .admin-actions-sticky .secondary-button.admin-logout-button:hover {
   background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
   color: #ffffff !important;
   border-color: var(--rose-dark) !important;
@@ -65,15 +51,8 @@
 
 [data-theme="dark"] .admin-actions-sticky .admin-logout-button:hover,
 [data-theme="dark"] .admin-actions-sticky .secondary-button.admin-logout-button:hover {
-  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
-  color: #ffffff !important;
   border-color: var(--rose-light) !important;
 }
-
-
-/* =============================
-   RSVP / SEÇENEK BUTONLARI
-   ============================= */
 
 .rsvp-form .option-button,
 .wish-form .option-button,
@@ -102,15 +81,9 @@
   background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
   border-color: var(--rose-dark) !important;
   box-shadow: 0 14px 30px color-mix(in srgb, var(--rose-dark) 28%, transparent) !important;
-}
-
-.rsvp-form .option-button.active:hover,
-.wish-form .option-button.active:hover,
-.option-group .option-button.active:hover {
   transform: translateY(-2px) !important;
 }
 
-/* Katılamayacağım seçiliyken pasif seçenekler aktif gibi görünmesin */
 .option-group.disabled {
   opacity: 1 !important;
   pointer-events: none !important;
@@ -130,11 +103,6 @@
   transform: none !important;
   cursor: not-allowed !important;
 }
-
-
-/* =============================
-   TEMA SEÇİMİ - SEÇİLİ KART
-   ============================= */
 
 .theme-option-card {
   position: relative;
@@ -220,11 +188,6 @@
   transform: translateY(-3px) !important;
 }
 
-
-/* =============================
-   KART ÇİÇEKLERİ
-   ============================= */
-
 .card::after,
 .countdown-section::after {
   content: "❀" !important;
@@ -251,10 +214,66 @@
   z-index: 2;
 }
 
+.admin-nav-button {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  padding: 16px !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  margin: 0 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
 
-/* =============================
-   ADMIN SOL MENÜ BUTONLARI
-   ============================= */
+.admin-nav-button:hover {
+  border-color: var(--accent) !important;
+  background: var(--code-bg) !important;
+  transform: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+}
+
+.admin-nav-button.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  transform: none !important;
+  box-shadow: 0 4px 14px var(--accent-bg) !important;
+}
+
+.admin-nav-button::before,
+.admin-nav-button::after {
+  display: none !important;
+  content: none !important;
+}
+
+.admin-nav-button span {
+  font-family: var(--heading) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--text-h) !important;
+  margin-bottom: 6px !important;
+  transition: color 0.2s ease !important;
+}
+
+.admin-nav-button small {
+  font-family: var(--sans) !important;
+  font-size: 13px !important;
+  color: var(--text) !important;
+  line-height: 1.4 !important;
+  transition: color 0.2s ease !important;
+}
+
+.admin-nav-button.active span,
+.admin-nav-button.active small {
+  color: #ffffff !important;
+}
 
 .admin-sidebar .admin-nav-button {
   position: relative;
@@ -264,16 +283,14 @@
   background: color-mix(in srgb, var(--paper) 88%, transparent) !important;
   color: var(--rose-dark) !important;
   border: 1.5px solid color-mix(in srgb, var(--rose-dark) 30%, transparent) !important;
-  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 8%, transparent) !important;
+  box-shadow: none !important;
   transition:
     transform 0.22s ease,
     background 0.22s ease,
     border-color 0.22s ease,
-    box-shadow 0.22s ease,
     color 0.22s ease !important;
 }
 
-/* Eski sağ üst tik ikonunu kapat; yazının üstüne binmesin */
 .admin-sidebar .admin-nav-button.active::after {
   display: none !important;
   content: none !important;
@@ -306,7 +323,7 @@
 }
 
 .admin-sidebar .admin-nav-button:hover:not(.active) {
-  transform: translateY(-3px) !important;
+  transform: translateX(2px) !important;
   background:
     radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 36%, transparent), transparent 40%),
     linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 22%, var(--paper)), var(--paper)) !important;
@@ -326,7 +343,7 @@
 
 .admin-sidebar .admin-nav-button.active,
 .admin-sidebar .admin-nav-button.active:hover {
-  transform: translateY(-3px) !important;
+  transform: translateX(2px) !important;
   background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
   border-color: var(--rose-dark) !important;
   box-shadow:
@@ -335,7 +352,7 @@
 }
 
 .admin-sidebar .admin-nav-button.active:hover {
-  transform: translateY(-3px) scale(1.01) !important;
+  transform: translateX(2px) scale(1.01) !important;
 }
 
 .admin-sidebar .admin-nav-button.active span,
@@ -368,7 +385,6 @@
 [data-theme="dark"] .admin-sidebar .admin-nav-button.active small {
   color: #ffffff !important;
 }
-
 
 /* =============================
    ADMIN GÖRSEL / MÜZİK ALANI
@@ -995,7 +1011,7 @@ html[data-theme] .app .hero-section .couple-title em,
 }
 
 /* =============================
-   ZARF AÇILIŞ ANİMASYONU (PÜRÜZSÜZ VE 3D UYUMLU)
+   ZARF AÇILIŞ ANİMASYONU 
    ============================= */
 .envelope-container {
   position: relative;
@@ -1008,6 +1024,8 @@ html[data-theme] .app .hero-section .couple-title em,
   transform-style: preserve-3d; /* Katmanların düzgün görünmesi için şart */
   margin: 0 auto;
   z-index: 10;
+  scale: 1.05;
+  transition: scale 0.3s ease;
 }
 
 .envelope-back {
@@ -1036,28 +1054,27 @@ html[data-theme] .app .hero-section .couple-title em,
   align-items: center !important;
   text-align: center !important;
   box-shadow: 0 -4px 15px rgba(0,0,0,0.1) !important;
-  
-  /* Başlangıç pozisyonu eklendi ki bir anda fırlamasın */
   transform: translateY(0) scale(1) !important; 
-  /* Zarf kapağı açıldıktan sonra (0.4s gecikmeli) yukarı süzülür */
   transition: transform 1s ease-in-out 0.4s, opacity 0.5s ease 1.5s !important; 
 }
 
-/* Yazı boyutları */
 .intro-page .envelope-container .intro-card .couple-title {
   font-size: clamp(32px, 8vw, 48px) !important;
   margin: 10px 0 !important;
   gap: 0 !important;
 }
+
 .intro-page .envelope-container .intro-card .couple-title em {
   font-size: clamp(22px, 6vw, 32px) !important;
   margin: 0 !important;
 }
+
 .intro-page .envelope-container .intro-card .intro-text,
 .intro-page .envelope-container .intro-card .guest-greeting {
   font-size: clamp(14px, 3.5vw, 16px) !important;
   margin-top: 10px !important;
 }
+
 .intro-page .envelope-container .intro-card .leaf-mark {
   transform: scale(0.6) !important;
   margin-bottom: 5px !important;
@@ -1066,12 +1083,10 @@ html[data-theme] .app .hero-section .couple-title em,
 .envelope-front {
   position: absolute;
   inset: 0;
-  /* Işığın sol üstten vurduğu hissini veren zarif kağıt dokusu */
   background: linear-gradient(135deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 85%, var(--rose-dark) 15%) 100%);
   border-radius: 12px;
   clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
   z-index: 4;
-  /* Hafif bir sınır çizgisi ile ön yüzeyin belirginleştirilmesi */
   border: 1px solid color-mix(in srgb, var(--rose-light) 50%, transparent);
 }
 
@@ -1081,14 +1096,12 @@ html[data-theme] .app .hero-section .couple-title em,
   left: 0;
   width: 100%;
   height: 60%;
-  /* Katlanma yerinde aydınlık, ucuna doğru hafifçe koyulaşan 3D ışık */
   background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 95%, #ffffff 5%) 0%, color-mix(in srgb, var(--paper) 80%, var(--rose-dark) 20%) 100%);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   transform-origin: top center; 
   z-index: 5;
   transition: transform 0.6s ease-in-out, z-index 0s 0.3s;
   border-radius: 12px 12px 0 0;
-  /* Katlanma izini vurgulayan çok ince bir üst parlaklık (Highlight) */
   border-top: 1.5px solid rgba(255, 255, 255, 0.7);
 }
 
@@ -1097,10 +1110,9 @@ html[data-theme] .app .hero-section .couple-title em,
   top: 55%;
   left: 50%;
   transform: translate(-50%, -50%) scale(1);
-  width: 90px; /* Zerafeti artırmak için 5px büyütüldü */
+  width: 90px; 
   height: 90px;
   border-radius: 50%;
-  /* Mühre bombeli ve parlak bir mum görünümü (3D yansıma) veren degrade */
   background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--rose-light) 60%, #fff 40%), var(--rose) 40%, var(--rose-dark) 85%);
   color: #ffffff;
   border: none;
@@ -1109,7 +1121,6 @@ html[data-theme] .app .hero-section .couple-title em,
   font-family: "Playfair Display", "Noto Serif", serif;
   font-weight: 800;
   font-size: 16px;
-  /* Mührün altında dışa doğru gölge, üstünde içe doğru yansıma */
   box-shadow: 
     0 12px 30px color-mix(in srgb, var(--rose-dark) 50%, transparent),
     inset 0 4px 6px rgba(255, 255, 255, 0.4),
@@ -1142,7 +1153,7 @@ html[data-theme] .app .hero-section .couple-title em,
     inset 0 -4px 8px rgba(0, 0, 0, 0.25);
 }
 /* =============================
-   ANİMASYON DURUMLARI (Tetiklendiğinde)
+   ANİMASYON DURUMLARI 
    ============================= */
 .intro-page.opening .envelope-seal {
   opacity: 0;
@@ -1204,7 +1215,7 @@ html[data-theme] .app .hero-section .couple-title em,
 }
 
 .field-with-counter span {
-  transition: color 0.3s ease; /* Tema değişirken rengin yumuşak geçmesini sağlar */
+  transition: color 0.3s ease; 
 }
 
 [data-theme="rose"] .field-with-counter span { color: #9f4f68; }
@@ -1216,17 +1227,148 @@ html[data-theme] .app .hero-section .couple-title em,
 [data-theme="dark"] .field-with-counter span { color: #bfbfbf; }
 
 .admin-visibility-card {
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 24px;
+  background: transparent; 
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .admin-sidebar-menu .admin-nav-button {
-  clip-path: inset(0 round 8px);
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  min-height: 68px !important;
+  padding: 12px 16px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  background: var(--bg) !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  transform: none !important;
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, color 0.22s ease !important;
 }
 
+.admin-sidebar-menu .admin-nav-button:hover:not(.active) {
+  transform: translateX(2px) scale(1.01) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 36%, transparent), transparent 40%),
+    linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 22%, var(--paper)), var(--paper)) !important;
+  border-color: var(--rose-dark) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button:hover:not(.active) span {
+  color: var(--rose-deep) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button:hover:not(.active) small {
+  color: var(--text-soft) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button.active:hover {
+  transform: translateX(2px) scale(1.01) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button span {
+  display: block !important;
+  font-family: var(--heading) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  margin: 0 0 6px 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+  color: var(--text-h) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button small {
+  display: block !important;
+  font-family: var(--sans) !important;
+  font-size: 13px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.4 !important;
+  color: var(--text) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button.active span,
+.admin-sidebar-menu .admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+.admin-check-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg);
+  padding: 14px 24px;
+  border: 1px solid var(--border);
+  border-radius: 50px; 
+  cursor: pointer;
+  margin: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  user-select: none;
+}
+
+.admin-check-field:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.admin-check-field:has(input[type="checkbox"]:checked) {
+  background: var(--accent-bg); 
+  border-color: var(--accent); 
+}
+
+.admin-check-field input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px; 
+  border: 2px solid var(--border);
+  background-color: var(--bg);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0;
+}
+
+.admin-check-field input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 60%;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.admin-check-field span {
+  font-family: var(--heading);
+  font-weight: 600;
+  color: var(--text-h);
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+
+.admin-sidebar-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+  gap: 14px;
+  padding-right: 4px;
+}

@@ -987,30 +987,155 @@ html[data-theme="dark"] .app-modal-cancel {
   top: 14px;
   max-height: calc(100vh - 28px);
   overflow: hidden;
-  padding: 18px 16px;
+  padding: 24px 22px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(145, 110, 149, 0.14);
+  box-shadow: 0 24px 70px rgba(88, 58, 118, 0.06);
 }
 
 .admin-sidebar-title {
-  margin-bottom: 14px;
-  padding-bottom: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(145, 110, 149, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-sidebar-title span {
+  font-size: 1.75rem;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.admin-sidebar-title small {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .admin-sidebar-menu {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  max-height: calc(100vh - 180px);
+  gap: 18px;
+  max-height: calc(100vh - 196px);
   overflow: auto;
-  padding-right: 4px;
+  padding-right: 6px;
 }
 
 .admin-sidebar-menu::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
-.admin-sidebar-menu::-webkit-scrollbar-thumb {
+.admin-sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+..admin-sidebar-menu::-webkit-scrollbar-thumb {
   background: rgba(var(--theme-rgb, 217, 140, 161), 0.34);
   border-radius: 999px;
+}
+
+..admin-layout .admin-sidebar {
+  top: 14px !important;
+  max-height: calc(100vh - 28px) !important;
+  overflow: hidden !important;
+  padding: 26px 22px !important;
+  border-radius: 32px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(145, 110, 149, 0.14) !important;
+  box-shadow: none !important;
+}
+
+.admin-layout .admin-sidebar-title {
+  margin-bottom: 20px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid rgba(145, 110, 149, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.admin-layout .admin-sidebar-title span {
+  font-size: 1.75rem !important;
+  line-height: 1.05 !important;
+  font-weight: 700 !important;
+  color: var(--text-h) !important;
+}
+
+.admin-layout .admin-sidebar-title small {
+  color: var(--text-soft) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.45 !important;
+}
+
+.admin-layout .admin-sidebar-menu {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 18px !important;
+  max-height: calc(100vh - 196px) !important;
+  overflow: auto !important;
+  padding-right: 8px !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  min-height: 72px !important;
+  padding: 14px 18px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(145, 110, 149, 0.16) !important;
+  border-radius: 18px !important;
+  background: rgba(247, 244, 251, 0.92) !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  transform: none !important;
+  box-shadow: none !important;
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, color 0.22s ease !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button,
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover,
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active),
+.admin-layout .admin-sidebar-menu .admin-nav-button.active,
+.admin-layout .admin-sidebar-menu .admin-nav-button.active:hover {
+  box-shadow: none !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) {
+  transform: translateX(2px) scale(1.01) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 28%, transparent), transparent 35%),
+    linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 14%, var(--paper)), var(--paper)) !important;
+  border-color: rgba(145, 110, 149, 0.24) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) span {
+  color: var(--rose-deep) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) small {
+  color: var(--text-soft) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button.active {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: var(--rose-dark) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button.active:hover {
+  transform: translateX(2px) scale(1.01) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button.active span,
+.admin-layout .admin-sidebar-menu .admin-nav-button.active small {
+  color: #ffffff !important;
 }
 
 .admin-nav-button {

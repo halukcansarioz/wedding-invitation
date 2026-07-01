@@ -1,838 +1,60 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
-
-const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
-const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
-const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
-
-const THEME_FAVICON_COLORS = {
-  rose: { bg: "#fff5f8", circle: "#f8d7e2", petal: "#cf7c9a", stroke: "#9f4f68", center: "#fff1b8" },
-  sage: { bg: "#f5f8f5", circle: "#d7ebd7", petal: "#8cb38c", stroke: "#597359", center: "#fff1b8" },
-  gold: { bg: "#fdfbf7", circle: "#f3e9d2", petal: "#d4b872", stroke: "#9c8346", center: "#fff1b8" },
-  burgundy: { bg: "#fcf5f6", circle: "#ebccd2", petal: "#a3495d", stroke: "#702838", center: "#fff1b8" },
-  lavanta: { bg: "#f9f7fc", circle: "#e6dcf2", petal: "#9b7cbf", stroke: "#664b8a", center: "#fff1b8" },
-  minimal: { bg: "#ffffff", circle: "#f0f0f0", petal: "#b3b3b3", stroke: "#737373", center: "#ffffff" },
-  dark: { bg: "#2a2a2a", circle: "#404040", petal: "#8c8c8c", stroke: "#bfbfbf", center: "#404040" },
-};
-
-const getFaviconUrl = (theme) => {
-  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.rose;
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-      <rect width="64" height="64" rx="17" fill="${colors.bg}"/>
-      <circle cx="32" cy="32" r="21" fill="${colors.circle}" opacity="0.72"/>
-      <g fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="2" stroke-linejoin="round">
-        <path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/>
-      </g>
-      <circle cx="32" cy="32" r="6" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="2"/>
-    </svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg.trim())}`;
-};
-
-const getCurrentShareLink = () => {
-  return DEFAULT_SHARE_LINK;
-};
-
-const fixShareLink = (data) => {
-  if (!data?.invitation) return data;
-
-  const currentLink = String(data.invitation.shareLink || "").trim();
-
-  const isLocalhostLink =
-    currentLink.includes("localhost") ||
-    currentLink.includes("127.0.0.1") ||
-    currentLink === "";
-
-  return {
-    ...data,
-    invitation: {
-      ...data.invitation,
-      shareLink: isLocalhostLink ? DEFAULT_SHARE_LINK : currentLink,
-    },
-  };
-};
-
-const applyDefaultWeddingMusic = (data) => {
-  if (!data?.invitation) return data;
-
-  // Eski müzik localStorage veya Supabase içinde kayıtlı kaldıysa bile
-  // davetiyede her zaman yeni varsayılan müzik çalsın.
-  return {
-    ...data,
-    invitation: {
-      ...data.invitation,
-      musicFile: DEFAULT_WEDDING_MUSIC_FILE,
-      musicName: DEFAULT_WEDDING_MUSIC_NAME,
-    },
-  };
-};
-
-const DEFAULT_SITE_DATA = {
-  invitation: {
-    bride: "Handenur",
-    groom: "Haluk Can",
-    dateText: "12 Eylül 2026",
-    timeText: "19:00",
-    weddingDate: "2026-09-12T19:00:00",
-    venue: "Kır Bahçesi Düğün Alanı",
-    address: "Gebze / Kocaeli",
-    mapLink: "https://www.google.com/maps",
-    shareLink: getCurrentShareLink(),
-    whatsappNumber: "905394933614",
-    introImage: "/images/themes/lavanta/8.jpg",
-    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
-    musicFile: DEFAULT_WEDDING_MUSIC_FILE,
-    musicName: DEFAULT_WEDDING_MUSIC_NAME,
-    gallery: [
-      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
-      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
-      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
-      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
-    ],
-    message:
-      "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
-  },
-  familyInfo: {
-    brideFamilyTitle: "Gelin Ailesi",
-    brideFamilyName: "Çeltik Ailesi",
-    groomFamilyTitle: "Damat Ailesi",
-    groomFamilyName: "Sarıöz Ailesi",
-    text: "Ailelerimizin de katılımıyla bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.",
-  },
-  copy: {
-    introLabel: "Düğün Davetiyesi",
-    introText: "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
-    openButton: "Daveti Aç",
-    heroLabel: "Biz Evleniyoruz",
-    countdownLabel: "Geri Sayım",
-    countdownTitle: "Düğünümüze Kalan Süre",
-    invitationLabel: "Davet",
-    invitationTitle: "Mutluluğumuza Ortak Olur Musunuz?",
-    familyLabel: "Ailelerimiz",
-    familyTitle: "Ailelerimizin Katılımıyla",
-    ceremonyLabel: "Nikah ve Düğün",
-    ceremonyTitle: "Günün Detayları",
-    scheduleLabel: "Düğün Takvimi",
-    locationLabel: "Tarih ve Konum",
-    locationTitle: "Düğün Bilgileri",
-    galleryLabel: "Fotoğraflar",
-    galleryTitle: "Kır Düğünü Atmosferi",
-    rsvpLabel: "Katılım",
-    rsvpTitle: "Katılım Bildirimi",
-    rsvpText: "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
-    guestsLabel: "Misafirler",
-    guestsTitle: "Misafir Listesi",
-    wishesLabel: "Anı Defteri",
-    wishesTitle: "Güzel Dilekleriniz",
-    shareLabel: "Paylaş",
-    shareTitle: "Davetiyeyi Paylaş",
-    shareDescription: "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
-    thanksText: "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    footerSmall: "Made with love",
-  },
-  eventDetails: [
-    {
-      label: "Nikah Töreni",
-      time: "19:00",
-      location: "Kır Bahçesi Düğün Alanı",
-      description: "Mutluluğumuza ilk imzayı atacağımız özel an.",
-    },
-    {
-      label: "Düğün & Eğlence",
-      time: "20:00",
-      location: "Kır Bahçesi Düğün Alanı",
-      description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
-    },
-  ],
-  scheduleItems: [
-    { time: "18:30", title: "Misafir Karşılama", description: "Davetlilerimizin alana gelişi ve karşılama." },
-    { time: "19:00", title: "Nikah Töreni", description: "Nikah merasimimiz başlar." },
-    { time: "20:00", title: "Yemek ve Kutlama", description: "Yemek ikramı ve kutlama bölümü." },
-    { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
-  ],
-  settings: {
-    theme: "lavanta", // Sende yazan teman kalsın
-    defaultTheme: "lavanta",
-    requireWishApproval: true,
-    // BUNU EKLİYORUZ: Hangi bölümlerin açık olacağını belirler
-    visibility: {
-      countdown: true,
-      family: true,
-      ceremony: true,
-      schedule: true,
-      location: true,
-      gallery: true,
-      rsvp: true,
-      guests: true,
-      wishes: true,
-    },
-  },
-  messages: {
-    whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
-    rsvpWhatsappMessage: "Merhaba, {couple} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.",
-    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız.",
-  },
-};
-
-const DEFAULT_ADMIN_PASSWORD = "1234";
-const ADMIN_PASSWORD_KEY = "wedding-admin-password";
-const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 dakika
-const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
-const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
-
-const touchAdminSession = () => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(ADMIN_SESSION_LAST_ACTIVE_KEY, String(Date.now()));
-};
-
-const clearAdminSessionTimestamp = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(ADMIN_SESSION_LAST_ACTIVE_KEY);
-};
-
-const isAdminSessionFresh = () => {
-  if (typeof window === "undefined") return false;
-
-  const lastActive = Number(localStorage.getItem(ADMIN_SESSION_LAST_ACTIVE_KEY) || 0);
-
-  if (!lastActive) return false;
-
-  return Date.now() - lastActive < ADMIN_SESSION_TIMEOUT_MS;
-};
-
-const NOTE_MAX_LENGTH = 160;
-const WISH_MAX_LENGTH = 220;
-const SITE_DATA_KEY = "wedding-site-data";
-const GUESTS_KEY = "wedding-guests";
-const WISHES_KEY = "wedding-wishes";
-const THEMES = [
-  { label: "Pembe Romantik", value: "rose" },
-  { label: "Yeşil Kır Düğünü", value: "sage" },
-  { label: "Altın Krem", value: "gold" },
-  { label: "Bordo", value: "burgundy" },
-  { label: "Lavanta", value: "lavanta" },
-  { label: "Minimal Beyaz", value: "minimal" },
-  { label: "Koyu Tema", value: "dark" },
-];
-
-const THEME_DEFAULT_IMAGES = {
-  rose: {
-    introImage: "/images/themes/rose/1.jpg",
-    heroImage: "/images/themes/rose/2.jpg",
-    gallery: [
-      "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
-      "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
-      "/images/themes/rose/sergey-semin-3gpzjLWHb0I-unsplash.jpg",
-      "/images/themes/rose/thomas-curryer-UDfxsawmiKk-unsplash.jpg",
-    ],
-  },
-  sage: {
-    introImage: "/images/themes/sage/3.jpg",
-    heroImage: "/images/themes/sage/4.jpg",
-    gallery: [
-      "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
-      "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
-      "/images/themes/sage/matthew-PmFCYjRqHN8-unsplash.jpg",
-      "/images/themes/sage/silvia-mara-Hi69z0dFLjA-unsplash.jpg",
-    ],
-  },
-  gold: {
-    introImage: "/images/themes/gold/5.jpg",
-    heroImage: "/images/themes/gold/12.jpg",
-    gallery: [
-      "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
-      "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
-      "/images/themes/gold/charlotte-cowell-cHzTNuMAIJs-unsplash.jpg",
-      "/images/themes/gold/thlt-lcx-R5d7yOCkPJU-unsplash.jpg",
-    ],
-  },
-  burgundy: {
-    introImage: "/images/themes/burgundy/7.jpg",
-    heroImage: "/images/themes/burgundy/anita-austvika-6l9m9pFoL8g-unsplash.jpg",
-    gallery: [
-      "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
-      "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
-      "/images/themes/burgundy/11.jpg",
-      "/images/themes/burgundy/6.jpg",
-
-    ],
-  },
-  lavanta: {
-    introImage: "/images/themes/lavanta/8.jpg",
-    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
-    gallery: [
-      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
-      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
-      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
-      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
-    ],
-  },
-  minimal: {
-    introImage: "/images/themes/minimal/9.jpg",
-    heroImage: "/images/themes/minimal/dan-lefebvre-mPyqJAwMAs0-unsplash.jpg",
-    gallery: [
-      "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
-      "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
-      "/images/themes/minimal/max-letek-_zH2qqQ1dHA-unsplash.jpg",
-      "/images/themes/minimal/micah-sammie-chaffin-ECZeV9L7Pc4-unsplash.jpg",
-    ],
-  },
-  dark: {
-    introImage: "/images/themes/dark/10.jpg",
-    heroImage: "/images/themes/dark/adi-albulescu-Q6bt8Ri7Uog-unsplash.jpg",
-    gallery: [
-      "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
-      "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
-      "/images/themes/dark/13.jpg",
-      "/images/themes/dark/mike-marrah-1kCJYMKROiU-unsplash.jpg",
-    ],
-  },
-};
-
-const MAX_IMAGE_DIMENSION = 1400;
-const IMAGE_QUALITY = 0.78;
-const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
-
-const INITIAL_GUEST_FORM = {
-  name: "",
-  phone: "",
-  attendance: "Katılacağım",
-  personCount: "1",
-  side: "Gelin Tarafı",
-  hasChild: "Hayır",
-  note: "",
-};
-
-const INITIAL_WISH_FORM = {
-  name: "",
-  message: "",
-};
-
-const ATTENDANCE_OPTIONS = [
-  { label: "Katılacağım", value: "Katılacağım" },
-  { label: "Katılamayacağım", value: "Katılamayacağım" },
-];
-
-const PERSON_COUNT_OPTIONS = [
-  { label: "1 Kişi", value: "1" },
-  { label: "2 Kişi", value: "2" },
-  { label: "3 Kişi", value: "3" },
-  { label: "4 Kişi", value: "4" },
-];
-
-const SIDE_OPTIONS = [
-  { label: "Gelin Tarafı", value: "Gelin Tarafı" },
-  { label: "Damat Tarafı", value: "Damat Tarafı" },
-  { label: "Ortak", value: "Ortak" },
-];
-
-const CHILD_OPTIONS = [
-  { label: "Çocuk Yok", value: "Hayır" },
-  { label: "Çocuk Var", value: "Evet" },
-];
-
-const mergeSiteData = (storedData) => {
-  
-  const stored = storedData && typeof storedData === "object" ? storedData : {};
-
-  return {
-    invitation: {
-      ...DEFAULT_SITE_DATA.invitation,
-      ...(stored.invitation || {}),
-      // BURASI DEĞİŞTİ: Artık liste tamamen boş [ ] gelse bile bunu kabul edecek
-      gallery: Array.isArray(stored.invitation?.gallery)
-        ? stored.invitation.gallery
-        : DEFAULT_SITE_DATA.invitation.gallery,
-    },
-
-    familyInfo: {
-      ...DEFAULT_SITE_DATA.familyInfo,
-      ...(stored.familyInfo || {}),
-    },
-
-    copy: {
-      ...DEFAULT_SITE_DATA.copy,
-      ...(stored.copy || {}),
-    },
-
-    eventDetails:
-      Array.isArray(stored.eventDetails) && stored.eventDetails.length > 0
-        ? stored.eventDetails
-        : DEFAULT_SITE_DATA.eventDetails,
-    scheduleItems:
-      Array.isArray(stored.scheduleItems) && stored.scheduleItems.length > 0
-        ? stored.scheduleItems
-        : DEFAULT_SITE_DATA.scheduleItems,
-    settings: {
-      ...DEFAULT_SITE_DATA.settings,
-      ...(stored.settings || {}),
-      visibility: {
-        ...(DEFAULT_SITE_DATA.settings.visibility || {}),
-        ...(stored.settings?.visibility || {}),
-      },
-    },
-
-    messages: {
-      ...DEFAULT_SITE_DATA.messages,
-      ...(stored.messages || {}),
-    },
-  };
-};
-
-const normalizeSiteData = (data) => applyDefaultWeddingMusic(fixShareLink(mergeSiteData(data)));
-
-
-const loadStoredList = (key) => {
-  try {
-    return JSON.parse(localStorage.getItem(key)) || [];
-  } catch {
-    return [];
-  }
-};
-
-const loadStoredSiteData = () => {
-  try {
-    return normalizeSiteData(JSON.parse(localStorage.getItem(SITE_DATA_KEY)));
-  } catch {
-    return normalizeSiteData(null);
-  }
-};
-
-const getStoredAdminPassword = () => {
-  if (typeof window === "undefined") return DEFAULT_ADMIN_PASSWORD;
-
-  return localStorage.getItem(ADMIN_PASSWORD_KEY) || DEFAULT_ADMIN_PASSWORD;
-};
-
-const createGoogleCalendarLink = (siteData, coupleName) => {
-  const start = new Date(siteData.invitation.weddingDate);
-
-  if (Number.isNaN(start.getTime())) {
-    return "#";
-  }
-
-  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
-  const formatDate = (date) => date.toISOString().replace(/-|:|\.\d+/g, "");
-
-  const title = encodeURIComponent(`${coupleName} Düğünü`);
-  const details = encodeURIComponent(siteData.invitation.message);
-  const location = encodeURIComponent(`${siteData.invitation.venue}, ${siteData.invitation.address}`);
-
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(
-    start
-  )}/${formatDate(end)}&details=${details}&location=${location}`;
-};
-
-const readImageFileAsDataUrl = (file) => {
-  return new Promise((resolve, reject) => {
-    if (!file || !file.type?.startsWith("image/")) {
-      reject(new Error("Lütfen geçerli bir görsel dosyası seçin."));
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const originalDataUrl = reader.result;
-
-      if (file.type === "image/svg+xml") {
-        resolve(originalDataUrl);
-        return;
-      }
-
-      const image = new Image();
-
-      image.onload = () => {
-        const ratio = Math.min(
-          1,
-          MAX_IMAGE_DIMENSION / image.naturalWidth,
-          MAX_IMAGE_DIMENSION / image.naturalHeight
-        );
-
-        const width = Math.max(1, Math.round(image.naturalWidth * ratio));
-        const height = Math.max(1, Math.round(image.naturalHeight * ratio));
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-
-        canvas.width = width;
-        canvas.height = height;
-
-        context.fillStyle = "#fffafb";
-        context.fillRect(0, 0, width, height);
-        context.drawImage(image, 0, 0, width, height);
-
-        resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
-      };
-
-      image.onerror = () => resolve(originalDataUrl);
-      image.src = originalDataUrl;
-    };
-
-    reader.onerror = () => reject(new Error("Görsel okunamadı."));
-    reader.readAsDataURL(file);
-  });
-};
-
-const readAudioFileAsDataUrl = (file) => {
-  return new Promise((resolve, reject) => {
-    if (!file || !file.type?.startsWith("audio/")) {
-      reject(new Error("Lütfen geçerli bir müzik dosyası seçin."));
-      return;
-    }
-
-    if (file.size > MAX_AUDIO_FILE_SIZE) {
-      reject(new Error("Müzik dosyası çok büyük. Lütfen 4 MB altında bir MP3/M4A dosyası seçin."));
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      resolve({
-        dataUrl: reader.result,
-        name: file.name || "Yüklenen müzik",
-      });
-    };
-
-    reader.onerror = () => reject(new Error("Müzik dosyası okunamadı."));
-    reader.readAsDataURL(file);
-  });
-};
-
-const formatMessageTemplate = (template, values) => {
-  return String(template || "")
-    .replaceAll("{couple}", values.couple || "")
-    .replaceAll("{link}", values.link || "")
-    .replaceAll("{guest}", values.guest || "");
-};
-
-const normalizeText = (value) =>
-  String(value || "")
-    .toLocaleLowerCase("tr-TR")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
-const downloadTextFile = (filename, content, mimeType = "text/plain;charset=utf-8") => {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
-const csvEscape = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-
-const createCsv = (headers, rows) => {
-  const lines = [headers.map(csvEscape).join(";")];
-  rows.forEach((row) => {
-    lines.push(headers.map((header) => csvEscape(row[header])).join(";"));
-  });
-  return `\ufeff${lines.join("\n")}`;
-};
-
-const excelEscape = (value) =>
-  String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-
-const createExcelTable = (title, headers, rows) => {
-  const headerCells = headers.map((header) => `<th>${excelEscape(header)}</th>`).join("");
-  const bodyRows = rows
-    .map((row) => `<tr>${headers.map((header) => `<td>${excelEscape(row[header])}</td>`).join("")}</tr>`)
-    .join("");
-
-  return `<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <style>
-    table { border-collapse: collapse; font-family: Arial, sans-serif; }
-    th { background: #f3d7df; font-weight: 700; }
-    th, td { border: 1px solid #9f4f68; padding: 8px 10px; }
-  </style>
-</head>
-<body>
-  <h2>${excelEscape(title)}</h2>
-  <table>
-    <thead><tr>${headerCells}</tr></thead>
-    <tbody>${bodyRows}</tbody>
-  </table>
-</body>
-</html>`;
-};
-
-const getGuestNameFromUrl = () => {
-  if (typeof window === "undefined") return "";
-  const params = new URLSearchParams(window.location.search);
-  return params.get("guest") || params.get("davetli") || "";
-};
-
-const buildPersonalLink = (baseLink, guestName) => {
-  if (!guestName.trim()) return baseLink;
-
-  try {
-    const url = new URL(baseLink || getCurrentShareLink());
-    url.searchParams.set("guest", guestName.trim());
-    return url.toString();
-  } catch {
-    const separator = baseLink.includes("?") ? "&" : "?";
-    return `${baseLink}${separator}guest=${encodeURIComponent(guestName.trim())}`;
-  }
-};
-
-const getQrImageUrl = (link) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(link)}`;
-
-const isAdminRouteActive = () => {
-  if (typeof window === "undefined") return false;
-
-  const params = new URLSearchParams(window.location.search);
-  const hash = window.location.hash || "";
-
-  return (
-    hash === "#admin" ||
-    params.get("admin") === "1" ||
-    params.get("type") === "recovery" ||
-    hash.includes("type=recovery") ||
-    hash.includes("access_token=")
-  );
-};
-
-const getAdminRedirectUrl = () => {
-  if (typeof window === "undefined") return "";
-  return `${window.location.origin}${window.location.pathname}?admin=1&reset=1`;
-};
-
-const getSupabaseUrl = () =>
-  String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-
-const getSupabaseKey = () =>
-  String(
-    import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
-      import.meta.env?.VITE_SUPABASE_ANON_KEY ||
-      ""
-  ).trim();
-
-const getSupabaseSetupMessage = () => {
-  const url = getSupabaseUrl();
-  const key = getSupabaseKey();
-
-  if (!url || !key) {
-    return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı. Dosyayı değiştirdikten sonra npm run dev sunucusunu kapatıp yeniden aç.";
-  }
-
-  if (!url.startsWith("https://") || !url.includes(".supabase.co")) {
-    return "Supabase URL hatalı görünüyor. Dashboard linki değil, Project Settings > API kısmındaki Project URL kullanılmalı. Örnek: https://abcxyz.supabase.co";
-  }
-
-  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini, internet bağlantını ve Supabase projesinin aktif olduğunu kontrol et.";
-};
-
-const getReadableAuthError = (error) => {
-  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
-  const code = String(error?.code || error?.status || "").toLocaleLowerCase("tr-TR");
-
-  if (
-    message.includes("failed to fetch") ||
-    message.includes("network") ||
-    message.includes("load failed") ||
-    message.includes("fetcherror") ||
-    error?.name === "AuthRetryableFetchError"
-  ) {
-    return getSupabaseSetupMessage();
-  }
-
-  if (message.includes("invalid login") || message.includes("invalid credentials")) {
-    return "E-posta veya şifre hatalı. 1234 artık geçerli değil; Supabase Authentication > Users bölümünde oluşturduğun admin e-posta/şifresiyle giriş yapmalısın. Kullanıcıyı manuel oluşturduysan Confirm edilmiş olduğundan emin ol.";
-  }
-
-  if (message.includes("email not confirmed") || message.includes("not confirmed")) {
-    return "Bu e-posta henüz doğrulanmamış. Supabase Authentication > Users bölümünden kullanıcıyı Confirm et veya e-posta doğrulamasını tamamla.";
-  }
-
-  if (message.includes("email rate limit") || message.includes("rate limit") || code === "429") {
-    return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar dene.";
-  }
-
-  if (message.includes("redirect") || message.includes("url")) {
-    return "Şifre sıfırlama yönlendirme adresi kabul edilmedi. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisin.";
-  }
-
-  return error?.message || "İşlem tamamlanamadı. Supabase ayarlarını kontrol et.";
-};
-
-const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());
-
-const loadSettingsFromDatabase = async () => {
-  if (!isSupabaseReady()) return null;
-
-  const { data, error } = await supabase
-    .from("invitation_settings")
-    .select("content")
-    .eq("id", "main")
-    .single();
-
-  if (error) {
-    console.error("Ayarlar Supabase'den alınamadı:", error);
-    return null;
-  }
-
-  return normalizeSiteData(data?.content || null);
-};
-
-const saveSettingsToDatabase = async (settings) => {
-  if (!isSupabaseReady()) {
-    throw new Error("Supabase ayarları eksik. .env.local dosyasını kontrol et.");
-  }
-
-  const { error } = await supabase
-    .from("invitation_settings")
-    .upsert(
-      {
-        id: "main",
-        content: settings,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "id" }
-    );
-
-  if (error) {
-    throw error;
-  }
-};
-
-const dbGuestToUi = (guest) => ({
-  id: guest.id,
-  name: guest.name || "",
-  phone: guest.phone || "",
-  attendance: guest.attendance || "Katılacağım",
-  personCount: String(guest.person_count ?? guest.personCount ?? "1"),
-  side: guest.side || "Gelin Tarafı",
-  hasChild: guest.has_child ?? guest.hasChild ?? "Hayır",
-  note: guest.note || "",
-  createdAt: guest.created_at || guest.createdAt || "",
-});
-
-const uiGuestToDb = (guest) => ({
-  name: guest.name || "",
-  phone: guest.phone || "",
-  attendance: guest.attendance || "Katılacağım",
-  person_count: String(guest.personCount ?? guest.person_count ?? "1"),
-  side: guest.side || "Gelin Tarafı",
-  has_child: guest.hasChild ?? guest.has_child ?? "Hayır",
-  note: guest.note || "",
-});
-
-const dbWishToUi = (wish) => ({
-  id: wish.id,
-  name: wish.name || "",
-  message: wish.message || "",
-  approved: wish.approved !== false,
-  createdAt: wish.created_at || wish.createdAt || "",
-});
-
-const uiWishToDb = (wish) => ({
-  name: wish.name || "",
-  message: wish.message || "",
-  approved: wish.approved !== false,
-});
-
-const loadPublishedWishesFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-
-  const { data, error } = await supabase
-    .from("wishes")
-    .select("*")
-    .eq("approved", true)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Yayındaki anı defteri mesajları alınamadı:", error);
-    return [];
-  }
-
-  return (data || []).map(dbWishToUi);
-};
-
-const loadGuestsFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-
-  const { data, error } = await supabase
-    .from("guests")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Katılım kayıtları alınamadı:", error);
-    return [];
-  }
-
-  return (data || []).map(dbGuestToUi);
-};
-
-const loadAllWishesFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-
-  const { data, error } = await supabase
-    .from("wishes")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Anı defteri mesajları alınamadı:", error);
-    return [];
-  }
-
-  return (data || []).map(dbWishToUi);
-};
-
-const uploadMediaFile = async (file, folder = "media") => {
-  if (!file) return null;
-
-  if (!isSupabaseReady()) {
-    throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
-  }
-
-  const fileExt = file.name.split(".").pop() || "file";
-  const safeName = file.name
-    .replace(/\.[^/.]+$/, "")
-    .toLocaleLowerCase("tr-TR")
-    .replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-")
-    .replace(/^-+|-+$/g, "");
-  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
-
-  const { error } = await supabase.storage
-    .from("wedding-media")
-    .upload(fileName, file, {
-      cacheControl: "3600",
-      upsert: true,
-      contentType: file.type || undefined,
-    });
-
-  if (error) {
-    const message = String(error.message || "").toLocaleLowerCase("tr-TR");
-
-    if (message.includes("bucket") || message.includes("not found")) {
-      throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");
-    }
-
-    if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) {
-      throw new Error("Görsel/müzik yüklenemedi. wedding-media Storage bucket için authenticated upload/update/delete policy eksik görünüyor.");
-    }
-
-    throw error;
-  }
-
-  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
-  return data.publicUrl;
-};
+import {
+  DEFAULT_SHARE_LINK,
+  DEFAULT_WEDDING_MUSIC_FILE,
+  DEFAULT_WEDDING_MUSIC_NAME,
+  ADMIN_ACTIVITY_EVENTS,
+  NOTE_MAX_LENGTH,
+  WISH_MAX_LENGTH,
+  SITE_DATA_KEY,
+  THEMES,
+  THEME_DEFAULT_IMAGES,
+  MAX_AUDIO_FILE_SIZE,
+  INITIAL_GUEST_FORM,
+  INITIAL_WISH_FORM,
+  ATTENDANCE_OPTIONS,
+  PERSON_COUNT_OPTIONS,
+  SIDE_OPTIONS,
+  CHILD_OPTIONS
+} from "./config/constants";
+import {
+  getFaviconUrl,
+  getCurrentShareLink,
+  loadStoredSiteData,
+  createGoogleCalendarLink,
+  readImageFileAsDataUrl,
+  formatMessageTemplate,
+  normalizeText,
+  downloadTextFile,
+  createCsv,
+  createExcelTable,
+  getGuestNameFromUrl,
+  buildPersonalLink,
+  getQrImageUrl,
+  isAdminRouteActive,
+  getAdminRedirectUrl,
+  touchAdminSession,
+  clearAdminSessionTimestamp,
+  isAdminSessionFresh,
+  uiGuestToDb,
+  dbGuestToUi,
+  uiWishToDb,
+  normalizeSiteData,
+  mergeSiteData
+} from "./utils/helpers";
+import {
+  getSupabaseSetupMessage,
+  getReadableAuthError,
+  isSupabaseReady,
+  loadSettingsFromDatabase,
+  saveSettingsToDatabase,
+  loadPublishedWishesFromDatabase,
+  loadGuestsFromDatabase,
+  loadAllWishesFromDatabase,
+  uploadMediaFile
+} from "./services/database";
 
 function OptionGroup({ value, options, onChange, disabled = false }) {
   return (
@@ -943,7 +165,7 @@ function AdminSelect({ label, value, options, onChange }) {
   return (
     <label className="admin-field">
       <span>{label}</span>
-      <AdminDropdown value={value} options={options} onChange={onChange} />
+      <AdminDropdown onChange="{onChange}" options="{options}" value="{value}"/>
     </label>
   );
 }
@@ -1122,7 +344,7 @@ function App() {
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
-  const [isOpening, setIsOpening] = useState(false); // ZARF ANİMASYONU İÇİN EKLENDİ
+  const [isOpening, setIsOpening] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
@@ -1568,10 +790,6 @@ function App() {
     masterGain.connect(audioContext.destination);
     musicGainRef.current = masterGain;
 
-    /*
-      Varsayılan evlilik müziği tarzı yumuşak melodi.
-      MP3 dosyası seçilmezse bu çalar.
-    */
     const weddingMelody = [
       { frequency: 523.25, duration: 0.55 }, // C5
       { frequency: 659.25, duration: 0.55 }, // E5
@@ -1672,7 +890,6 @@ function App() {
     
     startMusic().catch((err) => console.log("Müzik başlatılamadı:", err));
 
-    // Animasyonun tüm adımlarının (yukarı çıkma ve büyüme) bitmesini bekle
     setTimeout(() => {
       setOpened(true);
     }, 2100); 
@@ -2180,9 +1397,7 @@ function App() {
     try {
       if (!file) return;
       
-      // 1. Resmi küçült ve Base64 formatına çevir
       const compressedDataUrl = await readImageFileAsDataUrl(file);
-      // 2. Base64'ü Supabase'in kabul edeceği Blob/File formatına geri çevir
       const compressedBlob = await (await fetch(compressedDataUrl)).blob();
       const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
 
@@ -2323,7 +1538,7 @@ function App() {
 
     try {
       await saveSettingsToDatabase(cleanedData);
-      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData)); // BURAYI EKLE
+      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));
       setSiteData(cleanedData);
       setAdminDraft(cleanedData);
       setAdminSaveMessage("Davetiyedeki yazılar, bilgiler ve görseller Supabase'e kaydedildi.");
@@ -2335,10 +1550,8 @@ function App() {
   };
 
   const handleThemeChange = async (themeValue) => {
-    // 1. Önce sadece temayı değiştir (arka plan, buton renkleri vs. anında değişsin)
     updateDraftObject("settings", "theme", themeValue);
 
-    // 2. Kullanıcıya görselleri de değiştirmek isteyip istemediğini sor
     const confirmed = await showAppConfirm(
       "Seçtiğiniz temaya uygun varsayılan davetiye resimleri yüklensin mi?\n(Mevcut ana ekran ve galeri resimleriniz değişecektir)",
       { 
@@ -2349,7 +1562,6 @@ function App() {
       }
     );
 
-    // 3. Kullanıcı onaylarsa taslağı resimlerle güncelle
     if (confirmed) {
       const themeImages = THEME_DEFAULT_IMAGES[themeValue];
       
@@ -2372,17 +1584,11 @@ function App() {
     const confirmed = await showAppConfirm("Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" });
     if (!confirmed) return;
 
-    // 1. Kullanıcının panelden seçmiş olduğu varsayılan sıfırlama temasını hafızada tutalım
     const chosenDefaultTheme = adminDraft.settings.defaultTheme || "lavanta";
-
-    // 2. Temel fabrika verilerini çekelim
     const defaultData = normalizeSiteData(null);
-
-    // 3. Ayarları kullanıcının belirlediği varsayılan temaya göre eşitleyelim
     defaultData.settings.defaultTheme = chosenDefaultTheme;
     defaultData.settings.theme = chosenDefaultTheme;
 
-    // 4. Bir önceki aşamada yazdığımız o temanın varsayılan resimlerini otomatik olarak başlangıç resmi yapalım
     if (typeof THEME_DEFAULT_IMAGES !== "undefined" && THEME_DEFAULT_IMAGES[chosenDefaultTheme]) {
       const themeImages = THEME_DEFAULT_IMAGES[chosenDefaultTheme];
       defaultData.invitation.introImage = themeImages.introImage;
@@ -2753,21 +1959,75 @@ function App() {
           return (
             <AdminSection title="Genel Davetiye Bilgileri">
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Geri Sayım bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.countdown !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
-                <AdminCheckbox label="Tarih ve Konum (Harita) bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.location !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.countdown ?? false}
+                  label="Geri Sayım bölümünü davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })}
+                />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.location ?? false}
+                  label="Tarih ve Konum (Harita) bölümünü davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })}
+                />
               </div>
               <div className="admin-edit-grid">
-                <AdminField label="Gelin adı" value={adminDraft.invitation.bride} onChange={(value) => updateDraftObject("invitation", "bride", value)} />
-                <AdminField label="Damat adı" value={adminDraft.invitation.groom} onChange={(value) => updateDraftObject("invitation", "groom", value)} />
-                <AdminField label="Görünen tarih" value={adminDraft.invitation.dateText} onChange={(value) => updateDraftObject("invitation", "dateText", value)} />
-                <AdminField label="Saat" value={adminDraft.invitation.timeText} onChange={(value) => updateDraftObject("invitation", "timeText", value)} />
-                <AdminField label="Geri sayım tarihi" value={adminDraft.invitation.weddingDate} onChange={(value) => updateDraftObject("invitation", "weddingDate", value)} placeholder="2026-09-12T19:00:00" />
-                <AdminField label="WhatsApp numarası" value={adminDraft.invitation.whatsappNumber} onChange={(value) => updateDraftObject("invitation", "whatsappNumber", value)} />
-                <AdminField label="Mekan adı" value={adminDraft.invitation.venue} onChange={(value) => updateDraftObject("invitation", "venue", value)} />
-                <AdminField label="Adres" value={adminDraft.invitation.address} onChange={(value) => updateDraftObject("invitation", "address", value)} />
-                <AdminField label="Harita linki" value={adminDraft.invitation.mapLink} onChange={(value) => updateDraftObject("invitation", "mapLink", value)} />
-                <AdminField label="Paylaşım linki" value={adminDraft.invitation.shareLink} onChange={(value) => updateDraftObject("invitation", "shareLink", value)} placeholder={getCurrentShareLink()} />
-                <AdminTextarea label="Ana davet metni" value={adminDraft.invitation.message} onChange={(value) => updateDraftObject("invitation", "message", value)} />
+                <AdminField
+                  label="Gelin adı"
+                  onChange={(value) => updateDraftObject("invitation", "bride", value)}
+                  value={adminDraft.invitation.bride}
+                />
+                <AdminField
+                  label="Damat adı"
+                  onChange={(value) => updateDraftObject("invitation", "groom", value)}
+                  value={adminDraft.invitation.groom}
+                />
+                <AdminField
+                  label="Görünen tarih"
+                  onChange={(value) => updateDraftObject("invitation", "dateText", value)}
+                  value={adminDraft.invitation.dateText}
+                />
+                <AdminField
+                  label="Saat"
+                  onChange={(value) => updateDraftObject("invitation", "timeText", value)}
+                  value={adminDraft.invitation.timeText}
+                />
+                <AdminField
+                  label="Geri sayım tarihi"
+                  onChange={(value) => updateDraftObject("invitation", "weddingDate", value)}
+                  value={adminDraft.invitation.weddingDate}
+                  placeholder="2026-09-12T19:00:00"
+                />
+                <AdminField
+                  label="WhatsApp numarası"
+                  onChange={(value) => updateDraftObject("invitation", "whatsappNumber", value)}
+                  value={adminDraft.invitation.whatsappNumber}
+                />
+                <AdminField
+                  label="Mekan adı"
+                  onChange={(value) => updateDraftObject("invitation", "venue", value)}
+                  value={adminDraft.invitation.venue}
+                />
+                <AdminField
+                  label="Adres"
+                  onChange={(value) => updateDraftObject("invitation", "address", value)}
+                  value={adminDraft.invitation.address}
+                />
+                <AdminField
+                  label="Harita linki"
+                  onChange={(value) => updateDraftObject("invitation", "mapLink", value)}
+                  value={adminDraft.invitation.mapLink}
+                />
+                <AdminField
+                  label="Paylaşım linki"
+                  onChange={(value) => updateDraftObject("invitation", "shareLink", value)}
+                  value={adminDraft.invitation.shareLink}
+                  placeholder={getCurrentShareLink()}
+                />
+                <AdminTextarea
+                  label="Ana davet metni"
+                  onChange={(value) => updateDraftObject("invitation", "message", value)}
+                  value={adminDraft.invitation.message}
+                />
               </div>
             </AdminSection>
           );
@@ -2797,8 +2057,8 @@ function App() {
 
               <div className="admin-theme-check-row">
                 <AdminCheckbox
-                  label="Anı defteri mesajları admin onayından sonra yayınlansın"
                   checked={adminDraft.settings.requireWishApproval}
+                  label="Anı defteri mesajları admin onayından sonra yayınlansın"
                   onChange={(value) => updateDraftObject("settings", "requireWishApproval", value)}
                 />
               </div>
@@ -2810,15 +2070,51 @@ function App() {
                 </p>
                 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
-                  <AdminCheckbox label="Geri Sayım" checked={adminDraft.settings.visibility?.countdown !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
-                  <AdminCheckbox label="Aile Bilgileri" checked={adminDraft.settings.visibility?.family !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
-                  <AdminCheckbox label="Nikah / Düğün Detayları" checked={adminDraft.settings.visibility?.ceremony !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
-                  <AdminCheckbox label="Düğün Takvimi (Akış)" checked={adminDraft.settings.visibility?.schedule !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
-                  <AdminCheckbox label="Tarih ve Harita" checked={adminDraft.settings.visibility?.location !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
-                  <AdminCheckbox label="Fotoğraf Galerisi" checked={adminDraft.settings.visibility?.gallery !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
-                  <AdminCheckbox label="Katılım (LCV) Formu" checked={adminDraft.settings.visibility?.rsvp !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-                  <AdminCheckbox label="Misafir Listesi" checked={adminDraft.settings.visibility?.guests !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-                  <AdminCheckbox label="Anı Defteri Formu" checked={adminDraft.settings.visibility?.wishes !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.countdown ?? false}
+                    label="Geri Sayım"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.family ?? false}
+                    label="Aile Bilgileri"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.ceremony ?? false}
+                    label="Nikah / Düğün Detayları"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.schedule ?? false}
+                    label="Düğün Takvimi (Akış)"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.location ?? false}
+                    label="Tarih ve Harita"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.gallery ?? false}
+                    label="Fotoğraf Galerisi"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.rsvp ?? false}
+                    label="Katılım (LCV) Formu"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.guests ?? false}
+                    label="Misafir Listesi"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })}
+                  />
+                  <AdminCheckbox
+                    checked={adminDraft.settings.visibility?.wishes ?? false}
+                    label="Anı Defteri Formu"
+                    onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })}
+                  />
                 </div>
               </div>
             </AdminSection>
@@ -2835,24 +2131,24 @@ function App() {
                 <div className="admin-edit-grid">
                   <AdminField
                     label="Mevcut şifre"
-                    type="password"
-                    value={adminCurrentPassword}
                     onChange={setAdminCurrentPassword}
                     placeholder="Mevcut admin şifresi"
+                    type="password"
+                    value={adminCurrentPassword}
                   />
                   <AdminField
                     label="Yeni şifre"
-                    type="password"
-                    value={adminNewPassword}
                     onChange={setAdminNewPassword}
                     placeholder="Yeni şifre"
+                    type="password"
+                    value={adminNewPassword}
                   />
                   <AdminField
                     label="Yeni şifre tekrar"
-                    type="password"
-                    value={adminNewPasswordAgain}
                     onChange={setAdminNewPasswordAgain}
                     placeholder="Yeni şifreyi tekrar yaz"
+                    type="password"
+                    value={adminNewPasswordAgain}
                   />
                 </div>
 
@@ -2871,9 +2167,21 @@ function App() {
                 Kullanabileceğin değişkenler: {"{couple}"} çift adını, {"{link}"} davetiye linkini, {"{guest}"} özel davetli adını yazar.
               </p>
               <div className="admin-edit-grid">
-                <AdminTextarea label="WhatsApp paylaşım mesajı" value={adminDraft.messages.whatsappShareMessage} onChange={(value) => updateDraftObject("messages", "whatsappShareMessage", value)} />
-                <AdminTextarea label="WhatsApp katılım bildirimi mesajı" value={adminDraft.messages.rsvpWhatsappMessage} onChange={(value) => updateDraftObject("messages", "rsvpWhatsappMessage", value)} />
-                <AdminTextarea label="Kişiye özel davetli karşılama metni" value={adminDraft.messages.guestGreeting} onChange={(value) => updateDraftObject("messages", "guestGreeting", value)} />
+                <AdminTextarea
+                  label="WhatsApp paylaşım mesajı"
+                  onChange={(value) => updateDraftObject("messages", "whatsappShareMessage", value)}
+                  value={adminDraft.messages.whatsappShareMessage}
+                />
+                <AdminTextarea
+                  label="WhatsApp katılım bildirimi mesajı"
+                  onChange={(value) => updateDraftObject("messages", "rsvpWhatsappMessage", value)}
+                  value={adminDraft.messages.rsvpWhatsappMessage}
+                />
+                <AdminTextarea
+                  label="Kişiye özel davetli karşılama metni"
+                  onChange={(value) => updateDraftObject("messages", "guestGreeting", value)}
+                  value={adminDraft.messages.guestGreeting}
+                />
               </div>
             </AdminSection>
           );
@@ -2884,9 +2192,19 @@ function App() {
               <div className="admin-edit-grid">
                 {Object.entries(adminDraft.copy).map(([key, value]) => (
                   key.toLowerCase().includes("text") || key.toLowerCase().includes("description") ? (
-                    <AdminTextarea key={key} label={key} value={value} onChange={(nextValue) => updateDraftObject("copy", key, nextValue)} />
+                    <AdminTextarea
+                      key={key}
+                      label={key}
+                      onChange={(nextValue) => updateDraftObject("copy", key, nextValue)}
+                      value={value}
+                    />
                   ) : (
-                    <AdminField key={key} label={key} value={value} onChange={(nextValue) => updateDraftObject("copy", key, nextValue)} />
+                    <AdminField
+                      key={key}
+                      label={key}
+                      onChange={(nextValue) => updateDraftObject("copy", key, nextValue)}
+                      value={value}
+                    />
                   )
                 ))}
               </div>
@@ -2898,15 +2216,39 @@ function App() {
             <AdminSection title="Aile Bilgileri">
               
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Aile Bilgileri bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.family !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.family ?? false}
+                  label="Aile Bilgileri bölümünü davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })}
+                />
               </div>
 
               <div className="admin-edit-grid">
-                <AdminField label="Gelin ailesi başlığı" value={adminDraft.familyInfo.brideFamilyTitle} onChange={(value) => updateDraftObject("familyInfo", "brideFamilyTitle", value)} />
-                <AdminField label="Gelin ailesi adı" value={adminDraft.familyInfo.brideFamilyName} onChange={(value) => updateDraftObject("familyInfo", "brideFamilyName", value)} />
-                <AdminField label="Damat ailesi başlığı" value={adminDraft.familyInfo.groomFamilyTitle} onChange={(value) => updateDraftObject("familyInfo", "groomFamilyTitle", value)} />
-                <AdminField label="Damat ailesi adı" value={adminDraft.familyInfo.groomFamilyName} onChange={(value) => updateDraftObject("familyInfo", "groomFamilyName", value)} />
-                <AdminTextarea label="Aile açıklaması" value={adminDraft.familyInfo.text} onChange={(value) => updateDraftObject("familyInfo", "text", value)} />
+                <AdminField
+                  label="Gelin ailesi başlığı"
+                  onChange={(value) => updateDraftObject("familyInfo", "brideFamilyTitle", value)}
+                  value={adminDraft.familyInfo.brideFamilyTitle}
+                />
+                <AdminField
+                  label="Gelin ailesi adı"
+                  onChange={(value) => updateDraftObject("familyInfo", "brideFamilyName", value)}
+                  value={adminDraft.familyInfo.brideFamilyName}
+                />
+                <AdminField
+                  label="Damat ailesi başlığı"
+                  onChange={(value) => updateDraftObject("familyInfo", "groomFamilyTitle", value)}
+                  value={adminDraft.familyInfo.groomFamilyTitle}
+                />
+                <AdminField
+                  label="Damat ailesi adı"
+                  onChange={(value) => updateDraftObject("familyInfo", "groomFamilyName", value)}
+                  value={adminDraft.familyInfo.groomFamilyName}
+                />
+                <AdminTextarea
+                  label="Aile açıklaması"
+                  onChange={(value) => updateDraftObject("familyInfo", "text", value)}
+                  value={adminDraft.familyInfo.text}
+                />
               </div>
             </AdminSection>
           );
@@ -2914,9 +2256,17 @@ function App() {
         case "ceremony":
           return (
             <AdminSection title="Nikah / Düğün Ayrımı">
-              
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Nikah / Düğün bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.ceremony !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.ceremony ?? false}
+                  label="Nikah / Düğün bölümünü davetiyede göster"
+                  onChange={(v) =>
+                    updateDraftObject("settings", "visibility", {
+                      ...adminDraft.settings.visibility,
+                      ceremony: v,
+                    })
+                  }
+                />
               </div>
 
               <div className="admin-repeat-list">
@@ -2929,10 +2279,34 @@ function App() {
                       </button>
                     </div>
                     <div className="admin-edit-grid">
-                      <AdminField label="Başlık" value={event.label} onChange={(value) => updateDraftArrayItem("eventDetails", index, "label", value)} />
-                      <AdminField label="Saat" value={event.time} onChange={(value) => updateDraftArrayItem("eventDetails", index, "time", value)} />
-                      <AdminField label="Yer" value={event.location} onChange={(value) => updateDraftArrayItem("eventDetails", index, "location", value)} />
-                      <AdminTextarea label="Açıklama" value={event.description} onChange={(value) => updateDraftArrayItem("eventDetails", index, "description", value)} />
+                      <AdminField
+                        label="Başlık"
+                        onChange={(value) =>
+                          updateDraftArrayItem("eventDetails", index, "label", value)
+                        }
+                        value={event.label}
+                      />
+                      <AdminField
+                        label="Saat"
+                        onChange={(value) =>
+                          updateDraftArrayItem("eventDetails", index, "time", value)
+                        }
+                        value={event.time}
+                      />
+                      <AdminField
+                        label="Yer"
+                        onChange={(value) =>
+                          updateDraftArrayItem("eventDetails", index, "location", value)
+                        }
+                        value={event.location}
+                      />
+                      <AdminTextarea
+                        label="Açıklama"
+                        onChange={(value) =>
+                          updateDraftArrayItem("eventDetails", index, "description", value)
+                        }
+                        value={event.description}
+                      />
                     </div>
                   </div>
                 ))}
@@ -2944,11 +2318,18 @@ function App() {
           );
 
         case "schedule":
+
           return (
             <AdminSection title="Düğün Takvimi / Akış">
-              
+
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Düğün Takvimi bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.schedule !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.schedule ?? false}
+                  label="Düğün Takvimi bölümünü davetiyede göster"
+                  onChange={(v) =>
+                    updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })
+                  }
+                />
               </div>
 
               <div className="admin-repeat-list">
@@ -2961,9 +2342,21 @@ function App() {
                       </button>
                     </div>
                     <div className="admin-edit-grid">
-                      <AdminField label="Saat" value={item.time} onChange={(value) => updateDraftArrayItem("scheduleItems", index, "time", value)} />
-                      <AdminField label="Başlık" value={item.title} onChange={(value) => updateDraftArrayItem("scheduleItems", index, "title", value)} />
-                      <AdminTextarea label="Açıklama" value={item.description} onChange={(value) => updateDraftArrayItem("scheduleItems", index, "description", value)} />
+                      <AdminField
+                        label="Saat"
+                        onChange={(value) => updateDraftArrayItem("scheduleItems", index, "time", value)}
+                        value={item.time}
+                      />
+                      <AdminField
+                        label="Başlık"
+                        onChange={(value) => updateDraftArrayItem("scheduleItems", index, "title", value)}
+                        value={item.title}
+                      />
+                      <AdminTextarea
+                        label="Açıklama"
+                        onChange={(value) => updateDraftArrayItem("scheduleItems", index, "description", value)}
+                        value={item.description}
+                      />
                     </div>
                   </div>
                 ))}
@@ -2979,26 +2372,30 @@ function App() {
             <AdminSection title="Görsel Yönetimi">
 
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Fotoğraf Galerisi bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.gallery !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.gallery ?? false}
+                  label="Fotoğraf Galerisi bölümünü davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })}
+                />
               </div>
 
               <div className="admin-edit-grid">
                 <AdminImageField
                   label="Açılış ekranı resmi"
-                  value={adminDraft.invitation.introImage}
                   onFileSelect={(e) => updateDraftImage("invitation", "introImage", e.target.files?.[0])}
+                  value={adminDraft.invitation.introImage}
                   onClear={() => clearDraftImage("invitation", "introImage")}
                 />
                 <AdminImageField
                   label="Ana ekran büyük resmi"
-                  value={adminDraft.invitation.heroImage}
                   onFileSelect={(e) => updateDraftImage("invitation", "heroImage", e.target.files?.[0])}
+                  value={adminDraft.invitation.heroImage}
                   onClear={() => clearDraftImage("invitation", "heroImage")}
                 />
                 <AdminMusicField
-                  value={adminDraft.invitation.musicFile}
                   fileName={adminDraft.invitation.musicName}
                   onFileSelect={(e) => updateDraftMusic(e.target.files?.[0])}
+                  value={adminDraft.invitation.musicFile}
                   onClear={clearDraftMusic}
                 />
               </div>
@@ -3008,8 +2405,8 @@ function App() {
                   <div className="admin-gallery-upload-row" key={`gallery-${index}`}>
                     <AdminImageField
                       label={`Galeri ${index + 1}`}
-                      value={image}
                       onFileSelect={(e) => updateGalleryImageFile(index, e.target.files?.[0])}
+                      value={image}
                       onClear={() => updateGalleryItem(index, "")}
                     />
                     <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => removeGalleryItem(index)}>
@@ -3029,8 +2426,16 @@ function App() {
             <AdminSection title="Katılım Formu Kayıtları">
               
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Katılım (LCV) Formunu davetiyede göster" checked={adminDraft.settings.visibility?.rsvp !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-                <AdminCheckbox label="Misafir Listesini davetiyede göster" checked={adminDraft.settings.visibility?.guests !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.rsvp ?? false}
+                  label="Katılım (LCV) Formunu davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })}
+                />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.guests ?? false}
+                  label="Misafir Listesini davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })}
+                />
               </div>
 
               <div className="admin-stats admin-stats-inside">
@@ -3045,31 +2450,34 @@ function App() {
               <div className="admin-toolbar">
                 <input value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder="Kayıtlarda ara" />
                 <AdminDropdown
+                  label="Katılımlar"
                   value={adminGuestAttendanceFilter}
                   onChange={setAdminGuestAttendanceFilter}
                   options={[
-                    { value: "all", label: "Tüm katılımlar" },
-                    { value: "Katılacağım", label: "Katılacağım" },
-                    { value: "Katılamayacağım", label: "Katılamayacağım" },
+                    { label: "Katılacağım", value: "Katılacağım" },
+                    { label: "Katılamayacağım", value: "Katılamayacağım" },
+                    { label: "Tüm Katılımlar", value: "all" },
                   ]}
                 />
                 <AdminDropdown
+                  label="Taraflar"
                   value={adminGuestSideFilter}
                   onChange={setAdminGuestSideFilter}
                   options={[
-                    { value: "all", label: "Tüm taraflar" },
-                    { value: "Gelin Tarafı", label: "Gelin Tarafı" },
-                    { value: "Damat Tarafı", label: "Damat Tarafı" },
-                    { value: "Ortak", label: "Ortak" },
+                    { label: "Damat Tarafı", value: "Damat Tarafı" },
+                    { label: "Gelin Tarafı", value: "Gelin Tarafı" },
+                    { label: "Ortak", value: "Ortak" },
+                    { label: "Tüm Taraflar", value: "all" },
                   ]}
                 />
                 <AdminDropdown
+                  label="Çocuk filtresi"
                   value={adminGuestChildFilter}
                   onChange={setAdminGuestChildFilter}
                   options={[
-                    { value: "all", label: "Çocuk filtresi" },
-                    { value: "Evet", label: "Çocuk Var" },
-                    { value: "Hayır", label: "Çocuk Yok" },
+                    { label: "Evet", value: "Evet" },
+                    { label: "Hayır", value: "Hayır" },
+                    { label: "Tümü", value: "all" },
                   ]}
                 />
                 <button type="button" className="secondary-button" onClick={exportGuestsExcel}>Excel İndir</button>
@@ -3106,18 +2514,23 @@ function App() {
             <AdminSection title="Anı Defteri Formu Mesajları">
 
               <div className="admin-visibility-card">
-                <AdminCheckbox label="Anı Defteri bölümünü davetiyede göster" checked={adminDraft.settings.visibility?.wishes !== false} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+                <AdminCheckbox
+                  checked={adminDraft.settings.visibility?.wishes ?? false}
+                  label="Anı Defteri bölümünü davetiyede göster"
+                  onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })}
+                />
               </div>
               
               <div className="admin-toolbar">
                 <input value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder="Mesajlarda ara" />
                 <AdminDropdown
+                  label="Onay Durumu"
                   value={adminWishStatusFilter}
                   onChange={setAdminWishStatusFilter}
                   options={[
-                    { value: "all", label: "Tüm mesajlar" },
-                    { value: "approved", label: "Yayında" },
-                    { value: "pending", label: "Onay bekliyor" },
+                    { label: "Tüm mesajlar", value: "all" },
+                    { label: "Yayında", value: "approved" },
+                    { label: "Onay bekliyor", value: "pending" },
                   ]}
                 />
                 <button type="button" className="secondary-button" onClick={exportWishesExcel}>Excel İndir</button>
@@ -3183,7 +2596,7 @@ function App() {
               </p>
 
               <div className="admin-personal-link-box personal-link-standalone">
-                <AdminField label="Davetli adı" value={personalLinkName} onChange={setPersonalLinkName} placeholder="Örn. Ahmet Yılmaz" />
+                <AdminField label="Davetli adı" onChange="{setPersonalLinkName}" placeholder="Örn. Ahmet Yılmaz" value="{personalLinkName}"/>
                 <input value={personalGuestLink} readOnly />
                 <button type="button" className="secondary-button" onClick={() => copyAdminLink(personalGuestLink, "Kişiye özel link kopyalandı.")}>Özel Linki Kopyala</button>
               </div>
@@ -3224,7 +2637,7 @@ function App() {
               </div>
 
               <div className="admin-import-box">
-                <AdminTextarea label="JSON yedeğini buraya yapıştır" value={dataImportText} onChange={setDataImportText} placeholder="Yedek JSON içeriği" />
+                <AdminTextarea label="JSON yedeğini buraya yapıştır" onChange="{setDataImportText}" placeholder="Yedek JSON içeriği" value="{dataImportText}"/>
                 <button type="button" className="secondary-button" onClick={importAllDataJson}>JSON Yedeğini Geri Yükle</button>
               </div>
             </AdminSection>
@@ -3342,6 +2755,7 @@ function App() {
                   <span>Bölümler</span>
                   <small>Düzenlemek istediğin alanı seç</small>
                 </div>
+                <div></div>
 
                 <div className="admin-sidebar-menu">
                   {adminTabs.map((tab) => (
@@ -3407,9 +2821,7 @@ function App() {
         onPause={() => setIsMusicPlaying(false)}
         onEnded={() => setIsMusicPlaying(false)}
       />
-      <AppModal
-        modal={appModal}
-        onInputChange={(value) => setAppModal((prev) => (prev ? { ...prev, inputValue: value } : prev))}
+      <AppModal modal={appModal} onInputChange={(value) => setAppModal((prev) => (prev ? { ...prev, inputValue: value } : prev))}
         onConfirm={(value) => resolveAppModal(value)}
         onCancel={() => resolveAppModal(appModal?.type === "prompt" ? null : false)}
       />
@@ -3457,7 +2869,12 @@ function App() {
       ) : (
         <>
           <div className="floating-actions">
-            <a className="share-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">
+            <a
+              className="share-button"
+              href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+              target="_blank"
+              rel="noreferrer"
+            >
               Paylaş
             </a>
 
@@ -3620,17 +3037,37 @@ function App() {
                           <form className="rsvp-form" onSubmit={submitGuest}>
                             <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder="Ad Soyad" />
                             <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder="Telefon Numaranız" maxLength="20" />
-                            <OptionGroup value={guestForm.attendance} options={ATTENDANCE_OPTIONS} onChange={updateAttendance} />
-                            <OptionGroup disabled={!isAttending} value={guestForm.personCount} options={PERSON_COUNT_OPTIONS} onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))} />
-                            <OptionGroup disabled={!isAttending} value={guestForm.side} options={SIDE_OPTIONS} onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))} />
-                            <OptionGroup disabled={!isAttending} value={guestForm.hasChild} options={CHILD_OPTIONS} onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))} />
+                            <OptionGroup onChange={updateAttendance} options={ATTENDANCE_OPTIONS} value={guestForm.attendance} />
+                            <OptionGroup
+                              disabled={!isAttending}
+                              onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))}
+                              options={PERSON_COUNT_OPTIONS}
+                              value={guestForm.personCount}
+                            />
+                            <OptionGroup
+                              disabled={!isAttending}
+                              onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))}
+                              options={SIDE_OPTIONS}
+                              value={guestForm.side}
+                            />
+                            <OptionGroup
+                              disabled={!isAttending}
+                              onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))}
+                              options={CHILD_OPTIONS}
+                              value={guestForm.hasChild}
+                            />
                             <div className="field-with-counter">
                               <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder="Notunuz" maxLength={NOTE_MAX_LENGTH}></textarea>
                               <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
                             </div>
                             <button type="submit" className="main-button form-button">Katılımı Gönder</button>
                           </form>
-                          <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+                          <a
+                            className="secondary-button whatsapp-button"
+                            href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${encodeURIComponent(rsvpWhatsappText)}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
                             WhatsApp ile Bildir
                           </a>
                         </section>
@@ -3700,7 +3137,7 @@ function App() {
                           <span>QR kod ile hızlıca paylaşabilirsiniz.</span>
                         </div>
                         <div className="button-group">
-                          <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">WhatsApp ile Paylaş</a>
+                          <a className="main-button" href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer">WhatsApp ile Paylaş</a>
                           <button className="secondary-button" onClick={copyInvitationLink}>Linki Kopyala</button>
                         </div>
                       </section>
