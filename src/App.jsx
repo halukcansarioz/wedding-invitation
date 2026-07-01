@@ -80,15 +80,15 @@ const DEFAULT_SITE_DATA = {
     mapLink: "https://www.google.com/maps",
     shareLink: getCurrentShareLink(),
     whatsappNumber: "905394933614",
-    introImage: "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
-    heroImage: "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
+    introImage: "/images/themes/lavanta/8.jpg",
+    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
     musicFile: DEFAULT_WEDDING_MUSIC_FILE,
-    musicName: DEFAULT_WEDDING_MUSIC_NAME,    
+    musicName: DEFAULT_WEDDING_MUSIC_NAME,
     gallery: [
-      "https://unsplash.com/photos/4AX70fujoxg/download?force=true&w=3840",
-      "https://unsplash.com/photos/BQZo2Hc76p0/download?force=true&w=3840",
-      "https://unsplash.com/photos/fJzmPe-a0eU/download?force=true&w=3840",
-      "https://unsplash.com/photos/IxKTpb8XKH0/download?force=true&w=3840",
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
+      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
+      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
     ],
     message:
       "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
@@ -152,7 +152,8 @@ const DEFAULT_SITE_DATA = {
     { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
   ],
   settings: {
-    theme: "rose",
+    theme: "lavanta",
+    defaultTheme: "lavanta",
     requireWishApproval: true,
   },
   messages: {
@@ -1159,21 +1160,19 @@ function App() {
       }
     }, []);
 
-    // 2. Hem CSS temasını hem de Favicon'u güncelleyen Effect
-    useEffect(() => {
-      const currentTheme = settings.theme || "rose";
+  useEffect(() => {
+      // Buradaki "rose" yazısını "lavanta" yapıyoruz
+      const currentTheme = settings.theme || "lavanta"; 
       
-      // Tema rengini body'e uygula
       document.documentElement.dataset.theme = currentTheme;
 
-      // Favicon'u güncelle
       const favicon =
         document.querySelector("link[rel='icon'], link[rel='shortcut icon']") ||
         document.createElement("link");
 
       favicon.setAttribute("rel", "icon");
       favicon.setAttribute("type", "image/svg+xml");
-      favicon.setAttribute("href", getFaviconUrl(currentTheme)); // Dinamik fonksiyonu çağırdık
+      favicon.setAttribute("href", getFaviconUrl(currentTheme));
 
       if (!favicon.parentNode) {
         document.head.appendChild(favicon);
@@ -2330,13 +2329,29 @@ function App() {
     const confirmed = await showAppConfirm("Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" });
     if (!confirmed) return;
 
+    // 1. Kullanıcının panelden seçmiş olduğu varsayılan sıfırlama temasını hafızada tutalım
+    const chosenDefaultTheme = adminDraft.settings.defaultTheme || "lavanta";
+
+    // 2. Temel fabrika verilerini çekelim
     const defaultData = normalizeSiteData(null);
+
+    // 3. Ayarları kullanıcının belirlediği varsayılan temaya göre eşitleyelim
+    defaultData.settings.defaultTheme = chosenDefaultTheme;
+    defaultData.settings.theme = chosenDefaultTheme;
+
+    // 4. Bir önceki aşamada yazdığımız o temanın varsayılan resimlerini otomatik olarak başlangıç resmi yapalım
+    if (typeof THEME_DEFAULT_IMAGES !== "undefined" && THEME_DEFAULT_IMAGES[chosenDefaultTheme]) {
+      const themeImages = THEME_DEFAULT_IMAGES[chosenDefaultTheme];
+      defaultData.invitation.introImage = themeImages.introImage;
+      defaultData.invitation.heroImage = themeImages.heroImage;
+      defaultData.invitation.gallery = themeImages.gallery;
+    }
 
     try {
       await saveSettingsToDatabase(defaultData);
       setSiteData(defaultData);
       setAdminDraft(defaultData);
-      setAdminSaveMessage("Davetiyedeki içerikler varsayılan hale getirildi.");
+      setAdminSaveMessage("Davetiyedeki içerikler seçtiğiniz varsayılan temaya göre başarıyla sıfırlandı.");
     } catch (error) {
       console.error("Varsayılan ayarlar kaydedilemedi:", error);
       setAdminSaveMessage(`Varsayılan ayarlar kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
@@ -2736,6 +2751,18 @@ function App() {
                   checked={adminDraft.settings.requireWishApproval}
                   onChange={(value) => updateDraftObject("settings", "requireWishApproval", value)}
                 />
+              </div>
+
+              <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
+                <AdminSelect
+                  label="Sistem Varsayılan Sıfırlama Teması"
+                  value={adminDraft.settings.defaultTheme || "lavanta"}
+                  options={THEMES}
+                  onChange={(value) => updateDraftObject("settings", "defaultTheme", value)}
+                />
+                <small className="admin-help-text" style={{ display: "block", marginTop: "6px" }}>
+                  <strong>"Varsayılana Döndür"</strong> butonuna basıldığında sitenin fabrika ayarı olarak hangi temaya, renklere ve o temanın resimlerine döneceğini buradan belirleyebilirsiniz.
+                </small>
               </div>
             </AdminSection>
           );
@@ -3276,7 +3303,7 @@ function App() {
     <div
       className="app"
       lang="tr"
-      data-theme={settings.theme || "rose"}
+      data-theme={settings.theme || "lavanta"}
       style={{
         "--intro-image": `url(${invitation.introImage})`,
         "--hero-image": `url(${invitation.heroImage})`,

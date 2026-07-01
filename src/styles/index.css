@@ -1202,3 +1202,15 @@ html[data-theme] .app .hero-section .couple-title em,
     transform: scale(1);
   }
 }
+
+.field-with-counter span {
+  transition: color 0.3s ease; /* Tema değişirken rengin yumuşak geçmesini sağlar */
+}
+
+[data-theme="rose"] .field-with-counter span { color: #9f4f68; }
+[data-theme="sage"] .field-with-counter span { color: #597359; }
+[data-theme="gold"] .field-with-counter span { color: #9c8346; }
+[data-theme="burgundy"] .field-with-counter span { color: #702838; }
+[data-theme="lavanta"] .field-with-counter span { color: #664b8a; }
+[data-theme="minimal"] .field-with-counter span { color: #737373; }
+[data-theme="dark"] .field-with-counter span { color: #bfbfbf; }
