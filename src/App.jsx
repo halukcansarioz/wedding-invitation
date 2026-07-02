@@ -2,6 +2,18 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 import {
+  AdminField,
+  AdminTextarea,
+  AdminSelect,
+  AdminCheckbox,
+  AppModal,
+  AdminImageField,
+  AdminMusicField,
+  AdminSection,
+} from "./components/AdminUI";
+import AdminDashboard from "./components/AdminDashboard";
+import { useAdminSession } from "./hooks/useAdminSession";
+import {
   DEFAULT_SHARE_LINK,
   DEFAULT_WEDDING_MUSIC_FILE,
   DEFAULT_WEDDING_MUSIC_NAME,
@@ -73,263 +85,6 @@ function OptionGroup({ value, options, onChange, disabled = false }) {
           {option.label}
         </button>
       ))}
-    </div>
-  );
-}
-
-function AdminField({ label, value, onChange, type = "text", placeholder = "" }) {
-  return (
-    <label className="admin-field">
-      <span>{label}</span>
-      <input
-        type={type}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
-    </label>
-  );
-}
-
-function AdminTextarea({ label, value, onChange, placeholder = "" }) {
-  return (
-    <label className="admin-field admin-field-wide">
-      <span>{label}</span>
-      <textarea
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
-    </label>
-  );
-}
-
-function AdminDropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const selectedOption = options.find(
-    (option) => String(option.value) === String(value)
-  );
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const closeDropdown = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", closeDropdown);
-    return () => document.removeEventListener("mousedown", closeDropdown);
-  }, [isOpen]);
-
-  return (
-    <div className={`admin-custom-select ${isOpen ? "open" : ""}`} ref={dropdownRef}>
-      <button
-        type="button"
-        className="admin-custom-select-button"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <span>{selectedOption?.label || placeholder}</span>
-        <span className="admin-custom-select-arrow">⌄</span>
-      </button>
-
-      {isOpen && (
-        <div className="admin-custom-select-menu">
-          {options.map((option) => (
-            <button
-              type="button"
-              key={option.value}
-              className={
-                String(option.value) === String(value)
-                  ? "admin-custom-select-option selected"
-                  : "admin-custom-select-option"
-              }
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AdminSelect({ label, value, options, onChange }) {
-  return (
-    <label className="admin-field">
-      <span>{label}</span>
-      <AdminDropdown onChange="{onChange}" options="{options}" value="{value}"/>
-    </label>
-  );
-}
-
-function AdminCheckbox({ label, checked, onChange }) {
-  return (
-    <label className="admin-check-field">
-      <input type="checkbox" checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />
-      <span>{label}</span>
-    </label>
-  );
-}
-
-
-function AppModal({ modal, onInputChange, onConfirm, onCancel }) {
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    if (!modal || modal.type !== "prompt") return;
-
-    const focusTimer = window.setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select?.();
-    }, 60);
-
-    return () => window.clearTimeout(focusTimer);
-  }, [modal]);
-
-  if (!modal) return null;
-
-  const isPrompt = modal.type === "prompt";
-  const showCancel = modal.type === "confirm" || isPrompt;
-  const messageLines = String(modal.message || "").split("\n");
-
-  return (
-    <div
-      className={`app-modal-backdrop app-modal-${modal.tone || "info"}`}
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget && modal.closeOnBackdrop !== false) {
-          onCancel();
-        }
-      }}
-    >
-      <form
-        className="app-modal-card"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="app-modal-title"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onConfirm(isPrompt ? modal.inputValue || "" : true);
-        }}
-      >
-        <div className="app-modal-content">
-          <h3 id="app-modal-title">{modal.title || "Bilgi"}</h3>
-          {messageLines.map((line, index) => (
-            <p key={`${line}-${index}`}>{line}</p>
-          ))}
-
-          {isPrompt && (
-            modal.multiline ? (
-              <textarea
-                ref={inputRef}
-                className="app-modal-input app-modal-textarea"
-                value={modal.inputValue || ""}
-                onChange={(event) => onInputChange(event.target.value)}
-                placeholder={modal.placeholder || ""}
-              />
-            ) : (
-              <input
-                ref={inputRef}
-                className="app-modal-input"
-                value={modal.inputValue || ""}
-                onChange={(event) => onInputChange(event.target.value)}
-                placeholder={modal.placeholder || ""}
-              />
-            )
-          )}
-        </div>
-
-        <div className="app-modal-actions">
-          {showCancel && (
-            <button type="button" className="secondary-button app-modal-cancel" onClick={onCancel}>
-              {modal.cancelText || "Vazgeç"}
-            </button>
-          )}
-          <button type="submit" className={modal.tone === "danger" ? "main-button app-modal-danger-button" : "main-button"}>
-            {modal.confirmText || "Tamam"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function AdminImageField({ label, value, onFileSelect, onClear }) {
-  return (
-    <div className="admin-image-field admin-field-wide">
-      <div className="admin-image-header">
-        <span>{label}</span>
-        {value && (
-          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            Görseli Kaldır
-          </button>
-        )}
-      </div>
-
-      {value ? (
-        <img className="admin-image-preview" src={value} alt={`${label} önizleme`} />
-      ) : (
-        <div className="admin-image-empty">Henüz görsel seçilmedi.</div>
-      )}
-
-      <label className="admin-upload-button">
-        Bilgisayardan Görsel Seç
-        <input type="file" accept="image/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
-      </label>
-      <small>
-        Görsel otomatik küçültülür ve bu tarayıcıda saklanır. Büyük fotoğraf yüklerken kaydettikten sonra kontrol et.
-      </small>
-    </div>
-  );
-}
-
-function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
-  return (
-    <div className="admin-music-field admin-field-wide">
-      <div className="admin-image-header">
-        <span>Davetiyede çalacak müzik</span>
-        {value && (
-          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            Müziği Kaldır
-          </button>
-        )}
-      </div>
-
-      {value ? (
-        <div className="admin-music-preview">
-          <strong>{fileName || "Yüklenen müzik"}</strong>
-          <audio controls src={value}></audio>
-        </div>
-      ) : (
-        <div className="admin-image-empty">
-          Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar.
-        </div>
-      )}
-
-      <label className="admin-upload-button">
-        Bilgisayardan Müzik Seç
-        <input type="file" accept="audio/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
-      </label>
-      <small>
-        MP3/M4A gibi kısa ve 4 MB altı bir dosya seç. Kaydettikten sonra davetiyede bu müzik çalar.
-      </small>
-    </div>
-  );
-}
-
-function AdminSection({ title, children }) {
-  return (
-    <div className="admin-editor-section">
-      <h3>{title}</h3>
-      {children}
     </div>
   );
 }
@@ -489,158 +244,111 @@ function App() {
     return () => subscription.unsubscribe();
   }, [adminEmail]);
 
-  useEffect(() => {
-    const loadSessionForAdmin = async () => {
-      if (!isAdminPage || !isSupabaseReady()) return;
+  const resolveAppModal = (result) => {
+    const resolver = modalResolverRef.current;
+    modalResolverRef.current = null;
+    setAppModal(null);
 
-      try {
-        const searchParams = new URLSearchParams(window.location.search);
-        const recoveryRouteActive =
-          isAdminRouteActive() &&
-          typeof window !== "undefined" &&
-          (window.location.hash.includes("type=recovery") ||
-            window.location.hash.includes("access_token=") ||
-            searchParams.get("type") === "recovery" ||
-            searchParams.get("reset") === "1" ||
-            searchParams.has("code"));
+    if (resolver) {
+      resolver(result);
+    }
+  };
 
-        if (searchParams.has("code")) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
-            searchParams.get("code")
-          );
-
-          if (exchangeError && recoveryRouteActive) {
-            setIsPasswordRecovery(true);
-            setRecoveryMessage(getReadableAuthError(exchangeError));
-            return;
-          }
-        }
-
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error) {
-          setAdminError(getReadableAuthError(error));
-          return;
-        }
-
-        if (recoveryRouteActive) {
-          setIsPasswordRecovery(true);
-          setShowForgotPassword(false);
-          setAdminError("");
-
-          if (data.session?.user) {
-            setAdminUser(data.session.user);
-            setAdminEmail(data.session.user.email || "");
-          }
-
-          return;
-        }
-
-        const sessionUser = data.session?.user;
-
-        if (!sessionUser) {
-          clearAdminSessionTimestamp();
-          setAdminUser(null);
-          setIsAdminUnlocked(false);
-          setIsPasswordRecovery(false);
-          setShowForgotPassword(false);
-          setAdminPassword("");
-          setAdminError("");
-          setAdminLoginNotice("Admin paneline girmek için giriş yapmalısın.");
-          return;
-        }
-
-        if (!isAdminSessionFresh()) {
-          await supabase.auth.signOut();
-          clearAdminSessionTimestamp();
-          setAdminUser(null);
-          setIsAdminUnlocked(false);
-          setIsPasswordRecovery(false);
-          setShowForgotPassword(false);
-          setAdminPassword("");
-          setAdminError("");
-          setAdminLoginNotice("Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
-          return;
-        }
-
-        touchAdminSession();
-        setAdminUser(sessionUser);
-        setAdminEmail(sessionUser.email || adminEmail);
-        setIsAdminUnlocked(true);
-        setIsPasswordRecovery(false);
-        setShowForgotPassword(false);
-        setAdminPassword("");
-        setAdminError("");
-        setAdminLoginNotice("Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
-
-        const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadGuestsFromDatabase(),
-          loadAllWishesFromDatabase(),
-        ]);
-
-        if (databaseSettings) {
-          const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
-
-          setSiteData(normalizedDatabaseSettings);
-          setAdminDraft(normalizedDatabaseSettings);
-        }
-
-        setGuests(adminGuests);
-        setWishes(adminWishes);
-      } catch (error) {
-        console.error("Supabase oturumu kontrol edilemedi:", error);
-        setAdminError(getReadableAuthError(error));
-      }
-    };
-
-    loadSessionForAdmin();
-  }, [isAdminPage, adminEmail]);
-
-  useEffect(() => {
-    if (!isAdminPage || !isAdminUnlocked) return undefined;
-
-    const markActivity = () => touchAdminSession();
-
-    const checkSessionTimeout = async () => {
-      if (isAdminSessionFresh()) return;
-
-      try {
-        if (isSupabaseReady()) {
-          await supabase.auth.signOut();
-        }
-      } catch (error) {
-        console.error("Admin oturumu kapatılamadı:", error);
-      }
-
-      clearAdminSessionTimestamp();
-      setAdminUser(null);
-      setIsAdminUnlocked(false);
-      setActiveAdminTab("general");
-      setAdminPassword("");
-      setAdminError("");
-      setAdminSaveMessage("");
-      setAdminPasswordMessage("");
-      setShowForgotPassword(false);
-      setForgotPasswordEmail("");
-      setForgotPasswordMessage("");
-      setAdminLoginNotice("Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
-    };
-
-    markActivity();
-    ADMIN_ACTIVITY_EVENTS.forEach((eventName) => {
-      window.addEventListener(eventName, markActivity, { passive: true });
+  const openAppModal = (config) => {
+    return new Promise((resolve) => {
+      modalResolverRef.current = resolve;
+      setAppModal({ tone: "info", closeOnBackdrop: false, ...config });
     });
+  };
 
-    const timeoutCheckInterval = window.setInterval(checkSessionTimeout, 60 * 1000);
+  const showAppAlert = async (message, options = {}) => {
+    await openAppModal({
+      type: "alert",
+      title: options.title || "Bilgi",
+      message,
+      tone: options.tone || "info",
+      icon: options.icon,
+      confirmText: options.confirmText || "Tamam",
+    });
+    return true;
+  };
 
-    return () => {
-      ADMIN_ACTIVITY_EVENTS.forEach((eventName) => {
-        window.removeEventListener(eventName, markActivity);
-      });
-      window.clearInterval(timeoutCheckInterval);
-    };
-  }, [isAdminPage, isAdminUnlocked]);
+  const showAppConfirm = async (message, options = {}) => {
+    return Boolean(
+      await openAppModal({
+        type: "confirm",
+        title: options.title || "Onay gerekiyor",
+        message,
+        tone: options.tone || "warning",
+        icon: options.icon || "?",
+        confirmText: options.confirmText || "Evet",
+        cancelText: options.cancelText || "Vazgeç",
+      })
+    );
+  };
+
+  const showAppPrompt = async (label, defaultValue = "", options = {}) => {
+    return openAppModal({
+      type: "prompt",
+      title: options.title || "Bilgi düzenle",
+      message: label,
+      inputValue: defaultValue,
+      placeholder: options.placeholder || label,
+      multiline: Boolean(options.multiline),
+      tone: options.tone || "info",
+      icon: options.icon || "✎",
+      confirmText: options.confirmText || "Kaydet",
+      cancelText: options.cancelText || "Vazgeç",
+    });
+  };
+
+  const {
+    submitAdminPassword,
+    sendPasswordResetEmail,
+    completePasswordRecovery,
+    changeAdminPassword,
+    logoutAdmin,
+    performAdminSignOut,
+  } = useAdminSession({
+    isAdminPage,
+    adminEmail,
+    adminPassword,
+    adminUser,
+    adminCurrentPassword,
+    adminNewPassword,
+    adminNewPasswordAgain,
+    recoveryPassword,
+    recoveryPasswordAgain,
+    siteData,
+    isAdminUnlocked,
+    setAdminEmail,
+    setAdminPassword,
+    setAdminUser,
+    setIsAdminUnlocked,
+    setAdminError,
+    setAdminLoginNotice,
+    setShowForgotPassword,
+    setForgotPasswordEmail,
+    setForgotPasswordMessage,
+    setAdminPasswordMessage,
+    setAdminSaveMessage,
+    setAdminCurrentPassword,
+    setAdminNewPassword,
+    setAdminNewPasswordAgain,
+    setRecoveryPassword,
+    setRecoveryPasswordAgain,
+    setRecoveryMessage,
+    setRecoveryLoading,
+    setForgotPasswordLoading,
+    setAdminAuthLoading,
+    setIsPasswordRecovery,
+    setActiveAdminTab,
+    setSiteData,
+    setAdminDraft,
+    setGuests,
+    setWishes,
+    showAppConfirm,
+  });
 
   useEffect(() => {
     return () => {
@@ -924,64 +632,6 @@ function App() {
     }));
   };
 
-  const resolveAppModal = (result) => {
-    const resolver = modalResolverRef.current;
-    modalResolverRef.current = null;
-    setAppModal(null);
-
-    if (resolver) {
-      resolver(result);
-    }
-  };
-
-  const openAppModal = (config) => {
-    return new Promise((resolve) => {
-      modalResolverRef.current = resolve;
-      setAppModal({ tone: "info", closeOnBackdrop: false, ...config });
-    });
-  };
-
-  const showAppAlert = async (message, options = {}) => {
-    await openAppModal({
-      type: "alert",
-      title: options.title || "Bilgi",
-      message,
-      tone: options.tone || "info",
-      icon: options.icon,
-      confirmText: options.confirmText || "Tamam",
-    });
-    return true;
-  };
-
-  const showAppConfirm = async (message, options = {}) => {
-    return Boolean(
-      await openAppModal({
-        type: "confirm",
-        title: options.title || "Onay gerekiyor",
-        message,
-        tone: options.tone || "warning",
-        icon: options.icon || "?",
-        confirmText: options.confirmText || "Evet",
-        cancelText: options.cancelText || "Vazgeç",
-      })
-    );
-  };
-
-  const showAppPrompt = async (label, defaultValue = "", options = {}) => {
-    return openAppModal({
-      type: "prompt",
-      title: options.title || "Bilgi düzenle",
-      message: label,
-      inputValue: defaultValue,
-      placeholder: options.placeholder || label,
-      multiline: Boolean(options.multiline),
-      tone: options.tone || "info",
-      icon: options.icon || "✎",
-      confirmText: options.confirmText || "Kaydet",
-      cancelText: options.cancelText || "Vazgeç",
-    });
-  };
-
   const submitGuest = async (e) => {
     e.preventDefault();
 
@@ -1086,307 +736,6 @@ function App() {
     } catch {
       setAdminSaveMessage("Link kopyalanamadı.");
     }
-  };
-
-  const submitAdminPassword = async (e) => {
-    e.preventDefault();
-    setAdminError("");
-    setAdminLoginNotice("");
-    setAdminAuthLoading(true);
-
-    try {
-      if (!isSupabaseReady()) {
-        setAdminError(getSupabaseSetupMessage());
-        return;
-      }
-
-      if (!adminEmail.trim() || !adminPassword.trim()) {
-        setAdminError("Lütfen admin e-posta ve şifresini gir.");
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: adminEmail.trim(),
-        password: adminPassword,
-      });
-
-      if (error) {
-        console.error("Admin girişi başarısız:", error);
-        setAdminError(getReadableAuthError(error));
-        return;
-      }
-
-      touchAdminSession();
-      setAdminUser(data.user);
-      setIsAdminUnlocked(true);
-      setActiveAdminTab("general");
-      setIsPasswordRecovery(false);
-      setShowForgotPassword(false);
-      setForgotPasswordMessage("");
-      setAdminPassword("");
-
-      const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
-        loadSettingsFromDatabase(),
-        loadGuestsFromDatabase(),
-        loadAllWishesFromDatabase(),
-      ]);
-
-      if (databaseSettings) {
-        const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
-
-        setSiteData(normalizedDatabaseSettings);
-        setAdminDraft(normalizedDatabaseSettings);
-
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
-      } else {
-        setAdminDraft(normalizeSiteData(siteData));
-      }
-
-      setGuests(adminGuests);
-      setWishes(adminWishes);
-    } catch (error) {
-      console.error("Admin girişinde bağlantı hatası:", error);
-      setAdminError(getReadableAuthError(error));
-    } finally {
-      setAdminAuthLoading(false);
-    }
-  };
-
-  const sendPasswordResetEmail = async (e) => {
-    e.preventDefault();
-    setForgotPasswordMessage("");
-    setAdminError("");
-    setForgotPasswordLoading(true);
-
-    try {
-      if (!isSupabaseReady()) {
-        setForgotPasswordMessage(getSupabaseSetupMessage());
-        return;
-      }
-
-      const email = (forgotPasswordEmail || adminEmail).trim();
-
-      if (!email) {
-        setForgotPasswordMessage("Şifre sıfırlama linki için admin e-postanı yazmalısın.");
-        return;
-      }
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: getAdminRedirectUrl(),
-      });
-
-      if (error) {
-        console.error("Şifre sıfırlama e-postası gönderilemedi:", error);
-        setForgotPasswordMessage(getReadableAuthError(error));
-        return;
-      }
-
-      setForgotPasswordMessage(
-        `Şifre sıfırlama linki ${email} adresine gönderildi. Link çalışmazsa Supabase > Authentication > URL Configuration bölümüne şu adresi ekle: ${getAdminRedirectUrl()}`
-      );
-    } catch (error) {
-      console.error("Şifre sıfırlama bağlantı hatası:", error);
-      setForgotPasswordMessage(getReadableAuthError(error));
-    } finally {
-      setForgotPasswordLoading(false);
-    }
-  };
-
-  const completePasswordRecovery = async (e) => {
-    e.preventDefault();
-    setRecoveryMessage("");
-    setRecoveryLoading(true);
-
-    try {
-      if (recoveryPassword.trim().length < 6) {
-        setRecoveryMessage("Yeni şifre en az 6 karakter olmalı.");
-        return;
-      }
-
-      if (recoveryPassword !== recoveryPasswordAgain) {
-        setRecoveryMessage("Yeni şifreler aynı değil.");
-        return;
-      }
-
-      if (typeof window !== "undefined") {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get("code");
-
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) {
-            setRecoveryMessage(getReadableAuthError(exchangeError));
-            return;
-          }
-        }
-      }
-
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        setRecoveryMessage(getReadableAuthError(sessionError));
-        return;
-      }
-
-      if (!sessionData.session?.user) {
-        setRecoveryMessage("Şifre sıfırlama oturumu bulunamadı. Linkin süresi dolmuş olabilir; tekrar 'Şifremi unuttum' linki gönder.");
-        return;
-      }
-
-      const { error } = await supabase.auth.updateUser({
-        password: recoveryPassword,
-      });
-
-      if (error) {
-        console.error("Şifre sıfırlama tamamlanamadı:", error);
-        setRecoveryMessage(getReadableAuthError(error));
-        return;
-      }
-
-      const recoveredEmail = sessionData.session.user?.email || adminEmail;
-      const { error: signOutError } = await supabase.auth.signOut();
-      clearAdminSessionTimestamp();
-
-      if (signOutError) {
-        console.error("Şifre sıfırlandı ama oturum kapatılamadı:", signOutError);
-      }
-
-      setRecoveryPassword("");
-      setRecoveryPasswordAgain("");
-      setRecoveryMessage("");
-      setIsPasswordRecovery(false);
-      setShowForgotPassword(false);
-      setAdminUser(null);
-      setAdminEmail(recoveredEmail);
-      setAdminPassword("");
-      setIsAdminUnlocked(false);
-      setAdminLoginNotice(
-        "Şifren güncellendi. Güvenlik için oturum kapatıldı; yeni şifrenle tekrar giriş yap."
-      );
-
-      if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", `${window.location.pathname}?admin=1`);
-      }
-    } catch (error) {
-      console.error("Şifre sıfırlama bağlantı hatası:", error);
-      setRecoveryMessage(getReadableAuthError(error));
-    } finally {
-      setRecoveryLoading(false);
-    }
-  };
-
-  const changeAdminPassword = async (e) => {
-    e.preventDefault();
-    setAdminPasswordMessage("");
-
-    const email = adminUser?.email || adminEmail;
-
-    if (!email) {
-      setAdminPasswordMessage("Admin e-posta bilgisi bulunamadı. Çıkış yapıp tekrar giriş yap.");
-      return;
-    }
-
-    if (!adminCurrentPassword.trim()) {
-      setAdminPasswordMessage("Mevcut şifreyi yazmalısın.");
-      return;
-    }
-
-    if (adminNewPassword.trim().length < 6) {
-      setAdminPasswordMessage("Yeni şifre en az 6 karakter olmalı.");
-      return;
-    }
-
-    if (adminNewPassword !== adminNewPasswordAgain) {
-      setAdminPasswordMessage("Yeni şifreler aynı değil.");
-      return;
-    }
-
-    const { error: reLoginError } = await supabase.auth.signInWithPassword({
-      email,
-      password: adminCurrentPassword,
-    });
-
-    if (reLoginError) {
-      console.error("Mevcut şifre doğrulanamadı:", reLoginError);
-      setAdminPasswordMessage(getReadableAuthError(reLoginError));
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({
-      password: adminNewPassword,
-    });
-
-    if (error) {
-      console.error("Admin şifresi güncellenemedi:", error);
-      setAdminPasswordMessage(getReadableAuthError(error));
-      return;
-    }
-
-    const { error: signOutError } = await supabase.auth.signOut();
-    clearAdminSessionTimestamp();
-
-    if (signOutError) {
-      console.error("Şifre değişti ama oturum kapatılamadı:", signOutError);
-      setAdminPasswordMessage(
-        "Şifre güncellendi fakat oturum otomatik kapatılamadı. Lütfen sayfayı yenileyip yeni şifrenle giriş yap."
-      );
-      return;
-    }
-
-    setAdminCurrentPassword("");
-    setAdminNewPassword("");
-    setAdminNewPasswordAgain("");
-    setAdminPassword("");
-    clearAdminSessionTimestamp();
-    setAdminUser(null);
-    setIsAdminUnlocked(false);
-    setShowForgotPassword(false);
-    setForgotPasswordEmail("");
-    setForgotPasswordMessage("");
-    setAdminPasswordMessage("");
-    setAdminSaveMessage("");
-    setAdminError("");
-    setAdminLoginNotice("Admin şifresi güncellendi. Güvenlik için oturum kapatıldı. Yeni şifrenle tekrar giriş yapmalısın.");
-  };
-
-  const performAdminSignOut = async () => {
-    try {
-      if (!isSupabaseReady()) return true;
-
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error("Admin çıkışı yapılamadı:", error);
-        setAdminSaveMessage(getReadableAuthError(error));
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Admin çıkışı bağlantı hatası:", error);
-      setAdminSaveMessage(getReadableAuthError(error));
-      return false;
-    }
-  };
-
-  const logoutAdmin = async () => {
-    const confirmed = await showAppConfirm("Admin panelden çıkış yapmak istiyor musun?", { title: "Çıkış yap", confirmText: "Çıkış Yap", tone: "warning" });
-    if (!confirmed) return;
-
-    const signedOut = await performAdminSignOut();
-    if (!signedOut) return;
-
-    clearAdminSessionTimestamp();
-    setAdminUser(null);
-    setIsAdminUnlocked(false);
-    setActiveAdminTab("general");
-    setAdminPassword("");
-    setAdminError("");
-    setAdminSaveMessage("");
-    setAdminPasswordMessage("");
-    setShowForgotPassword(false);
-    setForgotPasswordEmail("");
-    setForgotPasswordMessage("");
-    setAdminLoginNotice("Çıkış yapıldı. Admin paneline girmek için tekrar giriş yapmalısın.");
   };
 
   const updateDraftObject = (group, key, value) => {
@@ -2661,155 +2010,46 @@ function App() {
     };
 
     return (
-      <main className="admin-page">
-        <section className="card admin-card admin-page-card admin-shell-card">
-          <div className="admin-page-header">
-            <button type="button" className="secondary-button admin-back-button" onClick={closeAdminPage}>
-              Davetiyeye Dön
-            </button>
-
-            <p className="section-label">Yönetim</p>
-            <h2>Admin Panel</h2>
-            <p>
-              Sol taraftan düzenlemek istediğiniz bölümü seçebilirsiniz. Böylece sayfanın en altındaki bölümlere tek tek kaydırmadan ulaşabilirsiniz.
-            </p>
-          </div>
-
-          {!isAdminUnlocked ? (
-            isPasswordRecovery ? (
-              <form className="admin-login admin-recovery-form" onSubmit={completePasswordRecovery}>
-                <p className="admin-login-note">
-                  Şifre sıfırlama linki açıldı. Yeni admin şifreni belirle.
-                </p>
-                <input
-                  type="password"
-                  value={recoveryPassword}
-                  onChange={(e) => setRecoveryPassword(e.target.value)}
-                  placeholder="Yeni şifre"
-                />
-                <input
-                  type="password"
-                  value={recoveryPasswordAgain}
-                  onChange={(e) => setRecoveryPasswordAgain(e.target.value)}
-                  placeholder="Yeni şifre tekrar"
-                />
-                <button className="main-button" type="submit" disabled={recoveryLoading}>
-                  {recoveryLoading ? "Kaydediliyor..." : "Yeni Şifreyi Kaydet"}
-                </button>
-                {recoveryMessage && <span className="admin-login-message">{recoveryMessage}</span>}
-              </form>
-            ) : showForgotPassword ? (
-              <form className="admin-login admin-forgot-form" onSubmit={sendPasswordResetEmail}>
-                <p className="admin-login-note">
-                  Admin e-postanı yaz. Supabase sana şifre sıfırlama linki gönderecek.
-                </p>
-                <input
-                  type="email"
-                  value={forgotPasswordEmail}
-                  onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                  placeholder="Admin e-posta"
-                />
-                <button className="main-button" type="submit" disabled={forgotPasswordLoading}>
-                  {forgotPasswordLoading ? "Gönderiliyor..." : "Sıfırlama Linki Gönder"}
-                </button>
-                <button
-                  type="button"
-                  className="admin-link-button"
-                  onClick={() => {
-                    setShowForgotPassword(false);
-                    setForgotPasswordMessage("");
-                  }}
-                >
-                  Giriş ekranına dön
-                </button>
-                {forgotPasswordMessage && <span className="admin-login-message">{forgotPasswordMessage}</span>}
-              </form>
-            ) : (
-              <form className="admin-login" onSubmit={submitAdminPassword}>
-                <input
-                  type="email"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  placeholder="Admin e-posta"
-                />
-                <input
-                  type="password"
-                  value={adminPassword}
-                  onChange={(e) => setAdminPassword(e.target.value)}
-                  placeholder="Admin şifresi"
-                />
-                <button className="main-button" type="submit" disabled={adminAuthLoading}>
-                  {adminAuthLoading ? "Giriş kontrol ediliyor..." : "Giriş Yap"}
-                </button>
-                <button
-                  type="button"
-                  className="admin-link-button"
-                  onClick={() => {
-                    setForgotPasswordEmail(adminEmail);
-                    setShowForgotPassword(true);
-                    setAdminError("");
-                    setAdminLoginNotice("");
-                  }}
-                >
-                  Şifremi unuttum
-                </button>
-                {adminLoginNotice && <span className="admin-login-message success">{adminLoginNotice}</span>}
-                {adminError && <span className="admin-login-message error">{adminError}</span>}
-                <small className="admin-login-note">
-                  Not: Bu sistem Supabase Auth kullanır. Eski 1234 şifresiyle değil, Supabase Authentication &gt; Users bölümündeki admin e-posta/şifresiyle giriş yapılır. Failed to fetch görürsen .env.local içindeki Supabase URL / anon key değerlerini ve sunucuyu yeniden başlattığını kontrol et.
-                </small>
-              </form>
-            )
-          ) : (
-            <div className="admin-layout">
-              <aside className="admin-sidebar" aria-label="Admin bölüm menüsü">
-                <div className="admin-sidebar-title">
-                  <span>Bölümler</span>
-                  <small>Düzenlemek istediğin alanı seç</small>
-                </div>
-                <div></div>
-
-                <div className="admin-sidebar-menu">
-                  {adminTabs.map((tab) => (
-                    <button
-                      type="button"
-                      key={tab.id}
-                      className={activeAdminTab === tab.id ? "admin-nav-button active" : "admin-nav-button"}
-                      onClick={() => openAdminTab(tab.id)}
-                    >
-                      <span>{tab.label}</span>
-                      <small>{tab.description}</small>
-                    </button>
-                  ))}
-                </div>
-              </aside>
-
-              <div className="admin-main-panel">
-                <div className="admin-actions-sticky">
-                  <div className="admin-current-section">
-                    <strong>{activeTabInfo.label}</strong>
-                    <span>{activeTabInfo.description}</span>
-                  </div>
-                  <button type="button" className="main-button" onClick={saveSiteContent}>
-                    Değişiklikleri Kaydet
-                  </button>
-                  <button type="button" className="secondary-button" onClick={resetSiteContent}>
-                    Varsayılana Döndür
-                  </button>
-                  <button type="button" className="secondary-button admin-logout-button" onClick={logoutAdmin}>
-                    Çıkış Yap
-                  </button>
-                  {adminSaveMessage && <span className="admin-save-message">{adminSaveMessage}</span>}
-                </div>
-
-                <div className="admin-editor admin-editor-single">
-                  {renderAdminActivePanel()}
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
-      </main>
+      <AdminDashboard
+        isAdminUnlocked={isAdminUnlocked}
+        isPasswordRecovery={isPasswordRecovery}
+        showForgotPassword={showForgotPassword}
+        adminEmail={adminEmail}
+        adminPassword={adminPassword}
+        recoveryPassword={recoveryPassword}
+        recoveryPasswordAgain={recoveryPasswordAgain}
+        recoveryLoading={recoveryLoading}
+        recoveryMessage={recoveryMessage}
+        forgotPasswordEmail={forgotPasswordEmail}
+        forgotPasswordLoading={forgotPasswordLoading}
+        forgotPasswordMessage={forgotPasswordMessage}
+        adminAuthLoading={adminAuthLoading}
+        adminLoginNotice={adminLoginNotice}
+        adminError={adminError}
+        adminSaveMessage={adminSaveMessage}
+        activeAdminTab={activeAdminTab}
+        activeTabInfo={activeTabInfo}
+        adminTabs={adminTabs}
+        setAdminEmail={setAdminEmail}
+        setAdminPassword={setAdminPassword}
+        setForgotPasswordEmail={setForgotPasswordEmail}
+        setShowForgotPassword={setShowForgotPassword}
+        setAdminError={setAdminError}
+        setAdminLoginNotice={setAdminLoginNotice}
+        setRecoveryPassword={setRecoveryPassword}
+        setRecoveryPasswordAgain={setRecoveryPasswordAgain}
+        setRecoveryMessage={setRecoveryMessage}
+        setForgotPasswordMessage={setForgotPasswordMessage}
+        submitAdminPassword={submitAdminPassword}
+        completePasswordRecovery={completePasswordRecovery}
+        sendPasswordResetEmail={sendPasswordResetEmail}
+        openAdminTab={openAdminTab}
+        saveSiteContent={saveSiteContent}
+        resetSiteContent={resetSiteContent}
+        logoutAdmin={logoutAdmin}
+        closeAdminPage={closeAdminPage}
+        renderAdminActivePanel={renderAdminActivePanel}
+      />
     );
   };
 
