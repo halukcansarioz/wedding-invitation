@@ -1,10 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 import {
   AdminField,
   AdminTextarea,
-  AdminSelect,
   AdminCheckbox,
   AppModal,
   AdminImageField,
@@ -17,7 +16,6 @@ import {
   DEFAULT_SHARE_LINK,
   DEFAULT_WEDDING_MUSIC_FILE,
   DEFAULT_WEDDING_MUSIC_NAME,
-  ADMIN_ACTIVITY_EVENTS,
   NOTE_MAX_LENGTH,
   WISH_MAX_LENGTH,
   SITE_DATA_KEY,
@@ -46,10 +44,7 @@ import {
   buildPersonalLink,
   getQrImageUrl,
   isAdminRouteActive,
-  getAdminRedirectUrl,
-  touchAdminSession,
   clearAdminSessionTimestamp,
-  isAdminSessionFresh,
   uiGuestToDb,
   dbGuestToUi,
   uiWishToDb,
@@ -58,7 +53,6 @@ import {
 } from "./utils/helpers";
 import {
   getSupabaseSetupMessage,
-  getReadableAuthError,
   isSupabaseReady,
   loadSettingsFromDatabase,
   saveSettingsToDatabase,
@@ -90,12 +84,7 @@ function OptionGroup({ value, options, onChange, disabled = false }) {
 }
 
 function App() {
-  const audioRef = useRef(null);
-  const audioContextRef = useRef(null);
-  const musicIntervalRef = useRef(null);
-  const musicGainRef = useRef(null);
-  const modalResolverRef = useRef(null);
-
+  // ==================== STATE YÖNETİMİ ====================
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
@@ -139,129 +128,131 @@ function App() {
   const [dataImportText, setDataImportText] = useState("");
   const [appModal, setAppModal] = useState(null);
 
-  const invitation = siteData.invitation;
-  const familyInfo = siteData.familyInfo;
-  const copy = siteData.copy;
-  const settings = siteData.settings;
-  const messages = siteData.messages;
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const personalGuestName = getGuestNameFromUrl();
-  const isAttending = guestForm.attendance === "Katılacağım";
+  // ==================== REF YÖNETİMİ ====================
+  const audioRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const musicIntervalRef = useRef(null);
+  const musicGainRef = useRef(null);
+  const modalResolverRef = useRef(null);
+  const cleanupAudioRef = useRef(null);
 
-  useEffect(() => {
-      document.documentElement.lang = "tr";
+  // ==================== MEMOIZE EDİLMİŞ DEĞERLER ====================
+  const invitation = useMemo(() => siteData.invitation, [siteData.invitation]);
+  const familyInfo = useMemo(() => siteData.familyInfo, [siteData.familyInfo]);
+  const copy = useMemo(() => siteData.copy, [siteData.copy]);
+  const settings = useMemo(() => siteData.settings, [siteData.settings]);
+  const messages = useMemo(() => siteData.messages, [siteData.messages]);
+  const coupleName = useMemo(() => `${invitation.bride} & ${invitation.groom}`, [invitation.bride, invitation.groom]);
+  const personalGuestName = useMemo(() => getGuestNameFromUrl(), []);
+  
+  const isAttending = useMemo(() => guestForm.attendance === "Katılacağım", [guestForm.attendance]);
+  
+  const attendingGuests = useMemo(() => 
+    guests.filter((guest) => guest.attendance === "Katılacağım"),
+    [guests]
+  );
+  
+  const totalPersonCount = useMemo(() => 
+    attendingGuests.reduce((total, guest) => total + Number(guest.personCount || 1), 0),
+    [attendingGuests]
+  );
+  
+  const notAttendingCount = useMemo(() => 
+    guests.filter((guest) => guest.attendance === "Katılamayacağım").length,
+    [guests]
+  );
+  
+  const childGuestCount = useMemo(() => 
+    attendingGuests.filter((guest) => guest.hasChild === "Evet").length,
+    [attendingGuests]
+  );
+  
+  const brideSideCount = useMemo(() => 
+    attendingGuests.filter((guest) => guest.side === "Gelin Tarafı").length,
+    [attendingGuests]
+  );
+  
+  const groomSideCount = useMemo(() => 
+    attendingGuests.filter((guest) => guest.side === "Damat Tarafı").length,
+    [attendingGuests]
+  );
 
-      if (!document.querySelector("meta[charset]")) {
-        const meta = document.createElement("meta");
-        meta.setAttribute("charset", "UTF-8");
-        document.head.prepend(meta);
-      }
-    }, []);
+  const approvedWishes = useMemo(() => 
+    wishes.filter((wish) => wish.approved !== false),
+    [wishes]
+  );
+  
+  const currentShareLink = useMemo(() => 
+    invitation.shareLink || getCurrentShareLink(),
+    [invitation.shareLink]
+  );
+  
+  const guestGreeting = useMemo(() => 
+    personalGuestName
+      ? formatMessageTemplate(messages.guestGreeting, { 
+          guest: personalGuestName, 
+          couple: coupleName, 
+          link: currentShareLink 
+        })
+      : "",
+    [personalGuestName, messages.guestGreeting, coupleName, currentShareLink]
+  );
+  
+  const shareText = useMemo(() => 
+    encodeURIComponent(
+      formatMessageTemplate(messages.whatsappShareMessage, { 
+        couple: coupleName, 
+        link: currentShareLink, 
+        guest: personalGuestName 
+      })
+    ),
+    [messages.whatsappShareMessage, coupleName, currentShareLink, personalGuestName]
+  );
+  
+  const rsvpWhatsappText = useMemo(() => 
+    encodeURIComponent(
+      formatMessageTemplate(messages.rsvpWhatsappMessage, { 
+        couple: coupleName, 
+        link: currentShareLink, 
+        guest: personalGuestName 
+      })
+    ),
+    [messages.rsvpWhatsappMessage, coupleName, currentShareLink, personalGuestName]
+  );
+  
+  const personalGuestLink = useMemo(() => 
+    buildPersonalLink(currentShareLink, personalLinkName),
+    [currentShareLink, personalLinkName]
+  );
+  
+  const qrImageUrl = useMemo(() => 
+    getQrImageUrl(currentShareLink),
+    [currentShareLink]
+  );
+  
+  const googleCalendarLink = useMemo(() => 
+    createGoogleCalendarLink(siteData, coupleName),
+    [siteData, coupleName]
+  );
 
-  useLayoutEffect(() => {
-      const currentTheme = settings.theme || "lavanta"; 
-      
-      document.documentElement.dataset.theme = currentTheme;
-
-      const favicon =
-        document.querySelector("link[rel='icon'], link[rel='shortcut icon']") ||
-        document.createElement("link");
-
-      favicon.setAttribute("rel", "icon");
-      favicon.setAttribute("type", "image/svg+xml");
-      favicon.setAttribute("href", getFaviconUrl(currentTheme));
-
-      if (!favicon.parentNode) {
-        document.head.appendChild(favicon);
-      }
-    }, [settings.theme]);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = settings.theme || "rose";
-  }, [settings.theme]);
-
-  useEffect(() => {
-    const syncAdminPage = () => {
-      const adminRouteActive = isAdminRouteActive();
-
-      setIsAdminPage(adminRouteActive);
-
-      if (!adminRouteActive) {
-        setAdminPassword("");
-        setAdminError("");
-        setAdminLoginNotice("");
-        setShowForgotPassword(false);
-        setForgotPasswordEmail("");
-        setForgotPasswordMessage("");
-        setIsPasswordRecovery(false);
-        setRecoveryPassword("");
-        setRecoveryPasswordAgain("");
-        setRecoveryMessage("");
-        setAdminCurrentPassword("");
-        setAdminNewPassword("");
-        setAdminNewPasswordAgain("");
-        setAdminPasswordMessage("");
-        setAdminSaveMessage("");
-      }
-    };
-
-    syncAdminPage();
-    window.addEventListener("hashchange", syncAdminPage);
-    window.addEventListener("popstate", syncAdminPage);
-    return () => {
-      window.removeEventListener("hashchange", syncAdminPage);
-      window.removeEventListener("popstate", syncAdminPage);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isSupabaseReady()) return undefined;
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        const recoveryRouteActive =
-          typeof window !== "undefined" &&
-          (window.location.search.includes("reset=1") ||
-            window.location.search.includes("type=recovery") ||
-            window.location.hash.includes("type=recovery") ||
-            window.location.hash.includes("access_token="));
-
-        if (!recoveryRouteActive) return;
-
-        setIsAdminPage(true);
-        setIsPasswordRecovery(true);
-        setShowForgotPassword(false);
-        setAdminError("");
-        setForgotPasswordMessage("");
-        setAdminUser(session?.user || null);
-        setAdminEmail(session?.user?.email || adminEmail);
-        setIsAdminUnlocked(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [adminEmail]);
-
-  const resolveAppModal = (result) => {
+  // ==================== MODAL YÖNETİMİ ====================
+  const resolveAppModal = useCallback((result) => {
     const resolver = modalResolverRef.current;
     modalResolverRef.current = null;
     setAppModal(null);
-
     if (resolver) {
       resolver(result);
     }
-  };
+  }, []);
 
-  const openAppModal = (config) => {
+  const openAppModal = useCallback((config) => {
     return new Promise((resolve) => {
       modalResolverRef.current = resolve;
       setAppModal({ tone: "info", closeOnBackdrop: false, ...config });
     });
-  };
+  }, []);
 
-  const showAppAlert = async (message, options = {}) => {
+  const showAppAlert = useCallback(async (message, options = {}) => {
     await openAppModal({
       type: "alert",
       title: options.title || "Bilgi",
@@ -271,9 +262,9 @@ function App() {
       confirmText: options.confirmText || "Tamam",
     });
     return true;
-  };
+  }, [openAppModal]);
 
-  const showAppConfirm = async (message, options = {}) => {
+  const showAppConfirm = useCallback(async (message, options = {}) => {
     return Boolean(
       await openAppModal({
         type: "confirm",
@@ -285,9 +276,9 @@ function App() {
         cancelText: options.cancelText || "Vazgeç",
       })
     );
-  };
+  }, [openAppModal]);
 
-  const showAppPrompt = async (label, defaultValue = "", options = {}) => {
+  const showAppPrompt = useCallback(async (label, defaultValue = "", options = {}) => {
     return openAppModal({
       type: "prompt",
       title: options.title || "Bilgi düzenle",
@@ -300,8 +291,9 @@ function App() {
       confirmText: options.confirmText || "Kaydet",
       cancelText: options.cancelText || "Vazgeç",
     });
-  };
+  }, [openAppModal]);
 
+  // ==================== ADMIN SESSION ====================
   const {
     submitAdminPassword,
     sendPasswordResetEmail,
@@ -350,83 +342,109 @@ function App() {
     showAppConfirm,
   });
 
+  // ==================== EFFECTS ====================
+  // Dil ve charset ayarı
   useEffect(() => {
+    document.documentElement.lang = "tr";
+    if (!document.querySelector("meta[charset]")) {
+      const meta = document.createElement("meta");
+      meta.setAttribute("charset", "UTF-8");
+      document.head.prepend(meta);
+    }
+  }, []);
+
+  // Tema ve favicon güncelleme
+  useLayoutEffect(() => {
+    const currentTheme = settings.theme || "lavanta";
+    document.documentElement.dataset.theme = currentTheme;
+
+    const favicon =
+      document.querySelector("link[rel='icon'], link[rel='shortcut icon']") ||
+      document.createElement("link");
+
+    favicon.setAttribute("rel", "icon");
+    favicon.setAttribute("type", "image/svg+xml");
+    favicon.setAttribute("href", getFaviconUrl(currentTheme));
+
+    if (!favicon.parentNode) {
+      document.head.appendChild(favicon);
+    }
+  }, [settings.theme]);
+
+  // Admin sayfa senkronizasyonu
+  useEffect(() => {
+    const syncAdminPage = () => {
+      const adminRouteActive = isAdminRouteActive();
+      setIsAdminPage(adminRouteActive);
+
+      if (!adminRouteActive) {
+        setAdminPassword("");
+        setAdminError("");
+        setAdminLoginNotice("");
+        setShowForgotPassword(false);
+        setForgotPasswordEmail("");
+        setForgotPasswordMessage("");
+        setIsPasswordRecovery(false);
+        setRecoveryPassword("");
+        setRecoveryPasswordAgain("");
+        setRecoveryMessage("");
+        setAdminCurrentPassword("");
+        setAdminNewPassword("");
+        setAdminNewPasswordAgain("");
+        setAdminPasswordMessage("");
+        setAdminSaveMessage("");
+      }
+    };
+
+    syncAdminPage();
+    window.addEventListener("hashchange", syncAdminPage);
+    window.addEventListener("popstate", syncAdminPage);
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
-      }
-
-      if (musicIntervalRef.current) {
-        clearTimeout(musicIntervalRef.current);
-        musicIntervalRef.current = null;
-      }
-
-      if (musicGainRef.current) {
-        musicGainRef.current.disconnect();
-        musicGainRef.current = null;
-      }
-
-      if (
-        audioContextRef.current &&
-        audioContextRef.current.state !== "closed"
-      ) {
-        audioContextRef.current.close();
-      }
+      window.removeEventListener("hashchange", syncAdminPage);
+      window.removeEventListener("popstate", syncAdminPage);
     };
   }, []);
 
-  const attendingGuests = guests.filter((guest) => guest.attendance === "Katılacağım");
-  const totalPersonCount = attendingGuests.reduce(
-    (total, guest) => total + Number(guest.personCount || 1),
-    0
-  );
-  const notAttendingCount = guests.filter(
-    (guest) => guest.attendance === "Katılamayacağım"
-  ).length;
-  const childGuestCount = attendingGuests.filter((guest) => guest.hasChild === "Evet").length;
-  const brideSideCount = attendingGuests.filter((guest) => guest.side === "Gelin Tarafı").length;
-  const groomSideCount = attendingGuests.filter((guest) => guest.side === "Damat Tarafı").length;
-
-  const approvedWishes = wishes.filter((wish) => wish.approved !== false);
-  const currentShareLink = invitation.shareLink || getCurrentShareLink();
-  const guestGreeting = personalGuestName
-    ? formatMessageTemplate(messages.guestGreeting, { guest: personalGuestName, couple: coupleName, link: currentShareLink })
-    : "";
-  const shareText = encodeURIComponent(
-    formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName })
-  );
-  const rsvpWhatsappText = encodeURIComponent(
-    formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName })
-  );
-  const personalGuestLink = buildPersonalLink(currentShareLink, personalLinkName);
-  const qrImageUrl = getQrImageUrl(currentShareLink);
-  const googleCalendarLink = createGoogleCalendarLink(siteData, coupleName);
-
+  // Supabase auth durumu dinleme
   useEffect(() => {
-    [invitation.introImage, invitation.heroImage, ...invitation.gallery]
-      .filter(Boolean)
-      .forEach((src) => {
-        const img = new Image();
-        img.src = src;
-      });
-  }, [invitation.introImage, invitation.heroImage, invitation.gallery]);
+    if (!isSupabaseReady()) return undefined;
 
-  useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.load();
-  }, [invitation.musicFile]);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        const recoveryRouteActive =
+          typeof window !== "undefined" &&
+          (window.location.search.includes("reset=1") ||
+            window.location.search.includes("type=recovery") ||
+            window.location.hash.includes("type=recovery") ||
+            window.location.hash.includes("access_token="));
 
+        if (!recoveryRouteActive) return;
+
+        setIsAdminPage(true);
+        setIsPasswordRecovery(true);
+        setShowForgotPassword(false);
+        setAdminError("");
+        setForgotPasswordMessage("");
+        setAdminUser(session?.user || null);
+        setAdminEmail(session?.user?.email || adminEmail);
+        setIsAdminUnlocked(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [adminEmail]);
+
+  // Veri yükleme
   useEffect(() => {
     const loadInitialData = async () => {
       const databaseSettings = await loadSettingsFromDatabase();
 
       if (databaseSettings) {
         const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
-
         setSiteData(normalizedDatabaseSettings);
         setAdminDraft(normalizedDatabaseSettings);
-
         localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
       }
 
@@ -437,11 +455,34 @@ function App() {
     loadInitialData();
   }, []);
 
+  // Görsel ön yükleme
+  useEffect(() => {
+    const imagesToPreload = [
+      invitation.introImage, 
+      invitation.heroImage, 
+      ...invitation.gallery
+    ].filter(Boolean);
+
+    if (imagesToPreload.length > 0) {
+      imagesToPreload.forEach((src) => {
+        const img = new Image();
+        img.src = src;
+      });
+    }
+  }, [invitation.introImage, invitation.heroImage, invitation.gallery]);
+
+  // Müzik dosyası değişince yeniden yükle
+  useEffect(() => {
+    if (!audioRef.current) return;
+    audioRef.current.load();
+  }, [invitation.musicFile]);
+
+  // Geri sayım
   useEffect(() => {
     const targetDate = new Date(invitation.weddingDate);
 
     const updateCountdown = () => {
-      const diff = targetDate - new Date();
+      const diff = targetDate.getTime() - Date.now();
 
       if (Number.isNaN(diff) || diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -461,7 +502,53 @@ function App() {
     return () => clearInterval(interval);
   }, [invitation.weddingDate]);
 
-  const stopMusic = () => {
+  // Audio cleanup
+  useEffect(() => {
+    cleanupAudioRef.current = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current.load();
+      }
+
+      if (musicIntervalRef.current) {
+        clearTimeout(musicIntervalRef.current);
+        musicIntervalRef.current = null;
+      }
+
+      if (musicGainRef.current) {
+        try {
+          musicGainRef.current.disconnect();
+        } catch (e) {
+          // Ignore disconnection errors
+        }
+        musicGainRef.current = null;
+      }
+
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
+        try {
+          audioContextRef.current.close();
+        } catch (e) {
+          // Ignore close errors
+        }
+        audioContextRef.current = null;
+      }
+
+      setIsMusicPlaying(false);
+    };
+
+    return () => {
+      if (cleanupAudioRef.current) {
+        cleanupAudioRef.current();
+      }
+    };
+  }, []);
+
+  // ==================== MÜZİK FONKSİYONLARI ====================
+  const stopMusic = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -472,14 +559,18 @@ function App() {
     }
 
     if (musicGainRef.current) {
-      musicGainRef.current.disconnect();
+      try {
+        musicGainRef.current.disconnect();
+      } catch (e) {
+        // Ignore
+      }
       musicGainRef.current = null;
     }
 
     setIsMusicPlaying(false);
-  };
+  }, []);
 
-  const startGeneratedMusic = async () => {
+  const startGeneratedMusic = useCallback(async () => {
     if (musicIntervalRef.current) return;
 
     const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -489,7 +580,6 @@ function App() {
     }
 
     const audioContext = audioContextRef.current || new AudioContext();
-
     audioContextRef.current = audioContext;
     await audioContext.resume();
 
@@ -499,28 +589,25 @@ function App() {
     musicGainRef.current = masterGain;
 
     const weddingMelody = [
-      { frequency: 523.25, duration: 0.55 }, // C5
-      { frequency: 659.25, duration: 0.55 }, // E5
-      { frequency: 783.99, duration: 0.85 }, // G5
-      { frequency: 659.25, duration: 0.55 }, // E5
-      { frequency: 698.46, duration: 0.55 }, // F5
-      { frequency: 783.99, duration: 1.05 }, // G5
-
-      { frequency: 523.25, duration: 0.55 }, // C5
-      { frequency: 587.33, duration: 0.55 }, // D5
-      { frequency: 659.25, duration: 0.85 }, // E5
-      { frequency: 587.33, duration: 0.55 }, // D5
-      { frequency: 523.25, duration: 1.05 }, // C5
-
-      { frequency: 659.25, duration: 0.55 }, // E5
-      { frequency: 783.99, duration: 0.55 }, // G5
-      { frequency: 880.0, duration: 0.85 },  // A5
-      { frequency: 783.99, duration: 0.55 }, // G5
-      { frequency: 659.25, duration: 1.1 },  // E5
-
-      { frequency: 523.25, duration: 0.6 },  // C5
-      { frequency: 659.25, duration: 0.6 },  // E5
-      { frequency: 783.99, duration: 1.25 }, // G5
+      { frequency: 523.25, duration: 0.55 },
+      { frequency: 659.25, duration: 0.55 },
+      { frequency: 783.99, duration: 0.85 },
+      { frequency: 659.25, duration: 0.55 },
+      { frequency: 698.46, duration: 0.55 },
+      { frequency: 783.99, duration: 1.05 },
+      { frequency: 523.25, duration: 0.55 },
+      { frequency: 587.33, duration: 0.55 },
+      { frequency: 659.25, duration: 0.85 },
+      { frequency: 587.33, duration: 0.55 },
+      { frequency: 523.25, duration: 1.05 },
+      { frequency: 659.25, duration: 0.55 },
+      { frequency: 783.99, duration: 0.55 },
+      { frequency: 880.0, duration: 0.85 },
+      { frequency: 783.99, duration: 0.55 },
+      { frequency: 659.25, duration: 1.1 },
+      { frequency: 523.25, duration: 0.6 },
+      { frequency: 659.25, duration: 0.6 },
+      { frequency: 783.99, duration: 1.25 },
     ];
 
     let noteIndex = 0;
@@ -556,9 +643,9 @@ function App() {
     };
 
     playNote();
-  };
+  }, []);
 
-  const startMusic = async () => {
+  const startMusic = useCallback(async () => {
     try {
       if (invitation.musicFile && audioRef.current) {
         if (musicIntervalRef.current) {
@@ -567,7 +654,11 @@ function App() {
         }
 
         if (musicGainRef.current) {
-          musicGainRef.current.disconnect();
+          try {
+            musicGainRef.current.disconnect();
+          } catch (e) {
+            // Ignore
+          }
           musicGainRef.current = null;
         }
 
@@ -591,38 +682,38 @@ function App() {
       setIsMusicPlaying(false);
       console.log("Müzik başlatılamadı:", error);
     }
-  };
+  }, [invitation.musicFile, startGeneratedMusic]);
 
-  const openInvitation = () => {
-    setIsOpening(true); 
+  const openInvitation = useCallback(() => {
+    setIsOpening(true);
     
     startMusic().catch((err) => console.log("Müzik başlatılamadı:", err));
 
     setTimeout(() => {
       setOpened(true);
-    }, 2100); 
-  };
+    }, 2100);
+  }, [startMusic]);
 
-
-  const toggleMusic = async () => {
+  const toggleMusic = useCallback(async () => {
     if (isMusicPlaying) {
       stopMusic();
     } else {
       await startMusic();
     }
-  };
+  }, [isMusicPlaying, stopMusic, startMusic]);
 
-  const handleGuestChange = (e) => {
+  // ==================== FORM HANDLERS ====================
+  const handleGuestChange = useCallback((e) => {
     const { name, value } = e.target;
     setGuestForm((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleWishChange = (e) => {
+  const handleWishChange = useCallback((e) => {
     const { name, value } = e.target;
     setWishForm((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const updateAttendance = (attendance) => {
+  const updateAttendance = useCallback((attendance) => {
     setGuestForm((prev) => ({
       ...prev,
       attendance,
@@ -630,9 +721,9 @@ function App() {
       side: attendance === "Katılacağım" ? "Gelin Tarafı" : "-",
       hasChild: attendance === "Katılacağım" ? prev.hasChild : "Hayır",
     }));
-  };
+  }, []);
 
-  const submitGuest = async (e) => {
+  const submitGuest = useCallback(async (e) => {
     e.preventDefault();
 
     if (!guestForm.name.trim()) {
@@ -652,9 +743,7 @@ function App() {
         .select("*")
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       setGuests((prev) => [
         data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...guestForm },
@@ -670,9 +759,9 @@ function App() {
         { title: "Kayıt hatası", tone: "danger", icon: "!" }
       );
     }
-  };
+  }, [guestForm, showAppAlert]);
 
-  const submitWish = async (e) => {
+  const submitWish = useCallback(async (e) => {
     e.preventDefault();
 
     if (!wishForm.name.trim() || !wishForm.message.trim()) {
@@ -698,9 +787,7 @@ function App() {
         .select("*")
         .single();
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (shouldPublishNow) {
         setWishes((prev) => [
@@ -710,7 +797,10 @@ function App() {
       }
 
       setWishForm(INITIAL_WISH_FORM);
-      await showAppAlert(settings.requireWishApproval ? "Güzel dileğin admin onayına gönderildi." : "Güzel dileğin kaydedildi.", { title: settings.requireWishApproval ? "Onaya gönderildi" : "Kaydedildi", tone: "success", icon: "✓" });
+      await showAppAlert(
+        settings.requireWishApproval ? "Güzel dileğin admin onayına gönderildi." : "Güzel dileğin kaydedildi.", 
+        { title: settings.requireWishApproval ? "Onaya gönderildi" : "Kaydedildi", tone: "success", icon: "✓" }
+      );
     } catch (error) {
       console.error("Mesaj kaydedilemedi:", error);
       await showAppAlert(
@@ -718,27 +808,28 @@ function App() {
         { title: "Kayıt hatası", tone: "danger", icon: "!" }
       );
     }
-  };
+  }, [wishForm, settings.requireWishApproval, showAppAlert]);
 
-  const copyInvitationLink = async () => {
+  // ==================== ADMIN FONKSİYONLARI ====================
+  const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
       await showAppAlert("Davetiye linki kopyalandı.", { title: "Kopyalandı", tone: "success", icon: "✓" });
     } catch {
       await showAppAlert("Link kopyalanamadı.", { title: "Kopyalama hatası", tone: "danger", icon: "!" });
     }
-  };
+  }, [currentShareLink, showAppAlert]);
 
-  const copyAdminLink = async (linkToCopy, successMessage = "Link kopyalandı.") => {
+  const copyAdminLink = useCallback(async (linkToCopy, successMessage = "Link kopyalandı.") => {
     try {
       await navigator.clipboard.writeText(linkToCopy);
       setAdminSaveMessage(successMessage);
     } catch {
       setAdminSaveMessage("Link kopyalanamadı.");
     }
-  };
+  }, []);
 
-  const updateDraftObject = (group, key, value) => {
+  const updateDraftObject = useCallback((group, key, value) => {
     setAdminDraft((prev) => ({
       ...prev,
       [group]: {
@@ -746,10 +837,9 @@ function App() {
         [key]: value,
       },
     }));
-  };
+  }, []);
 
-
-  const updateDraftImage = async (group, key, file) => {
+  const updateDraftImage = useCallback(async (group, key, file) => {
     try {
       if (!file) return;
       
@@ -764,14 +854,14 @@ function App() {
       console.error("Görsel yüklenemedi:", error);
       setAdminSaveMessage(error.message || "Görsel yüklenemedi.");
     }
-  };
+  }, [updateDraftObject]);
 
-  const clearDraftImage = (group, key) => {
+  const clearDraftImage = useCallback((group, key) => {
     updateDraftObject(group, key, "");
     setAdminSaveMessage("Görsel kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
-  };
+  }, [updateDraftObject]);
 
-  const updateDraftMusic = async (file) => {
+  const updateDraftMusic = useCallback(async (file) => {
     try {
       if (!file) return;
 
@@ -794,9 +884,9 @@ function App() {
       console.error("Müzik yüklenemedi:", error);
       setAdminSaveMessage(error.message || "Müzik yüklenemedi.");
     }
-  };
+  }, []);
 
-  const clearDraftMusic = () => {
+  const clearDraftMusic = useCallback(() => {
     setAdminDraft((prev) => ({
       ...prev,
       invitation: {
@@ -808,32 +898,32 @@ function App() {
     setAdminSaveMessage(
       "Özel müzik kaldırıldı. Varsayılan evlilik müziği kullanılacak. Canlı sayfaya yansıtmak için kaydet."
     );
-  };
+  }, []);
 
-  const updateDraftArrayItem = (arrayKey, index, key, value) => {
+  const updateDraftArrayItem = useCallback((arrayKey, index, key, value) => {
     setAdminDraft((prev) => ({
       ...prev,
       [arrayKey]: prev[arrayKey].map((item, itemIndex) =>
         itemIndex === index ? { ...item, [key]: value } : item
       ),
     }));
-  };
+  }, []);
 
-  const addDraftArrayItem = (arrayKey, item) => {
+  const addDraftArrayItem = useCallback((arrayKey, item) => {
     setAdminDraft((prev) => ({
       ...prev,
       [arrayKey]: [...prev[arrayKey], item],
     }));
-  };
+  }, []);
 
-  const removeDraftArrayItem = (arrayKey, index) => {
+  const removeDraftArrayItem = useCallback((arrayKey, index) => {
     setAdminDraft((prev) => ({
       ...prev,
       [arrayKey]: prev[arrayKey].filter((_, itemIndex) => itemIndex !== index),
     }));
-  };
+  }, []);
 
-  const updateGalleryItem = (index, value) => {
+  const updateGalleryItem = useCallback((index, value) => {
     setAdminDraft((prev) => ({
       ...prev,
       invitation: {
@@ -843,10 +933,9 @@ function App() {
         ),
       },
     }));
-  };
+  }, []);
 
-
-  const updateGalleryImageFile = async (index, file) => {
+  const updateGalleryImageFile = useCallback(async (index, file) => {
     try {
       if (!file) return;
       
@@ -861,9 +950,9 @@ function App() {
       console.error("Galeri görseli yüklenemedi:", error);
       setAdminSaveMessage(error.message || "Galeri görseli yüklenemedi.");
     }
-  };
+  }, [updateGalleryItem]);
 
-  const addGalleryItem = () => {
+  const addGalleryItem = useCallback(() => {
     setAdminDraft((prev) => ({
       ...prev,
       invitation: {
@@ -871,9 +960,9 @@ function App() {
         gallery: [...prev.invitation.gallery, ""],
       },
     }));
-  };
+  }, []);
 
-  const removeGalleryItem = (index) => {
+  const removeGalleryItem = useCallback((index) => {
     setAdminDraft((prev) => ({
       ...prev,
       invitation: {
@@ -881,9 +970,9 @@ function App() {
         gallery: prev.invitation.gallery.filter((_, imageIndex) => imageIndex !== index),
       },
     }));
-  };
+  }, []);
 
-  const saveSiteContent = async () => {
+  const saveSiteContent = useCallback(async () => {
     const cleanedData = normalizeSiteData({
       ...adminDraft,
       invitation: {
@@ -903,9 +992,9 @@ function App() {
       console.error("Ayarlar kaydedilemedi:", error);
       setAdminSaveMessage(`Değişiklikler kaydedilemedi. Detay: ${error?.message || "Supabase ayarlarını ve admin yetkisini kontrol et."}`);
     }
-  };
+  }, [adminDraft]);
 
-  const handleThemeChange = async (themeValue) => {
+  const handleThemeChange = useCallback(async (themeValue) => {
     updateDraftObject("settings", "theme", themeValue);
 
     const confirmed = await showAppConfirm(
@@ -934,10 +1023,13 @@ function App() {
         setAdminSaveMessage("Tema resimleri uygulandı. Sayfada kalıcı olması için sağ üstten 'Değişiklikleri Kaydet' butonuna basmalısın.");
       }
     }
-  };
+  }, [updateDraftObject, showAppConfirm]);
 
-  const resetSiteContent = async () => {
-    const confirmed = await showAppConfirm("Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" });
+  const resetSiteContent = useCallback(async () => {
+    const confirmed = await showAppConfirm(
+      "Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", 
+      { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" }
+    );
     if (!confirmed) return;
 
     const chosenDefaultTheme = adminDraft.settings.defaultTheme || "lavanta";
@@ -962,10 +1054,13 @@ function App() {
       console.error("Varsayılan ayarlar kaydedilemedi:", error);
       setAdminSaveMessage(`Varsayılan ayarlar kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
     }
-  };
+  }, [adminDraft.settings.defaultTheme, showAppConfirm]);
 
-  const clearGuests = async () => {
-    const confirmed = await showAppConfirm("Tüm katılım kayıtları silinsin mi?", { title: "Katılım kayıtlarını sil", confirmText: "Sil", tone: "danger", icon: "!" });
+  const clearGuests = useCallback(async () => {
+    const confirmed = await showAppConfirm(
+      "Tüm katılım kayıtları silinsin mi?", 
+      { title: "Katılım kayıtlarını sil", confirmText: "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
 
     const { error } = await supabase.from("guests").delete().not("id", "is", null);
@@ -977,10 +1072,13 @@ function App() {
     }
 
     setGuests([]);
-  };
+  }, [showAppConfirm]);
 
-  const clearWishes = async () => {
-    const confirmed = await showAppConfirm("Tüm anı defteri mesajları silinsin mi?", { title: "Anı defterini temizle", confirmText: "Sil", tone: "danger", icon: "!" });
+  const clearWishes = useCallback(async () => {
+    const confirmed = await showAppConfirm(
+      "Tüm anı defteri mesajları silinsin mi?", 
+      { title: "Anı defterini temizle", confirmText: "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
 
     const { error } = await supabase.from("wishes").delete().not("id", "is", null);
@@ -992,10 +1090,13 @@ function App() {
     }
 
     setWishes([]);
-  };
+  }, [showAppConfirm]);
 
-  const deleteGuest = async (guestId) => {
-    const confirmed = await showAppConfirm("Bu katılım kaydı silinsin mi?", { title: "Kaydı sil", confirmText: "Sil", tone: "danger", icon: "!" });
+  const deleteGuest = useCallback(async (guestId) => {
+    const confirmed = await showAppConfirm(
+      "Bu katılım kaydı silinsin mi?", 
+      { title: "Kaydı sil", confirmText: "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
 
     const { error } = await supabase.from("guests").delete().eq("id", guestId);
@@ -1007,9 +1108,9 @@ function App() {
     }
 
     setGuests((prev) => prev.filter((guest) => guest.id !== guestId));
-  };
+  }, [showAppConfirm]);
 
-  const editGuest = async (guestId) => {
+  const editGuest = useCallback(async (guestId) => {
     const guest = guests.find((item) => item.id === guestId);
     if (!guest) return;
 
@@ -1041,10 +1142,13 @@ function App() {
     }
 
     setGuests((prev) => prev.map((item) => (item.id === guestId ? nextGuest : item)));
-  };
+  }, [guests, showAppPrompt]);
 
-  const deleteWish = async (wishId) => {
-    const confirmed = await showAppConfirm("Bu anı defteri mesajı silinsin mi?", { title: "Mesajı sil", confirmText: "Sil", tone: "danger", icon: "!" });
+  const deleteWish = useCallback(async (wishId) => {
+    const confirmed = await showAppConfirm(
+      "Bu anı defteri mesajı silinsin mi?", 
+      { title: "Mesajı sil", confirmText: "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
 
     const { error } = await supabase.from("wishes").delete().eq("id", wishId);
@@ -1056,9 +1160,9 @@ function App() {
     }
 
     setWishes((prev) => prev.filter((wish) => wish.id !== wishId));
-  };
+  }, [showAppConfirm]);
 
-  const editWish = async (wishId) => {
+  const editWish = useCallback(async (wishId) => {
     const wish = wishes.find((item) => item.id === wishId);
     if (!wish) return;
 
@@ -1080,9 +1184,9 @@ function App() {
     }
 
     setWishes((prev) => prev.map((item) => (item.id === wishId ? nextWish : item)));
-  };
+  }, [wishes, showAppPrompt]);
 
-  const toggleWishApproval = async (wishId) => {
+  const toggleWishApproval = useCallback(async (wishId) => {
     const wish = wishes.find((item) => item.id === wishId);
     if (!wish) return;
 
@@ -1101,9 +1205,9 @@ function App() {
     setWishes((prev) =>
       prev.map((item) => (item.id === wishId ? { ...item, approved: nextApproved } : item))
     );
-  };
+  }, [wishes]);
 
-  const getGuestExportData = () => {
+  const getGuestExportData = useCallback(() => {
     const headers = ["Ad Soyad", "Telefon", "Katılım Durumu", "Kişi Sayısı", "Taraf", "Çocuk", "Not"];
     const rows = guests.map((guest) => ({
       "Ad Soyad": guest.name || "",
@@ -1115,9 +1219,9 @@ function App() {
       "Not": guest.note || "",
     }));
     return { headers, rows };
-  };
+  }, [guests]);
 
-  const getWishExportData = () => {
+  const getWishExportData = useCallback(() => {
     const headers = ["Ad Soyad", "Mesaj", "Durum"];
     const rows = wishes.map((wish) => ({
       "Ad Soyad": wish.name || "",
@@ -1125,37 +1229,37 @@ function App() {
       "Durum": wish.approved === false ? "Onay Bekliyor" : "Yayında",
     }));
     return { headers, rows };
-  };
+  }, [wishes]);
 
-  const exportGuestsCsv = () => {
+  const exportGuestsCsv = useCallback(() => {
     const { headers, rows } = getGuestExportData();
     downloadTextFile("katilim-listesi.csv", createCsv(headers, rows), "text/csv;charset=utf-8");
-  };
+  }, [getGuestExportData]);
 
-  const exportGuestsExcel = () => {
+  const exportGuestsExcel = useCallback(() => {
     const { headers, rows } = getGuestExportData();
     downloadTextFile(
       "katilim-listesi.xls",
       createExcelTable("Katılım Listesi", headers, rows),
       "application/vnd.ms-excel;charset=utf-8"
     );
-  };
+  }, [getGuestExportData]);
 
-  const exportWishesCsv = () => {
+  const exportWishesCsv = useCallback(() => {
     const { headers, rows } = getWishExportData();
     downloadTextFile("ani-defteri.csv", createCsv(headers, rows), "text/csv;charset=utf-8");
-  };
+  }, [getWishExportData]);
 
-  const exportWishesExcel = () => {
+  const exportWishesExcel = useCallback(() => {
     const { headers, rows } = getWishExportData();
     downloadTextFile(
       "ani-defteri.xls",
       createExcelTable("Anı Defteri Mesajları", headers, rows),
       "application/vnd.ms-excel;charset=utf-8"
     );
-  };
+  }, [getWishExportData]);
 
-  const exportAllDataJson = () => {
+  const exportAllDataJson = useCallback(() => {
     const data = {
       siteData,
       guests,
@@ -1163,11 +1267,15 @@ function App() {
       exportedAt: new Date().toISOString(),
     };
     downloadTextFile("dugun-davetiyesi-yedek.json", JSON.stringify(data, null, 2), "application/json;charset=utf-8");
-  };
+  }, [siteData, guests, wishes]);
 
-  const importAllDataJson = async () => {
-    const confirmed = await showAppConfirm("DİKKAT: Bu işlem mevcut tüm davetiye ayarlarını, katılım kayıtlarını ve anı defteri mesajlarını SİLECEK ve yerine yedeği yükleyecektir. Emin misiniz?", { title: "Yedeği Geri Yükle", confirmText: "Evet, Geri Yükle", tone: "danger", icon: "!" });
+  const importAllDataJson = useCallback(async () => {
+    const confirmed = await showAppConfirm(
+      "DİKKAT: Bu işlem mevcut tüm davetiye ayarlarını, katılım kayıtlarını ve anı defteri mesajlarını SİLECEK ve yerine yedeği yükleyecektir. Emin misiniz?", 
+      { title: "Yedeği Geri Yükle", confirmText: "Evet, Geri Yükle", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
+    
     try {
       const parsed = JSON.parse(dataImportText);
 
@@ -1212,9 +1320,9 @@ function App() {
       console.error("Yedek içe aktarılamadı:", error);
       setAdminSaveMessage(`Yedek içe aktarılamadı. Detay: ${error?.message || "JSON formatını ve Supabase yetkilerini kontrol et."}`);
     }
-  };
+  }, [dataImportText, showAppConfirm]);
 
-  const downloadQrCode = async () => {
+  const downloadQrCode = useCallback(async () => {
     try {
       const response = await fetch(qrImageUrl);
       if (!response.ok) throw new Error("QR kod indirilemedi.");
@@ -1233,9 +1341,9 @@ function App() {
       window.open(qrImageUrl, "_blank", "noopener,noreferrer");
       setAdminSaveMessage("QR kod yeni sekmede açıldı. Görsele sağ tıklayıp kaydedebilirsin.");
     }
-  };
+  }, [qrImageUrl]);
 
-  const closeAdminPage = async () => {
+  const closeAdminPage = useCallback(async () => {
     const signedOut = await performAdminSignOut();
     if (!signedOut) return;
 
@@ -1263,9 +1371,9 @@ function App() {
       url.searchParams.delete("type");
       window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
     }
-  };
+  }, [performAdminSignOut]);
 
-  const openAdminTab = (tabId) => {
+  const openAdminTab = useCallback((tabId) => {
     setActiveAdminTab(tabId);
 
     if (typeof window !== "undefined") {
@@ -1276,9 +1384,35 @@ function App() {
         });
       }, 40);
     }
-  };
+  }, []);
 
-  const renderAdminPage = () => {
+  // ==================== FILTERED DATA ====================
+  const filteredGuests = useMemo(() => 
+    guests.filter((guest) => {
+      const searchMatch = normalizeText(`${guest.name} ${guest.phone} ${guest.note} ${guest.side}`).includes(normalizeText(adminGuestSearch));
+      const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
+      const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
+      const childMatch = adminGuestChildFilter === "all" || (guest.hasChild || "Hayır") === adminGuestChildFilter;
+      return searchMatch && attendanceMatch && sideMatch && childMatch;
+    }),
+    [guests, adminGuestSearch, adminGuestAttendanceFilter, adminGuestSideFilter, adminGuestChildFilter]
+  );
+
+  const filteredWishes = useMemo(() => 
+    wishes.filter((wish) => {
+      const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
+      const isApproved = wish.approved !== false;
+      const statusMatch =
+        adminWishStatusFilter === "all" ||
+        (adminWishStatusFilter === "approved" && isApproved) ||
+        (adminWishStatusFilter === "pending" && !isApproved);
+      return searchMatch && statusMatch;
+    }),
+    [wishes, adminWishSearch, adminWishStatusFilter]
+  );
+
+  // ==================== RENDER FUNCTIONS ====================
+  const renderAdminPage = useCallback(() => {
     const adminTabs = [
       { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
       { id: "theme", label: "Tema", description: "Renk teması ve anı defteri onayı" },
@@ -1297,22 +1431,6 @@ function App() {
     ];
 
     const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
-    const filteredGuests = guests.filter((guest) => {
-      const searchMatch = normalizeText(`${guest.name} ${guest.phone} ${guest.note} ${guest.side}`).includes(normalizeText(adminGuestSearch));
-      const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
-      const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
-      const childMatch = adminGuestChildFilter === "all" || (guest.hasChild || "Hayır") === adminGuestChildFilter;
-      return searchMatch && attendanceMatch && sideMatch && childMatch;
-    });
-    const filteredWishes = wishes.filter((wish) => {
-      const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
-      const isApproved = wish.approved !== false;
-      const statusMatch =
-        adminWishStatusFilter === "all" ||
-        (adminWishStatusFilter === "approved" && isApproved) ||
-        (adminWishStatusFilter === "pending" && !isApproved);
-      return searchMatch && statusMatch;
-    });
 
     const renderAdminActivePanel = () => {
       switch (activeAdminTab) {
@@ -1575,7 +1693,6 @@ function App() {
         case "family":
           return (
             <AdminSection title="Aile Bilgileri">
-              
               <div className="admin-visibility-card">
                 <AdminCheckbox
                   checked={adminDraft.settings.visibility?.family ?? false}
@@ -1679,10 +1796,8 @@ function App() {
           );
 
         case "schedule":
-
           return (
             <AdminSection title="Düğün Takvimi / Akış">
-
               <div className="admin-visibility-card">
                 <AdminCheckbox
                   checked={adminDraft.settings.visibility?.schedule ?? false}
@@ -1731,7 +1846,6 @@ function App() {
         case "gallery":
           return (
             <AdminSection title="Görsel Yönetimi">
-
               <div className="admin-visibility-card">
                 <AdminCheckbox
                   checked={adminDraft.settings.visibility?.gallery ?? false}
@@ -1785,7 +1899,6 @@ function App() {
         case "guests":
           return (
             <AdminSection title="Katılım Formu Kayıtları">
-              
               <div className="admin-visibility-card">
                 <AdminCheckbox
                   checked={adminDraft.settings.visibility?.rsvp ?? false}
@@ -1810,37 +1923,22 @@ function App() {
 
               <div className="admin-toolbar">
                 <input value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder="Kayıtlarda ara" />
-                <AdminDropdown
-                  label="Katılımlar"
-                  value={adminGuestAttendanceFilter}
-                  onChange={setAdminGuestAttendanceFilter}
-                  options={[
-                    { label: "Katılacağım", value: "Katılacağım" },
-                    { label: "Katılamayacağım", value: "Katılamayacağım" },
-                    { label: "Tüm Katılımlar", value: "all" },
-                  ]}
-                />
-                <AdminDropdown
-                  label="Taraflar"
-                  value={adminGuestSideFilter}
-                  onChange={setAdminGuestSideFilter}
-                  options={[
-                    { label: "Damat Tarafı", value: "Damat Tarafı" },
-                    { label: "Gelin Tarafı", value: "Gelin Tarafı" },
-                    { label: "Ortak", value: "Ortak" },
-                    { label: "Tüm Taraflar", value: "all" },
-                  ]}
-                />
-                <AdminDropdown
-                  label="Çocuk filtresi"
-                  value={adminGuestChildFilter}
-                  onChange={setAdminGuestChildFilter}
-                  options={[
-                    { label: "Evet", value: "Evet" },
-                    { label: "Hayır", value: "Hayır" },
-                    { label: "Tümü", value: "all" },
-                  ]}
-                />
+                <select value={adminGuestAttendanceFilter} onChange={(e) => setAdminGuestAttendanceFilter(e.target.value)}>
+                  <option value="all">Tüm Katılımlar</option>
+                  <option value="Katılacağım">Katılacağım</option>
+                  <option value="Katılamayacağım">Katılamayacağım</option>
+                </select>
+                <select value={adminGuestSideFilter} onChange={(e) => setAdminGuestSideFilter(e.target.value)}>
+                  <option value="all">Tüm Taraflar</option>
+                  <option value="Damat Tarafı">Damat Tarafı</option>
+                  <option value="Gelin Tarafı">Gelin Tarafı</option>
+                  <option value="Ortak">Ortak</option>
+                </select>
+                <select value={adminGuestChildFilter} onChange={(e) => setAdminGuestChildFilter(e.target.value)}>
+                  <option value="all">Tümü</option>
+                  <option value="Evet">Evet</option>
+                  <option value="Hayır">Hayır</option>
+                </select>
                 <button type="button" className="secondary-button" onClick={exportGuestsExcel}>Excel İndir</button>
                 <button type="button" className="secondary-button" onClick={exportGuestsCsv}>CSV İndir</button>
               </div>
@@ -1873,7 +1971,6 @@ function App() {
         case "wishes":
           return (
             <AdminSection title="Anı Defteri Formu Mesajları">
-
               <div className="admin-visibility-card">
                 <AdminCheckbox
                   checked={adminDraft.settings.visibility?.wishes ?? false}
@@ -1884,16 +1981,11 @@ function App() {
               
               <div className="admin-toolbar">
                 <input value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder="Mesajlarda ara" />
-                <AdminDropdown
-                  label="Onay Durumu"
-                  value={adminWishStatusFilter}
-                  onChange={setAdminWishStatusFilter}
-                  options={[
-                    { label: "Tüm mesajlar", value: "all" },
-                    { label: "Yayında", value: "approved" },
-                    { label: "Onay bekliyor", value: "pending" },
-                  ]}
-                />
+                <select value={adminWishStatusFilter} onChange={(e) => setAdminWishStatusFilter(e.target.value)}>
+                  <option value="all">Tüm mesajlar</option>
+                  <option value="approved">Yayında</option>
+                  <option value="pending">Onay bekliyor</option>
+                </select>
                 <button type="button" className="secondary-button" onClick={exportWishesExcel}>Excel İndir</button>
                 <button type="button" className="secondary-button" onClick={exportWishesCsv}>CSV İndir</button>
               </div>
@@ -1928,7 +2020,7 @@ function App() {
           return (
             <AdminSection title="QR Kod">
               <p className="admin-help-text">
-                Bu bölüm sadece genel davetiye QR kodu içindir. Davetliye özel isimli link oluşturmak için sol menüden “Özel Link” bölümünü aç.
+                Bu bölüm sadece genel davetiye QR kodu içindir. Davetliye özel isimli link oluşturmak için sol menüden "Özel Link" bölümünü aç.
               </p>
 
               <div className="admin-qr-panel qr-only-panel">
@@ -1957,7 +2049,12 @@ function App() {
               </p>
 
               <div className="admin-personal-link-box personal-link-standalone">
-                <AdminField label="Davetli adı" onChange="{setPersonalLinkName}" placeholder="Örn. Ahmet Yılmaz" value="{personalLinkName}"/>
+                <AdminField 
+                  label="Davetli adı" 
+                  onChange={setPersonalLinkName} 
+                  placeholder="Örn. Ahmet Yılmaz" 
+                  value={personalLinkName}
+                />
                 <input value={personalGuestLink} readOnly />
                 <button type="button" className="secondary-button" onClick={() => copyAdminLink(personalGuestLink, "Kişiye özel link kopyalandı.")}>Özel Linki Kopyala</button>
               </div>
@@ -1998,7 +2095,12 @@ function App() {
               </div>
 
               <div className="admin-import-box">
-                <AdminTextarea label="JSON yedeğini buraya yapıştır" onChange="{setDataImportText}" placeholder="Yedek JSON içeriği" value="{dataImportText}"/>
+                <AdminTextarea 
+                  label="JSON yedeğini buraya yapıştır" 
+                  onChange={setDataImportText} 
+                  placeholder="Yedek JSON içeriği" 
+                  value={dataImportText}
+                />
                 <button type="button" className="secondary-button" onClick={importAllDataJson}>JSON Yedeğini Geri Yükle</button>
               </div>
             </AdminSection>
@@ -2051,8 +2153,43 @@ function App() {
         renderAdminActivePanel={renderAdminActivePanel}
       />
     );
-  };
+  }, [
+    // Admin states
+    isAdminUnlocked, isPasswordRecovery, showForgotPassword,
+    adminEmail, adminPassword, recoveryPassword, recoveryPasswordAgain,
+    recoveryLoading, recoveryMessage, forgotPasswordEmail,
+    forgotPasswordLoading, forgotPasswordMessage, adminAuthLoading,
+    adminLoginNotice, adminError, adminSaveMessage, activeAdminTab,
+    // Admin data
+    adminDraft, guests, wishes, filteredGuests, filteredWishes,
+    guestForm, wishForm, settings, qrImageUrl, currentShareLink,
+    personalLinkName, personalGuestLink, dataImportText,
+    // Memoized values
+    totalPersonCount, notAttendingCount, childGuestCount,
+    brideSideCount, groomSideCount,
+    // Functions
+    updateDraftObject, updateDraftImage, clearDraftImage,
+    updateDraftMusic, clearDraftMusic, updateDraftArrayItem,
+    addDraftArrayItem, removeDraftArrayItem, updateGalleryItem,
+    updateGalleryImageFile, addGalleryItem, removeGalleryItem,
+    saveSiteContent, handleThemeChange, resetSiteContent,
+    clearGuests, clearWishes, deleteGuest, editGuest,
+    deleteWish, editWish, toggleWishApproval,
+    exportGuestsExcel, exportGuestsCsv, exportWishesExcel, exportWishesCsv,
+    exportAllDataJson, importAllDataJson, downloadQrCode,
+    copyAdminLink, closeAdminPage, openAdminTab,
+    submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail,
+    changeAdminPassword, logoutAdmin,
+    setAdminEmail, setAdminPassword, setForgotPasswordEmail,
+    setShowForgotPassword, setAdminError, setAdminLoginNotice,
+    setRecoveryPassword, setRecoveryPasswordAgain, setRecoveryMessage,
+    setForgotPasswordMessage, setAdminCurrentPassword, setAdminNewPassword,
+    setAdminNewPasswordAgain, setAdminGuestSearch, setAdminGuestAttendanceFilter,
+    setAdminGuestSideFilter, setAdminGuestChildFilter, setAdminWishSearch,
+    setAdminWishStatusFilter, setPersonalLinkName, setDataImportText,
+  ]);
 
+  // ==================== MAIN RENDER ====================
   return (
     <div
       className="app"
@@ -2073,7 +2210,9 @@ function App() {
         onPause={() => setIsMusicPlaying(false)}
         onEnded={() => setIsMusicPlaying(false)}
       />
-      <AppModal modal={appModal} onInputChange={(value) => setAppModal((prev) => (prev ? { ...prev, inputValue: value } : prev))}
+      <AppModal 
+        modal={appModal} 
+        onInputChange={(value) => setAppModal((prev) => (prev ? { ...prev, inputValue: value } : prev))}
         onConfirm={(value) => resolveAppModal(value)}
         onCancel={() => resolveAppModal(appModal?.type === "prompt" ? null : false)}
       />
@@ -2081,8 +2220,8 @@ function App() {
       {isAdminPage ? (
         renderAdminPage()
       ) : !opened ? (
-            <section className={`intro-page ${isOpening ? "opening" : ""}`}>
-            <div className="petal-layer" aria-hidden="true">
+        <section className={`intro-page ${isOpening ? "opening" : ""}`}>
+          <div className="petal-layer" aria-hidden="true">
             {Array.from({ length: 16 }).map((_, index) => (
               <span key={index}></span>
             ))}
@@ -2091,11 +2230,9 @@ function App() {
           <div className="ribbon ribbon-left"></div>
           <div className="ribbon ribbon-right"></div>
 
-          {/* ZARF KONTEYNERİ */}
           <div className="envelope-container">
             <div className="envelope-back"></div>
 
-            {/* Davetiye Kartımız (Zarfın içinde) */}
             <div className="intro-card">
               <div className="leaf-mark" aria-hidden="true"></div>
               <p className="intro-small">{copy.introLabel}</p>
@@ -2123,7 +2260,7 @@ function App() {
           <div className="floating-actions">
             <a
               className="share-button"
-              href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
+              href={`https://wa.me/?text=${shareText}`}
               target="_blank"
               rel="noreferrer"
             >
@@ -2157,249 +2294,249 @@ function App() {
           </div>
 
           <main className="invitation-page">
-                      <section className="hero-section">
-                        <div className="hero-content">
-                          <p className="small-title">{copy.heroLabel}</p>
-                          <h1 className="couple-title">
-                            <span>{invitation.bride}</span>
-                            <em>&</em>
-                            <span>{invitation.groom}</span>
-                          </h1>
-                          <p className="hero-date">{invitation.dateText}</p>
-                          <p className="hero-time">Saat {invitation.timeText}</p>
-                          {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+            <section className="hero-section">
+              <div className="hero-content">
+                <p className="small-title">{copy.heroLabel}</p>
+                <h1 className="couple-title">
+                  <span>{invitation.bride}</span>
+                  <em>&</em>
+                  <span>{invitation.groom}</span>
+                </h1>
+                <p className="hero-date">{invitation.dateText}</p>
+                <p className="hero-time">Saat {invitation.timeText}</p>
+                {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+              </div>
+            </section>
+
+            {settings.visibility?.countdown !== false && (
+              <section className="countdown-section">
+                <p className="section-label">{copy.countdownLabel}</p>
+                <h2>{copy.countdownTitle}</h2>
+                <div className="countdown-grid">
+                  <div className="count-box countdown-animated"><strong>{timeLeft.days}</strong><span>Gün</span></div>
+                  <div className="count-box countdown-animated"><strong>{timeLeft.hours}</strong><span>Saat</span></div>
+                  <div className="count-box countdown-animated"><strong>{timeLeft.minutes}</strong><span>Dakika</span></div>
+                  <div className="count-box countdown-animated"><strong>{timeLeft.seconds}</strong><span>Saniye</span></div>
+                </div>
+              </section>
+            )}
+
+            <section className="card invitation-card">
+              <p className="section-label">{copy.invitationLabel}</p>
+              <h2>{copy.invitationTitle}</h2>
+              <p>{invitation.message}</p>
+            </section>
+
+            {settings.visibility?.family !== false && (
+              <section className="card family-card">
+                <p className="section-label">{copy.familyLabel}</p>
+                <h2>{copy.familyTitle}</h2>
+                <p>{familyInfo.text}</p>
+                <div className="family-grid">
+                  <div>
+                    <span>{familyInfo.brideFamilyTitle}</span>
+                    <strong>{familyInfo.brideFamilyName}</strong>
+                  </div>
+                  <div>
+                    <span>{familyInfo.groomFamilyTitle}</span>
+                    <strong>{familyInfo.groomFamilyName}</strong>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {settings.visibility?.ceremony !== false && (
+              <section className="card ceremony-card">
+                <p className="section-label">{copy.ceremonyLabel}</p>
+                <h2>{copy.ceremonyTitle}</h2>
+                <div className="ceremony-grid">
+                  {siteData.eventDetails.map((event, index) => (
+                    <div className="ceremony-item" key={`${event.label}-${index}`}>
+                      <span>{event.label}</span>
+                      <strong>{event.time}</strong>
+                      <p>{event.description}</p>
+                      <em>{event.location}</em>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {settings.visibility?.schedule !== false && (
+              <section className="card schedule-card">
+                <p className="section-label">{copy.scheduleLabel}</p>
+                <h2>{invitation.dateText}</h2>
+                <div className="schedule-list">
+                  {siteData.scheduleItems.map((item, index) => (
+                    <div className="schedule-item" key={`${item.time}-${index}`}>
+                      <strong>{item.time}</strong>
+                      <div>
+                        <span>{item.title}</span>
+                        <p>{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {settings.visibility?.location !== false && (
+              <section className="card">
+                <p className="section-label">{copy.locationLabel}</p>
+                <h2>{copy.locationTitle}</h2>
+                <div className="info-list">
+                  <div className="info-row"><span>Tarih</span><strong>{invitation.dateText}</strong></div>
+                  <div className="info-row"><span>Saat</span><strong>{invitation.timeText}</strong></div>
+                  <div className="info-row"><span>Yer</span><strong>{invitation.venue}</strong></div>
+                  <div className="info-row"><span>Adres</span><strong>{invitation.address}</strong></div>
+                </div>
+                <div className="mini-map">
+                  <iframe
+                    title="Düğün Konumu"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation.venue} ${invitation.address}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                </div>
+                <div className="button-group">
+                  <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">Konuma Git</a>
+                  <a className="secondary-button" href={googleCalendarLink} target="_blank" rel="noreferrer">Takvime Ekle</a>
+                </div>
+              </section>
+            )}
+
+            {settings.visibility?.gallery !== false && (
+              <section className="card">
+                <p className="section-label">{copy.galleryLabel}</p>
+                <h2>{copy.galleryTitle}</h2>
+                <div className="gallery-grid">
+                  {invitation.gallery.map((image, index) => (
+                    <img key={`${image}-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {settings.visibility?.rsvp !== false && (
+              <section className="card rsvp-card">
+                <p className="section-label">{copy.rsvpLabel}</p>
+                <h2>{copy.rsvpTitle}</h2>
+                <p>{copy.rsvpText}</p>
+                <form className="rsvp-form" onSubmit={submitGuest}>
+                  <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder="Ad Soyad" />
+                  <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder="Telefon Numaranız" maxLength="20" />
+                  <OptionGroup onChange={updateAttendance} options={ATTENDANCE_OPTIONS} value={guestForm.attendance} />
+                  <OptionGroup
+                    disabled={!isAttending}
+                    onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))}
+                    options={PERSON_COUNT_OPTIONS}
+                    value={guestForm.personCount}
+                  />
+                  <OptionGroup
+                    disabled={!isAttending}
+                    onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))}
+                    options={SIDE_OPTIONS}
+                    value={guestForm.side}
+                  />
+                  <OptionGroup
+                    disabled={!isAttending}
+                    onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))}
+                    options={CHILD_OPTIONS}
+                    value={guestForm.hasChild}
+                  />
+                  <div className="field-with-counter">
+                    <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder="Notunuz" maxLength={NOTE_MAX_LENGTH}></textarea>
+                    <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
+                  </div>
+                  <button type="submit" className="main-button form-button">Katılımı Gönder</button>
+                </form>
+                <a
+                  className="secondary-button whatsapp-button"
+                  href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  WhatsApp ile Bildir
+                </a>
+              </section>
+            )}
+
+            {settings.visibility?.guests !== false && (
+              <section className="card">
+                <p className="section-label">{copy.guestsLabel}</p>
+                <h2>{copy.guestsTitle}</h2>
+                <div className="guest-stats">
+                  <div><strong>{guests.length}</strong><span>Toplam Yanıt</span></div>
+                  <div><strong>{totalPersonCount}</strong><span>Katılacak Kişi</span></div>
+                  <div><strong>{notAttendingCount}</strong><span>Katılamayacak</span></div>
+                </div>
+                <div className="guest-list">
+                  {guests.length === 0 ? (
+                    <p className="empty-text">Henüz katılım bildirimi yok.</p>
+                  ) : (
+                    guests.slice(0, 6).map((guest) => (
+                      <div className="guest-item" key={guest.id}>
+                        <div>
+                          <strong>{guest.name}</strong>
+                          <span>{guest.side} · {guest.personCount} kişi · Çocuk: {guest.hasChild || "Hayır"}</span>
+                          {guest.phone && <small>{guest.phone}</small>}
                         </div>
-                      </section>
+                        <em>{guest.attendance}</em>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            )}
 
-                      {settings.visibility?.countdown !== false && (
-                        <section className="countdown-section">
-                          <p className="section-label">{copy.countdownLabel}</p>
-                          <h2>{copy.countdownTitle}</h2>
-                          <div className="countdown-grid">
-                            <div className="count-box countdown-animated"><strong>{timeLeft.days}</strong><span>Gün</span></div>
-                            <div className="count-box countdown-animated"><strong>{timeLeft.hours}</strong><span>Saat</span></div>
-                            <div className="count-box countdown-animated"><strong>{timeLeft.minutes}</strong><span>Dakika</span></div>
-                            <div className="count-box countdown-animated"><strong>{timeLeft.seconds}</strong><span>Saniye</span></div>
-                          </div>
-                        </section>
-                      )}
+            {settings.visibility?.wishes !== false && (
+              <section className="card">
+                <p className="section-label">{copy.wishesLabel}</p>
+                <h2>{copy.wishesTitle}</h2>
+                <form className="wish-form" onSubmit={submitWish}>
+                  <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder="Ad Soyad" />
+                  <div className="field-with-counter">
+                    <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder="Mesajınız" maxLength={WISH_MAX_LENGTH}></textarea>
+                    <span>{wishForm.message.length}/{WISH_MAX_LENGTH}</span>
+                  </div>
+                  <button type="submit" className="main-button form-button">Mesajı Gönder</button>
+                </form>
+                <div className="wish-list">
+                  {approvedWishes.length === 0 ? (
+                    <p className="empty-text">Henüz güzel dilek yok.</p>
+                  ) : (
+                    approvedWishes.slice(0, 4).map((wish) => (
+                      <div className="wish-item" key={wish.id}>
+                        <p>"{wish.message}"</p>
+                        <strong>{wish.name}</strong>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            )}
 
-                      <section className="card invitation-card">
-                        <p className="section-label">{copy.invitationLabel}</p>
-                        <h2>{copy.invitationTitle}</h2>
-                        <p>{invitation.message}</p>
-                      </section>
+            <section className="card">
+              <p className="section-label">{copy.shareLabel}</p>
+              <h2>{copy.shareTitle}</h2>
+              <p>{copy.shareDescription}</p>
+              <div className="qr-public-card">
+                <img src={qrImageUrl} alt="Davetiye QR kodu" loading="lazy" />
+                <span>QR kod ile hızlıca paylaşabilirsiniz.</span>
+              </div>
+              <div className="button-group">
+                <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">WhatsApp ile Paylaş</a>
+                <button className="secondary-button" onClick={copyInvitationLink}>Linki Kopyala</button>
+              </div>
+            </section>
 
-                      {settings.visibility?.family !== false && (
-                        <section className="card family-card">
-                          <p className="section-label">{copy.familyLabel}</p>
-                          <h2>{copy.familyTitle}</h2>
-                          <p>{familyInfo.text}</p>
-                          <div className="family-grid">
-                            <div>
-                              <span>{familyInfo.brideFamilyTitle}</span>
-                              <strong>{familyInfo.brideFamilyName}</strong>
-                            </div>
-                            <div>
-                              <span>{familyInfo.groomFamilyTitle}</span>
-                              <strong>{familyInfo.groomFamilyName}</strong>
-                            </div>
-                          </div>
-                        </section>
-                      )}
-
-                      {settings.visibility?.ceremony !== false && (
-                        <section className="card ceremony-card">
-                          <p className="section-label">{copy.ceremonyLabel}</p>
-                          <h2>{copy.ceremonyTitle}</h2>
-                          <div className="ceremony-grid">
-                            {siteData.eventDetails.map((event, index) => (
-                              <div className="ceremony-item" key={`${event.label}-${index}`}>
-                                <span>{event.label}</span>
-                                <strong>{event.time}</strong>
-                                <p>{event.description}</p>
-                                <em>{event.location}</em>
-                              </div>
-                            ))}
-                          </div>
-                        </section>
-                      )}
-
-                      {settings.visibility?.schedule !== false && (
-                        <section className="card schedule-card">
-                          <p className="section-label">{copy.scheduleLabel}</p>
-                          <h2>{invitation.dateText}</h2>
-                          <div className="schedule-list">
-                            {siteData.scheduleItems.map((item, index) => (
-                              <div className="schedule-item" key={`${item.time}-${index}`}>
-                                <strong>{item.time}</strong>
-                                <div>
-                                  <span>{item.title}</span>
-                                  <p>{item.description}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </section>
-                      )}
-
-                      {settings.visibility?.location !== false && (
-                        <section className="card">
-                          <p className="section-label">{copy.locationLabel}</p>
-                          <h2>{copy.locationTitle}</h2>
-                          <div className="info-list">
-                            <div className="info-row"><span>Tarih</span><strong>{invitation.dateText}</strong></div>
-                            <div className="info-row"><span>Saat</span><strong>{invitation.timeText}</strong></div>
-                            <div className="info-row"><span>Yer</span><strong>{invitation.venue}</strong></div>
-                            <div className="info-row"><span>Adres</span><strong>{invitation.address}</strong></div>
-                          </div>
-                          <div className="mini-map">
-                            <iframe
-                              title="Düğün Konumu"
-                              src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation.venue} ${invitation.address}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                              loading="lazy"
-                              allowFullScreen
-                              referrerPolicy="no-referrer-when-downgrade"
-                            ></iframe>
-                          </div>
-                          <div className="button-group">
-                            <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">Konuma Git</a>
-                            <a className="secondary-button" href={googleCalendarLink} target="_blank" rel="noreferrer">Takvime Ekle</a>
-                          </div>
-                        </section>
-                      )}
-
-                      {settings.visibility?.gallery !== false && (
-                        <section className="card">
-                          <p className="section-label">{copy.galleryLabel}</p>
-                          <h2>{copy.galleryTitle}</h2>
-                          <div className="gallery-grid">
-                            {invitation.gallery.map((image, index) => (
-                              <img key={`${image}-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
-                            ))}
-                          </div>
-                        </section>
-                      )}
-
-                      {settings.visibility?.rsvp !== false && (
-                        <section className="card rsvp-card">
-                          <p className="section-label">{copy.rsvpLabel}</p>
-                          <h2>{copy.rsvpTitle}</h2>
-                          <p>{copy.rsvpText}</p>
-                          <form className="rsvp-form" onSubmit={submitGuest}>
-                            <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder="Ad Soyad" />
-                            <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder="Telefon Numaranız" maxLength="20" />
-                            <OptionGroup onChange={updateAttendance} options={ATTENDANCE_OPTIONS} value={guestForm.attendance} />
-                            <OptionGroup
-                              disabled={!isAttending}
-                              onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))}
-                              options={PERSON_COUNT_OPTIONS}
-                              value={guestForm.personCount}
-                            />
-                            <OptionGroup
-                              disabled={!isAttending}
-                              onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))}
-                              options={SIDE_OPTIONS}
-                              value={guestForm.side}
-                            />
-                            <OptionGroup
-                              disabled={!isAttending}
-                              onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))}
-                              options={CHILD_OPTIONS}
-                              value={guestForm.hasChild}
-                            />
-                            <div className="field-with-counter">
-                              <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder="Notunuz" maxLength={NOTE_MAX_LENGTH}></textarea>
-                              <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
-                            </div>
-                            <button type="submit" className="main-button form-button">Katılımı Gönder</button>
-                          </form>
-                          <a
-                            className="secondary-button whatsapp-button"
-                            href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${encodeURIComponent(rsvpWhatsappText)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            WhatsApp ile Bildir
-                          </a>
-                        </section>
-                      )}
-
-                      {settings.visibility?.guests !== false && (
-                        <section className="card">
-                          <p className="section-label">{copy.guestsLabel}</p>
-                          <h2>{copy.guestsTitle}</h2>
-                          <div className="guest-stats">
-                            <div><strong>{guests.length}</strong><span>Toplam Yanıt</span></div>
-                            <div><strong>{totalPersonCount}</strong><span>Katılacak Kişi</span></div>
-                            <div><strong>{notAttendingCount}</strong><span>Katılamayacak</span></div>
-                          </div>
-                          <div className="guest-list">
-                            {guests.length === 0 ? (
-                              <p className="empty-text">Henüz katılım bildirimi yok.</p>
-                            ) : (
-                              guests.slice(0, 6).map((guest) => (
-                                <div className="guest-item" key={guest.id}>
-                                  <div>
-                                    <strong>{guest.name}</strong>
-                                    <span>{guest.side} · {guest.personCount} kişi · Çocuk: {guest.hasChild || "Hayır"}</span>
-                                    {guest.phone && <small>{guest.phone}</small>}
-                                  </div>
-                                  <em>{guest.attendance}</em>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </section>
-                      )}
-
-                      {settings.visibility?.wishes !== false && (
-                        <section className="card">
-                          <p className="section-label">{copy.wishesLabel}</p>
-                          <h2>{copy.wishesTitle}</h2>
-                          <form className="wish-form" onSubmit={submitWish}>
-                            <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder="Ad Soyad" />
-                            <div className="field-with-counter">
-                              <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder="Mesajınız" maxLength={WISH_MAX_LENGTH}></textarea>
-                              <span>{wishForm.message.length}/{WISH_MAX_LENGTH}</span>
-                            </div>
-                            <button type="submit" className="main-button form-button">Mesajı Gönder</button>
-                          </form>
-                          <div className="wish-list">
-                            {approvedWishes.length === 0 ? (
-                              <p className="empty-text">Henüz güzel dilek yok.</p>
-                            ) : (
-                              approvedWishes.slice(0, 4).map((wish) => (
-                                <div className="wish-item" key={wish.id}>
-                                  <p>“{wish.message}”</p>
-                                  <strong>{wish.name}</strong>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </section>
-                      )}
-
-                      <section className="card">
-                        <p className="section-label">{copy.shareLabel}</p>
-                        <h2>{copy.shareTitle}</h2>
-                        <p>{copy.shareDescription}</p>
-                        <div className="qr-public-card">
-                          <img src={qrImageUrl} alt="Davetiye QR kodu" loading="lazy" />
-                          <span>QR kod ile hızlıca paylaşabilirsiniz.</span>
-                        </div>
-                        <div className="button-group">
-                          <a className="main-button" href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer">WhatsApp ile Paylaş</a>
-                          <button className="secondary-button" onClick={copyInvitationLink}>Linki Kopyala</button>
-                        </div>
-                      </section>
-
-                      <footer className="footer">
-                        <p>{coupleName}</p>
-                        <span>{invitation.dateText}</span>
-                        <small>{copy.thanksText}</small>
-                        <small>{copy.footerSmall}</small>
-                      </footer>
+            <footer className="footer">
+              <p>{coupleName}</p>
+              <span>{invitation.dateText}</span>
+              <small>{copy.thanksText}</small>
+              <small>{copy.footerSmall}</small>
+            </footer>
           </main>
         </>
       )}
