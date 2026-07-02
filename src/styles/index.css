@@ -959,10 +959,11 @@
 /* =============================
    ZARF AÇILIŞ ANİMASYONU
    ============================= */
+   
 .envelope-container {
   position: relative;
-  width: min(94vw, 600px);
-  height: min(68vh, 400px);
+  width: min(90vw, 500px);
+  height: min(65vh, 300px);
   display: flex;
   justify-content: center;
   align-items: flex-end;
