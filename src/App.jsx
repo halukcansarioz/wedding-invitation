@@ -1543,7 +1543,38 @@ function App() {
               </div>
 
               <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-                <h4 style={{ marginBottom: "12px", color: "var(--text-h)" }}>Bölüm Görünürlüğü (Aç/Kapat)</h4>
+                <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>Varsayılan Tema (Sıfırlama İçin)</h4>
+                <p className="admin-help-text" style={{ marginBottom: "16px" }}>
+                  Davetiyeyi "Varsayılana Döndür" butonu ile sıfırladığında, sistemin otomatik olarak döneceği ana temayı buradan seçebilirsin.
+                </p>
+                <select 
+                  value={adminDraft.settings.defaultTheme || "lavanta"} 
+                  onChange={(e) => updateDraftObject("settings", "defaultTheme", e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: "56px",
+                    padding: "0 22px",
+                    borderRadius: "999px",
+                    border: "1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent)",
+                    background: "var(--paper)",
+                    color: "var(--text)",
+                    fontFamily: '"Playfair Display", "Noto Serif", Georgia, serif',
+                    fontSize: "15px",
+                    fontWeight: "800",
+                    outline: "none",
+                    cursor: "pointer"
+                  }}
+                >
+                  {THEMES.map((theme) => (
+                    <option key={`default-${theme.value}`} value={theme.value}>
+                      {theme.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
+                <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>Bölüm Görünürlüğü (Aç/Kapat)</h4>
                 <p className="admin-help-text" style={{ marginBottom: "16px" }}>
                   Davetiyenizde görünmesini istemediğiniz bölümleri buradan kapatabilirsiniz. Kapattığınız bölümler sayfadan tamamen gizlenir.
                 </p>
