@@ -1295,31 +1295,26 @@ html[data-theme] .app .hero-section .couple-title em,
 
 @keyframes cardExtractAndZoom {
   0% {
-    /* Başlangıç: Zarfın içinde bekler */
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 1;
     z-index: 2;
   }
   35% {
-    /* 1. AŞAMA: Zarfın içinden tamamen yukarı süzülerek çıkar */
-    transform: translateY(-75%) scale(1.05);
+    transform: translateY(-75%);
     opacity: 1;
     z-index: 2;
   }
   36% {
-    /* Zarftan kurtulduğu an z-index öne geçer ki ön cebe takılmasın */
-    transform: translateY(-75%) scale(1.05);
+    transform: translateY(-75%);
     opacity: 1;
     z-index: 100;
   }
   100% {
-    /* 2. AŞAMA: Ekrana doğru devasa büyür ve şeffaflaşarak kaybolur */
-    transform: translateY(-15vh) scale(4);
+    transform: translateY(-15vh);
     opacity: 0;
     z-index: 100;
   }
 }
-
 /* ANA DAVETİYE SAYFASINA GEÇİŞ (Fade-In) */
 .invitation-page {
   animation: smoothPageFadeIn 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
