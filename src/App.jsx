@@ -135,6 +135,57 @@ function ThemeDropdown({ value, options, onChange }) {
   );
 }
 
+function CustomDropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className={`admin-custom-select ${isOpen ? "open" : ""}`} ref={dropdownRef}>
+      <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
+        <span>{selectedOption?.label || placeholder}</span>
+        <div className="admin-custom-select-arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="admin-custom-select-menu">
+          {options.map((option) => (
+            <button
+              type="button"
+              key={option.value}
+              className={`admin-custom-select-option ${value === option.value ? "selected" : ""}`}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
@@ -1959,22 +2010,38 @@ function App() {
 
               <div className="admin-toolbar">
                 <input value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder="Kayıtlarda ara" />
-                <select value={adminGuestAttendanceFilter} onChange={(e) => setAdminGuestAttendanceFilter(e.target.value)}>
-                  <option value="all">Tüm Katılımlar</option>
-                  <option value="Katılacağım">Katılacağım</option>
-                  <option value="Katılamayacağım">Katılamayacağım</option>
-                </select>
-                <select value={adminGuestSideFilter} onChange={(e) => setAdminGuestSideFilter(e.target.value)}>
-                  <option value="all">Tüm Taraflar</option>
-                  <option value="Damat Tarafı">Damat Tarafı</option>
-                  <option value="Gelin Tarafı">Gelin Tarafı</option>
-                  <option value="Ortak">Ortak</option>
-                </select>
-                <select value={adminGuestChildFilter} onChange={(e) => setAdminGuestChildFilter(e.target.value)}>
-                  <option value="all">Tümü</option>
-                  <option value="Evet">Evet</option>
-                  <option value="Hayır">Hayır</option>
-                </select>
+                
+                <CustomDropdown
+                  value={adminGuestAttendanceFilter}
+                  onChange={(val) => setAdminGuestAttendanceFilter(val)}
+                  options={[
+                    { value: "all", label: "Tüm Katılımlar" },
+                    { value: "Katılacağım", label: "Katılacağım" },
+                    { value: "Katılamayacağım", label: "Katılamayacağım" }
+                  ]}
+                />
+                
+                <CustomDropdown
+                  value={adminGuestSideFilter}
+                  onChange={(val) => setAdminGuestSideFilter(val)}
+                  options={[
+                    { value: "all", label: "Tüm Taraflar" },
+                    { value: "Damat Tarafı", label: "Damat Tarafı" },
+                    { value: "Gelin Tarafı", label: "Gelin Tarafı" },
+                    { value: "Ortak", label: "Ortak" }
+                  ]}
+                />
+                
+                <CustomDropdown
+                  value={adminGuestChildFilter}
+                  onChange={(val) => setAdminGuestChildFilter(val)}
+                  options={[
+                    { value: "all", label: "Çocuk: Tümü" },
+                    { value: "Evet", label: "Çocuk: Evet" },
+                    { value: "Hayır", label: "Çocuk: Hayır" }
+                  ]}
+                />
+
                 <button type="button" className="secondary-button" onClick={exportGuestsExcel}>Excel İndir</button>
                 <button type="button" className="secondary-button" onClick={exportGuestsCsv}>CSV İndir</button>
               </div>
@@ -2015,16 +2082,22 @@ function App() {
                 />
               </div>
               
-              <div className="admin-toolbar">
-                <input value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder="Mesajlarda ara" />
-                <select value={adminWishStatusFilter} onChange={(e) => setAdminWishStatusFilter(e.target.value)}>
-                  <option value="all">Tüm mesajlar</option>
-                  <option value="approved">Yayında</option>
-                  <option value="pending">Onay bekliyor</option>
-                </select>
-                <button type="button" className="secondary-button" onClick={exportWishesExcel}>Excel İndir</button>
-                <button type="button" className="secondary-button" onClick={exportWishesCsv}>CSV İndir</button>
-              </div>
+            <div className="admin-toolbar">
+              <input value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder="Mesajlarda ara" />
+              
+              <CustomDropdown
+                value={adminWishStatusFilter}
+                onChange={(val) => setAdminWishStatusFilter(val)}
+                options={[
+                  { value: "all", label: "Tüm mesajlar" },
+                  { value: "approved", label: "Yayında" },
+                  { value: "pending", label: "Onay bekliyor" }
+                ]}
+              />
+
+              <button type="button" className="secondary-button" onClick={exportWishesExcel}>Excel İndir</button>
+              <button type="button" className="secondary-button" onClick={exportWishesCsv}>CSV İndir</button>
+            </div>
 
               <div className="admin-list admin-list-full">
                 {filteredWishes.length === 0 ? (

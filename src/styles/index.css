@@ -1251,16 +1251,17 @@
 .admin-check-field {
   position: relative !important;
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
   gap: 12px !important;
-  padding: 20px !important;
+  padding: 20px 64px 20px 22px !important; /* Sağ tarafta buton için 64px kesin boşluk ayrıldı */
   background: var(--paper, #ffffff) !important;
   border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent) !important;
   border-radius: 22px !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02) !important;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  min-height: 110px !important;
+  min-height: 88px !important;
   box-sizing: border-box !important;
 }
 
@@ -1282,14 +1283,18 @@
 
 .admin-check-field input[type="checkbox"] {
   position: absolute !important;
-  top: 16px !important;
-  right: 16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 20px !important;
   width: 28px !important;
   height: 28px !important;
+  min-width: 28px !important; /* Butonu daralmalara karşı kilitler */
   border-radius: 50% !important;
   border: 2px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
   background-color: var(--paper, #ffffff) !important;
   transition: all 0.2s ease !important;
+  margin: 0 !important;
+  z-index: 2 !important; /* Butonun her zaman en üstte tıklanabilir olmasını sağlar */
 }
 
 .admin-check-field input[type="checkbox"]:checked {
@@ -1303,9 +1308,14 @@
   font-size: 15px !important;
   font-weight: 800 !important;
   color: var(--amp-color, #8f7fb8) !important;
-  margin-top: 24px !important;
-  line-height: 1.3 !important;
+  margin-top: 0 !important;
+  line-height: 1.35 !important;
   text-align: left !important;
+  padding-right: 45px !important; 
+  box-sizing: border-box !important;
+  word-break: break-word !important; 
+  max-width: 100% !important;
+  z-index: 1 !important;
 }
 
 .admin-sidebar-menu {
@@ -1731,4 +1741,287 @@ select option:active {
     max-width: none !important;
     min-width: 0 !important;
   }
+}
+
+/* =================================================================
+   YÜZEN BUTONLAR İÇİN KESİN EZİCİ (OVERRIDE) HOVER STİLLERİ
+   ================================================================= */
+
+/* 1. Normal Durum: Tüm eski kuralları ezip diğer butonlarla aynı yapar */
+body .app .floating-actions a.share-button,
+body .app .floating-actions button.music-toggle-button,
+body .app .floating-actions button.music-toggle-button.music-on,
+body .app .floating-actions button.music-toggle-button.music-off {
+  background: var(--paper, #ffffff) !important;
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* 2. Fareyle Üzerine Gelindiğinde (HOVER): Kesinlikle mor/tema rengi ve beyaz olur */
+body .app .floating-actions a.share-button:hover,
+body .app .floating-actions button.music-toggle-button:hover,
+body .app .floating-actions button.music-toggle-button.music-on:hover,
+body .app .floating-actions button.music-toggle-button.music-off:hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-3px) scale(1.03) !important;
+}
+
+/* 3. İkon ve Yazı Rengi Garantisi (Müzik SVG çizgileri ve Paylaş yazısı) */
+body .app .floating-actions button.music-toggle-button:hover svg,
+body .app .floating-actions button.music-toggle-button:hover path,
+body .app .floating-actions a.share-button:hover {
+  stroke: #ffffff !important;
+  fill: none !important;
+  color: #ffffff !important;
+}
+
+/* 4. Koyu Tema (Dark Theme) Koruması */
+[data-theme="dark"] body .app .floating-actions a.share-button,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-on,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-off {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .floating-actions a.share-button:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-on:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-off:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  background-color: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover svg,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover path,
+[data-theme="dark"] body .app .floating-actions a.share-button:hover {
+  stroke: #1a1a1a !important;
+  color: #1a1a1a !important;
+}
+
+/* =================================================================
+   AÇILIR MENÜLER (SELECT & OPTION) İÇİN KESİN EZİCİ (OVERRIDE) STİLLERİ
+   ================================================================= */
+
+/* 1. Açılır Menü Butonunun (Select) Dış Kutusu ve Yazı Stili */
+body .app select,
+body .app .admin-toolbar select,
+body .app .admin-content select {
+  min-height: 52px !important;
+  height: 52px !important;
+  padding: 0 44px 0 22px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
+  background-color: var(--paper, #ffffff) !important;
+  /* Özel ok ikonu */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f7fb8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 18px center !important;
+  background-size: 16px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* 2. Fareyle Üzerine Gelindiğinde veya Tıklandığında (Hover & Focus) */
+body .app select:hover,
+body .app select:focus,
+body .app .admin-toolbar select:hover,
+body .app .admin-toolbar select:focus {
+  border-color: var(--amp-color, #8f7fb8) !important;
+  background-color: color-mix(in srgb, var(--paper, #ffffff) 92%, var(--amp-color, #8f7fb8) 8%) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 22%, transparent), 0 0 0 4px color-mix(in srgb, var(--amp-color, #8f7fb8) 12%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 3. İçindeki Seçeneklerin (Option Listesi) Stili */
+body .app select option {
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--text, #333333) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 14px 20px !important;
+}
+
+/* 4. Seçili, Üzerine Gelinen (Hover) ve Aktif Option Öğesi - Mavi Rengi Ezme */
+body .app select option:checked,
+body .app select option:hover,
+body .app select option:focus,
+body .app select option:active {
+  background: linear-gradient(0deg, var(--amp-color, #8f7fb8) 0%, var(--amp-color, #8f7fb8) 100%) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+}
+
+/* 5. Koyu Tema (Dark Theme) Desteği */
+[data-theme="dark"] body .app select,
+[data-theme="dark"] body .app .admin-toolbar select,
+[data-theme="dark"] body .app .admin-content select {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] body .app select:hover,
+[data-theme="dark"] body .app select:focus {
+  border-color: var(--amp-color, #e3b6c7) !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(-body .app .admin-custom-select-menu {-amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+[data-theme="dark"] body .app select option {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] body .app select option:checked,
+[data-theme="dark"] body .app select option:hover,
+[data-theme="dark"] body .app select option:focus {
+  background-color: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+}
+
+/* =================================================================
+   ÖZEL AÇILIR MENÜ (CUSTOM DROPDOWN) İÇİN KESİN EZİCİ STİLLER
+   ================================================================= */
+
+/* Aşağı Açılan Menü Penceresi (Kutu) */
+body .app .admin-custom-select-menu {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  padding: 16px !important; /* Resim 2'deki gibi içten ferah boşluk */
+  border-radius: 24px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
+  background: var(--paper, #ffffff) !important;
+  box-shadow: 0 20px 45px color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, rgba(0,0,0,0.1)) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important; /* Seçenekler arası hafif mesafe */
+}
+
+/* Seçenek Öğeleri (Normal Durum) */
+body .app .admin-custom-select-menu button.admin-custom-select-option {
+  width: 100% !important;
+  min-height: 44px !important;
+  height: auto !important;
+  padding: 12px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  border: none !important; /* Resim 1'deki hap buton çizgileri yok edildi! */
+  border-radius: 16px !important;
+  background: transparent !important; /* Arka plan tamamen transparan ve sade */
+  color: var(--text, #333333) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+/* Fareyle Üstüne Gelindiğinde (Hover) - Mavi yerine temanın hafif tonu olur! */
+body .app .admin-custom-select-menu button.admin-custom-select-option:hover {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 15%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  transform: translateX(4px) !important; /* Hafifçe sağa kayarak zarif bir hissiyat verir */
+}
+
+/* Seçili Olan Öğenin (Selected) Durumu - Tamamen Tema Rengi! */
+body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 14%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 25%, transparent) !important;
+  font-weight: 900 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Koyu Tema (Dark Theme) Desteği */
+[data-theme="dark"] body .app .admin-custom-select-menu {
+  background: #1f1f1f !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option {
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, #1f1f1f) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option:hover:not(.selected) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+}
+
+/* =================================================================
+   GÖRSELDEKİ ORİJİNAL DROPDOWN STİLİ (TAM UYUM)
+   ================================================================= */
+
+/* Açılan kutunun genişliği butonla tam aynı ve düzgün dursun */
+body .app .admin-custom-select {
+  flex: 1 1 240px !important; /* Çok dar kalmasını engeller, yatayda güzelce uzar */
+  min-width: 220px !important;
+}
+
+/* Seçili olan öğe (Selected) tam senin görselindeki gibi tatlı bir lila kutuda olsun */
+body .app .admin-custom-select-option.selected {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 18%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
+  font-weight: 900 !important;
+}
+
+/* Diğer seçeneklerin üzerine gelince (Hover) hafifçe renklensin */
+body .app .admin-custom-select-option:hover:not(.selected) {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 8%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+}
+
+body .app .admin-custom-select-menu button.admin-custom-select-option:hover:not(.selected) {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 6%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  transform: translateX(4px) !important; /* Çok hafif sağa kayma zarafeti */
 }
