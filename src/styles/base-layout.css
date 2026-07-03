@@ -1258,4 +1258,44 @@ button {
   }
 }
 
+/* =========================================================
+   ZARFIN SAĞ ALT KÖŞESİNE ÖZEL DAVETLİ İSMİ ("Davetiyeyi Açınız" Stiliyle)
+   ========================================================= */
+.envelope-guest-badge {
+  position: absolute !important;
+  bottom: 24px !important;
+  right: 28px !important;
+  z-index: 10 !important;
+  
+  /* Arka plan, kenarlık ve gölgeler tamamen kaldırıldı */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  
+  /* Davetiyeyi Açınız yazısıyla birebir aynı font ve stil ayarları */
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--amp-color) !important;
+  letter-spacing: 0.5px !important;
+  opacity: 0.85 !important;
+  font-style: normal !important;
+  text-align: right !important;
+  
+  /* Taşma Koruması */
+  max-width: 45% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  pointer-events: none !important;
+  
+  /* Açılış animasyonu */
+  transition: opacity 0.3s ease !important;
+}
 
+/* Zarf açılırken (mühre tıklandığında) ismin kaybolması için */
+.intro-page.opening .envelope-guest-badge {
+  opacity: 0 !important;
+}
