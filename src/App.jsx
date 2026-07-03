@@ -83,6 +83,58 @@ function OptionGroup({ value, options, onChange, disabled = false }) {
   );
 }
 
+function ThemeDropdown({ value, options, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  // Menü açıkken dışarı bir yere tıklanırsa kapatmayı sağlayan zeki kod
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className={`admin-custom-select ${isOpen ? "open" : ""}`} ref={dropdownRef}>
+      <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
+        <span>{selectedOption?.label || "Seçiniz"}</span>
+        <div className="admin-custom-select-arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="admin-custom-select-menu">
+          {options.map((option) => (
+            <button
+              type="button"
+              key={option.value}
+              className={`admin-custom-select-option ${value === option.value ? "selected" : ""}`}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   // ==================== STATE YÖNETİMİ ====================
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
@@ -1547,30 +1599,11 @@ function App() {
                 <p className="admin-help-text" style={{ marginBottom: "16px" }}>
                   Davetiyeyi "Varsayılana Döndür" butonu ile sıfırladığında, sistemin otomatik olarak döneceği ana temayı buradan seçebilirsin.
                 </p>
-                <select 
-                  value={adminDraft.settings.defaultTheme || "lavanta"} 
-                  onChange={(e) => updateDraftObject("settings", "defaultTheme", e.target.value)}
-                  style={{
-                    width: "100%",
-                    minHeight: "56px",
-                    padding: "0 22px",
-                    borderRadius: "999px",
-                    border: "1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent)",
-                    background: "var(--paper)",
-                    color: "var(--text)",
-                    fontFamily: '"Playfair Display", "Noto Serif", Georgia, serif',
-                    fontSize: "15px",
-                    fontWeight: "800",
-                    outline: "none",
-                    cursor: "pointer"
-                  }}
-                >
-                  {THEMES.map((theme) => (
-                    <option key={`default-${theme.value}`} value={theme.value}>
-                      {theme.label}
-                    </option>
-                  ))}
-                </select>
+                  <ThemeDropdown
+                    value={adminDraft.settings.defaultTheme || "lavanta"}
+                    onChange={(val) => updateDraftObject("settings", "defaultTheme", val)}
+                    options={THEMES}
+                  />
               </div>
 
               <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
