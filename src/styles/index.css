@@ -59,7 +59,7 @@
 }
 
 /* =============================
-   KATILIM FORMU (RSVP) SEÇENEK BUTONLARI (TAŞMA VE KONTRAST KORUMALI)
+   KATILIM FORMU (RSVP) SEÇENEK BUTONLARI
    ============================= */
 .rsvp-form .option-button,
 .wish-form .option-button,
@@ -74,13 +74,10 @@
   transform: none !important;
 }
 
-/* Fareyle üzerine gelince (İnaktif butonlar) */
 .rsvp-form .option-button:hover:not(.active):not(:disabled),
 .wish-form .option-button:hover:not(.active):not(:disabled),
 .option-group .option-button:hover:not(.active):not(:disabled) {
   background: var(--amp-color, #8f7fb8) !important;
-  background-color: var(--amp-color, #8f7fb8) !important;
-  background-image: none !important;
   color: #ffffff !important;
   border-color: var(--amp-color, #8f7fb8) !important;
   box-shadow: 0 8px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 25%, transparent) !important;
@@ -88,13 +85,11 @@
   opacity: 1 !important;
 }
 
-/* Seçili (Aktif) butonlar */
 .rsvp-form .option-button.active,
 .wish-form .option-button.active,
 .option-group .option-button.active {
   color: #ffffff !important;
   background: var(--amp-color, #8f7fb8) !important;
-  background-color: var(--amp-color, #8f7fb8) !important;
   background-image: none !important;
   border-color: var(--amp-color, #8f7fb8) !important;
   box-shadow: 0 12px 28px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
@@ -102,13 +97,11 @@
   opacity: 1 !important;
 }
 
-/* Seçili butonun üzerine gelince (Hover) renginin bozulmasını ve şeffaflaşmasını engeller */
 .rsvp-form .option-button.active:hover,
 .wish-form .option-button.active:hover,
 .option-group .option-button.active:hover {
   color: #ffffff !important;
   background: var(--amp-color, #8f7fb8) !important;
-  background-color: var(--amp-color, #8f7fb8) !important;
   background-image: none !important;
   border-color: var(--amp-color, #8f7fb8) !important;
   box-shadow: 0 14px 30px color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
@@ -117,13 +110,11 @@
   filter: brightness(0.92) !important;
 }
 
-/* Devre Dışı Kalan Butonlar (Disabled) */
 .option-group.disabled,
 .option-group.disabled .option-button,
 .option-button:disabled,
 .option-button:disabled:hover {
   background: color-mix(in srgb, var(--paper) 78%, transparent) !important;
-  background-color: color-mix(in srgb, var(--paper) 78%, transparent) !important;
   color: color-mix(in srgb, var(--text-soft) 45%, transparent) !important;
   border-color: color-mix(in srgb, var(--amp-color) 16%, transparent) !important;
   box-shadow: none !important;
@@ -237,7 +228,6 @@
   box-shadow: 0 8px 18px color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
 }
 
-/* Sil (Danger) Butonları - HIZLI RENK DEĞİŞİMİ AYARI */
 .admin-row-actions button.danger-button,
 .admin-list .small-admin-button.danger-button,
 .admin-row .secondary-button.danger-button,
@@ -259,14 +249,13 @@
 .admin-row .secondary-button.danger-button:hover,
 .admin-repeat-title .small-admin-button.danger-button:hover,
 .admin-gallery-upload-row .small-admin-button.danger-button:hover {
-  transition: none !important; /* Fare üzerine geldiğinde gecikmeyi tamamen kaldırır */
+  transition: none !important;
   background: #d93838 !important;
   color: #ffffff !important;
   border-color: #d93838 !important;
   box-shadow: 0 8px 18px rgba(217, 56, 56, 0.28) !important;
 }
 
-/* Liste Altındaki Büyük Temizleme Butonları */
 .admin-list > button.danger-button,
 .admin-list > .secondary-button:not(.small-admin-button) {
   width: 100% !important;
@@ -278,7 +267,6 @@
   font-size: 14.5px !important;
 }
 
-/* Dark Tema Uyumu (Admin Butonları) */
 [data-theme="dark"] .admin-row-actions button,
 [data-theme="dark"] .admin-list .small-admin-button,
 [data-theme="dark"] .admin-repeat-title .small-admin-button,
@@ -420,7 +408,7 @@
 }
 
 /* =============================
-   ADMIN SIDEBAR NAV BUTONLARI (TEMA UYUMLU)
+   ADMIN SIDEBAR NAV BUTONLARI
    ============================= */
 .admin-sidebar .admin-nav-button,
 .admin-sidebar-menu .admin-nav-button {
@@ -517,7 +505,6 @@
   color: #ffffff !important;
 }
 
-/* Dark tema için Sidebar */
 [data-theme="dark"] .admin-sidebar .admin-nav-button,
 [data-theme="dark"] .admin-sidebar-menu .admin-nav-button {
   background: rgba(255, 255, 255, 0.06) !important;
@@ -557,7 +544,7 @@
 }
 
 /* =============================
-   ADMIN MÜZİK VE GALERİ ALANI (TEMİZLENMİŞ ARKA PLANLAR)
+   ADMIN MÜZİK VE GALERİ ALANI
    ============================= */
 .admin-music-field,
 .admin-gallery-upload-row {
@@ -576,7 +563,7 @@
   padding: 24px !important;
   border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent) !important;
   border-radius: 22px !important;
-  background: var(--paper, #ffffff) !important; /* Arka planı beyaz (temaya duyarlı) yapıyoruz */
+  background: var(--paper, #ffffff) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02) !important;
   margin-bottom: 24px !important;
 }
@@ -704,56 +691,6 @@
   box-shadow: 0 14px 30px color-mix(in srgb, var(--rose-dark) 12%, transparent), 0 0 0 4px color-mix(in srgb, var(--rose) 10%, transparent) !important;
 }
 
-/* Standart HTML Select (Filtreler İçin) */
-.admin-toolbar select {
-  min-height: 52px;
-  padding: 0 40px 0 20px !important;
-  border-radius: 999px !important;
-  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent) !important;
-  background-color: var(--paper) !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c36f8b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 18px center !important;
-  background-size: 16px !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  color: var(--text) !important;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 14.5px;
-  font-weight: 700;
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--rose-dark) 6%, transparent) !important;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.2s ease;
-}
-
-.admin-toolbar select:hover,
-.admin-toolbar select:focus {
-  border-color: var(--rose-dark) !important;
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--rose-dark) 12%, transparent) !important;
-}
-
-[data-theme="dark"] .admin-toolbar select {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: var(--rose-light) !important;
-  border-color: color-mix(in srgb, var(--rose-light) 28%, transparent) !important;
-}
-
-select option {
-  background-color: var(--paper) !important;
-  color: var(--rose-dark) !important;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  padding: 12px !important;
-}
-
-[data-theme="dark"] select option {
-  background-color: #1f1f1f !important;
-  color: var(--rose-light) !important;
-}
-
-/* Özel Seçim Kutusu (Custom Dropdown) */
 .admin-custom-select {
   position: relative;
   width: 100%;
@@ -864,7 +801,6 @@ select option {
   color: #ffffff;
 }
 
-/* İkincil Butonlar (Büyük form butonları için) */
 .admin-content .secondary-button,
 .admin-editor .secondary-button {
   min-height: 56px;
@@ -891,7 +827,6 @@ select option {
   box-shadow: 0 16px 32px color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
 }
 
-/* Dark Tema için Dropdown */
 [data-theme="dark"] .admin-custom-select-button {
   background: rgba(255, 255, 255, 0.08) !important;
   color: var(--rose-light) !important;
@@ -930,7 +865,6 @@ select option {
 [data-theme="lavanta"] { --amp-color: #8f7fb8; --amp-glow: rgba(143, 127, 184, 0.42); }
 [data-theme="dark"] { --amp-color: #e3b6c7; --amp-glow: rgba(227, 182, 199, 0.46); }
 
-/* & Sembolü Stili */
 .couple-title em {
   color: var(--amp-color) !important;
   -webkit-text-fill-color: var(--amp-color) !important;
@@ -939,6 +873,23 @@ select option {
   user-select: none;
   -webkit-user-select: none;
   text-shadow: 0 3px 8px rgba(0, 0, 0, 0.55), 0 0 18px var(--amp-glow) !important;
+}
+
+.intro-page .couple-title span,
+.hero-section .couple-title span {
+  display: block;
+}
+
+.intro-page .couple-title em,
+.hero-section .couple-title em {
+  display: block;
+  text-align: center;
+  color: #f0cf88;
+}
+
+.intro-page .couple-title em {
+  margin: -8px 0 -6px;
+  font-size: 0.48em;
 }
 
 .intro-page .couple-title em,
@@ -956,9 +907,10 @@ select option {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   text-shadow: 0 3px 8px rgba(0, 0, 0, 0.78), 0 0 16px rgba(255, 255, 255, 0.35) !important;
+  margin: -10px 0 -8px;
+  font-size: 0.46em;
 }
 
-/* Sakura Çiçeği İkonu */
 .leaf-mark {
   width: 24px;
   height: 24px;
@@ -1010,64 +962,7 @@ select option {
 }
 
 /* =============================
-   MÜZİK BUTONU (FLOATING)
-   ============================= */
-.floating-actions {
-  position: fixed !important;
-  top: clamp(14px, 2vw, 24px) !important;
-  right: clamp(14px, 2vw, 24px) !important;
-  z-index: 12000 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
-.music-toggle-button {
-  width: 62px !important;
-  height: 62px !important;
-  min-width: 62px !important;
-  min-height: 62px !important;
-  padding: 0 !important;
-  display: inline-grid !important;
-  place-items: center !important;
-  border-radius: 50% !important;
-  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 36%, transparent) !important;
-  background: color-mix(in srgb, var(--paper) 86%, #ffffff 14%) !important;
-  color: var(--rose-dark) !important;
-  box-shadow: 0 14px 32px color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
-  cursor: pointer !important;
-  line-height: 1 !important;
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease !important;
-}
-
-.music-toggle-button svg {
-  width: 27px !important;
-  height: 27px !important;
-  display: block !important;
-  overflow: visible !important;
-  pointer-events: none !important;
-}
-
-.music-toggle-button:hover {
-  transform: translateY(-2px) scale(1.04) !important;
-  box-shadow: 0 18px 38px color-mix(in srgb, var(--rose-dark) 26%, transparent) !important;
-}
-
-.music-toggle-button.music-on {
-  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
-  color: #ffffff !important;
-  border-color: var(--rose-dark) !important;
-}
-
-.music-toggle-button.music-off {
-  background: color-mix(in srgb, var(--paper) 88%, #ffffff 12%) !important;
-  color: var(--rose-dark) !important;
-}
-
-/* =============================
-   ZARF AÇILIŞ ANİMASYONU VE DAVETİYE KARTI (TAŞMA KORUMALI)
+   ZARF AÇILIŞ ANİMASYONU VE DAVETİYE KARTI
    ============================= */
 .envelope-container {
   position: relative;
@@ -1093,7 +988,6 @@ select option {
   z-index: 1;
 }
 
-/* Zarf İçindeki Davetiye Kartı */
 .intro-page .envelope-container .intro-card {
   position: absolute !important;
   bottom: 10px !important;
@@ -1160,11 +1054,11 @@ select option {
   overflow: hidden !important;
   display: -webkit-box !important;
   -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;  
   -webkit-box-orient: vertical !important;
   flex-shrink: 0 !important;
 }
 
-/* Zarf Ön Yüzü ve Kapağı */
 .envelope-front {
   position: absolute;
   inset: 0;
@@ -1209,7 +1103,6 @@ select option {
   z-index: 1;
 }
 
-/* Mühür */
 .envelope-seal {
   position: absolute;
   top: 60.5%;
@@ -1315,7 +1208,6 @@ select option {
   opacity: 0 !important;
 }
 
-/* Sayfa Geçiş Animasyonu */
 .invitation-page {
   animation: smoothPageFadeIn 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
@@ -1424,7 +1316,372 @@ select option {
 }
 
 /* =============================
-   GENEL MOBİL UYUMLAMALAR
+   ADMIN PANELİ HOVER VE KONTRAST KURALLARI
+   ============================= */
+.admin-content button:not(.danger-button):hover,
+.admin-panel button:not(.danger-button):hover,
+.admin-section button:not(.danger-button):hover,
+.admin-qr-actions button:hover,
+.admin-export-actions button:hover,
+.admin-toolbar button:hover,
+.admin-edit-grid button:hover,
+.admin-row-actions button:not(.danger-button):hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+.admin-content button.danger-button:hover,
+.admin-panel button.danger-button:hover,
+.admin-section button.danger-button:hover,
+.admin-row-actions button.danger-button:hover,
+.admin-repeat-title button.danger-button:hover {
+  background: #d93838 !important;
+  color: #ffffff !important;
+  border-color: #d93838 !important;
+  box-shadow: 0 8px 18px rgba(217, 56, 56, 0.28) !important;
+}
+
+.app button.danger-button,
+.admin-section button.danger-button,
+.admin-gallery-upload-row button.danger-button,
+.admin-gallery-upload-row .small-admin-button.danger-button,
+.admin-row-actions button.danger-button,
+.admin-list button.danger-button,
+.admin-repeat-title button.danger-button {
+  transition: background-color 0s, color 0s, border-color 0s, transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.app button.danger-button:hover,
+.admin-section button.danger-button:hover,
+.admin-gallery-upload-row button.danger-button:hover,
+.admin-gallery-upload-row .small-admin-button.danger-button:hover,
+.admin-row-actions button.danger-button:hover,
+.admin-list button.danger-button:hover,
+.admin-repeat-title button.danger-button:hover {
+  background: #d93838 !important;
+  color: #ffffff !important;
+  border-color: #d93838 !important;
+  box-shadow: 0 8px 18px rgba(217, 56, 56, 0.28) !important;
+  transform: translateY(-2px) !important;
+}
+
+.admin-image-field .admin-upload-button,
+.admin-image-field button:not(.danger-button),
+.admin-image-field label.admin-upload-button,
+.admin-gallery-upload-row .admin-upload-button,
+.admin-gallery-upload-row .admin-image-field button:not(.danger-button),
+.admin-gallery-upload-row .admin-image-field label,
+.admin-upload-button {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.admin-image-field .admin-upload-button:hover,
+.admin-image-field button:not(.danger-button):hover,
+.admin-image-field label.admin-upload-button:hover,
+.admin-gallery-upload-row .admin-upload-button:hover,
+.admin-gallery-upload-row .admin-image-field button:not(.danger-button):hover,
+.admin-gallery-upload-row .admin-image-field label:hover,
+.admin-upload-button:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  cursor: pointer !important;
+}
+
+.admin-gallery-list {
+  contain: content;
+}
+
+.admin-gallery-list .admin-gallery-upload-row {
+  content-visibility: auto;
+  contain-intrinsic-size: 160px;
+  will-change: transform;
+}
+
+.app button.admin-add-button,
+.admin-section button.admin-add-button,
+.admin-repeat-list button.admin-add-button,
+.admin-gallery-list button.admin-add-button {
+  width: 100% !important;
+  max-width: 320px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  margin: 20px auto 10px auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px dashed color-mix(in srgb, var(--amp-color, #8f7fb8) 60%, transparent) !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+}
+
+.app button.admin-add-button:hover,
+.admin-section button.admin-add-button:hover,
+.admin-repeat-list button.admin-add-button:hover,
+.admin-gallery-list button.admin-add-button:hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-style: solid !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+}
+
+[data-theme="dark"] button.admin-add-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 45%, transparent) !important;
+}
+
+[data-theme="dark"] button.admin-add-button:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+.app .admin-content button:not(.main-button):not(.danger-button),
+.app .admin-panel button:not(.main-button):not(.danger-button),
+.app .admin-section button:not(.main-button):not(.danger-button),
+.app .admin-toolbar button:not(.danger-button),
+.app .admin-export-actions button:not(.danger-button),
+.app .admin-qr-actions button:not(.danger-button),
+.app .admin-import-box button:not(.danger-button),
+.app .admin-personal-link-box button:not(.danger-button),
+.app .admin-image-field button:not(.danger-button),
+.app .admin-music-field button:not(.danger-button),
+.app .secondary-button:not(.danger-button) {
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+  opacity: 1 !important;
+}
+
+.app .admin-content button:not(.main-button):not(.danger-button):hover:not(:disabled),
+.app .admin-panel button:not(.main-button):not(.danger-button):hover:not(:disabled),
+.app .admin-section button:not(.main-button):not(.danger-button):hover:not(:disabled),
+.app .admin-toolbar button:not(.danger-button):hover:not(:disabled),
+.app .admin-export-actions button:not(.danger-button):hover:not(:disabled),
+.app .admin-qr-actions button:not(.danger-button):hover:not(:disabled),
+.app .admin-import-box button:not(.danger-button):hover:not(:disabled),
+.app .admin-personal-link-box button:not(.danger-button):hover:not(:disabled),
+.app .admin-image-field button:not(.danger-button):hover:not(:disabled),
+.app .admin-music-field button:not(.danger-button):hover:not(:disabled),
+.app .secondary-button:not(.danger-button):hover:not(:disabled) {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+[data-theme="dark"] .admin-content button:not(.main-button):not(.danger-button),
+[data-theme="dark"] .admin-panel button:not(.main-button):not(.danger-button),
+[data-theme="dark"] .admin-section button:not(.main-button):not(.danger-button),
+[data-theme="dark"] .admin-toolbar button,
+[data-theme="dark"] .admin-export-actions button,
+[data-theme="dark"] .admin-qr-actions button,
+[data-theme="dark"] .admin-import-box button,
+[data-theme="dark"] .admin-personal-link-box button,
+[data-theme="dark"] .admin-image-field button,
+[data-theme="dark"] .secondary-button:not(.danger-button) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-content button:not(.main-button):not(.danger-button):hover:not(:disabled),
+[data-theme="dark"] .admin-panel button:not(.main-button):not(.danger-button):hover:not(:disabled),
+[data-theme="dark"] .admin-section button:not(.main-button):not(.danger-button):hover:not(:disabled),
+[data-theme="dark"] .admin-toolbar button:hover:not(:disabled),
+[data-theme="dark"] .admin-export-actions button:hover:not(:disabled),
+[data-theme="dark"] .admin-qr-actions button:hover:not(:disabled),
+[data-theme="dark"] .admin-import-box button:hover:not(:disabled),
+[data-theme="dark"] .admin-personal-link-box button:hover:not(:disabled),
+[data-theme="dark"] .admin-image-field button:hover:not(:disabled),
+[data-theme="dark"] .secondary-button:not(.danger-button):hover:not(:disabled) {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1f1f1f !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+.admin-export-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+}
+
+.admin-export-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+}
+
+.admin-export-card .admin-export-actions,
+.admin-export-card > button,
+.admin-export-card > .main-button {
+  margin-top: auto !important;
+  padding-top: 16px !important;
+  width: 100% !important;
+}
+
+.admin-export-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.admin-export-actions button {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.app .admin-image-field button:not(.admin-upload-button),
+.app .admin-music-field button:not(.admin-upload-button) {
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  opacity: 1 !important;
+}
+
+.app .admin-image-field button:not(.admin-upload-button):hover:not(:disabled),
+.app .admin-music-field button:not(.admin-upload-button):hover:not(:disabled) {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-theme="dark"] .admin-image-field button:not(.admin-upload-button),
+[data-theme="dark"] .admin-music-field button:not(.admin-upload-button) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-image-field button:not(.admin-upload-button):hover:not(:disabled),
+[data-theme="dark"] .admin-music-field button:not(.admin-upload-button):hover:not(:disabled) {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1f1f1f !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+
+.app .admin-toolbar select,
+.app .admin-content select,
+.app select {
+  min-height: 52px;
+  padding: 0 42px 0 20px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  background-color: var(--paper, #ffffff) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f7fb8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 16px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  accent-color: var(--amp-color, #8f7fb8) !important;
+}
+
+.app .admin-toolbar select:hover,
+.app .admin-toolbar select:focus,
+.app .admin-content select:hover,
+.app .admin-content select:focus,
+.app select:hover,
+.app select:focus {
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent), 0 0 0 4px color-mix(in srgb, var(--amp-color, #8f7fb8) 10%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+select option {
+  background: var(--paper, #ffffff) !important;
+  color: var(--text, #333333) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 14px 18px !important;
+}
+
+select option:checked,
+select option:hover,
+select option:focus,
+select option:active {
+  background: linear-gradient(0deg, var(--amp-color, #8f7fb8) 0%, var(--amp-color, #8f7fb8) 100%) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] select {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+[data-theme="dark"] select:hover,
+[data-theme="dark"] select:focus {
+  border-color: var(--amp-color, #e3b6c7) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] select option {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] select option:checked,
+[data-theme="dark"] select option:hover,
+[data-theme="dark"] select option:focus {
+  background-color: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+}
+
+/* =============================
+   MOBİL EKRAN KURALLARI (INDEX.CSS)
    ============================= */
 @media (max-width: 650px) {
   .theme-option-card.active {
@@ -1473,12 +1730,5 @@ select option {
     width: 100% !important;
     max-width: none !important;
     min-width: 0 !important;
-  }
-  
-  .music-toggle-button {
-    width: 54px !important;
-    height: 54px !important;
-    min-width: 54px !important;
-    min-height: 54px !important;
   }
 }

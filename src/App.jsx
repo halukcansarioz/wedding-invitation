@@ -48,6 +48,7 @@ import {
   uiGuestToDb,
   dbGuestToUi,
   uiWishToDb,
+  dbWishToUi,
   normalizeSiteData,
   mergeSiteData
 } from "./utils/helpers";
@@ -88,7 +89,6 @@ function ThemeDropdown({ value, options, onChange }) {
   const dropdownRef = useRef(null);
   const selectedOption = options.find((opt) => opt.value === value) || options[0];
 
-  // Menü açıkken dışarı bir yere tıklanırsa kapatmayı sağlayan zeki kod
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -136,7 +136,6 @@ function ThemeDropdown({ value, options, onChange }) {
 }
 
 function App() {
-  // ==================== STATE YÖNETİMİ ====================
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
@@ -180,7 +179,6 @@ function App() {
   const [dataImportText, setDataImportText] = useState("");
   const [appModal, setAppModal] = useState(null);
 
-  // ==================== REF YÖNETİMİ ====================
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
   const musicIntervalRef = useRef(null);
@@ -188,7 +186,6 @@ function App() {
   const modalResolverRef = useRef(null);
   const cleanupAudioRef = useRef(null);
 
-  // ==================== MEMOIZE EDİLMİŞ DEĞERLER ====================
   const invitation = useMemo(() => siteData.invitation, [siteData.invitation]);
   const familyInfo = useMemo(() => siteData.familyInfo, [siteData.familyInfo]);
   const copy = useMemo(() => siteData.copy, [siteData.copy]);
@@ -287,7 +284,6 @@ function App() {
     [siteData, coupleName]
   );
 
-  // ==================== MODAL YÖNETİMİ ====================
   const resolveAppModal = useCallback((result) => {
     const resolver = modalResolverRef.current;
     modalResolverRef.current = null;
@@ -345,7 +341,6 @@ function App() {
     });
   }, [openAppModal]);
 
-  // ==================== ADMIN SESSION ====================
   const {
     submitAdminPassword,
     sendPasswordResetEmail,
@@ -394,8 +389,6 @@ function App() {
     showAppConfirm,
   });
 
-  // ==================== EFFECTS ====================
-  // Dil ve charset ayarı
   useEffect(() => {
     document.documentElement.lang = "tr";
     if (!document.querySelector("meta[charset]")) {
@@ -405,7 +398,6 @@ function App() {
     }
   }, []);
 
-  // Tema ve favicon güncelleme
   useLayoutEffect(() => {
     const currentTheme = settings.theme || "lavanta";
     document.documentElement.dataset.theme = currentTheme;
@@ -423,7 +415,6 @@ function App() {
     }
   }, [settings.theme]);
 
-  // Admin sayfa senkronizasyonu
   useEffect(() => {
     const syncAdminPage = () => {
       const adminRouteActive = isAdminRouteActive();
@@ -457,7 +448,6 @@ function App() {
     };
   }, []);
 
-  // Supabase auth durumu dinleme
   useEffect(() => {
     if (!isSupabaseReady()) return undefined;
 
@@ -488,7 +478,6 @@ function App() {
     return () => subscription.unsubscribe();
   }, [adminEmail]);
 
-  // Veri yükleme
   useEffect(() => {
     const loadInitialData = async () => {
       const databaseSettings = await loadSettingsFromDatabase();
@@ -507,8 +496,9 @@ function App() {
     loadInitialData();
   }, []);
 
-  // Görsel ön yükleme
   useEffect(() => {
+    if (isAdminPage) return;
+
     const imagesToPreload = [
       invitation.introImage, 
       invitation.heroImage, 
@@ -521,15 +511,13 @@ function App() {
         img.src = src;
       });
     }
-  }, [invitation.introImage, invitation.heroImage, invitation.gallery]);
+  }, [invitation.introImage, invitation.heroImage, invitation.gallery, isAdminPage]);
 
-  // Müzik dosyası değişince yeniden yükle
   useEffect(() => {
     if (!audioRef.current) return;
     audioRef.current.load();
   }, [invitation.musicFile]);
 
-  // Geri sayım
   useEffect(() => {
     const targetDate = new Date(invitation.weddingDate);
 
@@ -554,7 +542,6 @@ function App() {
     return () => clearInterval(interval);
   }, [invitation.weddingDate]);
 
-  // Audio cleanup
   useEffect(() => {
     cleanupAudioRef.current = () => {
       if (audioRef.current) {
@@ -571,9 +558,7 @@ function App() {
       if (musicGainRef.current) {
         try {
           musicGainRef.current.disconnect();
-        } catch (e) {
-          // Ignore disconnection errors
-        }
+        } catch (e) {}
         musicGainRef.current = null;
       }
 
@@ -583,9 +568,7 @@ function App() {
       ) {
         try {
           audioContextRef.current.close();
-        } catch (e) {
-          // Ignore close errors
-        }
+        } catch (e) {}
         audioContextRef.current = null;
       }
 
@@ -599,7 +582,6 @@ function App() {
     };
   }, []);
 
-  // ==================== MÜZİK FONKSİYONLARI ====================
   const stopMusic = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -613,9 +595,7 @@ function App() {
     if (musicGainRef.current) {
       try {
         musicGainRef.current.disconnect();
-      } catch (e) {
-        // Ignore
-      }
+      } catch (e) {}
       musicGainRef.current = null;
     }
 
@@ -708,9 +688,7 @@ function App() {
         if (musicGainRef.current) {
           try {
             musicGainRef.current.disconnect();
-          } catch (e) {
-            // Ignore
-          }
+          } catch (e) {}
           musicGainRef.current = null;
         }
 
@@ -754,7 +732,6 @@ function App() {
     }
   }, [isMusicPlaying, stopMusic, startMusic]);
 
-  // ==================== FORM HANDLERS ====================
   const handleGuestChange = useCallback((e) => {
     const { name, value } = e.target;
     setGuestForm((prev) => ({ ...prev, [name]: value }));
@@ -862,7 +839,6 @@ function App() {
     }
   }, [wishForm, settings.requireWishApproval, showAppAlert]);
 
-  // ==================== ADMIN FONKSİYONLARI ====================
   const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
@@ -1431,14 +1407,13 @@ function App() {
     if (typeof window !== "undefined") {
       window.setTimeout(() => {
         document.querySelector(".admin-main-panel")?.scrollIntoView({
-          behavior: "smooth",
+          behavior: "auto",
           block: "start",
         });
       }, 40);
     }
   }, []);
 
-  // ==================== FILTERED DATA ====================
   const filteredGuests = useMemo(() => 
     guests.filter((guest) => {
       const searchMatch = normalizeText(`${guest.name} ${guest.phone} ${guest.note} ${guest.side}`).includes(normalizeText(adminGuestSearch));
@@ -1463,7 +1438,6 @@ function App() {
     [wishes, adminWishSearch, adminWishStatusFilter]
   );
 
-  // ==================== RENDER FUNCTIONS ====================
   const renderAdminPage = useCallback(() => {
     const adminTabs = [
       { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
@@ -1938,7 +1912,6 @@ function App() {
                   onClear={clearDraftMusic}
                 />
               </div>
-
               <div className="admin-repeat-list admin-gallery-list">
                 {adminDraft.invitation.gallery.map((image, index) => (
                   <div className="admin-gallery-upload-row" key={`gallery-${index}`}>
@@ -1946,7 +1919,6 @@ function App() {
                       label={`Galeri ${index + 1}`}
                       onFileSelect={(e) => updateGalleryImageFile(index, e.target.files?.[0])}
                       value={image}
-                      onClear={() => updateGalleryItem(index, "")}
                     />
                     <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => removeGalleryItem(index)}>
                       Galeriden Sil
@@ -2218,20 +2190,16 @@ function App() {
       />
     );
   }, [
-    // Admin states
     isAdminUnlocked, isPasswordRecovery, showForgotPassword,
     adminEmail, adminPassword, recoveryPassword, recoveryPasswordAgain,
     recoveryLoading, recoveryMessage, forgotPasswordEmail,
     forgotPasswordLoading, forgotPasswordMessage, adminAuthLoading,
     adminLoginNotice, adminError, adminSaveMessage, activeAdminTab,
-    // Admin data
     adminDraft, guests, wishes, filteredGuests, filteredWishes,
     guestForm, wishForm, settings, qrImageUrl, currentShareLink,
     personalLinkName, personalGuestLink, dataImportText,
-    // Memoized values
     totalPersonCount, notAttendingCount, childGuestCount,
     brideSideCount, groomSideCount,
-    // Functions
     updateDraftObject, updateDraftImage, clearDraftImage,
     updateDraftMusic, clearDraftMusic, updateDraftArrayItem,
     addDraftArrayItem, removeDraftArrayItem, updateGalleryItem,
@@ -2253,7 +2221,6 @@ function App() {
     setAdminWishStatusFilter, setPersonalLinkName, setDataImportText,
   ]);
 
-  // ==================== MAIN RENDER ====================
   return (
     <div
       className="app"
@@ -2294,38 +2261,35 @@ function App() {
           <div className="ribbon ribbon-left"></div>
           <div className="ribbon ribbon-right"></div>
 
-<div className="envelope-container">
-  <div className="envelope-back"></div>
+          <div className="envelope-container">
+            <div className="envelope-back"></div>
 
-  <div className="intro-card">
-    <div className="leaf-mark" aria-hidden="true"></div>
-    <p className="intro-small">{copy.introLabel}</p>
+            <div className="intro-card">
+              <div className="leaf-mark" aria-hidden="true"></div>
+              <p className="intro-small">{copy.introLabel}</p>
 
-    <h1 className="couple-title">
-      <span>{invitation.bride}</span>
-      <em>&</em>
-      <span>{invitation.groom}</span>
-    </h1>
+              <h1 className="couple-title">
+                <span>{invitation.bride}</span>
+                <em>&</em>
+                <span>{invitation.groom}</span>
+              </h1>
 
-    <p className="intro-text">{copy.introText}</p>
-    {/* Eğer kartın içinden kaldırıp sadece zarf üstünde durmasını isterseniz alt satırı silebilirsiniz: */}
-    {guestGreeting && <p className="guest-greeting">{guestGreeting}</p>}
-  </div>
+              <p className="intro-text">{copy.introText}</p>
+            </div>
 
-  <div className="envelope-front"></div>
-  <div className="envelope-flap"></div>
+            <div className="envelope-front"></div>
+            <div className="envelope-flap"></div>
 
-  {/* YENİ EKLEME: Sadece özel linkle gelenler için zarfın üstüne isim etiketi */}
-  {personalGuestName && (
-    <div className="envelope-guest-badge">
-      Sevgili {personalGuestName} 
-    </div>
-  )}
+            {personalGuestName && (
+              <div className="envelope-guest-badge">
+                Sevgili {personalGuestName} 
+              </div>
+            )}
 
-  <button className="envelope-seal" onClick={openInvitation}>
-    {copy.openButton}
-  </button>
-</div>
+            <button className="envelope-seal" onClick={openInvitation}>
+              {copy.openButton}
+            </button>
+          </div>
         </section>
       ) : (
         <>
@@ -2484,7 +2448,7 @@ function App() {
                 <h2>{copy.galleryTitle}</h2>
                 <div className="gallery-grid">
                   {invitation.gallery.map((image, index) => (
-                    <img key={`${image}-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
+                    <img key={`gallery-img-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
                   ))}
                 </div>
               </section>

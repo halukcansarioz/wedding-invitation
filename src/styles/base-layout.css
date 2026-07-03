@@ -1,6 +1,5 @@
-/* Base, global layout, intro, hero, cards, forms, gallery, floating buttons and first responsive rules */
-
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
+
 * {
   box-sizing: border-box;
 }
@@ -198,40 +197,6 @@ button {
 .open-button:hover {
   transform: translateY(-4px);
   background: linear-gradient(135deg, #fff7f9, #f1bfd0, #cf88a0);
-}
-
-.floating-actions {
-  position: fixed;
-  top: 20px;
-  right: 22px;
-  z-index: 20;
-  display: flex;
-  gap: 10px;
-}
-
-.floating-actions button,
-.floating-actions a {
-  border: none;
-  border-radius: 999px;
-  padding: 14px 24px;
-  min-width: 110px;
-  height: 54px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  background: rgba(255, 250, 251, 0.92);
-  color: #9f4f68;
-  border: 1px solid rgba(217, 140, 161, 0.28);
-  text-decoration: none;
-
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1;
-
-  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
 }
 
 .invitation-page {
@@ -840,12 +805,106 @@ button {
   color: #9a6d78;
 }
 
+/* =========================================================
+   YÜZEN BUTONLAR (PAYLAŞ VE MÜZİK) - TEK VE KARARLI TANIM
+   ========================================================= */
+.floating-actions {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.floating-actions .share-button {
+  width: 145px;
+  height: 62px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  text-decoration: none;
+  background: rgba(255, 250, 251, 0.9);
+  color: #9f4f68;
+  border: 1px solid rgba(217, 140, 161, 0.34);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.floating-actions .music-toggle-button {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  border-radius: 50% !important;
+  border: 1px solid rgba(217, 140, 161, 0.36) !important;
+  background: rgba(255, 250, 251, 0.82) !important;
+  color: #9f4f68 !important;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
+  backdrop-filter: blur(10px);
+  line-height: 1 !important;
+}
+
+.floating-actions .music-toggle-button svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* =========================================================
+   ZARF İSİM ETİKETİ (ÖZEL DAVETLİLER İÇİN)
+   ========================================================= */
+.envelope-guest-badge {
+  position: absolute !important;
+  bottom: 24px !important;
+  right: 28px !important;
+  z-index: 20 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: var(--amp-color) !important;
+  letter-spacing: 0.5px !important;
+  opacity: 0.85 !important;
+  font-style: normal !important;
+  text-align: right !important;
+  max-width: 45% !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.intro-page.opening .envelope-guest-badge {
+  opacity: 0.85 !important;
+  visibility: visible !important;
+  transform: translateZ(30px) !important;
+}
+
+/* =========================================================
+   MEDYA SORGULARI VE RESİZE (TABLET / MOBİL)
+   ========================================================= */
 @media (max-width: 900px) {
   .invitation-page {
     padding: 22px 16px 60px;
   }
 
- .hero-section {
+  .hero-section {
     min-height: 560px;
     padding: 64px 18px;
     background:
@@ -868,7 +927,6 @@ button {
 }
 
 @media (max-width: 650px) {
-
   .intro-page {
     padding: 18px;
   }
@@ -889,26 +947,6 @@ button {
 
   .intro-text {
     font-size: 19px;
-  }
-
-  .floating-actions {
-    top: auto;
-    right: 12px;
-    bottom: 16px;
-    left: 12px;
-    justify-content: center;
-  }
-
-  .floating-actions button,
-  .floating-actions a {
-    flex: 1;
-    padding: 12px 8px;
-    text-align: center;
-    font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-    font-size: 15px;
-    font-weight: 800;
-    line-height: 1;
-    height: 48px;
   }
 
   .hero-section {
@@ -937,15 +975,6 @@ button {
   .hero-section .couple-title em {
     margin: -4px 0 -6px;
     font-size: 0.45em;
-  }
-
-  .hero-date {
-    font-size: 20px;
-    padding: 10px 24px;
-  }
-
-  .hero-time {
-    font-size: 19px;
   }
 
   .hero-date {
@@ -1029,213 +1058,11 @@ button {
 
   .floating-actions {
     top: auto;
-    right: 16px;
-    bottom: 16px;
-    left: auto;
-
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .floating-actions .share-button {
-    width: 135px;
-    height: 62px;
-    font-size: 15px;
-}
-
-  .floating-actions .music-toggle-button {
-    width: 44px !important;
-    height: 44px !important;
-    min-width: 44px !important;
-    align-self: flex-end;
-
-  }
-}
-
-.floating-actions {
-  position: fixed;
-  top: 22px;
-  right: 22px;
-  z-index: 20;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Paylaş butonu */
-.floating-actions .share-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 999px;
-  text-decoration: none;
-
-  background: rgba(255, 250, 251, 0.88);
-  color: #9f4f68;
-  border: 1px solid rgba(217, 140, 161, 0.32);
-
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-
-  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
-  backdrop-filter: blur(10px);
-}
-
-/* Müzik ikon butonu */
-.floating-actions .music-toggle-button {
-  width: 56px !important;
-  height: 56px !important;
-  min-width: 56px !important;
-
-  padding: 0 !important;
-
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50% !important;
-  border: 1px solid rgba(217, 140, 161, 0.34) !important;
-
-  background: rgba(255, 250, 251, 0.78) !important;
-  color: #9f4f68 !important;
-
-  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
-  backdrop-filter: blur(10px);
-
-  line-height: 1 !important;
-  align-self: flex-end;
-
-}
-
-.floating-actions .music-toggle-button svg {
-  width: 30px;
-  height: 30px;
-}
-
-/* Açılış ekranında & işaretini ortala */
-.intro-page .couple-title span {
-  display: block;
-}
-
-.intro-page .couple-title em {
-  display: block;
-  margin: -8px 0 -6px;
-  font-size: 0.48em;
-  text-align: center;
-  color: #f0cf88;
-}
-
-/* Ana sayfadaki büyük görselde & işaretini ortala */
-.hero-section .couple-title span {
-  display: block;
-}
-
-.hero-section .couple-title em {
-  display: block;
-  margin: -10px 0 -8px;
-  font-size: 0.46em;
-  text-align: center;
-  color: #f0cf88;
-}
-
-.hero-section .couple-title {
-  font-size: clamp(54px, 8vw, 104px);
-}
-
-/* SON DÜZENLEME - Paylaş ve ses butonu */
-.floating-actions {
-  position: fixed;
-  top: 22px;
-  right: 22px;
-  bottom: auto;
-  left: auto;
-  z-index: 20;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-}
-
-.floating-actions button,
-.floating-actions a {
-  flex: unset;
-  width: auto;
-  min-width: 0;
-  padding: 0;
-  border: none;
-  text-align: center;
-}
-
-.floating-actions .share-button {
-  width: 145px;
-  height: 62px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 999px;
-  text-decoration: none;
-
-  background: rgba(255, 250, 251, 0.9);
-  color: #9f4f68;
-  border: 1px solid rgba(217, 140, 161, 0.34);
-
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 19px;
-  font-weight: 800;
-  line-height: 1;
-
-  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
-  backdrop-filter: blur(10px);
-}
-
-.floating-actions .music-toggle-button {
-  width: 56px !important;
-  height: 56px !important;
-  min-width: 56px !important;
-  padding: 0 !important;
-
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  align-self: flex-end;
-
-  border-radius: 50% !important;
-  border: 1px solid rgba(217, 140, 161, 0.36) !important;
-
-  background: rgba(255, 250, 251, 0.82) !important;
-  color: #9f4f68 !important;
-
-  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
-  backdrop-filter: blur(10px);
-
-  line-height: 1 !important;
-}
-
-.floating-actions .music-toggle-button svg {
-  width: 30px;
-  height: 30px;
-}
-
-/* Çok küçük ekranlarda butonlar taşmasın */
-@media (max-width: 650px) {
-  .floating-actions {
-    top: auto;
     right: 14px;
     bottom: 16px;
     left: auto;
-
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
     gap: 10px;
   }
 
@@ -1256,46 +1083,4 @@ button {
     width: 28px;
     height: 28px;
   }
-}
-
-/* =========================================================
-   ZARFIN SAĞ ALT KÖŞESİNE ÖZEL DAVETLİ İSMİ ("Davetiyeyi Açınız" Stiliyle)
-   ========================================================= */
-.envelope-guest-badge {
-  position: absolute !important;
-  bottom: 24px !important;
-  right: 28px !important;
-  z-index: 10 !important;
-  
-  /* Arka plan, kenarlık ve gölgeler tamamen kaldırıldı */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  
-  /* Davetiyeyi Açınız yazısıyla birebir aynı font ve stil ayarları */
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  color: var(--amp-color) !important;
-  letter-spacing: 0.5px !important;
-  opacity: 0.85 !important;
-  font-style: normal !important;
-  text-align: right !important;
-  
-  /* Taşma Koruması */
-  max-width: 45% !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  pointer-events: none !important;
-  
-  /* Açılış animasyonu */
-  transition: opacity 0.3s ease !important;
-}
-
-/* Zarf açılırken (mühre tıklandığında) ismin kaybolması için */
-.intro-page.opening .envelope-guest-badge {
-  opacity: 0 !important;
 }
