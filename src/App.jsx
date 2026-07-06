@@ -1077,10 +1077,10 @@ function App() {
     updateDraftObject("settings", "theme", themeValue);
 
     const confirmed = await showAppConfirm(
-      "Seçtiğiniz temaya uygun varsayılan davetiye resimleri yüklensin mi?\n(Mevcut ana ekran ve galeri resimleriniz değişecektir)",
+      "Seçtiğiniz temaya uygun varsayılan davetiye resimleri ve videosu yüklensin mi?\n(Mevcut ana ekran ve galeri görselleriniz değişecektir)",
       { 
-        title: "Tema Resimlerini Yükle", 
-        confirmText: "Evet, Resimleri Yükle", 
+        title: "Tema Medyalarını Yükle", 
+        confirmText: "Evet, Yükle", 
         cancelText: "Hayır, Sadece Tema Değişsin",
         tone: "info"
       }
@@ -1096,10 +1096,11 @@ function App() {
             ...prev.invitation,
             introImage: themeImages.introImage,
             heroImage: themeImages.heroImage,
+            heroVideo: themeImages.heroVideo || "", // <-- YENİ: Tema videosunu aktarır
             gallery: themeImages.gallery,
           }
         }));
-        setAdminSaveMessage("Tema resimleri uygulandı. Sayfada kalıcı olması için sağ üstten 'Değişiklikleri Kaydet' butonuna basmalısın.");
+        setAdminSaveMessage("Tema resimleri ve videosu uygulandı. Sayfada kalıcı olması için sağ üstten 'Değişiklikleri Kaydet' butonuna basmalısın.");
       }
     }
   }, [updateDraftObject, showAppConfirm]);
@@ -2404,6 +2405,21 @@ function App() {
 
           <main className="invitation-page">
             <section className="hero-section">
+              {/* YENİ: Temaya veya seçime özel arka plan videosu */}
+              {invitation.heroVideo ? (
+                <video
+                  className="hero-video-bg"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster={invitation.heroImage} /* Video yüklenene kadar tema resmi görünür */
+                >
+                  <source src={invitation.heroVideo} type="video/mp4" />
+                  Tarayıcınız video etiketini desteklemiyor.
+                </video>
+              ) : null}
+
               <div className="hero-content">
                 <p className="small-title">{copy.heroLabel}</p>
                 <h1 className="couple-title">

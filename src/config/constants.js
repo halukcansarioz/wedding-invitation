@@ -142,6 +142,7 @@ export const THEME_DEFAULT_IMAGES = {
   rose: {
     introImage: "/images/themes/rose/1.jpg",
     heroImage: "/images/themes/rose/2.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
       "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
@@ -152,6 +153,7 @@ export const THEME_DEFAULT_IMAGES = {
   sage: {
     introImage: "/images/themes/sage/3.jpg",
     heroImage: "/images/themes/sage/4.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
       "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
@@ -162,6 +164,7 @@ export const THEME_DEFAULT_IMAGES = {
   gold: {
     introImage: "/images/themes/gold/5.jpg",
     heroImage: "/images/themes/gold/12.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
       "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
@@ -172,6 +175,7 @@ export const THEME_DEFAULT_IMAGES = {
   burgundy: {
     introImage: "/images/themes/burgundy/7.jpg",
     heroImage: "/images/themes/burgundy/anita-austvika-6l9m9pFoL8g-unsplash.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
       "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
@@ -182,6 +186,7 @@ export const THEME_DEFAULT_IMAGES = {
   lavanta: {
     introImage: "/images/themes/lavanta/8.jpg",
     heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
       "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
@@ -192,6 +197,7 @@ export const THEME_DEFAULT_IMAGES = {
   minimal: {
     introImage: "/images/themes/minimal/9.jpg",
     heroImage: "/images/themes/minimal/dan-lefebvre-mPyqJAwMAs0-unsplash.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
       "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
@@ -202,6 +208,7 @@ export const THEME_DEFAULT_IMAGES = {
   dark: {
     introImage: "/images/themes/dark/10.jpg",
     heroImage: "/images/themes/dark/adi-albulescu-Q6bt8Ri7Uog-unsplash.jpg",
+    heroVideo: "https/.../lavanta-video.mp4", // <-- YENİ VİDEO LİNKİ
     gallery: [
       "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
       "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
