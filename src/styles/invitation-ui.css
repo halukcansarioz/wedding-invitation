@@ -1,0 +1,294 @@
+/* =================================================================
+   HERO BÖLÜMÜ, VİDEO VE 50/50 ÇİZGİ HATASI KESİN ÇÖZÜMÜ
+   ================================================================= */
+body .app .invitation-page .hero-section {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: clamp(520px, 75vh, 760px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: clamp(30px, 5vh, 60px) clamp(20px, 4vw, 40px) !important;
+  border-radius: clamp(20px, 3vw, 40px) !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12) !important;
+  background: var(--paper) !important;
+  background-image: var(--hero-image) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+body .app .invitation-page .hero-section::before,
+body .app .invitation-page .hero-section .hero-content::before,
+body .app .invitation-page .hero-section .hero-content::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.hero-video-bg {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  transform: scale(1.02) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+}
+
+body .app .invitation-page .hero-section::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.40) 50%,
+    rgba(0, 0, 0, 0.65) 100%
+  ) !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+.hero-section .hero-content {
+  position: relative !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  max-width: 800px !important;
+}
+
+.hero-section .couple-title span,
+.hero-section .hero-date,
+.hero-section .hero-time {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* =================================================================
+   KARTLAR, BAŞLIKLAR VE SAYFA BÖLÜMLERİ
+   ================================================================= */
+.couple-title em {
+  color: var(--amp-color) !important;
+  -webkit-text-fill-color: var(--amp-color) !important;
+  background: transparent !important;
+  background-image: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.55), 0 0 18px var(--amp-glow) !important;
+}
+
+.intro-page .couple-title span,
+.hero-section .couple-title span { display: block; }
+
+.intro-page .couple-title em,
+.hero-section .couple-title em {
+  display: block;
+  text-align: center;
+  color: #f0cf88;
+}
+
+.intro-page .couple-title em { margin: -8px 0 -6px; font-size: 0.48em; }
+
+.intro-page .couple-title em,
+.intro-card .couple-title em {
+  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.48), 0 0 16px var(--amp-glow) !important;
+}
+
+.hero-section .couple-title em {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.78), 0 0 16px rgba(255, 255, 255, 0.35) !important;
+  margin: -10px 0 -8px;
+  font-size: 0.46em;
+}
+
+.leaf-mark {
+  width: 24px;
+  height: 24px;
+  background-color: var(--amp-color) !important;
+  background-image: none !important;
+  -webkit-mask-image: var(--sakura-flower) !important;
+  -webkit-mask-size: contain !important;
+  -webkit-mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-image: var(--sakura-flower) !important;
+  mask-size: contain !important;
+  mask-position: center !important;
+  mask-repeat: no-repeat !important;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.card::after,
+.countdown-section::after {
+  content: "" !important;
+  width: 26px !important;
+  height: 26px !important;
+  background-color: rgba(var(--theme-strong-rgb, 159, 79, 104), 0.35) !important;
+  -webkit-mask-image: var(--sakura-flower) !important;
+  -webkit-mask-size: contain !important;
+  -webkit-mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-image: var(--sakura-flower) !important;
+  mask-size: contain !important;
+  mask-position: center !important;
+  mask-repeat: no-repeat !important;
+  position: absolute !important;
+  top: 26px !important;
+  left: 30px !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+.card h2, .card p, .card .section-label,
+.countdown-section h2, .countdown-section p,
+.countdown-section .section-label, .countdown-section .countdown-grid {
+  position: relative;
+  z-index: 2;
+}
+
+.field-with-counter span { transition: color 0.3s ease; }
+[data-theme="rose"] .field-with-counter span { color: #9f4f68; }
+[data-theme="sage"] .field-with-counter span { color: #597359; }
+[data-theme="gold"] .field-with-counter span { color: #9c8346; }
+[data-theme="burgundy"] .field-with-counter span { color: #702838; }
+[data-theme="lavanta"] .field-with-counter span { color: #664b8a; }
+[data-theme="minimal"] .field-with-counter span { color: #737373; }
+[data-theme="dark"] .field-with-counter span { color: #bfbfbf; }
+
+/* =================================================================
+   FORM SEÇENEK BUTONLARI VE RSVPLER (BEYAZ ÜZERİNE BEYAZ HATASI ÇÖZÜMÜ)
+   ================================================================= */
+.rsvp-form .option-button,
+.wish-form .option-button,
+.option-group .option-button,
+body .app .invitation-page .option-group .option-button {
+  background: var(--paper, #ffffff) !important;
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--amp-color, var(--rose-dark)) !important;
+  background-image: none !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, var(--rose-dark)) 35%, transparent) !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.rsvp-form .option-button:hover:not(.active):not(:disabled),
+.wish-form .option-button:hover:not(.active):not(:disabled),
+.option-group .option-button:hover:not(.active):not(:disabled),
+body .app .invitation-page .option-group .option-button:hover:not(:disabled) {
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+.rsvp-form .option-button.active,
+.wish-form .option-button.active,
+.option-group .option-button.active,
+body .app .invitation-page .option-group .option-button.active {
+  color: #ffffff !important;
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  background-image: none !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+.option-group.disabled,
+.option-group.disabled .option-button,
+.option-button:disabled,
+.option-button:disabled:hover,
+body .app .invitation-page .option-group .option-button:disabled,
+body .app .invitation-page .option-group.disabled .option-button {
+  background: color-mix(in srgb, var(--paper, #ffffff) 80%, transparent) !important;
+  background-color: color-mix(in srgb, var(--paper, #ffffff) 80%, transparent) !important;
+  color: color-mix(in srgb, var(--text-soft, #666) 50%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #8f7fb8) 15%, transparent) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* =================================================================
+   YÜZEN BUTONLAR (OVERRIDE HOVER STİLLERİ)
+   ================================================================= */
+body .app .floating-actions a.share-button,
+body .app .floating-actions button.music-toggle-button,
+body .app .floating-actions button.music-toggle-button.music-on,
+body .app .floating-actions button.music-toggle-button.music-off {
+  background: var(--paper, #ffffff) !important;
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+body .app .floating-actions a.share-button:hover,
+body .app .floating-actions button.music-toggle-button:hover,
+body .app .floating-actions button.music-toggle-button.music-on:hover,
+body .app .floating-actions button.music-toggle-button.music-off:hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-3px) scale(1.03) !important;
+}
+
+body .app .floating-actions button.music-toggle-button:hover svg,
+body .app .floating-actions button.music-toggle-button:hover path,
+body .app .floating-actions a.share-button:hover {
+  stroke: #ffffff !important;
+  fill: none !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] body .app .floating-actions a.share-button,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-on,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-off {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .floating-actions a.share-button:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-on:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-off:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  background-color: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover svg,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover path,
+[data-theme="dark"] body .app .floating-actions a.share-button:hover {
+  stroke: #1a1a1a !important;
+  color: #1a1a1a !important;
+}

@@ -1,0 +1,32 @@
+/* =================================================================
+   MOBİL EKRAN KURALLARI (RESPONSIVE - MAX 650PX)
+   ================================================================= */
+@media (max-width: 650px) {
+  .theme-option-card.active { transform: translateY(-3px) scale(1.01) !important; }
+  .theme-option-card.active::after { width: 30px; height: 30px; font-size: 17px; }
+
+  .admin-music-field .admin-upload-button,
+  .admin-content input[type="search"],
+  .admin-content input[placeholder*="ara" i],
+  .admin-content input[placeholder*="Kayıtlarda" i],
+  .admin-content .secondary-button,
+  .admin-list .secondary-button,
+  .admin-editor .secondary-button { width: 100%; }
+
+  .admin-custom-select { width: 100%; min-width: 100%; }
+  .admin-custom-select-button { min-height: 52px; }
+  .admin-custom-select-arrow { width: 28px; height: 28px; min-width: 28px; }
+
+  .admin-row-actions {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+    width: 100% !important;
+  }
+  
+  .admin-row-actions button,
+  .admin-list .small-admin-button {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+}
