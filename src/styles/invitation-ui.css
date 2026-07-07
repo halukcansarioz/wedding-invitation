@@ -12,12 +12,17 @@ body .app .invitation-page .hero-section {
   text-align: center !important;
   padding: clamp(30px, 5vh, 60px) clamp(20px, 4vw, 40px) !important;
   border-radius: clamp(20px, 3vw, 40px) !important;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12) !important;
-  background: var(--paper) !important;
-  background-image: var(--hero-image) !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
+  box-shadow: none !important; 
+  background: var(--hero-image) no-repeat center center / cover !important;
+}
+
+body .app .invitation-page .hero-section::before,
+body .app .invitation-page .hero-section::after,
+body .app .invitation-page .hero-section .hero-content::before,
+body .app .invitation-page .hero-content::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
 }
 
 body .app .invitation-page .hero-section::before,
