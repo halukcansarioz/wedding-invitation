@@ -1086,26 +1086,26 @@ function App() {
       }
     );
 
-    if (confirmed) {
-      const themeImages = THEME_DEFAULT_IMAGES[themeValue];
-      
-      if (themeImages) {
-        setAdminDraft((prev) => ({
-          ...prev,
-          invitation: {
-            ...prev.invitation,
-            introImage: themeImages.introImage,
-            heroImage: themeImages.heroImage,
-            heroVideo: themeImages.heroVideo || "", // <-- YENİ: Tema videosunu aktarır
-            gallery: themeImages.gallery,
-          }
-        }));
-        setAdminSaveMessage("Tema resimleri ve videosu uygulandı. Sayfada kalıcı olması için sağ üstten 'Değişiklikleri Kaydet' butonuna basmalısın.");
-      }
+  if (confirmed) {
+    const themeImages = THEME_DEFAULT_IMAGES[themeValue];
+
+    if (themeImages) {
+      setAdminDraft((prev) => ({
+        ...prev,
+        invitation: {
+          ...prev.invitation,
+          introImage: themeImages.introImage,
+          heroImage: themeImages.heroImage,
+          heroVideo: themeImages.heroVideo || "", // <-- YENİ EKLENEN SATIR
+          gallery: themeImages.gallery,
+        }
+      }));
     }
+  }
   }, [updateDraftObject, showAppConfirm]);
 
   const resetSiteContent = useCallback(async () => {
+    defaultData.invitation.heroVideo = themeImages.heroVideo || "";
     const confirmed = await showAppConfirm(
       "Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", 
       { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" }
@@ -2405,7 +2405,7 @@ function App() {
 
           <main className="invitation-page">
             <section className="hero-section">
-              {/* YENİ: Temaya veya seçime özel arka plan videosu */}
+              {/* YENİ: Supabase linki varsa video arka planda otomatik, sessiz ve sürekli döner */}
               {invitation.heroVideo ? (
                 <video
                   className="hero-video-bg"
@@ -2413,10 +2413,9 @@ function App() {
                   loop
                   muted
                   playsInline
-                  poster={invitation.heroImage} /* Video yüklenene kadar tema resmi görünür */
+                  poster={invitation.heroImage}
                 >
                   <source src={invitation.heroVideo} type="video/mp4" />
-                  Tarayıcınız video etiketini desteklemiyor.
                 </video>
               ) : null}
 
