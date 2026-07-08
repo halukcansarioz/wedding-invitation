@@ -47,7 +47,8 @@
   border-radius: 0 0 12px 12px;
   box-shadow: 0 25px 50px rgba(0,0,0,0.3);
   z-index: 1 !important;
-  transform: translateZ(-5px) !important;
+  /* En temel zemin (0px) */
+  transform: translateZ(0px) !important; 
 }
 
 .intro-page .envelope-container .intro-card {
@@ -68,12 +69,12 @@
   align-items: center !important;
   text-align: center !important;
   box-shadow: 0 -4px 15px rgba(0,0,0,0.1) !important;
-  transform: translateY(0) scale(1) translateZ(0px) !important;
+  transform: translateY(0) scale(1) translateZ(1px) !important;
   transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, opacity 0.45s ease 1.55s !important;
 }
 
 .intro-page.opening .envelope-container .intro-card {
-  transform: translateY(-88%) scale(1.02) translateZ(0px) !important;
+  transform: translateY(-88%) scale(1.02) translateZ(1px) !important;
   opacity: 0 !important;
   z-index: 2 !important;
 }
@@ -133,8 +134,9 @@
   background: linear-gradient(135deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 85%, var(--rose-dark) 15%) 100%);
   border-radius: 0 0 12px 12px;
   clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
-  z-index: 4 !important;
-  transform: translateZ(15px) !important;
+  z-index: 3 !important;
+  /* Kartın hemen 1px önünde durur (Toplam 2px) */
+  transform: translateZ(2px) !important; 
 }
 
 .envelope-flap {
@@ -146,10 +148,10 @@
   background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 95%, #ffffff 5%) 0%, color-mix(in srgb, var(--paper) 80%, var(--rose-dark) 20%) 100%);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
   transform-origin: top center;
-  z-index: 5 !important;
+  z-index: 4 !important;
   border-radius: 0; 
   border-top: 1.5px solid rgba(255, 255, 255, 0.7);
-  transform: rotateX(0deg) translateZ(16px) !important;
+  transform: rotateX(0deg) translateZ(3px) !important;
   transition: transform 0.6s ease-in-out, z-index 0s 0.2s !important;
 }
 
@@ -255,7 +257,8 @@
 }
 
 .intro-page.opening .envelope-flap {
-  transform: rotateX(180deg) translateZ(4px) !important;
+  /* Kapak 180 derece yukarı açılır ve zeminle (0px) aynı hizaya yatar */
+  transform: rotateX(180deg) translateZ(0px) !important;
   z-index: 1 !important;
 }
 
