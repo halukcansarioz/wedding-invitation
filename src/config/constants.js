@@ -175,7 +175,7 @@ export const THEME_DEFAULT_IMAGES = {
   burgundy: {
     introImage: "/images/themes/burgundy/7.jpg",
     heroImage: "/images/themes/burgundy/anita-austvika-6l9m9pFoL8g-unsplash.jpg",
-    heroImage: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
     gallery: [
       "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
       "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",

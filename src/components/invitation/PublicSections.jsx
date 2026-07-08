@@ -4,7 +4,7 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
   return (
     <section className="hero-section">
       {invitation.heroVideo ? (
-        <video className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroImage}>
+        <video className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
           <source src={invitation.heroVideo} type="video/mp4" />
         </video>
       ) : null}
