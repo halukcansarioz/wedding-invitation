@@ -2,13 +2,14 @@
    AÇILIŞ EKRANI (İNTRO) VE 96PX 3D MÜHÜR (WAX SEAL)
    ================================================================= */
 .intro-page {
+  width: 100% !important;
   min-height: 100vh !important;
-  min-height: 100dvh !important;
+  min-height: 100dvh !important; 
   height: 100vh !important;
   height: 100dvh !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
-  padding: clamp(10px, 1.8vh, 18px) clamp(12px, 3vw, 34px) !important;
+  padding: clamp(10px, 2vh, 20px) clamp(12px, 3vw, 24px) !important;
   display: grid !important;
   place-items: center !important;
 }
@@ -27,17 +28,18 @@
 
 .envelope-container {
   position: relative;
-  width: min(90vw, 500px);
-  height: min(65vh, 300px);
+  /* Ekran küçüldükçe %92 genişlik alır, büyüdükçe 520px'te kilitlenir */
+  width: min(92vw, 520px);
+  /* Yükseklik genişliğe oranla esner ama asla deforme olmaz */
+  height: clamp(230px, 56vw, 320px);
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  perspective: 2000px;
+  perspective: 1600px; /* Her ekranda tutarlı 3D bükülme açısı verir */
   transform-style: preserve-3d;
-  margin: 40px auto 0 auto;
+  margin: 0 auto;
   z-index: 10;
-  scale: 1.05;
-  transition: scale 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .envelope-back {
@@ -45,21 +47,21 @@
   inset: 0;
   background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--paper) 70%, var(--rose-dark) 30%), color-mix(in srgb, var(--paper) 40%, var(--rose-dark) 60%));
   border-radius: 0 0 12px 12px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.28);
   z-index: 1 !important;
-  /* En temel zemin (0px) */
-  transform: translateZ(0px) !important; 
+  transform: translateZ(0px) !important;
 }
 
 .intro-page .envelope-container .intro-card {
   position: absolute !important;
   bottom: 10px !important;
-  width: 96% !important;
-  height: calc(100% - 20px) !important;
-  max-height: calc(100% - 20px) !important;
+  width: 94% !important;
+  height: calc(100% - 18px) !important;
+  max-height: calc(100% - 18px) !important;
   overflow: hidden !important;
   margin: 0 !important;
-  padding: clamp(14px, 3vh, 22px) clamp(16px, 4vw, 24px) !important;
+  /* Yazıların ekrana göre küçülüp büyümesini sağlayan sıvı padding */
+  padding: clamp(10px, 2.5%, 20px) clamp(12px, 3.5%, 24px) !important;
   background: var(--paper) !important;
   border-radius: 8px !important;
   z-index: 2 !important;
@@ -68,7 +70,7 @@
   justify-content: center !important;
   align-items: center !important;
   text-align: center !important;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.08) !important;
   transform: translateY(0) scale(1) translateZ(1px) !important;
   transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, opacity 0.45s ease 1.55s !important;
 }
@@ -80,9 +82,8 @@
 }
 
 .intro-page .envelope-container .intro-card .leaf-mark {
-  transform: scale(0.65) !important;
-  margin-top: 18px !important;
-  margin-bottom: 3px !important;
+  transform: scale(0.6) !important;
+  margin: 4px 0 2px 0 !important;
   flex-shrink: 0 !important;
 }
 
@@ -93,20 +94,28 @@
   flex-shrink: 0 !important;
 }
 
+.intro-page .envelope-container .intro-card .intro-small {
+  font-size: clamp(10px, 2.2vw, 12px) !important;
+  letter-spacing: 2.5px !important;
+  margin-bottom: 2px !important;
+  flex-shrink: 0 !important;
+}
+
 .intro-page .envelope-container .intro-card .couple-title {
-  font-size: clamp(26px, 6vw, 38px) !important;
-  margin: 4px 0 !important;
-  gap: 0 !important;
+  font-size: clamp(24px, 6.5vw, 36px) !important;
+  margin: 2px 0 !important;
+  line-height: 1.1 !important;
   flex-shrink: 0 !important;
 }
 
 .intro-page .envelope-container .intro-card .couple-title em {
-  font-size: clamp(18px, 4.5vw, 24px) !important;
-  margin: 2px 0 !important;
+  font-size: clamp(16px, 4vw, 22px) !important;
+  display: block !important;
+  margin: 1px 0 !important;
 }
 
 .intro-page .envelope-container .intro-card .intro-text {
-  font-size: clamp(12.5px, 2.8vw, 14.5px) !important;
+  font-size: clamp(12px, 2.6vw, 14px) !important;
   margin-top: 6px !important;
   line-height: 1.35 !important;
   flex-shrink: 0 !important;
@@ -135,8 +144,7 @@
   border-radius: 0 0 12px 12px;
   clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
   z-index: 3 !important;
-  /* Kartın hemen 1px önünde durur (Toplam 2px) */
-  transform: translateZ(2px) !important; 
+  transform: translateZ(2px) !important;
 }
 
 .envelope-flap {
@@ -183,21 +191,17 @@
   content: none !important;
 }
 
-/* 96px 3D Wax Seal Butonu */
 .envelope-container .envelope-seal {
   position: absolute !important;
   top: 60.5% !important;
   left: 50% !important;
-  /* translateZ(20px) ekleyerek en öne aldık */
+  /* Mobil ekranlarda çok büyük kalmasın diye clamp ile esnek boyutlandırıldı */
+  width: clamp(76px, 18vw, 96px) !important;
+  height: clamp(76px, 18vw, 96px) !important;
+  min-width: clamp(76px, 18vw, 96px) !important;
+  min-height: clamp(76px, 18vw, 96px) !important;
   transform: translate(-50%, -50%) scale(1) translateZ(20px) !important;
-  width: 96px !important;
-  height: 96px !important;
-  min-width: 96px !important;
-  min-height: 96px !important;
-  padding: 0 6px !important;
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
-  clip-path: none !important;
+  padding: 0 4px !important;
   border-radius: 50% !important;
   border: none !important;
   background: 
@@ -210,7 +214,7 @@
     inset 0 4px 8px rgba(255, 255, 255, 0.48) !important;
   color: #ffffff !important;
   font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
-  font-size: 15px !important;
+  font-size: clamp(12px, 3.5vw, 15px) !important;
   font-weight: 800 !important;
   letter-spacing: 0.4px !important;
   line-height: 1.15 !important;
@@ -223,14 +227,13 @@
   cursor: pointer !important;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   opacity: 1 !important;
-  overflow: visible !important;
 }
 
 .envelope-container .envelope-seal::before {
   content: "" !important;
   display: block !important;
   position: absolute !important;
-  inset: 5px !important; 
+  inset: clamp(3px, 1vw, 5px) !important; 
   border: 1.2px solid rgba(255, 255, 255, 0.48) !important;
   border-radius: 50% !important;
   pointer-events: none !important;
@@ -257,7 +260,6 @@
 }
 
 .intro-page.opening .envelope-flap {
-  /* Kapak 180 derece yukarı açılır ve zeminle (0px) aynı hizaya yatar */
   transform: rotateX(180deg) translateZ(0px) !important;
   z-index: 1 !important;
 }
@@ -269,4 +271,28 @@
 @keyframes smoothPageFadeIn {
   from { opacity: 0; transform: scale(0.94); }
   to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 380px), (max-height: 650px) {
+  .envelope-container {
+    width: 94vw !important;
+    height: 220px !important;
+  }
+  
+  .intro-page .envelope-container .intro-card {
+    padding: 8px 10px !important;
+  }
+
+  .intro-page .envelope-container .intro-card .couple-title {
+    font-size: 22px !important;
+  }
+  
+  .intro-page .envelope-container .intro-card .couple-title em {
+    font-size: 15px !important;
+  }
+
+  .intro-page .envelope-container .intro-card .intro-text {
+    font-size: 11px !important;
+    margin-top: 4px !important;
+  }
 }
