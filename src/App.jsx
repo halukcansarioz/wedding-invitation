@@ -655,7 +655,7 @@ function App() {
       data-theme={settings.theme || "lavanta"}
       style={{
         "--intro-image": `url(${invitation.introImage})`,
-        "--hero-image": `url(${invitation.heroImage})`,
+        "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
       }}
     >
       <audio
