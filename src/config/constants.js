@@ -19,9 +19,9 @@ export const DEFAULT_SITE_DATA = {
     dateText: "12 Eylül 2026",
     timeText: "19:00",
     weddingDate: "2026-09-12T19:00:00",
-    venue: "Kır Bahçesi Düğün Alanı",
-    address: "Gebze / Kocaeli",
-    mapLink: "https://www.google.com/maps",
+    venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+    address: "Kadıköy / İstanbul",
+    mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
     shareLink: DEFAULT_SHARE_LINK,
     whatsappNumber: "905394933614",
     introImage: "/images/themes/lavanta/8.jpg",
@@ -78,7 +78,7 @@ export const DEFAULT_SITE_DATA = {
     {
       label: "Nikah Töreni",
       time: "19:00",
-      location: "Kır Bahçesi Düğün Alanı",
+      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
       description: "Mutluluğumuza ilk imzayı atacağımız özel an.",
     },
     {
