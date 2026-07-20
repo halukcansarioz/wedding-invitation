@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
 
 * {
   box-sizing: border-box;
@@ -1084,25 +1083,6 @@ button {
     height: 28px;
   }
 }
-
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
-
-@import "./base-layout.css";
-@import "./new-features.css";
-@import "./turkish-hero-admin-link.css";
-@import "./admin-full-page-editor.css";
-@import "./admin-image-upload.css";
-@import "./admin-sidebar.css";
-@import "./advanced-features.css";
-@import "./export-qr-theme.css";
-@import "./theme-system.css";
-@import "./final-admin-fixes.css";
-@import "./theme-variables.css";
-@import "./intro-envelope.css";
-@import "./invitation-ui.css";
-@import "./admin-ui.css";
-@import "./admin-navigation.css";
-@import "./responsive.css";
 
 /* =========================================================
    ✨ YENİ ELEGANT YÜZEN BUTONLAR (GLASSMORPHISM DOCK)
