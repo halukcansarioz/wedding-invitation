@@ -1,0 +1,42 @@
+{
+  "invitation": {
+    "introLabel": "Düğün Davetiyesi",
+    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
+    "openButton": "Daveti Aç",
+    "heroLabel": "Biz Evleniyoruz",
+    "countdownLabel": "Geri Sayım",
+    "countdownTitle": "Düğünümüze Kalan Süre",
+    "invitationLabel": "Davet",
+    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
+    "familyLabel": "Ailelerimiz",
+    "familyTitle": "Ailelerimizin Katılımıyla",
+    "ceremonyLabel": "Nikah ve Düğün",
+    "ceremonyTitle": "Günün Detayları",
+    "scheduleLabel": "Düğün Takvimi",
+    "locationLabel": "Tarih ve Konum",
+    "locationTitle": "Düğün Bilgileri",
+    "galleryLabel": "Fotoğraflar",
+    "galleryTitle": "Kır Düğünü Atmosferi",
+    "rsvpLabel": "Katılım",
+    "rsvpTitle": "Katılım Bildirimi",
+    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
+    "guestsLabel": "Misafirler",
+    "guestsTitle": "Misafir Listesi",
+    "wishesLabel": "Anı Defteri",
+    "wishesTitle": "Güzel Dilekleriniz",
+    "shareLabel": "Paylaş",
+    "shareTitle": "Davetiyeyi Paylaş",
+    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
+    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
+    "footerSmall": "Made with love"
+  },
+  "form": {
+    "namePlaceholder": "Ad Soyad",
+    "phonePlaceholder": "Telefon Numaranız",
+    "notePlaceholder": "Notunuz",
+    "messagePlaceholder": "Mesajınız",
+    "submitRsvp": "Katılımı Gönder",
+    "submitWish": "Mesajı Gönder",
+    "whatsappRsvp": "WhatsApp ile Bildir"
+  }
+}

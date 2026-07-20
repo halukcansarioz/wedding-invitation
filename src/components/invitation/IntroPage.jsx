@@ -1,6 +1,10 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function IntroPage({ isOpening, copy, invitation, personalGuestName, openInvitation }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
   return (
     <section className={`intro-page ${isOpening ? "opening" : ""}`}>
       <div className="petal-layer" aria-hidden="true">
@@ -17,7 +21,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
 
         <div className="intro-card">
           <div className="leaf-mark" aria-hidden="true"></div>
-          <p className="intro-small">{copy.introLabel}</p>
+          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
 
           <h1 className="couple-title">
             <span>{invitation.bride}</span>
@@ -25,7 +29,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
             <span>{invitation.groom}</span>
           </h1>
 
-          <p className="intro-text">{copy.introText}</p>
+          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
         </div>
 
         <div className="envelope-front"></div>
@@ -33,12 +37,12 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
 
         {personalGuestName && (
           <div className="envelope-guest-badge">
-            Sevgili {personalGuestName}
+            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
           </div>
         )}
 
         <button className="envelope-seal" onClick={openInvitation}>
-          {copy.openButton}
+          {isEn ? t('invitation.openButton') : copy.openButton}
         </button>
       </div>
     </section>

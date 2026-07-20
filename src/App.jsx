@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
 import { AppModal } from "./components/AdminUI";
@@ -52,6 +53,14 @@ import {
 } from "./services/database";
 
 function App() {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  const toggleLanguage = () => {
+    const newLang = isEn ? 'tr' : 'en';
+    i18n.changeLanguage(newLang);
+  };
+
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
@@ -167,13 +176,13 @@ function App() {
   });
 
   useEffect(() => {
-    document.documentElement.lang = "tr";
+    document.documentElement.lang = isEn ? "en" : "tr";
     if (!document.querySelector("meta[charset]")) {
       const meta = document.createElement("meta");
       meta.setAttribute("charset", "UTF-8");
       document.head.prepend(meta);
     }
-  }, []);
+  }, [isEn]);
 
   useLayoutEffect(() => {
     const currentTheme = settings.theme || "lavanta";
@@ -646,7 +655,7 @@ function App() {
   return (
     <div
       className="app"
-      lang="tr"
+      lang={isEn ? "en" : "tr"}
       data-theme={settings.theme || "lavanta"}
       style={{
         "--intro-image": `url(${invitation.introImage})`,
@@ -667,6 +676,63 @@ function App() {
         onConfirm={(value) => resolveAppModal(value)}
         onCancel={() => resolveAppModal(appModal?.type === "prompt" ? null : false)}
       />
+
+     {!isAdminPage && (
+        <div className="floating-actions glass-dock">
+          {/* Dil Değiştirme */}
+          <button
+            type="button"
+            className="dock-btn"
+            onClick={toggleLanguage}
+            title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
+          >
+            {isEn ? 'EN' : 'TR'}
+          </button>
+
+          {/* Paylaş (İkonlu) */}
+          <a 
+            className="dock-btn" 
+            href={`https://wa.me/?text=${shareText}`} 
+            target="_blank" 
+            rel="noreferrer"
+            title={isEn ? 'Share via WhatsApp' : 'WhatsApp ile Paylaş'}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          </a>
+
+          {/* Müzik Aç / Kapat */}
+          <button
+            type="button"
+            className="dock-btn"
+            onClick={toggleMusic}
+            aria-pressed={isMusicPlaying}
+            title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {isMusicPlaying ? (
+                <>
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                </>
+              ) : (
+                <>
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                  <line x1="3" y1="3" x2="21" y2="21" />
+                </>
+              )}
+            </svg>
+          </button>
+        </div>
+      )}
 
       {isAdminPage ? (
         <AdminView
@@ -806,8 +872,6 @@ function App() {
           handleWishChange={handleWishChange}
           submitWish={submitWish}
           approvedWishes={approvedWishes}
-          isMusicPlaying={isMusicPlaying}
-          toggleMusic={toggleMusic}
         />
       )}
     </div>
