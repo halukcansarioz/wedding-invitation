@@ -620,11 +620,6 @@ function App() {
 
   const openAdminTab = useCallback((tabId) => {
     setActiveAdminTab(tabId);
-    if (typeof window !== "undefined") {
-      window.setTimeout(() => {
-        document.querySelector(".admin-main-panel")?.scrollIntoView({ behavior: "auto", block: "start" });
-      }, 40);
-    }
   }, []);
 
   const filteredGuests = useMemo(() =>
