@@ -1,0 +1,1619 @@
+/* =================================================================
+   HERO BÖLÜMÜ, VİDEO VE 50/50 ÇİZGİ HATASI KESİN ÇÖZÜMÜ
+   ================================================================= */
+body .app .invitation-page .hero-section {
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: clamp(520px, 75vh, 760px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  padding: clamp(30px, 5vh, 60px) clamp(20px, 4vw, 40px) !important;
+  border-radius: clamp(20px, 3vw, 40px) !important;
+  box-shadow: none !important; 
+  background: var(--hero-image) no-repeat center center / cover !important;
+}
+
+body .app .invitation-page .hero-section::before,
+body .app .invitation-page .hero-section::after,
+body .app .invitation-page .hero-section .hero-content::before,
+body .app .invitation-page .hero-content::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+body .app .invitation-page .hero-section::before,
+body .app .invitation-page .hero-section .hero-content::before,
+body .app .invitation-page .hero-section .hero-content::after {
+  content: none !important;
+  display: none !important;
+  background: transparent !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.hero-video-bg {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  transform: scale(1.02) !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  border-radius: inherit !important;
+}
+
+body .app .invitation-page .hero-section::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 0%,
+    rgba(0, 0, 0, 0.40) 50%,
+    rgba(0, 0, 0, 0.65) 100%
+  ) !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+.hero-section .hero-content {
+  position: relative !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  max-width: 800px !important;
+}
+
+.hero-section .couple-title span,
+.hero-section .hero-date,
+.hero-section .hero-time {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* =================================================================
+   KARTLAR, BAŞLIKLAR VE SAYFA BÖLÜMLERİ
+   ================================================================= */
+.couple-title em {
+  color: var(--amp-color) !important;
+  -webkit-text-fill-color: var(--amp-color) !important;
+  background: transparent !important;
+  background-image: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.55), 0 0 18px var(--amp-glow) !important;
+}
+
+.intro-page .couple-title span,
+.hero-section .couple-title span { display: block; }
+
+.intro-page .couple-title em,
+.hero-section .couple-title em {
+  display: block;
+  text-align: center;
+  color: #f0cf88;
+}
+
+.intro-page .couple-title em { margin: -8px 0 -6px; font-size: 0.48em; }
+
+.intro-page .couple-title em,
+.intro-card .couple-title em {
+  text-shadow: 0 2px 6px rgba(255, 255, 255, 0.48), 0 0 16px var(--amp-glow) !important;
+}
+
+.hero-section .couple-title em {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.78), 0 0 16px rgba(255, 255, 255, 0.35) !important;
+  margin: -10px 0 -8px;
+  font-size: 0.46em;
+}
+
+.leaf-mark {
+  width: 24px;
+  height: 24px;
+  background-color: var(--amp-color) !important;
+  background-image: none !important;
+  -webkit-mask-image: var(--sakura-flower) !important;
+  -webkit-mask-size: contain !important;
+  -webkit-mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-image: var(--sakura-flower) !important;
+  mask-size: contain !important;
+  mask-position: center !important;
+  mask-repeat: no-repeat !important;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.card::after,
+.countdown-section::after {
+  content: "" !important;
+  width: 26px !important;
+  height: 26px !important;
+  background-color: rgba(var(--theme-strong-rgb, 159, 79, 104), 0.35) !important;
+  -webkit-mask-image: var(--sakura-flower) !important;
+  -webkit-mask-size: contain !important;
+  -webkit-mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-image: var(--sakura-flower) !important;
+  mask-size: contain !important;
+  mask-position: center !important;
+  mask-repeat: no-repeat !important;
+  position: absolute !important;
+  top: 26px !important;
+  left: 30px !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+.card h2, .card p, .card .section-label,
+.countdown-section h2, .countdown-section p,
+.countdown-section .section-label, .countdown-section .countdown-grid {
+  position: relative;
+  z-index: 2;
+}
+
+.field-with-counter span { transition: color 0.3s ease; }
+[data-theme="rose"] .field-with-counter span { color: #9f4f68; }
+[data-theme="sage"] .field-with-counter span { color: #597359; }
+[data-theme="gold"] .field-with-counter span { color: #9c8346; }
+[data-theme="burgundy"] .field-with-counter span { color: #702838; }
+[data-theme="lavanta"] .field-with-counter span { color: #664b8a; }
+[data-theme="minimal"] .field-with-counter span { color: #737373; }
+[data-theme="dark"] .field-with-counter span { color: #bfbfbf; }
+
+/* =================================================================
+   FORM SEÇENEK BUTONLARI VE RSVPLER (BEYAZ ÜZERİNE BEYAZ HATASI ÇÖZÜMÜ)
+   ================================================================= */
+.rsvp-form .option-button,
+.wish-form .option-button,
+.option-group .option-button,
+body .app .invitation-page .option-group .option-button {
+  background: var(--paper, #ffffff) !important;
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--amp-color, var(--rose-dark)) !important;
+  background-image: none !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, var(--rose-dark)) 35%, transparent) !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.rsvp-form .option-button:hover:not(.active):not(:disabled),
+.wish-form .option-button:hover:not(.active):not(:disabled),
+.option-group .option-button:hover:not(.active):not(:disabled),
+body .app .invitation-page .option-group .option-button:hover:not(:disabled) {
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+.rsvp-form .option-button.active,
+.wish-form .option-button.active,
+.option-group .option-button.active,
+body .app .invitation-page .option-group .option-button.active {
+  color: #ffffff !important;
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  background-image: none !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+.option-group.disabled,
+.option-group.disabled .option-button,
+.option-button:disabled,
+.option-button:disabled:hover,
+body .app .invitation-page .option-group .option-button:disabled,
+body .app .invitation-page .option-group.disabled .option-button {
+  background: color-mix(in srgb, var(--paper, #ffffff) 80%, transparent) !important;
+  background-color: color-mix(in srgb, var(--paper, #ffffff) 80%, transparent) !important;
+  color: color-mix(in srgb, var(--text-soft, #666) 50%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #8f7fb8) 15%, transparent) !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* =================================================================
+   YÜZEN BUTONLAR (OVERRIDE HOVER STİLLERİ)
+   ================================================================= */
+body .app .floating-actions a.share-button,
+body .app .floating-actions button.music-toggle-button,
+body .app .floating-actions button.music-toggle-button.music-on,
+body .app .floating-actions button.music-toggle-button.music-off {
+  background: var(--paper, #ffffff) !important;
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+body .app .floating-actions a.share-button:hover,
+body .app .floating-actions button.music-toggle-button:hover,
+body .app .floating-actions button.music-toggle-button.music-on:hover,
+body .app .floating-actions button.music-toggle-button.music-off:hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-3px) scale(1.03) !important;
+}
+
+body .app .floating-actions button.music-toggle-button:hover svg,
+body .app .floating-actions button.music-toggle-button:hover path,
+body .app .floating-actions a.share-button:hover {
+  stroke: #ffffff !important;
+  fill: none !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] body .app .floating-actions a.share-button,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-on,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-off {
+  background: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .floating-actions a.share-button:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-on:hover,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button.music-off:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  background-color: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover svg,
+[data-theme="dark"] body .app .floating-actions button.music-toggle-button:hover path,
+[data-theme="dark"] body .app .floating-actions a.share-button:hover {
+  stroke: #1a1a1a !important;
+  color: #1a1a1a !important;
+}
+
+/* =================================================================
+   AÇILIŞ EKRANI (İNTRO) VE 96PX 3D MÜHÜR (WAX SEAL)
+   ================================================================= */
+.intro-page {
+  width: 100% !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important; 
+  height: 100vh !important;
+  height: 100dvh !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  padding: clamp(10px, 2vh, 20px) clamp(12px, 3vw, 24px) !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.intro-page .intro-card {
+  width: min(91vw, 900px) !important;
+  max-height: calc(100dvh - 28px) !important;
+  box-sizing: border-box !important;
+  padding: clamp(28px, 4.6vh, 54px) clamp(24px, 5.5vw, 66px) !important;
+  border-radius: clamp(24px, 4vw, 48px) !important;
+  background-image: var(--paper-texture), var(--sakura-pattern) !important;
+  background-size: auto, 100px 100px !important;
+  background-position: center, center !important;
+  background-repeat: repeat, repeat !important;
+}
+
+.envelope-container {
+  position: relative;
+  /* Ekran küçüldükçe %92 genişlik alır, büyüdükçe 520px'te kilitlenir */
+  width: min(92vw, 520px);
+  /* Yükseklik genişliğe oranla esner ama asla deforme olmaz */
+  height: clamp(230px, 56vw, 320px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  perspective: 1600px; /* Her ekranda tutarlı 3D bükülme açısı verir */
+  transform-style: preserve-3d;
+  margin: 0 auto;
+  z-index: 10;
+  transition: transform 0.3s ease;
+}
+
+.envelope-back {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--paper) 70%, var(--rose-dark) 30%), color-mix(in srgb, var(--paper) 40%, var(--rose-dark) 60%));
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.28);
+  z-index: 1 !important;
+  transform: translateZ(0px) !important;
+}
+
+.intro-page .envelope-container .intro-card {
+  position: absolute !important;
+  bottom: 10px !important;
+  width: 94% !important;
+  height: calc(100% - 18px) !important;
+  max-height: calc(100% - 18px) !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  /* Yazıların ekrana göre küçülüp büyümesini sağlayan sıvı padding */
+  padding: clamp(10px, 2.5%, 20px) clamp(12px, 3.5%, 24px) !important;
+  background: var(--paper) !important;
+  border-radius: 8px !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.08) !important;
+  transform: translateY(0) scale(1) translateZ(1px) !important;
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s, opacity 0.45s ease 1.55s !important;
+}
+
+.intro-page.opening .envelope-container .intro-card {
+  transform: translateY(-88%) scale(1.02) translateZ(1px) !important;
+  opacity: 0 !important;
+  z-index: 2 !important;
+}
+
+.intro-page .envelope-container .intro-card .leaf-mark {
+  transform: scale(0.6) !important;
+  margin: 4px 0 2px 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.intro-page .envelope-container .intro-card .intro-small {
+  font-size: clamp(11px, 2.2vw, 13px) !important;
+  letter-spacing: 3px !important;
+  margin-bottom: 4px !important;
+  flex-shrink: 0 !important;
+}
+
+.intro-page .envelope-container .intro-card .intro-small {
+  font-size: clamp(10px, 2.2vw, 12px) !important;
+  letter-spacing: 2.5px !important;
+  margin-bottom: 2px !important;
+  flex-shrink: 0 !important;
+}
+
+.intro-page .envelope-container .intro-card .couple-title {
+  font-size: clamp(24px, 6.5vw, 36px) !important;
+  margin: 2px 0 !important;
+  line-height: 1.1 !important;
+  flex-shrink: 0 !important;
+}
+
+.intro-page .envelope-container .intro-card .couple-title em {
+  font-size: clamp(16px, 4vw, 22px) !important;
+  display: block !important;
+  margin: 1px 0 !important;
+}
+
+.intro-page .envelope-container .intro-card .intro-text {
+  font-size: clamp(12px, 2.6vw, 14px) !important;
+  margin-top: 6px !important;
+  line-height: 1.35 !important;
+  flex-shrink: 0 !important;
+}
+
+.intro-page .envelope-container .intro-card .guest-greeting {
+  font-size: clamp(11.5px, 2.6vw, 13.5px) !important;
+  margin-top: 6px !important;
+  line-height: 1.3 !important;
+  padding: 4px 10px !important;
+  background: color-mix(in srgb, var(--amp-color) 8%, transparent) !important;
+  border-radius: 6px !important;
+  max-height: 46px !important;
+  overflow: hidden !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;  
+  -webkit-box-orient: vertical !important;
+  flex-shrink: 0 !important;
+}
+
+.envelope-front {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--paper) 0%, color-mix(in srgb, var(--paper) 85%, var(--rose-dark) 15%) 100%);
+  border-radius: 0 0 12px 12px;
+  clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+  z-index: 3 !important;
+  transform: translateZ(2px) !important;
+}
+
+.envelope-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--paper) 95%, #ffffff 5%) 0%, color-mix(in srgb, var(--paper) 80%, var(--rose-dark) 20%) 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top center;
+  z-index: 4 !important;
+  border-radius: 0; 
+  border-top: 1.5px solid rgba(255, 255, 255, 0.7);
+  transform: rotateX(0deg) translateZ(3px) !important;
+  transition: transform 0.6s ease-in-out, z-index 0s 0.2s !important;
+}
+
+.envelope-front::before,
+.envelope-flap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--amp-color);
+  -webkit-mask-image: var(--sakura-flower);
+  -webkit-mask-size: 85px 85px;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: repeat;
+  mask-image: var(--sakura-flower);
+  mask-size: 85px 85px;
+  mask-position: center;
+  mask-repeat: repeat;
+  opacity: 0.08;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.envelope-front::after,
+.envelope-flap::after,
+.intro-page.opening .envelope-flap::after {
+  display: none !important;
+  opacity: 0 !important;
+  content: none !important;
+}
+
+.envelope-container .envelope-seal {
+  position: absolute !important;
+  top: 60.5% !important;
+  left: 50% !important;
+  /* Mobil ekranlarda çok büyük kalmasın diye clamp ile esnek boyutlandırıldı */
+  width: clamp(76px, 18vw, 96px) !important;
+  height: clamp(76px, 18vw, 96px) !important;
+  min-width: clamp(76px, 18vw, 96px) !important;
+  min-height: clamp(76px, 18vw, 96px) !important;
+  transform: translate(-50%, -50%) scale(1) translateZ(20px) !important;
+  padding: 0 4px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: 
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(135deg, color-mix(in srgb, var(--amp-color, #8f7fb8) 85%, white) 0%, var(--amp-color, #8f7fb8) 60%, color-mix(in srgb, var(--amp-color, #8f7fb8) 70%, black) 100%) !important;
+  box-shadow: 
+    0 14px 28px rgba(0, 0, 0, 0.30),
+    0 4px 10px rgba(0, 0, 0, 0.16),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.30),
+    inset 0 4px 8px rgba(255, 255, 255, 0.48) !important;
+  color: #ffffff !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: clamp(12px, 3.5vw, 15px) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.4px !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55) !important;
+  z-index: 10 !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  opacity: 1 !important;
+}
+
+.envelope-container .envelope-seal::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: clamp(3px, 1vw, 5px) !important; 
+  border: 1.2px solid rgba(255, 255, 255, 0.48) !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+.envelope-container .envelope-seal:hover {
+  transform: translate(-50%, -50%) scale(1.08) translateZ(20px) !important;
+  box-shadow: 
+    0 18px 34px rgba(0, 0, 0, 0.36),
+    0 6px 14px rgba(0, 0, 0, 0.22),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.32),
+    inset 0 4px 9px rgba(255, 255, 255, 0.58) !important;
+}
+
+.intro-page.opening .envelope-seal {
+  opacity: 0 !important;
+  transform: translate(-50%, -50%) scale(1.25) translateZ(20px) !important;
+  pointer-events: none !important;
+  box-shadow: 
+    0 0 35px rgba(255, 255, 255, 0.9),
+    0 0 70px var(--amp-glow) !important;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, box-shadow 0.35s ease !important;
+}
+
+.intro-page.opening .envelope-flap {
+  transform: rotateX(180deg) translateZ(0px) !important;
+  z-index: 1 !important;
+}
+
+.invitation-page {
+  animation: smoothPageFadeIn 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes smoothPageFadeIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 380px), (max-height: 650px) {
+  .envelope-container {
+    width: 94vw !important;
+    height: 220px !important;
+  }
+  
+  .intro-page .envelope-container .intro-card {
+    padding: 8px 10px !important;
+  }
+
+  .intro-page .envelope-container .intro-card .couple-title {
+    font-size: 22px !important;
+  }
+  
+  .intro-page .envelope-container .intro-card .couple-title em {
+    font-size: 15px !important;
+  }
+
+  .intro-page .envelope-container .intro-card .intro-text {
+    font-size: 11px !important;
+    margin-top: 4px !important;
+  }
+}
+
+/* TÜRKÇE KARAKTER DÜZELTME
+   Google Fonts latin-ext yüklenir, metinler Türkçe dil kurallarına göre büyür.
+   i / İ / ı / ü / Ü / ş / Ş / ğ / Ğ karakterlerinin bozuk görünmesini engeller. */
+html,
+body,
+.app {
+  lang: tr;
+  font-variant-ligatures: normal;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.intro-small,
+.small-title,
+.section-label,
+.info-row span,
+.count-box span,
+.guest-stats span,
+.admin-stats span,
+.footer span {
+  font-family: "Playfair Display", "Noto Serif", "Cormorant Garamond", Georgia, serif;
+}
+
+.couple-title {
+  font-family: "Great Vibes", "Noto Serif", "Cormorant Garamond", cursive;
+}
+
+/* CSS uppercase bazı tarayıcılarda Türkçe i/İ dönüşümünü bozabiliyor.
+   Bu yüzden küçük üst başlıklar elle yazıldığı haliyle gösteriliyor. */
+.intro-small,
+.small-title,
+.section-label,
+.info-row span,
+.count-box span,
+.guest-stats span,
+.admin-stats span,
+.footer span {
+  text-transform: none !important;
+}
+
+/* Ana görsel yazı okunurluğu - kutusuz şık tasarım */
+.hero-section {
+  align-items: center;
+  padding: 80px 38px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(70, 24, 40, 0.18) 0%,
+      rgba(70, 24, 40, 0.34) 42%,
+      rgba(35, 14, 22, 0.58) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(30, 10, 18, 0.18),
+      rgba(30, 10, 18, 0.48)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+.hero-content {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* Üst küçük yazı */
+.hero-section .small-title {
+  color: #fff7fa;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(80, 20, 42, 0.7);
+}
+
+/* İsimleri kutusuz ama çok daha net yap */
+.hero-section .couple-title {
+  color: #fff;
+  font-size: clamp(68px, 8vw, 118px);
+  line-height: 1.04;
+  text-shadow:
+    0 3px 4px rgba(0, 0, 0, 0.85),
+    0 10px 26px rgba(0, 0, 0, 0.55),
+    0 0 34px rgba(255, 220, 230, 0.28);
+}
+
+.hero-section .couple-title em {
+  margin: -6px 0 -8px;
+  color: #f4cf82;
+  font-size: 0.42em;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.85),
+    0 0 18px rgba(244, 207, 130, 0.32);
+}
+
+/* Tarih kutusu daha zarif */
+.hero-date {
+  margin-top: 18px;
+  padding: 11px 34px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.65);
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.65);
+}
+
+/* Saat daha net */
+.hero-time {
+  margin-top: 14px;
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.75),
+    0 0 16px rgba(60, 20, 36, 0.6);
+}
+/* =============================
+   SON DÜZENLEME - ADMIN AYRI LİNK VE AÇIK HERO
+   ============================= */
+
+/* Admin panel artık ana sayfada görünmez, sadece #admin linkinde ayrı sayfa gibi açılır. */
+.admin-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 34px 42px 76px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.admin-page-card {
+  width: min(100%, 1180px);
+  margin-top: 0;
+  overflow: visible;
+}
+
+.admin-back-button {
+  position: relative;
+  z-index: 2;
+  width: fit-content;
+  margin: 0 auto 24px;
+}
+
+.admin-page .admin-stats {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.admin-page .admin-login .main-button {
+  width: fit-content;
+  min-width: 160px;
+  margin: 0 auto;
+}
+
+/* Ana görsel okunurluğu: arka plan fazla kararmadan yazılar net kalır. */
+.hero-section {
+  align-items: center;
+  padding: 80px 38px;
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(120, 52, 78, 0.08) 0%,
+      rgba(120, 52, 78, 0.16) 45%,
+      rgba(60, 24, 38, 0.26) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255, 240, 245, 0.04),
+      rgba(80, 30, 48, 0.18)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+.hero-content {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.hero-section .small-title {
+  color: #fff7fa;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 5px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.72),
+    0 0 14px rgba(80, 20, 42, 0.46);
+}
+
+.hero-section .couple-title {
+  color: #fff;
+  font-size: clamp(68px, 8vw, 118px);
+  line-height: 1.04;
+  text-shadow:
+    0 3px 5px rgba(0, 0, 0, 0.75),
+    0 8px 22px rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(255, 220, 230, 0.22);
+}
+
+.hero-section .couple-title em {
+  margin: -6px 0 -8px;
+  color: #f4cf82;
+  font-size: 0.42em;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.78),
+    0 0 18px rgba(244, 207, 130, 0.32);
+}
+
+.hero-date {
+  margin-top: 18px;
+  padding: 11px 34px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.65);
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 24px;
+  font-weight: 800;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero-time {
+  margin-top: 14px;
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.68),
+    0 0 16px rgba(60, 20, 36, 0.48);
+}
+
+@media (max-width: 900px) {
+  .admin-page {
+    padding: 24px 16px 60px;
+  }
+
+  .admin-page .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-page {
+    padding: 18px 14px 60px;
+  }
+
+  .admin-back-button {
+    width: 100%;
+  }
+
+  .admin-page .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-section {
+    min-height: 560px;
+    padding: 64px 18px;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.10) 0%,
+        rgba(120, 52, 78, 0.20) 48%,
+        rgba(60, 24, 38, 0.30) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+
+  .hero-section .couple-title {
+    font-size: 58px;
+    line-height: 1.08;
+  }
+
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+
+  .hero-date {
+    font-size: 20px;
+    padding: 10px 24px;
+  }
+
+  .hero-time {
+    font-size: 19px;
+  }
+}
+
+/* =============================
+   YENİ EKLENEN ÖZELLİKLER
+   ============================= */
+
+.petal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.petal-layer span {
+  position: absolute;
+  top: -40px;
+  width: 16px;
+  height: 12px;
+  border-radius: 60% 40% 60% 40%;
+  background: rgba(255, 205, 220, 0.82);
+  box-shadow: 0 0 16px rgba(255, 230, 238, 0.42);
+  animation: petalFall 9s linear infinite;
+}
+
+.petal-layer span:nth-child(1) { left: 7%; animation-delay: 0s; animation-duration: 8s; }
+.petal-layer span:nth-child(2) { left: 14%; animation-delay: 2s; animation-duration: 10s; }
+.petal-layer span:nth-child(3) { left: 22%; animation-delay: 1s; animation-duration: 9s; }
+.petal-layer span:nth-child(4) { left: 30%; animation-delay: 3s; animation-duration: 11s; }
+.petal-layer span:nth-child(5) { left: 38%; animation-delay: 0.5s; animation-duration: 8.5s; }
+.petal-layer span:nth-child(6) { left: 46%; animation-delay: 2.5s; animation-duration: 10.5s; }
+.petal-layer span:nth-child(7) { left: 54%; animation-delay: 1.5s; animation-duration: 9.5s; }
+.petal-layer span:nth-child(8) { left: 62%; animation-delay: 3.5s; animation-duration: 12s; }
+.petal-layer span:nth-child(9) { left: 70%; animation-delay: 0.8s; animation-duration: 8.8s; }
+.petal-layer span:nth-child(10) { left: 78%; animation-delay: 2.8s; animation-duration: 10.8s; }
+.petal-layer span:nth-child(11) { left: 86%; animation-delay: 1.8s; animation-duration: 9.8s; }
+.petal-layer span:nth-child(12) { left: 94%; animation-delay: 3.8s; animation-duration: 11.8s; }
+.petal-layer span:nth-child(13) { left: 4%; animation-delay: 4.5s; animation-duration: 12.5s; }
+.petal-layer span:nth-child(14) { left: 34%; animation-delay: 5s; animation-duration: 13s; }
+.petal-layer span:nth-child(15) { left: 66%; animation-delay: 4.2s; animation-duration: 12.2s; }
+.petal-layer span:nth-child(16) { left: 90%; animation-delay: 5.4s; animation-duration: 13.4s; }
+
+@keyframes petalFall {
+  0% {
+    transform: translate3d(0, -40px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(42px, 110vh, 0) rotate(260deg);
+    opacity: 0;
+  }
+}
+
+.family-grid,
+.ceremony-grid,
+.admin-stats {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  margin: 30px auto 0;
+}
+
+.family-grid {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 820px;
+}
+
+.family-grid div,
+.ceremony-item,
+.schedule-item,
+.admin-stats div {
+  border: 1px solid rgba(217, 140, 161, 0.3);
+  background: var(--paper-soft);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
+}
+
+.family-grid div {
+  padding: 28px 18px;
+  border-radius: 26px;
+}
+
+.family-grid span,
+.ceremony-item span,
+.schedule-item span,
+.admin-list h3 {
+  display: block;
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.family-grid span,
+.ceremony-item span {
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.family-grid strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--rose-deep);
+  font-family: "Great Vibes", "Noto Serif", cursive;
+  font-size: clamp(42px, 5vw, 64px);
+  font-weight: normal;
+  line-height: 1.15;
+}
+
+.ceremony-grid {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 980px;
+}
+
+.ceremony-item {
+  padding: 30px 24px;
+  border-radius: 28px;
+}
+
+.ceremony-item strong {
+  display: block;
+  margin: 8px 0 12px;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 44px;
+  font-weight: 800;
+}
+
+.ceremony-item p {
+  font-size: 19px;
+  line-height: 1.65;
+}
+
+.ceremony-item em {
+  display: block;
+  margin-top: 14px;
+  color: var(--dark-gold);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.schedule-list {
+  position: relative;
+  max-width: 880px;
+  margin: 32px auto 0;
+  display: grid;
+  gap: 14px;
+}
+
+.schedule-item {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  border-radius: 24px;
+  text-align: left;
+}
+
+.schedule-item > strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.schedule-item p {
+  margin: 6px 0 0;
+  max-width: none;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.field-with-counter {
+  position: relative;
+  display: grid;
+}
+
+.field-with-counter span {
+  justify-self: end;
+  margin-top: 6px;
+  color: #a65a70;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.guest-item small {
+  display: block;
+  margin-top: 5px;
+  color: #9a6d78;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.admin-card {
+  overflow: visible;
+}
+
+.admin-open-button {
+  margin-top: 24px;
+}
+
+.admin-login {
+  position: relative;
+  max-width: 520px;
+  margin: 28px auto 0;
+  display: grid;
+  gap: 12px;
+}
+
+.admin-login input {
+  width: 100%;
+  padding: 17px 18px;
+  border: 1.5px solid rgba(217, 140, 161, 0.48);
+  border-radius: 20px;
+  outline: none;
+  background: #fff8fa;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-login span {
+  color: #a0445f;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 800;
+}
+
+.admin-content {
+  position: relative;
+  margin-top: 30px;
+}
+
+.admin-stats {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 1000px;
+}
+
+.admin-stats div {
+  padding: 22px 14px;
+  border-radius: 22px;
+}
+
+.admin-stats strong {
+  display: block;
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.admin-stats span {
+  display: block;
+  margin-top: 8px;
+  color: #7a4a58;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.admin-columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.admin-list {
+  padding: 22px;
+  border: 1px solid rgba(217, 140, 161, 0.3);
+  border-radius: 26px;
+  background: var(--paper-soft);
+  text-align: left;
+}
+
+.admin-list h3 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.admin-row {
+  display: grid;
+  gap: 4px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(217, 140, 161, 0.2);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+}
+
+.admin-row:last-of-type {
+  border-bottom: none;
+}
+
+.admin-row strong {
+  color: var(--rose-deep);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-row span,
+.admin-row em {
+  color: var(--text-soft);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.danger-button {
+  width: 100%;
+  margin-top: 18px;
+  color: #9f4f68;
+}
+
+.footer-thanks {
+  display: block;
+  max-width: 760px;
+  margin: 18px auto 0;
+  color: var(--text-soft);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+/* Floating butonlar için son ayar */
+.floating-actions {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  left: auto;
+  bottom: auto;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.floating-actions .share-button {
+  width: 145px;
+  height: 62px;
+  min-width: 145px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  text-decoration: none;
+  background: rgba(255, 250, 251, 0.88);
+  color: #9f4f68;
+  border: 1px solid rgba(217, 140, 161, 0.32);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.floating-actions .music-toggle-button {
+  width: 56px !important;
+  height: 56px !important;
+  min-width: 56px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  border-radius: 50% !important;
+  border: 1px solid rgba(217, 140, 161, 0.34) !important;
+  background: rgba(255, 250, 251, 0.78) !important;
+  color: #9f4f68 !important;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
+  backdrop-filter: blur(10px);
+  line-height: 1 !important;
+}
+
+.floating-actions .music-toggle-button svg {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 900px) {
+  .family-grid,
+  .ceremony-grid,
+  .admin-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .family-grid,
+  .ceremony-grid,
+  .schedule-list,
+  .admin-content {
+    margin-top: 24px;
+  }
+
+  .family-grid strong {
+    font-size: 44px;
+  }
+
+  .ceremony-item strong {
+    font-size: 34px;
+  }
+
+  .schedule-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .schedule-item > strong {
+    font-size: 26px;
+  }
+
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-list {
+    padding: 18px;
+  }
+
+  .floating-actions {
+    top: auto;
+    right: 16px;
+    bottom: 16px;
+    left: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .floating-actions .share-button {
+    width: 135px;
+    height: 58px;
+    min-width: 135px;
+    font-size: 18px;
+    flex: unset;
+  }
+
+  .floating-actions .music-toggle-button {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    align-self: flex-end;
+    flex: unset;
+  }
+
+  .floating-actions .music-toggle-button svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* =============================
+   GELİŞMİŞ ÖZELLİKLER
+   ============================= */
+
+html[data-theme="sage"] {
+  --paper: #fbfff7;
+  --paper-soft: #f4faec;
+  --rose-light: #dce8c8;
+  --rose: #9cad75;
+  --rose-dark: #607244;
+  --rose-deep: #40502e;
+  --gold: #c5a461;
+  --dark-gold: #8b6b32;
+  --text: #34402c;
+  --text-soft: #58674c;
+  --shadow: 0 20px 48px rgba(76, 94, 57, 0.13);
+}
+
+html[data-theme="gold"] {
+  --paper: #fffdf4;
+  --paper-soft: #fff8df;
+  --rose-light: #f4dfad;
+  --rose: #c9a45d;
+  --rose-dark: #9b7433;
+  --rose-deep: #6e4b1e;
+  --gold: #c59a45;
+  --dark-gold: #7e5520;
+  --text: #4b3620;
+  --text-soft: #725b3c;
+  --shadow: 0 20px 48px rgba(126, 85, 32, 0.13);
+}
+
+html[data-theme="burgundy"] {
+  --paper: #fff8fa;
+  --paper-soft: #fbeaf0;
+  --rose-light: #e2b6c4;
+  --rose: #b55b79;
+  --rose-dark: #7f2747;
+  --rose-deep: #53182e;
+  --gold: #d0aa68;
+  --dark-gold: #936c34;
+  --text: #3f1d2b;
+  --text-soft: #6b3a4d;
+  --shadow: 0 20px 48px rgba(83, 24, 46, 0.14);
+}
+
+html[data-theme="minimal"] {
+  --paper: #ffffff;
+  --paper-soft: #f8f8f8;
+  --rose-light: #e8e1dc;
+  --rose: #b69f91;
+  --rose-dark: #775e50;
+  --rose-deep: #45362e;
+  --gold: #b99d72;
+  --dark-gold: #796247;
+  --text: #2f2926;
+  --text-soft: #665d58;
+  --shadow: 0 20px 48px rgba(47, 41, 38, 0.10);
+}
+
+html[data-theme="sage"] body,
+html[data-theme="gold"] body,
+html[data-theme="burgundy"] body,
+html[data-theme="minimal"] body {
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--rose-light) 35%, transparent), transparent 34%),
+    radial-gradient(circle at bottom right, color-mix(in srgb, var(--rose) 22%, transparent), transparent 36%),
+    linear-gradient(180deg, var(--paper), var(--paper-soft));
+}
+
+.guest-greeting,
+.hero-guest-greeting {
+  position: relative;
+  max-width: 620px;
+  margin: 16px auto 0;
+  color: #fffdfd;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.7;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.48);
+}
+
+.hero-guest-greeting {
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: rgba(255, 250, 251, 0.18);
+  border: 1px solid rgba(255, 240, 245, 0.36);
+  backdrop-filter: blur(4px);
+}
+
+.countdown-animated strong {
+  animation: countSoftPulse 1s ease;
+}
+
+@keyframes countSoftPulse {
+  0% { transform: scale(0.98); opacity: 0.75; }
+  45% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.qr-public-card {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 28px auto 0;
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  border-radius: 24px;
+  background: rgba(255, 250, 251, 0.72);
+  border: 1px solid rgba(217, 140, 161, 0.26);
+  box-shadow: 0 14px 34px rgba(111, 47, 67, 0.10);
+}
+
+.qr-public-card img {
+  width: 150px;
+  height: 150px;
+  border-radius: 18px;
+  background: #fff;
+  padding: 10px;
+}
+
+.qr-public-card span {
+  color: var(--text-soft);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-field select,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-personal-link-box input,
+.admin-check-field {
+  width: 100%;
+  border: 1.5px solid rgba(159, 79, 104, 0.46);
+  border-radius: 18px;
+  background: #fff9fb;
+  color: #3f1f2c;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 850;
+  outline: none;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.06);
+}
+
+.admin-field select,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-personal-link-box input {
+  min-height: 54px;
+  padding: 14px 16px;
+}
+
+.admin-check-field {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.admin-check-field input {
+  width: 20px;
+  height: 20px;
+  accent-color: #9f4f68;
+}
+
+.admin-check-field span,
+.admin-help-text,
+.admin-personal-link-box span,
+.admin-qr-panel span {
+  color: #3f1f2c !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 850 !important;
+  line-height: 1.65;
+}
+
+.admin-toolbar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 22px 0;
+  align-items: center;
+}
+
+.admin-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin-row-actions .small-admin-button {
+  min-width: 110px;
+}
+
+.admin-qr-panel {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.admin-qr-panel > div,
+.admin-personal-link-box {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 250, 251, 0.96);
+  border: 1px solid rgba(159, 79, 104, 0.28);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
+}
+
+.admin-qr-panel img {
+  width: 220px;
+  height: 220px;
+  display: block;
+  margin: 14px auto;
+  padding: 12px;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.admin-personal-link-box {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-personal-link-box .admin-field {
+  margin: 0;
+}
+
+.admin-save-message {
+  color: #4f1b31 !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 900px) {
+  .admin-toolbar,
+  .admin-qr-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-toolbar .secondary-button {
+    width: 100%;
+  }
+
+  .qr-public-card img {
+    width: 128px;
+    height: 128px;
+  }
+}
+

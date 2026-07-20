@@ -1,0 +1,3506 @@
+/* =============================
+   ADMIN PANEL - SOL MENÜLÜ BÖLÜM SEÇİMİ
+   ============================= */
+
+.admin-shell-card {
+  width: min(100%, 1480px);
+  padding: 34px;
+}
+
+.admin-page-header {
+  position: relative;
+  text-align: center;
+}
+
+.admin-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 34px;
+  align-items: start;
+  text-align: left;
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 18px;
+  z-index: 6;
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(248, 199, 211, 0.34), transparent 28%),
+    rgba(255, 250, 251, 0.9);
+  box-shadow: 0 18px 42px rgba(111, 47, 67, 0.1);
+  backdrop-filter: blur(14px);
+}
+
+.admin-sidebar-title {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(217, 140, 161, 0.2);
+}
+
+.admin-sidebar-title span {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span {
+  color: #9a6d78;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.admin-sidebar-menu {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-nav-button {
+  width: 100%;
+  min-height: 72px;
+  padding: 13px 14px;
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(217, 140, 161, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  color: var(--text);
+  text-align: left;
+  box-shadow: none;
+  transition: 0.2s ease;
+}
+
+.admin-nav-button span {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.admin-nav-button:hover {
+  transform: translateX(3px);
+  border-color: rgba(159, 79, 104, 0.48);
+  background: rgba(255, 240, 244, 0.82);
+}
+
+.admin-nav-button.active {
+  border-color: rgba(159, 79, 104, 0.64);
+  background: linear-gradient(135deg, rgba(230, 154, 174, 0.95), rgba(159, 79, 104, 0.95));
+  box-shadow: 0 14px 30px rgba(159, 79, 104, 0.22);
+}
+
+.admin-nav-button.active span,
+.admin-nav-button.active small {
+  color: #ffffff;
+}
+
+.admin-main-panel {
+  min-width: 0;
+}
+
+.admin-main-panel .admin-actions-sticky {
+  top: 18px;
+  margin: 0 0 22px;
+  justify-content: flex-start;
+}
+
+.admin-current-section {
+  min-width: min(100%, 260px);
+  display: grid;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.admin-current-section strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.admin-save-message {
+  width: 100%;
+}
+
+.admin-editor-single {
+  margin: 0;
+}
+
+.admin-editor-single .admin-editor-section {
+  margin: 0;
+}
+
+.admin-gallery-list {
+  margin-top: 18px;
+}
+
+.admin-stats-inside {
+  max-width: none;
+  margin: 0 0 22px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.admin-list-full {
+  max-height: 680px;
+}
+
+@media (max-width: 1100px) {
+  .admin-layout {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+
+  .admin-shell-card {
+    padding: 28px 22px;
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-nav-button:hover {
+    transform: translateX(2px);
+  }
+
+  .admin-main-panel .admin-actions-sticky {
+    position: sticky;
+    top: 10px;
+  }
+
+  .admin-stats-inside {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-shell-card {
+    padding: 24px 16px;
+  }
+
+  .admin-sidebar {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav-button {
+    min-height: auto;
+    padding: 12px 14px;
+  }
+
+  .admin-main-panel .admin-actions-sticky {
+    position: relative;
+    top: auto;
+  }
+
+  .admin-current-section {
+    width: 100%;
+  }
+
+  .admin-stats-inside {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* SON DÜZENLEME - Admin panel yazıları daha belirgin */
+.admin-page,
+.admin-page p,
+.admin-page small,
+.admin-page span,
+.admin-page input,
+.admin-page textarea,
+.admin-page button {
+  font-weight: 700;
+}
+
+.admin-page h2,
+.admin-editor-section h3,
+.admin-current-section strong,
+.admin-sidebar-title span,
+.admin-nav-button span,
+.admin-field > span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-row strong {
+  font-weight: 900 !important;
+}
+
+.admin-page h2 {
+  letter-spacing: 0.2px;
+}
+
+.admin-page-header > p:not(.section-label),
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span,
+.admin-field small,
+.admin-image-field small,
+.admin-music-field small,
+.admin-row span,
+.admin-row em {
+  font-weight: 700 !important;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input {
+  font-weight: 800;
+}
+
+/* Admin panel müzik yükleme alanı */
+.admin-music-field {
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.32);
+  border-radius: 24px;
+  background: rgba(255, 247, 249, 0.72);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.07);
+}
+
+.admin-music-preview {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 20px;
+  background: #fffafb;
+}
+
+.admin-music-preview strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.admin-music-preview audio {
+  width: 100%;
+}
+
+.admin-music-field .admin-upload-button {
+  margin-top: 14px;
+}
+
+/* Admin panel başlık adı */
+.admin-page-header h2 {
+  text-transform: none;
+}
+
+
+/* =============================
+   FINAL - ADMIN PANEL OKUNURLUK VE FORM KAYITLARI
+   ============================= */
+.admin-page {
+  color: #3f1f2c;
+}
+
+.admin-page .card,
+.admin-shell-card,
+.admin-sidebar,
+.admin-main-panel,
+.admin-editor-section,
+.admin-repeat-item,
+.admin-image-field,
+.admin-music-field,
+.admin-list,
+.admin-row,
+.admin-stats div {
+  color: #3f1f2c;
+}
+
+.admin-page-header > p:not(.section-label),
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span,
+.admin-field small,
+.admin-image-field small,
+.admin-music-field small,
+.admin-save-message,
+.admin-row span,
+.admin-row em,
+.admin-image-empty,
+.admin-music-preview strong {
+  color: #5c2f3f !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}
+
+.admin-page h2,
+.admin-editor-section h3,
+.admin-current-section strong,
+.admin-sidebar-title span,
+.admin-nav-button span,
+.admin-field > span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-row strong,
+.admin-stats strong {
+  color: #651f3a !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+}
+
+.admin-page .section-label {
+  color: #8e3455 !important;
+  font-weight: 900 !important;
+  opacity: 1 !important;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input {
+  color: #3f1f2c !important;
+  background: #fff9fb !important;
+  border-color: rgba(159, 79, 104, 0.46) !important;
+  font-weight: 850 !important;
+}
+
+.admin-field input::placeholder,
+.admin-field textarea::placeholder,
+.admin-login input::placeholder {
+  color: #8e5165 !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+.admin-sidebar,
+.admin-editor-section,
+.admin-repeat-item,
+.admin-image-field,
+.admin-music-field,
+.admin-row,
+.admin-stats div {
+  background-color: rgba(255, 250, 251, 0.96) !important;
+  border-color: rgba(159, 79, 104, 0.34) !important;
+}
+
+.admin-nav-button {
+  color: #3f1f2c !important;
+  background: rgba(255, 250, 251, 0.9) !important;
+  border-color: rgba(159, 79, 104, 0.3) !important;
+}
+
+.admin-nav-button span {
+  color: #651f3a !important;
+}
+
+.admin-nav-button small {
+  color: #6a3446 !important;
+}
+
+.admin-nav-button.active {
+  background: linear-gradient(135deg, #c96f89, #8f3657) !important;
+  border-color: rgba(122, 47, 73, 0.75) !important;
+}
+
+.admin-nav-button.active span,
+.admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+.admin-list-full .admin-row {
+  border-left: 5px solid rgba(159, 79, 104, 0.55);
+}
+
+.admin-row span,
+.admin-row em {
+  display: block;
+  line-height: 1.55;
+}
+
+.admin-actions-sticky {
+  background: rgba(255, 250, 251, 0.94) !important;
+  border: 1px solid rgba(159, 79, 104, 0.28);
+  border-radius: 22px;
+  padding: 14px;
+  box-shadow: 0 12px 28px rgba(111, 47, 67, 0.10);
+}
+
+.admin-upload-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #c96f89, #8f3657) !important;
+  border-color: rgba(122, 47, 73, 0.4) !important;
+  font-weight: 900 !important;
+}
+
+/* =============================
+   ADMIN PANEL - TAM SAYFA DÜZENLEME
+   ============================= */
+
+.admin-actions-sticky {
+  position: sticky;
+  top: 16px;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 28px auto 30px;
+  padding: 16px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 24px;
+  background: rgba(255, 250, 251, 0.86);
+  box-shadow: 0 16px 36px rgba(111, 47, 67, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.admin-actions-sticky .main-button,
+.admin-actions-sticky .secondary-button {
+  width: auto;
+}
+
+.admin-actions-sticky span {
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-editor {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  margin: 28px auto 34px;
+  text-align: left;
+}
+
+.admin-editor-section {
+  position: relative;
+  padding: 24px;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 28px;
+  background: rgba(255, 247, 249, 0.82);
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
+}
+
+.admin-editor-section h3,
+.admin-repeat-title strong {
+  margin: 0 0 18px;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.admin-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-field {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-field-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-field span {
+  color: #8f5062;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid rgba(217, 140, 161, 0.38);
+  border-radius: 16px;
+  outline: none;
+  background: #fffafb;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(111, 47, 67, 0.05);
+}
+
+.admin-field textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-login input:focus {
+  border-color: var(--rose-dark);
+  box-shadow: 0 0 0 4px rgba(217, 140, 161, 0.15);
+}
+
+.admin-repeat-list {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-repeat-item,
+.admin-gallery-row {
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.24);
+  border-radius: 22px;
+  background: rgba(255, 250, 251, 0.72);
+}
+
+.admin-repeat-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-gallery-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.small-admin-button,
+.admin-add-button {
+  width: fit-content !important;
+  min-width: unset !important;
+  padding: 12px 18px !important;
+  font-size: 14px !important;
+}
+
+.admin-add-button {
+  justify-self: center;
+  margin-top: 4px;
+}
+
+.admin-content .admin-stats {
+  margin-top: 42px;
+}
+
+.admin-columns {
+  align-items: start;
+}
+
+.admin-list {
+  max-height: 620px;
+  overflow: auto;
+}
+
+.admin-row {
+  word-break: break-word;
+}
+
+/* Admin panelde ana sayfa içeriklerini düzenleme alanı uzun olduğu için kart daha geniş kalsın. */
+.admin-page-card {
+  width: min(100%, 1320px);
+}
+
+/* Hero görseli açık kalsın, sadece yazı okunurluğu artsın. */
+.hero-section {
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(120, 52, 78, 0.08) 0%,
+      rgba(120, 52, 78, 0.16) 45%,
+      rgba(60, 24, 38, 0.26) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(255, 240, 245, 0.04),
+      rgba(80, 30, 48, 0.18)
+    ),
+    var(--hero-image) center/cover no-repeat;
+}
+
+@media (max-width: 900px) {
+  .admin-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-actions-sticky {
+    position: relative;
+    top: auto;
+  }
+
+  .admin-gallery-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-editor-section {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .admin-repeat-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .small-admin-button,
+  .admin-add-button,
+  .admin-actions-sticky .main-button,
+  .admin-actions-sticky .secondary-button {
+    width: 100% !important;
+  }
+
+  .hero-section {
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.1) 0%,
+        rgba(120, 52, 78, 0.2) 48%,
+        rgba(60, 24, 38, 0.3) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+}
+
+/* =================================================================
+   ADMİN PANELİ: SATIR TASARIMI VE ÇIKIŞ BUTONU
+   ================================================================= */
+.admin-actions-sticky .admin-logout-button,
+.admin-actions-sticky .secondary-button.admin-logout-button {
+  background: var(--paper) !important;
+  color: var(--rose-dark) !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 45%, transparent) !important;
+  box-shadow: 0 10px 24px rgba(111, 47, 67, 0.08) !important;
+}
+
+.admin-actions-sticky .admin-logout-button:hover,
+.admin-actions-sticky .secondary-button.admin-logout-button:hover {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--rose-dark) 28%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-theme="dark"] .admin-actions-sticky .admin-logout-button,
+[data-theme="dark"] .admin-actions-sticky .secondary-button.admin-logout-button {
+  background: rgba(255, 250, 251, 0.08) !important;
+  color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 42%, transparent) !important;
+}
+
+.admin-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 22px;
+  margin-bottom: 14px;
+  background: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--rose-dark) 15%, transparent);
+  border-left: 4px solid var(--amp-color, var(--rose-dark));
+  border-radius: 14px;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--rose-dark) 5%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 10%, transparent);
+}
+
+.admin-row strong {
+  font-size: 17px;
+  color: var(--rose-dark);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.admin-row span, .admin-row em {
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.4;
+  font-style: normal;
+}
+
+.admin-row em {
+  color: color-mix(in srgb, var(--text) 80%, transparent);
+  margin-top: 4px;
+}
+
+.admin-row-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin-top: 14px !important;
+  padding-top: 14px !important;
+  border-top: 1px dashed color-mix(in srgb, var(--amp-color, #8f7fb8) 25%, transparent) !important;
+}
+
+.admin-row-actions button,
+.admin-list .small-admin-button,
+.admin-row .secondary-button,
+.admin-repeat-title .small-admin-button,
+.admin-gallery-upload-row .small-admin-button {
+  width: 145px !important;
+  min-width: 145px !important;
+  max-width: 145px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+  padding: 0 10px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04) !important;
+}
+
+.admin-row-actions button:hover,
+.admin-list .small-admin-button:hover,
+.admin-row .secondary-button:hover,
+.admin-repeat-title .small-admin-button:hover,
+.admin-gallery-upload-row .small-admin-button:hover {
+  transform: translateY(-2px) !important;
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
+}
+
+/* =================================================================
+   TEHLİKE (SİLME) BUTONLARI VE GENEL BUTONLAR
+   ================================================================= */
+.admin-row-actions button.danger-button,
+.admin-list .small-admin-button.danger-button,
+.admin-row .secondary-button.danger-button,
+.admin-repeat-title .small-admin-button.danger-button,
+.admin-gallery-upload-row .small-admin-button.danger-button {
+  color: #d93838 !important;
+  border-color: color-mix(in srgb, #d93838 40%, transparent) !important;
+  background-color: color-mix(in srgb, #d93838 6%, var(--paper, #fff)) !important;
+}
+
+.admin-row-actions button.danger-button:hover,
+.admin-list .small-admin-button.danger-button:hover,
+.admin-row .secondary-button.danger-button:hover,
+.admin-repeat-title .small-admin-button.danger-button:hover,
+.admin-gallery-upload-row .small-admin-button.danger-button:hover,
+.admin-content button.danger-button:hover,
+.admin-panel button.danger-button:hover,
+.admin-section button.danger-button:hover,
+.admin-repeat-title button.danger-button:hover,
+.app button.danger-button:hover {
+  background: #d93838 !important;
+  color: #ffffff !important;
+  border-color: #d93838 !important;
+  box-shadow: 0 8px 18px rgba(217, 56, 56, 0.28) !important;
+  transform: translateY(-2px) !important;
+}
+
+.admin-list > button.danger-button,
+.admin-list > .secondary-button:not(.small-admin-button) {
+  width: 100% !important;
+  max-width: 320px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  margin: 16px auto 0 auto !important;
+  display: flex !important;
+  font-size: 14.5px !important;
+}
+
+[data-theme="dark"] .admin-row-actions button,
+[data-theme="dark"] .admin-list .small-admin-button,
+[data-theme="dark"] .admin-repeat-title .small-admin-button,
+[data-theme="dark"] .admin-gallery-upload-row .small-admin-button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 30%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-row-actions button:hover,
+[data-theme="dark"] .admin-list .small-admin-button:hover,
+[data-theme="dark"] .admin-repeat-title .small-admin-button:hover,
+[data-theme="dark"] .admin-gallery-upload-row .small-admin-button:hover {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-light) !important;
+}
+
+/* =================================================================
+   ADMİN PANELİ: MÜZİK, GALERİ VE GÖRÜNÜRLÜK AYARLARI
+   ================================================================= */
+.admin-music-field,
+.admin-gallery-upload-row {
+  display: grid;
+  gap: 12px;
+  padding: 20px !important;
+  border: 1px dashed color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  border-radius: 22px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.admin-gallery-upload-row {
+  display: grid !important;
+  gap: 16px !important;
+  padding: 24px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent) !important;
+  border-radius: 22px !important;
+  background: var(--paper, #ffffff) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02) !important;
+  margin-bottom: 24px !important;
+}
+
+.admin-gallery-upload-row > div:first-child,
+.admin-gallery-upload-row .admin-image-field {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}
+
+.admin-gallery-upload-row .small-admin-button { margin-top: 10px !important; }
+.admin-music-field .admin-image-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-music-field .admin-image-header > span { color: var(--rose-dark) !important; font-family: "Playfair Display", "Noto Serif", Georgia, serif; font-size: 14px; font-weight: 800; }
+
+.admin-music-preview,
+.admin-music-field .admin-image-empty {
+  width: 100%;
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  border: 1px solid color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 247, 249, 0.8) !important;
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--rose-dark) 7%, transparent);
+}
+
+.admin-music-preview audio { width: min(100%, 520px); }
+.admin-music-field .admin-upload-button {
+  width: fit-content;
+  min-width: 230px;
+  margin-top: 2px;
+  padding: 13px 22px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px !important;
+  border: none !important;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--rose-dark) 24%, transparent);
+  cursor: pointer;
+}
+
+.admin-music-field .admin-upload-button:hover { transform: translateY(-2px); box-shadow: 0 16px 32px color-mix(in srgb, var(--rose-dark) 30%, transparent); }
+.admin-music-field small { display: block; color: var(--text-soft) !important; font-family: "Playfair Display", "Noto Serif", Georgia, serif; font-size: 13px; font-weight: 700; line-height: 1.5; }
+
+.admin-visibility-card {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+  gap: 16px !important;
+  border: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+  margin-bottom: 32px !important;
+}
+
+.admin-check-field {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding: 20px 64px 20px 22px !important;
+  background: var(--paper, #ffffff) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  min-height: 88px !important;
+  box-sizing: border-box !important;
+}
+
+.admin-check-field:hover {
+  transform: translateY(-4px) !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--amp-color, #8f7fb8) 12%, transparent) !important;
+}
+
+.admin-check-field:has(input[type="checkbox"]:checked) {
+  border: 2px solid var(--amp-color, #8f7fb8) !important;
+  background: 
+    radial-gradient(circle at top right, color-mix(in srgb, var(--amp-color) 12%, transparent), transparent 45%),
+    linear-gradient(145deg, color-mix(in srgb, var(--amp-color) 5%, var(--paper, #ffffff)), var(--paper, #ffffff)) !important;
+  box-shadow: 
+    0 16px 36px color-mix(in srgb, var(--amp-color) 16%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--amp-color) 8%, transparent) !important;
+}
+
+.admin-check-field input[type="checkbox"] {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 20px !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  border-radius: 50% !important;
+  border: 2px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  background-color: var(--paper, #ffffff) !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+  z-index: 2 !important;
+}
+
+.admin-check-field input[type="checkbox"]:checked {
+  background-color: var(--amp-color, #8f7fb8) !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") !important;
+}
+
+.admin-check-field span {
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  margin-top: 0 !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+  padding-right: 45px !important; 
+  box-sizing: border-box !important;
+  word-break: break-word !important; 
+  max-width: 100% !important;
+  z-index: 1 !important;
+}
+
+/* =================================================================
+   ADMİN PANELİ: ARAMA, EXPORT VE EK BUTONLAR
+   ================================================================= */
+.admin-filters, .admin-filter-row, .admin-list-controls, .admin-export-actions {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+}
+
+.admin-content input[type="search"],
+.admin-content input[placeholder*="ara" i],
+.admin-content input[placeholder*="Kayıtlarda" i] {
+  min-height: 56px;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--paper) 94%, var(--rose-light) 6%), var(--paper)) !important;
+  color: var(--text) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
+}
+
+.admin-content input[type="search"]:focus,
+.admin-content input[placeholder*="ara" i]:focus,
+.admin-content input[placeholder*="Kayıtlarda" i]:focus {
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--rose-dark) 12%, transparent), 0 0 0 4px color-mix(in srgb, var(--rose) 10%, transparent) !important;
+}
+
+.admin-content .secondary-button,
+.admin-editor .secondary-button {
+  min-height: 56px;
+  padding: 0 26px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 28%, transparent) !important;
+  background: var(--paper) !important;
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 900;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
+}
+
+.admin-content .secondary-button:hover,
+.admin-editor .secondary-button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--rose-dark) 20%, transparent) !important;
+}
+
+.admin-content button:not(.danger-button):hover,
+.admin-panel button:not(.danger-button):hover,
+.admin-section button:not(.danger-button):hover,
+.admin-qr-actions button:hover,
+.admin-export-actions button:hover,
+.admin-toolbar button:hover,
+.admin-edit-grid button:hover,
+.admin-row-actions button:not(.danger-button):hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+.admin-image-field .admin-upload-button,
+.admin-image-field button:not(.danger-button),
+.admin-image-field label.admin-upload-button,
+.admin-gallery-upload-row .admin-upload-button,
+.admin-gallery-upload-row .admin-image-field button:not(.danger-button),
+.admin-gallery-upload-row .admin-image-field label,
+.admin-upload-button {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.admin-image-field .admin-upload-button:hover,
+.admin-image-field button:not(.danger-button):hover,
+.admin-image-field label.admin-upload-button:hover,
+.admin-gallery-upload-row .admin-upload-button:hover,
+.admin-gallery-upload-row .admin-image-field button:not(.danger-button):hover,
+.admin-gallery-upload-row .admin-image-field label:hover,
+.admin-upload-button:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  cursor: pointer !important;
+}
+
+.admin-gallery-list { contain: content; }
+.admin-gallery-list .admin-gallery-upload-row { content-visibility: auto; contain-intrinsic-size: 160px; will-change: transform; }
+
+.app button.admin-add-button,
+.admin-section button.admin-add-button,
+.admin-repeat-list button.admin-add-button,
+.admin-gallery-list button.admin-add-button {
+  width: 100% !important;
+  max-width: 320px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  margin: 20px auto 10px auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px dashed color-mix(in srgb, var(--amp-color, #8f7fb8) 60%, transparent) !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+}
+
+.app button.admin-add-button:hover,
+.admin-section button.admin-add-button:hover,
+.admin-repeat-list button.admin-add-button:hover,
+.admin-gallery-list button.admin-add-button:hover {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-style: solid !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+}
+
+[data-theme="dark"] button.admin-add-button {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 45%, transparent) !important;
+}
+
+[data-theme="dark"] button.admin-add-button:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+.app .admin-content button:not(.main-button):not(.danger-button),
+.app .admin-panel button:not(.main-button):not(.danger-button),
+.app .admin-section button:not(.main-button):not(.danger-button),
+.app .admin-toolbar button:not(.danger-button),
+.app .admin-export-actions button:not(.danger-button),
+.app .admin-qr-actions button:not(.danger-button),
+.app .admin-import-box button:not(.danger-button),
+.app .admin-personal-link-box button:not(.danger-button),
+.app .admin-image-field button:not(.danger-button),
+.app .admin-music-field button:not(.danger-button),
+.app .secondary-button:not(.danger-button) {
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+  opacity: 1 !important;
+}
+
+.app .admin-content button:not(.main-button):not(.danger-button):hover:not(:disabled),
+.app .admin-panel button:not(.main-button):not(.danger-button):hover:not(:disabled),
+.app .admin-section button:not(.main-button):not(.danger-button):hover:not(:disabled),
+.app .admin-toolbar button:not(.danger-button):hover:not(:disabled),
+.app .admin-export-actions button:not(.danger-button):hover:not(:disabled),
+.app .admin-qr-actions button:not(.danger-button):hover:not(:disabled),
+.app .admin-import-box button:not(.danger-button):hover:not(:disabled),
+.app .admin-personal-link-box button:not(.danger-button):hover:not(:disabled),
+.app .admin-image-field button:not(.danger-button):hover:not(:disabled),
+.app .admin-music-field button:not(.danger-button):hover:not(:disabled),
+.app .secondary-button:not(.danger-button):hover:not(:disabled) {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+}
+
+[data-theme="dark"] .admin-content button:not(.main-button):not(.danger-button),
+[data-theme="dark"] .admin-panel button:not(.main-button):not(.danger-button),
+[data-theme="dark"] .admin-section button:not(.main-button):not(.danger-button),
+[data-theme="dark"] .admin-toolbar button,
+[data-theme="dark"] .admin-export-actions button,
+[data-theme="dark"] .admin-qr-actions button,
+[data-theme="dark"] .admin-import-box button,
+[data-theme="dark"] .admin-personal-link-box button,
+[data-theme="dark"] .admin-image-field button,
+[data-theme="dark"] .secondary-button:not(.danger-button) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-content button:not(.main-button):not(.danger-button):hover:not(:disabled),
+[data-theme="dark"] .admin-panel button:not(.main-button):not(.danger-button):hover:not(:disabled),
+[data-theme="dark"] .admin-section button:not(.main-button):not(.danger-button):hover:not(:disabled),
+[data-theme="dark"] .admin-toolbar button:hover:not(:disabled),
+[data-theme="dark"] .admin-export-actions button:hover:not(:disabled),
+[data-theme="dark"] .admin-qr-actions button:hover:not(:disabled),
+[data-theme="dark"] .admin-import-box button:hover:not(:disabled),
+[data-theme="dark"] .admin-personal-link-box button:hover:not(:disabled),
+[data-theme="dark"] .admin-image-field button:hover:not(:disabled),
+[data-theme="dark"] .secondary-button:not(.danger-button):hover:not(:disabled) {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1f1f1f !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+.admin-export-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+  align-items: stretch !important;
+  gap: 20px !important;
+}
+
+.admin-export-card { display: flex !important; flex-direction: column !important; justify-content: flex-start !important; height: 100% !important; }
+.admin-export-card .admin-export-actions,
+.admin-export-card > button,
+.admin-export-card > .main-button { margin-top: auto !important; padding-top: 16px !important; width: 100% !important; }
+.admin-export-actions { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+.admin-export-actions button { width: 100% !important; margin: 0 !important; }
+
+.app .admin-image-field button:not(.admin-upload-button),
+.app .admin-music-field button:not(.admin-upload-button) {
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  padding: 0 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  opacity: 1 !important;
+}
+
+.app .admin-image-field button:not(.admin-upload-button):hover:not(:disabled),
+.app .admin-music-field button:not(.admin-upload-button):hover:not(:disabled) {
+  background: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #8f7fb8) !important;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-theme="dark"] .admin-image-field button:not(.admin-upload-button),
+[data-theme="dark"] .admin-music-field button:not(.admin-upload-button) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-image-field button:not(.admin-upload-button):hover:not(:disabled),
+[data-theme="dark"] .admin-music-field button:not(.admin-upload-button):hover:not(:disabled) {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1f1f1f !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+
+/* =============================
+   ADMIN PANEL - GÖRSEL YÜKLEME
+   ============================= */
+
+.admin-image-field {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed rgba(217, 140, 161, 0.42);
+  border-radius: 22px;
+  background: rgba(255, 250, 251, 0.72);
+}
+
+.admin-image-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-image-header > span {
+  color: #8f5062;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.admin-image-preview {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border: 1px solid rgba(217, 140, 161, 0.28);
+  border-radius: 18px;
+  background: #fffafb;
+  box-shadow: 0 12px 26px rgba(111, 47, 67, 0.08);
+}
+
+.admin-image-empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(217, 140, 161, 0.22);
+  border-radius: 18px;
+  background: rgba(255, 247, 249, 0.8);
+  color: #a65a70;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.admin-upload-button {
+  width: fit-content;
+  min-width: 210px;
+  padding: 13px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #e69aae, var(--rose-dark));
+  color: white;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(159, 79, 104, 0.24);
+}
+
+.admin-upload-button input {
+  display: none;
+}
+
+.admin-image-field small {
+  color: #9a6d78;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.admin-gallery-upload-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(217, 140, 161, 0.24);
+  border-radius: 22px;
+  background: rgba(255, 250, 251, 0.72);
+}
+
+.admin-gallery-upload-row .admin-image-field {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.admin-gallery-upload-row .admin-image-preview {
+  max-height: 220px;
+}
+
+@media (max-width: 900px) {
+  .admin-gallery-upload-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+  .admin-image-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-upload-button {
+    width: 100%;
+  }
+
+  .admin-image-preview {
+    max-height: 220px;
+  }
+}
+
+/* =================================================================
+   ADMİN PANELİ: TEMA SEÇİMİ VE YAN MENÜ (SIDEBAR)
+   ================================================================= */
+.theme-option-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-option-card.active {
+  transform: translateY(-6px) scale(1.03) !important;
+  border: 2.5px solid var(--rose-dark) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 45%, transparent), transparent 38%),
+    linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 28%, var(--paper)), var(--paper)) !important;
+  box-shadow:
+    0 20px 42px color-mix(in srgb, var(--rose-dark) 22%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--rose) 14%, transparent) !important;
+}
+
+.theme-option-card.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.55), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 55%);
+}
+
+.theme-option-card.active::after {
+  content: "✓";
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: #ffffff;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 19px;
+  font-weight: 900;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--rose-dark) 26%, transparent);
+}
+
+.theme-option-card > * { position: relative; z-index: 2; }
+.theme-option-card.active .theme-swatch {
+  width: 62px;
+  height: 36px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 24%, transparent), 0 0 0 4px color-mix(in srgb, var(--rose) 16%, transparent);
+}
+
+.theme-option-card.active small {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--rose-dark) 18%, transparent);
+}
+
+.theme-option-card:not(.active) { opacity: 0.82; }
+.theme-option-card:not(.active):hover { opacity: 1; transform: translateY(-3px) !important; }
+
+.admin-sidebar .admin-nav-button,
+.admin-sidebar-menu .admin-nav-button {
+  position: relative;
+  min-height: 94px;
+  padding: 18px 18px 18px 20px !important;
+  overflow: hidden;
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, var(--text-h)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color) 30%, transparent) !important;
+  box-shadow: none !important;
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, color 0.22s ease !important;
+}
+
+.admin-sidebar .admin-nav-button:not(.active),
+.admin-sidebar-menu .admin-nav-button:not(.active) {
+  background: color-mix(in srgb, var(--amp-color) 6%, transparent) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color) 20%, transparent) !important;
+}
+
+.admin-sidebar .admin-nav-button.active::after,
+.admin-sidebar-menu .admin-nav-button.active::after { display: none !important; content: none !important; }
+
+.admin-sidebar .admin-nav-button::before,
+.admin-sidebar-menu .admin-nav-button::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 0;
+  border-radius: 0 999px 999px 0;
+  background: var(--amp-color);
+  opacity: 0;
+  transition: 0.22s ease;
+}
+
+.admin-sidebar .admin-nav-button:hover::before,
+.admin-sidebar .admin-nav-button.active::before,
+.admin-sidebar-menu .admin-nav-button:hover::before,
+.admin-sidebar-menu .admin-nav-button.active::before { width: 5px; opacity: 1; }
+
+.admin-sidebar .admin-nav-button span,
+.admin-sidebar .admin-nav-button small,
+.admin-sidebar-menu .admin-nav-button span,
+.admin-sidebar-menu .admin-nav-button small { position: relative; z-index: 2; color: var(--amp-color) !important; }
+
+.admin-sidebar .admin-nav-button:hover:not(.active),
+.admin-sidebar-menu .admin-nav-button:hover:not(.active) {
+  transform: translateX(2px) !important;
+  background: color-mix(in srgb, var(--amp-color) 8%, var(--paper, #fff)) !important;
+  border-color: var(--amp-color) !important;
+  box-shadow: 0 14px 30px color-mix(in srgb, var(--amp-color) 14%, transparent), 0 0 0 4px color-mix(in srgb, var(--amp-color) 10%, transparent) !important;
+}
+
+.admin-sidebar .admin-nav-button.active,
+.admin-sidebar-menu .admin-nav-button.active {
+  transform: translateX(2px) !important;
+  background: var(--amp-color) !important;
+  border-color: var(--amp-color) !important;
+  box-shadow: 0 18px 38px color-mix(in srgb, var(--amp-color) 25%, transparent), 0 0 0 5px color-mix(in srgb, var(--amp-color) 12%, transparent) !important;
+}
+
+.admin-sidebar .admin-nav-button.active span,
+.admin-sidebar .admin-nav-button.active small,
+.admin-sidebar-menu .admin-nav-button.active span,
+.admin-sidebar-menu .admin-nav-button.active small { color: #ffffff !important; }
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button,
+[data-theme="dark"] .admin-sidebar-menu .admin-nav-button {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 30%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button:not(.active),
+[data-theme="dark"] .admin-sidebar-menu .admin-nav-button:not(.active) {
+  background: color-mix(in srgb, var(--amp-color) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color) 25%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active,
+[data-theme="dark"] .admin-sidebar-menu .admin-nav-button.active { background: var(--amp-color) !important; }
+
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active span,
+[data-theme="dark"] .admin-sidebar .admin-nav-button.active small,
+[data-theme="dark"] .admin-sidebar-menu .admin-nav-button.active span,
+[data-theme="dark"] .admin-sidebar-menu .admin-nav-button.active small { color: #ffffff !important; }
+
+.admin-sidebar-menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  padding-right: 4px;
+}
+
+/* =================================================================
+   BİRLEŞTİRİLMİŞ DROPDOWN VE SELECT KURALLARI
+   ================================================================= */
+body .app select,
+body .app .admin-toolbar select,
+body .app .admin-content select {
+  min-height: 52px !important;
+  height: 52px !important;
+  padding: 0 44px 0 22px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
+  background-color: var(--paper, #ffffff) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238f7fb8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 18px center !important;
+  background-size: 16px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04) !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+body .app select:hover,
+body .app select:focus,
+body .app .admin-toolbar select:hover,
+body .app .admin-toolbar select:focus {
+  border-color: var(--amp-color, #8f7fb8) !important;
+  background-color: color-mix(in srgb, var(--paper, #ffffff) 92%, var(--amp-color, #8f7fb8) 8%) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 22%, transparent), 0 0 0 4px color-mix(in srgb, var(--amp-color, #8f7fb8) 12%, transparent) !important;
+  transform: translateY(-2px) !important;
+}
+
+body .app select option {
+  background-color: var(--paper, #ffffff) !important;
+  color: var(--text, #333333) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  padding: 14px 20px !important;
+}
+
+body .app select option:checked,
+body .app select option:hover,
+body .app select option:focus,
+body .app select option:active {
+  background: linear-gradient(0deg, var(--amp-color, #8f7fb8) 0%, var(--amp-color, #8f7fb8) 100%) !important;
+  background-color: var(--amp-color, #8f7fb8) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] body .app select,
+[data-theme="dark"] body .app .admin-toolbar select,
+[data-theme="dark"] body .app .admin-content select {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] body .app select:hover,
+[data-theme="dark"] body .app select:focus {
+  border-color: var(--amp-color, #e3b6c7) !important;
+  background-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+[data-theme="dark"] body .app select option {
+  background-color: #1f1f1f !important;
+  color: #e0e0e0 !important;
+}
+
+[data-theme="dark"] body .app select option:checked,
+[data-theme="dark"] body .app select option:hover,
+[data-theme="dark"] body .app select option:focus {
+  background-color: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+}
+
+body .app .admin-custom-select {
+  position: relative !important;
+  flex: 1 1 240px !important;
+  min-width: 220px !important;
+  width: 100% !important;
+}
+
+body .app .admin-custom-select-button {
+  width: 100% !important;
+  min-height: 56px !important;
+  padding: 0 12px 0 22px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--paper) 94%, var(--rose-light) 6%), var(--paper)) !important;
+  color: var(--rose-dark) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
+  cursor: pointer !important;
+  transition: 0.22s ease !important;
+}
+
+body .app .admin-custom-select-button:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--rose-dark) !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--rose-light) 28%, var(--paper)), color-mix(in srgb, var(--rose) 12%, var(--paper))) !important;
+  box-shadow: 0 16px 32px color-mix(in srgb, var(--rose-dark) 15%, transparent), 0 0 0 4px color-mix(in srgb, var(--rose) 9%, transparent) !important;
+}
+
+body .app .admin-custom-select-button > span:first-child { flex: 1; text-align: left; color: inherit !important; white-space: nowrap; }
+
+body .app .admin-custom-select-arrow {
+  width: 30px; height: 30px; min-width: 30px; display: grid; place-items: center; border-radius: 50%;
+  background: transparent !important; color: var(--rose-dark) !important;
+  border: 1px solid color-mix(in srgb, var(--rose-dark) 20%, transparent); font-size: 13px; font-weight: 900; transition: 0.2s ease;
+}
+
+body .app .admin-custom-select-button:hover .admin-custom-select-arrow {
+  background: color-mix(in srgb, var(--rose-light) 28%, var(--paper)) !important;
+  border-color: color-mix(in srgb, var(--rose-dark) 32%, transparent);
+}
+
+body .app .admin-custom-select.open .admin-custom-select-arrow {
+  transform: rotate(180deg);
+  background: color-mix(in srgb, var(--rose-light) 38%, var(--paper)) !important;
+  color: var(--rose-dark) !important;
+}
+
+body .app .admin-custom-select-menu {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  left: 0 !important; right: 0 !important; z-index: 9999 !important;
+  padding: 16px !important; border-radius: 24px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
+  background: var(--paper, #ffffff) !important;
+  box-shadow: 0 20px 45px color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, rgba(0,0,0,0.1)) !important;
+  overflow: hidden !important; display: flex !important; flex-direction: column !important; gap: 8px !important;
+}
+
+body .app .admin-custom-select-menu button.admin-custom-select-option {
+  width: 100% !important; min-height: 44px !important; height: auto !important; padding: 12px 18px !important;
+  display: flex !important; align-items: center !important; justify-content: flex-start !important;
+  border: none !important; border-radius: 16px !important; background: transparent !important;
+  color: var(--text, #333333) !important; font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important; font-weight: 800 !important; text-align: left !important; cursor: pointer !important;
+  transition: all 0.15s ease !important; box-shadow: none !important; transform: none !important;
+}
+
+body .app .admin-custom-select-menu button.admin-custom-select-option:hover:not(.selected) {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 12%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  transform: translateX(4px) !important;
+}
+
+body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
+  background: color-mix(in srgb, var(--amp-color, #8f7fb8) 18%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #8f7fb8) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
+  font-weight: 900 !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-button {
+  background: rgba(255, 255, 255, 0.08) !important; color: var(--rose-light) !important;
+  border-color: color-mix(in srgb, var(--rose-light) 28%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu {
+  background: #1f1f1f !important; border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option { color: #e0e0e0 !important; }
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option:hover:not(.selected) {
+  background: rgba(255, 255, 255, 0.08) !important; color: var(--amp-color, #e3b6c7) !important;
+}
+
+[data-theme="dark"] body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, #1f1f1f) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+/* =========================================================
+   FINAL DÜZELTME - ADMİN PANEL AÇILIR MENÜLERİ
+   Native select yerine özel menü kullanıldığı için mavi seçim sorunu biter.
+   ========================================================= */
+.admin-content,
+.admin-editor-section,
+.admin-toolbar,
+.admin-field,
+.admin-shell-card,
+.admin-layout,
+.admin-main-panel {
+  overflow: visible !important;
+}
+
+.admin-custom-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  z-index: 1;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+}
+
+.admin-custom-select.open {
+  z-index: 10000;
+}
+
+.admin-custom-select-button {
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.46) !important;
+  border-radius: 18px !important;
+  background: var(--theme-input) !important;
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: left;
+  box-shadow: 0 10px 24px rgba(var(--theme-rgb), 0.08);
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.admin-custom-select-button:hover,
+.admin-custom-select.open .admin-custom-select-button {
+  border-color: rgba(var(--theme-strong-rgb), 0.72) !important;
+  box-shadow: 0 12px 28px rgba(var(--theme-rgb), 0.14);
+}
+
+.admin-custom-select-arrow {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(var(--theme-rgb), 0.12);
+  color: var(--rose-deep);
+  font-size: 18px;
+  font-weight: 900;
+  transform: translateY(-1px);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.admin-custom-select.open .admin-custom-select-arrow {
+  transform: rotate(180deg) translateY(1px);
+  background: rgba(var(--theme-rgb), 0.20);
+}
+
+.admin-custom-select-menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 10001;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.42);
+  border-radius: 18px;
+  background: var(--theme-surface) !important;
+  color: var(--theme-text-main) !important;
+  box-shadow: 0 22px 54px rgba(40, 22, 31, 0.20);
+  backdrop-filter: blur(14px);
+}
+
+.admin-custom-select-option {
+  width: 100%;
+  min-height: 42px;
+  padding: 11px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border: none !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none !important;
+}
+
+.admin-custom-select-option:hover,
+.admin-custom-select-option.selected {
+  background: linear-gradient(135deg, rgba(var(--theme-rgb), 0.20), rgba(var(--theme-soft-rgb), 0.26)) !important;
+  color: var(--rose-deep) !important;
+}
+
+.admin-custom-select-option.selected {
+  border: 1px solid rgba(var(--theme-rgb), 0.34) !important;
+  font-weight: 900;
+}
+
+html[data-theme="dark"] .admin-custom-select-menu {
+  background: #2d222a !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.44);
+}
+
+html[data-theme="dark"] .admin-custom-select-button,
+html[data-theme="dark"] .admin-custom-select-option {
+  color: #fff4f8 !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-option:hover,
+html[data-theme="dark"] .admin-custom-select-option.selected {
+  background: rgba(196, 123, 150, 0.24) !important;
+  color: #ffd8e4 !important;
+}
+
+/* Eski native select kalırsa bile tarayıcı mavisi yerine tema renkleri kullanılmaya çalışılır. */
+.admin-field select,
+.admin-toolbar select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--rose-deep) 50%),
+    linear-gradient(135deg, var(--rose-deep) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 14px) 50%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+.admin-field select option,
+.admin-toolbar select option {
+  background: var(--theme-surface);
+  color: var(--theme-text-main);
+  font-weight: 800;
+}
+
+/* Açılış kartındaki küçük yazılar da açık arka planda kaybolmasın. */
+html[data-theme] .intro-card {
+  background:
+    radial-gradient(circle at top right, rgba(var(--theme-soft-rgb), 0.24), transparent 30%),
+    rgba(var(--theme-faint-rgb), 0.72) !important;
+  border-color: rgba(var(--theme-rgb), 0.30) !important;
+}
+
+html[data-theme="dark"] .intro-card {
+  background:
+    radial-gradient(circle at top right, rgba(196, 123, 150, 0.18), transparent 30%),
+    rgba(36, 26, 33, 0.78) !important;
+}
+
+html[data-theme] .intro-small {
+  color: var(--rose-deep) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] .intro-text {
+  color: var(--theme-text-muted) !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] .intro-page .couple-title {
+  color: #ffffff !important;
+  text-shadow:
+    0 3px 5px rgba(0, 0, 0, 0.72),
+    0 9px 22px rgba(0, 0, 0, 0.30),
+    0 0 22px rgba(var(--theme-rgb), 0.18) !important;
+}
+
+@media (max-width: 650px) {
+  .admin-custom-select-button {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .admin-custom-select-menu {
+    max-height: 220px;
+  }
+
+  .admin-custom-select-option {
+    min-height: 40px;
+    font-size: 14px;
+  }
+}
+
+/* =========================================================
+   FINAL DÜZELTME - Admin panel tema uyumu, checkbox, dropdown ve şifre
+   ========================================================= */
+html[data-theme] .admin-help-text {
+  margin: 18px 0 24px !important;
+  padding: 18px 22px !important;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.28) !important;
+  border-left: 6px solid rgba(var(--theme-rgb), 0.72) !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-soft-rgb), 0.34), transparent 34%),
+    rgba(var(--theme-faint-rgb), 0.84) !important;
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 17px !important;
+  font-weight: 900 !important;
+  line-height: 1.75 !important;
+  text-align: left !important;
+  box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.07) !important;
+}
+
+html[data-theme="dark"] .admin-help-text {
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-rgb), 0.18), transparent 34%),
+    rgba(36, 26, 33, 0.92) !important;
+  color: #fff4f8 !important;
+}
+
+html[data-theme] .admin-theme-check-row {
+  margin-top: 20px !important;
+}
+
+html[data-theme] .admin-check-field {
+  min-height: 62px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 16px 18px !important;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.38) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-faint-rgb), 0.96), rgba(var(--theme-soft-rgb), 0.18)) !important;
+  color: var(--theme-text-main) !important;
+  box-shadow: 0 12px 26px rgba(var(--theme-strong-rgb), 0.07) !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease !important;
+}
+
+html[data-theme] .admin-check-field:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--theme-rgb), 0.68) !important;
+  box-shadow: 0 16px 34px rgba(var(--theme-strong-rgb), 0.11) !important;
+}
+
+html[data-theme] .admin-check-field input {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  margin: 0 !important;
+  border: 2px solid rgba(var(--theme-rgb), 0.58) !important;
+  border-radius: 8px !important;
+  background: var(--theme-input) !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+}
+
+html[data-theme] .admin-check-field input::after {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border-left: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  transform: rotate(-45deg) scale(0);
+  transform-origin: center;
+  transition: transform 0.16s ease;
+}
+
+html[data-theme] .admin-check-field input:checked {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 8px 16px rgba(var(--theme-rgb), 0.22) !important;
+}
+
+html[data-theme] .admin-check-field input:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+html[data-theme] .admin-check-field span {
+  color: var(--theme-text-main) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 16px !important;
+  font-weight: 950 !important;
+  line-height: 1.45 !important;
+}
+
+html[data-theme="dark"] .admin-check-field {
+  background: rgba(36, 26, 33, 0.92) !important;
+}
+
+/* Filtre ve açılır menüleri daha premium hale getirir */
+html[data-theme] .admin-toolbar {
+  align-items: stretch !important;
+}
+
+html[data-theme] .admin-actions-sticky {
+  background: var(--theme-surface) !important;
+  border-color: rgba(var(--theme-rgb), 0.28) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+html[data-theme] .admin-toolbar .admin-custom-select {
+  min-width: 170px !important;
+}
+
+html[data-theme] .admin-custom-select-button {
+  min-height: 56px !important;
+  padding: 0 14px 0 18px !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-faint-rgb), 0.98), rgba(var(--theme-soft-rgb), 0.14)) !important;
+  color: var(--theme-text-main) !important;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.44) !important;
+  font-size: 15px !important;
+  font-weight: 950 !important;
+  box-shadow: 0 12px 24px rgba(var(--theme-strong-rgb), 0.08) !important;
+}
+
+html[data-theme] .admin-custom-select-button > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-theme] .admin-custom-select-arrow {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  background: rgba(var(--theme-rgb), 0.14) !important;
+  color: var(--rose-deep) !important;
+  font-size: 16px !important;
+}
+
+html[data-theme] .admin-custom-select-menu {
+  padding: 10px !important;
+  border-radius: 22px !important;
+  border-color: rgba(var(--theme-rgb), 0.42) !important;
+  background: var(--theme-surface) !important;
+  box-shadow: 0 24px 60px rgba(var(--theme-strong-rgb), 0.20) !important;
+}
+
+html[data-theme] .admin-custom-select-option {
+  min-height: 46px !important;
+  padding: 12px 14px !important;
+  border-radius: 15px !important;
+  color: var(--theme-text-main) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+html[data-theme] .admin-custom-select-option:hover,
+html[data-theme] .admin-custom-select-option.selected {
+  background: linear-gradient(135deg, rgba(var(--theme-rgb), 0.22), rgba(var(--theme-soft-rgb), 0.34)) !important;
+  color: var(--rose-deep) !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-button,
+html[data-theme="dark"] .admin-custom-select-menu,
+html[data-theme="dark"] .admin-custom-select-option {
+  color: #fff4f8 !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-button {
+  background: rgba(36, 26, 33, 0.95) !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-menu {
+  background: #241a21 !important;
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.55) !important;
+}
+
+html[data-theme="dark"] .admin-custom-select-option:hover,
+html[data-theme="dark"] .admin-custom-select-option.selected {
+  background: rgba(196, 123, 150, 0.28) !important;
+  color: #ffd8e4 !important;
+}
+
+/* Admin şifre değiştirme alanı */
+.admin-password-form {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-password-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.admin-password-message {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(var(--theme-soft-rgb), 0.34);
+  color: var(--theme-text-main) !important;
+  border: 1px solid rgba(var(--theme-rgb), 0.28);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 950 !important;
+}
+
+/* Üstteki değişken açıklaması gibi metinler tema dışı kalmasın */
+html[data-theme] .admin-editor-section > p,
+html[data-theme] .admin-current-section span,
+html[data-theme] .admin-link-preview-box small,
+html[data-theme] .admin-export-card span,
+html[data-theme] .admin-import-box small {
+  color: var(--theme-text-muted) !important;
+  font-weight: 850 !important;
+}
+
+@media (max-width: 650px) {
+  html[data-theme] .admin-toolbar .admin-custom-select {
+    min-width: 100% !important;
+  }
+
+  .admin-password-actions .main-button {
+    width: 100%;
+  }
+
+  .admin-password-message {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* Supabase admin giriş / şifre sıfırlama düzeltmeleri */
+.admin-link-button {
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong, #8f3657);
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-link-button:hover {
+  background: rgba(255, 255, 255, 0.65);
+  transform: translateY(-1px);
+}
+
+.admin-login-note {
+  display: block;
+  width: 100%;
+  color: var(--text-muted, #6f3c4d);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(185, 111, 135, 0.26);
+  border-radius: 18px;
+  padding: 12px 14px;
+  margin: 4px 0 8px;
+}
+
+.admin-forgot-form,
+.admin-recovery-form {
+  gap: 14px;
+}
+
+.admin-login span {
+  display: block;
+  width: 100%;
+  border-radius: 16px;
+  padding: 11px 13px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(185, 111, 135, 0.22);
+  color: var(--accent-strong, #8f3657);
+  font-weight: 800;
+  line-height: 1.45;
+  text-align: center;
+}
+
+html[data-theme="dark"] .admin-link-button {
+  color: #f3d7b7;
+}
+
+html[data-theme="dark"] .admin-link-button:hover,
+html[data-theme="dark"] .admin-login-note,
+html[data-theme="dark"] .admin-login span {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f8efe7;
+}
+
+/* Admin giriş ekranı okunabilirlik ve Supabase hata kutuları */
+.admin-page .admin-login {
+  width: min(100%, 560px);
+  padding: 26px;
+  border-radius: 28px;
+  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-soft-rgb, 243, 215, 223), 0.34), transparent 38%),
+    linear-gradient(145deg, rgba(255, 252, 253, 0.98), rgba(255, 246, 249, 0.95));
+  box-shadow: 0 22px 55px rgba(83, 39, 55, 0.16);
+}
+
+.admin-page .admin-login input {
+  min-height: 58px;
+  background: #ffffff !important;
+  color: #3b1f2a !important;
+  border: 1.6px solid rgba(var(--theme-rgb, 143, 54, 87), 0.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 24px rgba(83, 39, 55, 0.08);
+}
+
+.admin-page .admin-login input::placeholder {
+  color: #7d5362 !important;
+  opacity: 1 !important;
+}
+
+.admin-page .admin-login .main-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  transform: none;
+}
+
+.admin-login-message,
+.admin-login span.admin-login-message {
+  display: block;
+  width: 100%;
+  border-radius: 18px;
+  padding: 13px 15px;
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.94) !important;
+  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.26) !important;
+  color: #5c2639 !important;
+  font-weight: 850;
+  line-height: 1.55;
+  text-align: center;
+  word-break: break-word;
+}
+
+.admin-login-message.error,
+.admin-login span.admin-login-message.error {
+  background: #fff0f0 !important;
+  border-color: rgba(176, 54, 54, 0.35) !important;
+  color: #8a2525 !important;
+}
+
+.admin-page .admin-login-note {
+  color: #4f2b38 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(var(--theme-rgb, 143, 54, 87), 0.28) !important;
+  font-weight: 800;
+}
+
+.admin-page .admin-link-button {
+  width: fit-content;
+  justify-self: center;
+  color: var(--rose-dark, #8f3657) !important;
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.78);
+  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.2);
+  text-decoration: none;
+}
+
+.admin-page .admin-link-button:hover {
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 1);
+}
+
+html[data-theme="dark"] .admin-page .admin-login {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 38%),
+    linear-gradient(145deg, rgba(36, 26, 33, 0.98), rgba(28, 20, 26, 0.98));
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .admin-page .admin-login input {
+  background: rgba(255, 255, 255, 0.96) !important;
+  color: #251a20 !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+html[data-theme="dark"] .admin-page .admin-login input::placeholder {
+  color: #66515b !important;
+}
+
+html[data-theme="dark"] .admin-login-message,
+html[data-theme="dark"] .admin-login span.admin-login-message {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #fff4f8 !important;
+}
+
+html[data-theme="dark"] .admin-login-message.error,
+html[data-theme="dark"] .admin-login span.admin-login-message.error {
+  background: rgba(255, 91, 91, 0.14) !important;
+  border-color: rgba(255, 91, 91, 0.32) !important;
+  color: #ffd9d9 !important;
+}
+
+html[data-theme="dark"] .admin-page .admin-login-note {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #fff4f8 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+html[data-theme="dark"] .admin-page .admin-link-button {
+  color: #f6d5b0 !important;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+/* Şifre değiştikten sonra giriş ekranında gösterilen başarılı işlem mesajı */
+.admin-login-message.success,
+.admin-login span.admin-login-message.success {
+  background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.96) !important;
+  border-color: rgba(var(--theme-rgb, 143, 54, 87), 0.34) !important;
+  color: var(--rose-dark, #8f3657) !important;
+  box-shadow: 0 12px 26px rgba(var(--theme-rgb, 143, 54, 87), 0.10);
+}
+
+html[data-theme="dark"] .admin-login-message.success,
+html[data-theme="dark"] .admin-login span.admin-login-message.success {
+  background: rgba(255, 255, 255, 0.13) !important;
+  border-color: rgba(246, 213, 176, 0.36) !important;
+  color: #f6d5b0 !important;
+}
+
+
+/* Admin çıkış butonu */
+.admin-logout-button {
+  color: #ffffff !important;
+  border-color: rgba(126, 37, 53, 0.42) !important;
+  background: linear-gradient(135deg, #9f3f58, #6d2639) !important;
+  box-shadow: 0 12px 24px rgba(109, 38, 57, 0.18) !important;
+  font-weight: 900 !important;
+}
+
+.admin-logout-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
+}
+
+html[data-theme="sage"] .admin-logout-button {
+  background: linear-gradient(135deg, #607244, #334220) !important;
+  border-color: rgba(51, 66, 32, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(51, 66, 32, 0.18) !important;
+}
+
+html[data-theme="gold"] .admin-logout-button {
+  background: linear-gradient(135deg, #a97827, #654113) !important;
+  border-color: rgba(101, 65, 19, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(101, 65, 19, 0.18) !important;
+}
+
+html[data-theme="burgundy"] .admin-logout-button {
+  background: linear-gradient(135deg, #7d1830, #3d0c19) !important;
+  border-color: rgba(61, 12, 25, 0.5) !important;
+  box-shadow: 0 12px 24px rgba(61, 12, 25, 0.22) !important;
+}
+
+html[data-theme="minimal"] .admin-logout-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #3d4856, #111827) !important;
+  border-color: rgba(17, 24, 39, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(17, 24, 39, 0.16) !important;
+}
+
+/* Admin panel çıkış butonu gradyanı */
+html[data-theme="lavanta"] .admin-logout-button {
+  background: linear-gradient(135deg, #7a6ba3, #4c3f70) !important;
+  border-color: rgba(76, 63, 112, 0.45) !important;
+  box-shadow: 0 12px 24px rgba(76, 63, 112, 0.18) !important;
+}
+
+html[data-theme="dark"] .admin-logout-button {
+  color: #fff7f9 !important;
+  background: linear-gradient(135deg, #d36a86, #7a203b) !important;
+  border-color: rgba(255, 177, 194, 0.38) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Tema uyumlu özel popup / uyarı / onay / düzenleme pencereleri */
+.app-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 50% 30%, rgba(var(--theme-rgb, 217, 140, 161), 0.18), transparent 34%),
+    rgba(25, 14, 18, 0.46);
+  backdrop-filter: blur(10px);
+  animation: modalBackdropIn 0.18s ease both;
+}
+
+.app-modal-card {
+  position: relative;
+  width: min(92vw, 460px);
+  margin: 0;
+  padding: 30px 28px 24px;
+  display: grid;
+  gap: 18px;
+  color: var(--theme-text-main, var(--text));
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.45)),
+    var(--theme-surface, var(--paper));
+  border: 1px solid rgba(var(--theme-rgb, 217, 140, 161), 0.32);
+  border-radius: 30px;
+  box-shadow:
+    0 32px 90px rgba(36, 18, 25, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.50);
+  overflow: hidden;
+  animation: modalCardIn 0.22s ease both;
+}
+
+.app-modal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 7px;
+  background: linear-gradient(90deg, var(--rose), var(--rose-dark), var(--gold));
+}
+
+.app-modal-icon {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  color: var(--theme-on-accent, #ffffff);
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  box-shadow: 0 16px 30px rgba(var(--theme-rgb, 217, 140, 161), 0.26);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.app-modal-content {
+  display: grid;
+  gap: 9px;
+}
+
+.app-modal-content h3 {
+  margin: 0;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: clamp(24px, 4vw, 31px);
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.app-modal-content p {
+  margin: 0;
+  color: var(--theme-text-muted, var(--text-soft));
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.app-modal-input {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  color: var(--theme-text-main, var(--text));
+  background: var(--theme-input, rgba(255, 250, 251, 0.96));
+  border: 1px solid rgba(var(--theme-rgb, 217, 140, 161), 0.32);
+  border-radius: 17px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
+  font-size: 17px;
+  font-weight: 750;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.app-modal-input:focus {
+  border-color: rgba(var(--theme-rgb, 217, 140, 161), 0.72);
+  box-shadow:
+    0 0 0 4px rgba(var(--theme-rgb, 217, 140, 161), 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.44);
+  transform: translateY(-1px);
+}
+
+.app-modal-textarea {
+  min-height: 116px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.app-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+.app-modal-actions .main-button,
+.app-modal-actions .secondary-button {
+  min-height: 46px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.app-modal-cancel {
+  color: var(--rose-deep) !important;
+  background: rgba(var(--theme-rgb, 217, 140, 161), 0.10) !important;
+  border-color: rgba(var(--theme-rgb, 217, 140, 161), 0.24) !important;
+}
+
+.app-modal-danger-button {
+  background: linear-gradient(135deg, #c94f67, #7a203b) !important;
+  color: #fff !important;
+}
+
+.app-modal-warning .app-modal-icon {
+  background: linear-gradient(135deg, var(--gold), var(--rose-dark));
+}
+
+.app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #8fb46b, var(--rose-dark));
+}
+
+.app-modal-danger .app-modal-icon,
+.app-modal-danger .app-modal-card::before {
+  background: linear-gradient(135deg, #e06d7f, #8d263f);
+}
+
+.app-modal-success .app-modal-card::before {
+  background: linear-gradient(90deg, #9fc47d, var(--rose), var(--rose-dark));
+}
+
+@keyframes modalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+html[data-theme="sage"] .app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #9cad75, #4d6335);
+}
+
+html[data-theme="gold"] .app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #d4b35d, #8a6122);
+}
+
+html[data-theme="minimal"] .app-modal-icon {
+  background: linear-gradient(135deg, #9f8b7c, #45362e);
+}
+
+/* Başarılı işlem (Success) modallarındaki ikon rengi */
+html[data-theme="lavanta"] .app-modal-success .app-modal-icon {
+  background: linear-gradient(135deg, #a696c8, #4c3f70);
+}
+
+html[data-theme="dark"] .app-modal-backdrop {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(196, 123, 150, 0.18), transparent 36%),
+    rgba(0, 0, 0, 0.68);
+}
+
+html[data-theme="dark"] .app-modal-card {
+  color: #fff4f8;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    #241a21;
+  border-color: rgba(255, 216, 228, 0.18);
+  box-shadow:
+    0 34px 96px rgba(0, 0, 0, 0.54),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+html[data-theme="dark"] .app-modal-content h3 {
+  color: #ffd8e4;
+}
+
+html[data-theme="dark"] .app-modal-content p {
+  color: #ead0da;
+}
+
+html[data-theme="dark"] .app-modal-input {
+  color: #fff4f8;
+  background: rgba(18, 13, 17, 0.92);
+  border-color: rgba(255, 216, 228, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .app-modal-input::placeholder {
+  color: rgba(255, 244, 248, 0.54);
+}
+
+html[data-theme="dark"] .app-modal-cancel {
+  color: #ffd8e4 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+@media (max-width: 560px) {
+  .app-modal-backdrop {
+    align-items: flex-end;
+    padding: 14px;
+  }
+
+  .app-modal-card {
+    width: 100%;
+    padding: 28px 20px 20px;
+    border-radius: 28px;
+  }
+
+  .app-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .app-modal-actions .main-button,
+  .app-modal-actions .secondary-button {
+    width: 100%;
+  }
+}
+
+
+/* === Ghostwriter fixes: remove popup icon block and improve sidebar layout === */
+.app-modal-card {
+  width: min(92vw, 440px);
+  padding: 26px 26px 22px;
+  gap: 14px;
+}
+
+.app-modal-card::before {
+  height: 6px;
+}
+
+.app-modal-content {
+  gap: 8px;
+}
+
+.app-modal-content h3 {
+  font-size: clamp(23px, 3.2vw, 29px);
+}
+
+.app-modal-content p {
+  font-size: 17px;
+}
+
+/* Hide the old icon area completely */
+.app-modal-icon {
+  display: none !important;
+}
+
+/* Stronger, cleaner admin layout */
+.admin-layout {
+  grid-template-columns: 332px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.admin-sidebar {
+  top: 14px;
+  max-height: calc(100vh - 28px);
+  overflow: hidden;
+  padding: 24px 22px;
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(145, 110, 149, 0.14);
+  box-shadow: 0 24px 70px rgba(88, 58, 118, 0.06);
+}
+
+.admin-sidebar-title {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(145, 110, 149, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-sidebar-title span {
+  font-size: 1.75rem;
+  line-height: 1.05;
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.admin-sidebar-title small {
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.admin-sidebar-menu {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  max-height: calc(100vh - 196px);
+  overflow: auto;
+  padding-right: 6px;
+}
+
+.admin-sidebar-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-sidebar-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(var(--theme-rgb, 217, 140, 161), 0.34);
+  border-radius: 999px;
+}
+
+.admin-layout .admin-sidebar {
+  top: 14px !important;
+  max-height: calc(100vh - 28px) !important;
+  overflow: hidden !important;
+  padding: 26px 22px !important;
+  border-radius: 32px !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(145, 110, 149, 0.14) !important;
+  box-shadow: none !important;
+}
+
+.admin-layout .admin-sidebar-title {
+  margin-bottom: 20px !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid rgba(145, 110, 149, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.admin-layout .admin-sidebar-title span {
+  font-size: 1.75rem !important;
+  line-height: 1.05 !important;
+  font-weight: 700 !important;
+  color: var(--text-h) !important;
+}
+
+.admin-layout .admin-sidebar-title small {
+  color: var(--text-soft) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.45 !important;
+}
+
+.admin-layout .admin-sidebar-menu {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 18px !important;
+  max-height: calc(100vh - 196px) !important;
+  overflow: auto !important;
+  padding-right: 8px !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  min-height: 72px !important;
+  padding: 14px 18px !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  border: 1px solid rgba(145, 110, 149, 0.16) !important;
+  border-radius: 18px !important;
+  background: rgba(247, 244, 251, 0.92) !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  transform: none !important;
+  box-shadow: none !important;
+  transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, color 0.22s ease !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button,
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover,
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active),
+.admin-layout .admin-sidebar-menu .admin-nav-button.active,
+.admin-layout .admin-sidebar-menu .admin-nav-button.active:hover {
+  box-shadow: none !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) {
+  transform: translateX(2px) scale(1.01) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--rose-light) 28%, transparent), transparent 35%),
+    linear-gradient(145deg, color-mix(in srgb, var(--rose-light) 14%, var(--paper)), var(--paper)) !important;
+  border-color: rgba(145, 110, 149, 0.24) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) span {
+  color: var(--rose-deep) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) small {
+  color: var(--text-soft) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button.active {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: var(--rose-dark) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button.active:hover {
+  transform: translateX(2px) scale(1.01) !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button.active span,
+.admin-layout .admin-sidebar-menu .admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+.admin-nav-button {
+  min-height: 86px;
+  padding: 13px 13px 12px;
+  align-content: start;
+}
+
+.admin-nav-button span {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.admin-nav-button small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* Make the long highlighted button less overpowering */
+.admin-nav-button.active {
+  background: linear-gradient(135deg, rgba(var(--theme-rgb, 217, 140, 161), 0.96), rgba(var(--theme-dark-rgb, 159, 79, 104), 0.96));
+}
+
+@media (max-width: 1200px) {
+  .admin-layout {
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+    max-height: calc(100vh - 190px);
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 650px) {
+  .app-modal-card {
+    width: min(94vw, 420px);
+    padding: 24px 20px 20px;
+    border-radius: 24px;
+  }
+
+  .admin-shell-card {
+    padding: 18px 12px;
+  }
+
+  .admin-layout {
+    gap: 18px;
+  }
+
+  .admin-sidebar {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .admin-nav-button {
+    min-height: auto;
+    padding: 12px 14px;
+  }
+
+  .admin-nav-button span {
+    font-size: 15px;
+  }
+}
+
+
+/* =============================
+   RSVP BUTON HOVER + DISABLED FIX
+   ============================= */
+
+/* Normal buton yazısı net görünsün */
+.option-button {
+  color: var(--text) !important;
+}
+
+/* Mouse üstüne gelince yazı kaybolmasın */
+.option-button:hover:not(.active):not(:disabled) {
+  color: var(--rose-dark) !important;
+  background: #fff0f4 !important;
+  border-color: var(--rose-dark) !important;
+}
+
+/* Aktif buton her durumda okunaklı kalsın */
+.option-button.active {
+  background: linear-gradient(135deg, #e69aae, var(--rose-dark)) !important;
+  color: #ffffff !important;
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 14px 30px rgba(159, 79, 104, 0.28) !important;
+}
+
+/* Aktif butonun üstüne gelince yazı yine beyaz kalsın */
+.option-button.active:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #e69aae, var(--rose-dark)) !important;
+}
+
+/* Katılamayacağım seçiliyken pasif olan gruplar aktif gibi görünmesin */
+.option-group.disabled {
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+/* Disabled gruptaki bütün butonlar pasif görünümde olsun */
+.option-group.disabled .option-button,
+.option-group.disabled .option-button.active,
+.option-group.disabled .option-button:hover,
+.option-group.disabled .option-button.active:hover,
+.option-button:disabled,
+.option-button:disabled.active,
+.option-button:disabled:hover {
+  background: rgba(255, 250, 251, 0.55) !important;
+  color: #c2a2ac !important;
+  border-color: rgba(217, 140, 161, 0.22) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: not-allowed !important;
+}
+
+/* =============================
+   FINAL DÜZENLEME - QR, EXCEL/CSV VE TEMA UYUMU
+   ============================= */
+:root {
+  --theme-rgb: 159, 79, 104;
+  --theme-strong-rgb: 122, 47, 73;
+  --theme-soft-rgb: 248, 215, 223;
+  --theme-faint-rgb: 255, 250, 251;
+  --theme-overlay-center: rgba(var(--theme-rgb), 0.10);
+  --theme-overlay-mid: rgba(var(--theme-rgb), 0.17);
+  --theme-overlay-edge: rgba(var(--theme-strong-rgb), 0.28);
+  --theme-overlay-bottom: rgba(var(--theme-strong-rgb), 0.16);
+}
+
+html[data-theme="sage"] {
+  --theme-rgb: 96, 114, 68;
+  --theme-strong-rgb: 64, 80, 46;
+  --theme-soft-rgb: 220, 232, 200;
+  --theme-faint-rgb: 251, 255, 247;
+}
+
+html[data-theme="gold"] {
+  --theme-rgb: 155, 116, 51;
+  --theme-strong-rgb: 110, 75, 30;
+  --theme-soft-rgb: 244, 223, 173;
+  --theme-faint-rgb: 255, 253, 244;
+}
+
+html[data-theme="burgundy"] {
+  --theme-rgb: 127, 39, 71;
+  --theme-strong-rgb: 83, 24, 46;
+  --theme-soft-rgb: 226, 182, 196;
+  --theme-faint-rgb: 255, 248, 250;
+}
+
+html[data-theme="minimal"] {
+  --theme-rgb: 119, 94, 80;
+  --theme-strong-rgb: 69, 54, 46;
+  --theme-soft-rgb: 232, 225, 220;
+  --theme-faint-rgb: 255, 255, 255;
+}
+
+/* Görsellerin üzerindeki renk katmanı seçilen temaya göre değişir */
+.intro-page {
+  background:
+    linear-gradient(
+      rgba(var(--theme-rgb), 0.08),
+      rgba(var(--theme-rgb), 0.22)
+    ),
+    var(--intro-image) center/cover no-repeat !important;
+}
+
+.hero-section {
+  align-items: center !important;
+  padding: 80px 38px !important;
+  background:
+    radial-gradient(
+      circle at center,
+      var(--theme-overlay-center) 0%,
+      var(--theme-overlay-mid) 48%,
+      var(--theme-overlay-edge) 100%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(var(--theme-soft-rgb), 0.05),
+      var(--theme-overlay-bottom)
+    ),
+    var(--hero-image) center/cover no-repeat !important;
+}
+
+.hero-section::before {
+  border-color: rgba(var(--theme-faint-rgb), 0.58) !important;
+}
+
+.hero-section::after,
+.leaf-mark::before {
+  color: rgba(var(--theme-soft-rgb), 0.95) !important;
+}
+
+.hero-section .small-title,
+.intro-small {
+  color: #fffafc !important;
+  text-shadow: 0 3px 12px rgba(var(--theme-strong-rgb), 0.55);
+}
+
+.hero-section .couple-title,
+.intro-page .couple-title {
+  color: #ffffff !important;
+  text-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.56),
+    0 10px 24px rgba(var(--theme-strong-rgb), 0.34),
+    0 0 26px rgba(var(--theme-soft-rgb), 0.22) !important;
+}
+
+.hero-section .couple-title em,
+.intro-page .couple-title em {
+  color: var(--gold) !important;
+  text-shadow: 0 3px 10px rgba(var(--theme-strong-rgb), 0.48);
+}
+
+.hero-date {
+  background: rgba(var(--theme-faint-rgb), 0.22) !important;
+  border-color: rgba(var(--theme-soft-rgb), 0.74) !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 3px 10px rgba(var(--theme-strong-rgb), 0.58);
+}
+
+.hero-time,
+.hero-guest-greeting,
+.guest-greeting {
+  color: #ffffff !important;
+  text-shadow: 0 3px 12px rgba(var(--theme-strong-rgb), 0.58);
+}
+
+.open-button,
+.main-button,
+.admin-upload-button,
+.admin-nav-button.active {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  color: #ffffff !important;
+}
+
+.secondary-button,
+.share-button,
+.music-toggle-button {
+  color: var(--rose-dark) !important;
+  border-color: rgba(var(--theme-rgb), 0.36) !important;
+}
+
+.card::after,
+.hero-section::after {
+  color: rgba(var(--theme-rgb), 0.42) !important;
+}
+
+/* Tema seçimi artık native select değil; daha temiz seçim kartları */
+.theme-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.theme-option-card {
+  min-height: 132px;
+  padding: 18px 16px;
+  display: grid;
+  gap: 9px;
+  justify-items: start;
+  text-align: left;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.28);
+  border-radius: 22px;
+  background: rgba(var(--theme-faint-rgb), 0.92);
+  color: var(--text);
+  box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.08);
+  transition: 0.2s ease;
+}
+
+.theme-option-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--theme-rgb), 0.55);
+}
+
+.theme-option-card.active {
+  border-color: rgba(var(--theme-rgb), 0.8);
+  box-shadow: 0 16px 34px rgba(var(--theme-strong-rgb), 0.16);
+}
+
+.theme-option-card strong {
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.theme-option-card small {
+  color: var(--text-soft);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.theme-swatch {
+  width: 52px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 18px rgba(40, 20, 30, 0.12);
+  background: linear-gradient(135deg, #f8d7df, #d98ca1, #9f4f68);
+}
+
+.theme-option-card[data-theme-preview="sage"] .theme-swatch {
+  background: linear-gradient(135deg, #dce8c8, #9cad75, #607244);
+}
+
+.theme-option-card[data-theme-preview="gold"] .theme-swatch {
+  background: linear-gradient(135deg, #fff8df, #c9a45d, #9b7433);
+}
+
+.theme-option-card[data-theme-preview="burgundy"] .theme-swatch {
+  background: linear-gradient(135deg, #e2b6c4, #b55b79, #7f2747);
+}
+
+.theme-option-card[data-theme-preview="minimal"] .theme-swatch {
+  background: linear-gradient(135deg, #ffffff, #b69f91, #45362e);
+}
+
+.theme-option-card[data-theme-preview="lavanta"] .theme-swatch {
+  background: linear-gradient(135deg, #dcd6eb, #a696c8, #7a6ba3);
+}
+
+.admin-theme-check-row {
+  margin-top: 18px;
+}
+
+/* QR alanı sadece QR için; özel link ayrı bölümde */
+.qr-only-panel {
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+}
+
+.admin-qr-actions,
+.admin-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.admin-link-preview-box {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-link-preview-box input,
+.personal-link-standalone input {
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 16px;
+  border: 1.5px solid rgba(var(--theme-rgb), 0.46);
+  border-radius: 18px;
+  background: #fff9fb;
+  color: var(--text);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 15px;
+  font-weight: 850;
+}
+
+.admin-link-preview-box small {
+  color: var(--text-soft) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-weight: 850 !important;
+}
+
+.personal-link-standalone {
+  max-width: 760px;
+}
+
+/* Veri indirme alanı: JSON tek kalmasın, Excel/CSV açık görünsün */
+.admin-export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.admin-export-card,
+.admin-import-box {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(var(--theme-faint-rgb), 0.96);
+  border: 1px solid rgba(var(--theme-rgb), 0.30);
+  box-shadow: 0 14px 30px rgba(var(--theme-strong-rgb), 0.08);
+}
+
+.admin-export-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.admin-export-card strong {
+  color: var(--rose-deep) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 18px;
+  font-weight: 950 !important;
+}
+
+.admin-export-card span {
+  color: var(--text-soft) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: 14px;
+  font-weight: 850 !important;
+  line-height: 1.55;
+}
+
+.admin-import-box {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+/* Admin alanındaki hardcode pembe renkleri seçilen temaya bağla */
+.admin-page {
+  color: var(--text) !important;
+}
+
+.admin-page .card,
+.admin-shell-card,
+.admin-sidebar,
+.admin-main-panel,
+.admin-editor-section,
+.admin-repeat-item,
+.admin-image-field,
+.admin-music-field,
+.admin-list,
+.admin-row,
+.admin-stats div,
+.admin-qr-panel > div,
+.admin-personal-link-box {
+  color: var(--text) !important;
+  background-color: rgba(var(--theme-faint-rgb), 0.96) !important;
+  border-color: rgba(var(--theme-rgb), 0.34) !important;
+}
+
+.admin-page h2,
+.admin-editor-section h3,
+.admin-current-section strong,
+.admin-sidebar-title span,
+.admin-nav-button span,
+.admin-field > span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-row strong,
+.admin-stats strong,
+.admin-qr-panel span,
+.admin-personal-link-box span {
+  color: var(--rose-deep) !important;
+}
+
+.admin-page-header > p:not(.section-label),
+.admin-sidebar-title small,
+.admin-nav-button small,
+.admin-current-section span,
+.admin-field small,
+.admin-image-field small,
+.admin-music-field small,
+.admin-save-message,
+.admin-row span,
+.admin-row em,
+.admin-image-empty,
+.admin-help-text,
+.admin-music-preview strong {
+  color: var(--text-soft) !important;
+}
+
+.admin-field input,
+.admin-field textarea,
+.admin-login input,
+.admin-field select,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-personal-link-box input,
+.admin-check-field {
+  color: var(--text) !important;
+  background: rgba(var(--theme-faint-rgb), 0.98) !important;
+  border-color: rgba(var(--theme-rgb), 0.46) !important;
+}
+
+.admin-check-field input {
+  accent-color: var(--rose-dark) !important;
+}
+
+.admin-nav-button.active {
+  border-color: rgba(var(--theme-strong-rgb), 0.72) !important;
+}
+
+.admin-list-full .admin-row {
+  border-left-color: rgba(var(--theme-rgb), 0.62) !important;
+}
+
+@media (max-width: 1100px) {
+  .theme-picker-grid,
+  .admin-export-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-section {
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(var(--theme-rgb), 0.10) 0%,
+        rgba(var(--theme-rgb), 0.18) 50%,
+        rgba(var(--theme-strong-rgb), 0.30) 100%
+      ),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+
+  .qr-only-panel,
+  .admin-export-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 650px) {
+  .hero-section {
+    min-height: 560px !important;
+    padding: 64px 18px !important;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(var(--theme-rgb), 0.12) 0%,
+        rgba(var(--theme-rgb), 0.22) 50%,
+        rgba(var(--theme-strong-rgb), 0.34) 100%
+      ),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+
+  .theme-picker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-qr-actions,
+  .admin-export-actions {
+    flex-direction: column;
+  }
+
+  .admin-qr-actions .secondary-button,
+  .admin-export-actions .secondary-button {
+    width: 100%;
+  }
+}
+

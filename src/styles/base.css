@@ -1084,3 +1084,254 @@ button {
     height: 28px;
   }
 }
+
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
+
+@import "./base-layout.css";
+@import "./new-features.css";
+@import "./turkish-hero-admin-link.css";
+@import "./admin-full-page-editor.css";
+@import "./admin-image-upload.css";
+@import "./admin-sidebar.css";
+@import "./advanced-features.css";
+@import "./export-qr-theme.css";
+@import "./theme-system.css";
+@import "./final-admin-fixes.css";
+@import "./theme-variables.css";
+@import "./intro-envelope.css";
+@import "./invitation-ui.css";
+@import "./admin-ui.css";
+@import "./admin-navigation.css";
+@import "./responsive.css";
+
+/* =========================================================
+   ✨ YENİ ELEGANT YÜZEN BUTONLAR (GLASSMORPHISM DOCK)
+   (Daha Sade, Minimal ve Rengi Azaltılmış Tasarım)
+   ========================================================= */
+.glass-dock {
+  position: fixed !important;
+  top: 50% !important;
+  right: 20px !important;
+  transform: translateY(-50%) !important; 
+  z-index: 9999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px !important;
+  background: rgba(255, 255, 255, 0.25) !important; /* Kapsül çok daha şeffaf */
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 50px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+}
+
+.glass-dock .dock-btn {
+  width: 46px !important; /* Çok hafif küçülttük daha zarif dursun */
+  height: 46px !important;
+  min-width: 46px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  
+  /* MİNİMALİST YAPI: Baskın renkler gitti, hafif buzlu cam efekti geldi */
+  background: rgba(255, 255, 255, 0.4) !important;
+  color: var(--text-soft, #777) !important; /* Baskın tema rengi yerine yumuşak/gri ton */
+  border: 1px solid rgba(255, 255, 255, 0.7) !important; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  font-family: "Playfair Display", serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.glass-dock .dock-btn:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  background: #ffffff !important; /* Üzerine gelince tam beyaz */
+  color: var(--rose-dark, #9f4f68) !important; /* Tema rengi SADECE üzerine gelince belirsin */
+  border-color: #ffffff !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.glass-dock .dock-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  transition: stroke 0.3s ease !important;
+}
+
+/* Koyu (Dark) Tema Uyumluluğu */
+[data-theme="dark"] .glass-dock {
+  background: rgba(20, 15, 18, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .glass-dock .dock-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .glass-dock .dock-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: var(--rose-light, #f8d7df) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Mobil Görünüm */
+@media (max-width: 650px) {
+  .glass-dock {
+    top: auto !important;
+    bottom: 24px !important;
+    right: 50% !important;
+    transform: translateX(50%) !important; 
+    flex-direction: row !important;
+    padding: 8px 14px !important;
+    gap: 14px !important;
+  }
+}
+
+/* İçeriklerin Sırayla (Staggered) Aşağıdan Yukarı Süzülmesi */
+.hero-content > * {
+  animation: heroFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Her satırın geliş gecikmesi (Sırayla gelmeleri için) */
+.hero-content .small-title { animation-delay: 0.2s; }
+.hero-content .couple-title { animation-delay: 0.4s; }
+.hero-content .hero-date { animation-delay: 0.6s; }
+.hero-content .hero-time { animation-delay: 0.8s; }
+.hero-content .hero-guest-greeting { animation-delay: 1.0s; }
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hareketli "Aşağı Kaydır" (Mouse) İkonu Tasarımı */
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "Playfair Display", serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  z-index: 10;
+  /* Tüm yazılar geldikten sonra en son bu ikon belirecek */
+  animation: heroFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.2s both;
+}
+
+.scroll-indicator .mouse {
+  width: 22px;
+  height: 34px;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  position: relative;
+}
+
+.scroll-indicator .wheel {
+  width: 2px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 2px;
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: scrollWheel 1.5s infinite ease-in-out;
+}
+
+@keyframes scrollWheel {
+  0% { top: 6px; opacity: 1; }
+  100% { top: 18px; opacity: 0; }
+}
+
+@media (max-width: 650px) {
+  .scroll-indicator {
+    bottom: 25px; /* Mobilde biraz daha aşağıda dursun */
+  }
+}
+
+/* =========================================================
+   ✨ ADMİN PANELİ SİNEMATİK GİRİŞ ANİMASYONLARI
+   ========================================================= */
+
+/* 1. Admin kartının tamamı hafifçe büyüyerek ve şeffaflıktan çıkarak gelsin */
+.admin-shell-card {
+  animation: adminScaleUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* 2. Üst başlık kısmı (Yönetim, Admin Panel vs.) aşağıdan süzülsün */
+.admin-page-header {
+  animation: adminFadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+}
+
+/* 3. Giriş / Şifre ekranı aşağıdan süzülsün */
+.admin-login {
+  animation: adminFadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+}
+
+/* 4. Sol menü (Sidebar) soldan sağa doğru zarifçe kaysın */
+.admin-sidebar {
+  animation: adminFadeRight 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
+}
+
+/* 5. Sağ içerik paneli (ayarlar, formlar vs.) aşağıdan yukarı süzülsün */
+.admin-main-panel {
+  animation: adminFadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s both;
+}
+
+/* Animasyon Tanımlamaları */
+@keyframes adminScaleUp {
+  from { 
+    opacity: 0; 
+    transform: scale(0.97); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes adminFadeUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes adminFadeRight {
+  from { 
+    opacity: 0; 
+    transform: translateX(-30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
