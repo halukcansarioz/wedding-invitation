@@ -603,7 +603,6 @@ body .app .floating-actions a.share-button:hover {
 html,
 body,
 .app {
-  lang: tr;
   font-variant-ligatures: normal;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
