@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useTranslation } from "react-i18next";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
-import { AppModal } from "./components/AdminUI";
+import { AppModal } from "./components/AppModal";
 import { useAdminSession } from "./hooks/useAdminSession";
 import { useCountdown } from "./hooks/useCountdown";
 import { useAudio } from "./hooks/useAudio";
