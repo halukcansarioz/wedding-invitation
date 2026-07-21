@@ -801,6 +801,8 @@ function App() {
           <div className="admin-quick-access">
             <a 
               href="#admin" 
+              target="_blank" 
+              rel="noreferrer"
               className="admin-btn" 
               title={isEn ? "Admin Panel" : "Yönetici Paneli"}
             >
@@ -811,7 +813,7 @@ function App() {
               </svg>
             </a>
           </div>
-
+          
           <div className="floating-actions glass-dock">
             {/* Dil Değiştirme */}
             <button
