@@ -43,6 +43,13 @@ export const DEFAULT_SITE_DATA = {
     groomFamilyName: "Sarıöz Ailesi",
     text: "Ailelerimizin de katılımıyla bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.",
   },
+  giftRegistry: {
+    title: "Hediye & Takı Gönderimi",
+    description: "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için hesap bilgilerimiz:",
+    receiver: "Haluk Can Sarıöz",
+    iban: "TR00 0000 0000 0000 0000 0000 00",
+    bankName: "Ziraat / Garanti Bankası"
+  },
   copy: {
     introLabel: "Düğün Davetiyesi",
     introText: "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
@@ -73,6 +80,9 @@ export const DEFAULT_SITE_DATA = {
     shareDescription: "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
     thanksText: "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
     footerSmall: "Made with love",
+    giftButton: "Hediye & Takı Gönder",
+    declineTitle: "Çok Üzüldük!",
+    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz."
   },
   eventDetails: [
     {
@@ -141,7 +151,6 @@ export const THEMES = [
 export const THEME_DEFAULT_IMAGES = {
   rose: {
     introImage: "/images/themes/rose/1.jpg",
-    //heroImage: "/images/themes/rose/2.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4", 
     gallery: [
       "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
@@ -152,7 +161,6 @@ export const THEME_DEFAULT_IMAGES = {
   },
   sage: {
     introImage: "/images/themes/sage/3.jpg",
-    //heroImage: "/images/themes/sage/4.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4", 
     gallery: [
       "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
@@ -163,7 +171,6 @@ export const THEME_DEFAULT_IMAGES = {
   },
   gold: {
     introImage: "/images/themes/gold/5.jpg",
-    //heroImage: "/images/themes/gold/12.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4", 
     gallery: [
       "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
@@ -174,7 +181,6 @@ export const THEME_DEFAULT_IMAGES = {
   },
   burgundy: {
     introImage: "/images/themes/burgundy/7.jpg",
-    //heroImage: "/images/themes/burgundy/anita-austvika-6l9m9pFoL8g-unsplash.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
     gallery: [
       "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
@@ -185,7 +191,6 @@ export const THEME_DEFAULT_IMAGES = {
   },
   lavanta: {
     introImage: "/images/themes/lavanta/8.jpg",
-    //heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Lavanta.mp4",
     gallery: [
       "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
@@ -196,7 +201,6 @@ export const THEME_DEFAULT_IMAGES = {
   },
   minimal: {
     introImage: "/images/themes/minimal/9.jpg",
-    //heroImage: "/images/themes/minimal/dan-lefebvre-mPyqJAwMAs0-unsplash.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Minimal.mp4",
     gallery: [
       "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
@@ -207,7 +211,6 @@ export const THEME_DEFAULT_IMAGES = {
   },
   dark: {
     introImage: "/images/themes/dark/10.jpg",
-    //heroImage: "/images/themes/dark/adi-albulescu-Q6bt8Ri7Uog-unsplash.jpg",
     heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Dark.mp4",
     gallery: [
       "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",

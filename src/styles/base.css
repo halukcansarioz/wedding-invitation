@@ -83,21 +83,11 @@ button {
   z-index: 1;
 }
 
-.ribbon-left {
-  left: 0;
-  transform-origin: left;
-}
-
-.ribbon-right {
-  right: 0;
-  transform-origin: right;
-}
+.ribbon-left { left: 0; transform-origin: left; }
+.ribbon-right { right: 0; transform-origin: right; }
 
 @keyframes ribbonOpen {
-  to {
-    transform: scaleX(0);
-    opacity: 0;
-  }
+  to { transform: scaleX(0); opacity: 0; }
 }
 
 .intro-card {
@@ -136,9 +126,7 @@ button {
 }
 
 .intro-small,
-.hero-section .small-title {
-  color: #fff0f4;
-}
+.hero-section .small-title { color: #fff0f4; }
 
 .couple-title {
   margin: 0;
@@ -148,16 +136,11 @@ button {
   font-size: clamp(64px, 10vw, 122px);
   line-height: 1.2;
   font-weight: normal;
-  text-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.22),
-    0 0 18px rgba(255, 220, 230, 0.22);
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), 0 0 18px rgba(255, 220, 230, 0.22);
 }
 
 .couple-title span,
-.couple-title em {
-  display: inline-block;
-  vertical-align: middle;
-}
+.couple-title em { display: inline-block; vertical-align: middle; }
 
 .couple-title em {
   margin: 0 18px;
@@ -187,9 +170,7 @@ button {
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 1px;
-  box-shadow:
-    0 12px 28px rgba(165, 112, 133, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  box-shadow: 0 12px 28px rgba(165, 112, 133, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   transition: 0.25s ease;
 }
 
@@ -490,13 +471,9 @@ button {
 }
 
 .main-button:hover,
-.secondary-button:hover {
-  transform: translateY(-4px);
-}
+.secondary-button:hover { transform: translateY(-4px); }
 
-.secondary-button:hover {
-  background: #fff0f4;
-}
+.secondary-button:hover { background: #fff0f4; }
 
 .timeline {
   position: relative;
