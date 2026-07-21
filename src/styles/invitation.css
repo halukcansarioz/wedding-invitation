@@ -437,6 +437,7 @@ body .app .floating-actions a.share-button:hover {
   perspective: 1600px;
   transform-style: preserve-3d;
   margin: 0 auto;
+  transform: translateY(60px); /* Zarfı 60 piksel aşağı kaydırır */
   z-index: 10;
 }
 
