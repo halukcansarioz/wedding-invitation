@@ -146,18 +146,46 @@ function App() {
     });
   }, []);
 
+  // --- POP-UP DİL DESTEĞİ EKLENDİ ---
   const showAppAlert = useCallback(async (message, options = {}) => {
-    await openAppModal({ type: "alert", title: options.title || "Bilgi", message, tone: options.tone || "info", icon: options.icon, confirmText: options.confirmText || "Tamam" });
+    await openAppModal({ 
+      type: "alert", 
+      title: options.title || (isEn ? "Information" : "Bilgi"), 
+      message, 
+      tone: options.tone || "info", 
+      icon: options.icon, 
+      confirmText: options.confirmText || (isEn ? "OK" : "Tamam") 
+    });
     return true;
-  }, [openAppModal]);
+  }, [openAppModal, isEn]);
 
   const showAppConfirm = useCallback(async (message, options = {}) => {
-    return Boolean(await openAppModal({ type: "confirm", title: options.title || "Onay gerekiyor", message, tone: options.tone || "warning", icon: options.icon || "?", confirmText: options.confirmText || "Evet", cancelText: options.cancelText || "Vazgeç" }));
-  }, [openAppModal]);
+    return Boolean(await openAppModal({ 
+      type: "confirm", 
+      title: options.title || (isEn ? "Confirmation needed" : "Onay gerekiyor"), 
+      message, 
+      tone: options.tone || "warning", 
+      icon: options.icon || "?", 
+      confirmText: options.confirmText || (isEn ? "Yes" : "Evet"), 
+      cancelText: options.cancelText || (isEn ? "Cancel" : "Vazgeç") 
+    }));
+  }, [openAppModal, isEn]);
 
   const showAppPrompt = useCallback(async (label, defaultValue = "", options = {}) => {
-    return openAppModal({ type: "prompt", title: options.title || "Bilgi düzenle", message: label, inputValue: defaultValue, placeholder: options.placeholder || label, multiline: Boolean(options.multiline), tone: options.tone || "info", icon: options.icon || "✎", confirmText: options.confirmText || "Kaydet", cancelText: options.cancelText || "Vazgeç" });
-  }, [openAppModal]);
+    return openAppModal({ 
+      type: "prompt", 
+      title: options.title || (isEn ? "Edit information" : "Bilgi düzenle"), 
+      message: label, 
+      inputValue: defaultValue, 
+      placeholder: options.placeholder || label, 
+      multiline: Boolean(options.multiline), 
+      tone: options.tone || "info", 
+      icon: options.icon || "✎", 
+      confirmText: options.confirmText || (isEn ? "Save" : "Kaydet"), 
+      cancelText: options.cancelText || (isEn ? "Cancel" : "Vazgeç") 
+    });
+  }, [openAppModal, isEn]);
+  // ----------------------------------
 
   const {
     submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery,
@@ -280,13 +308,13 @@ function App() {
   }, []);
 
   const submitGuest = useCallback(async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!guestForm.name.trim()) {
-      await showAppAlert("Lütfen ad soyad gir.", { title: "Eksik bilgi", tone: "warning", icon: "!" });
+      await showAppAlert(isEn ? "Please enter your full name." : "Lütfen ad soyad gir.", { title: isEn ? "Missing info" : "Eksik bilgi", tone: "warning", icon: "!" });
       return;
     }
     if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
+      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
       return;
     }
     try {
@@ -294,21 +322,25 @@ function App() {
       if (error) throw error;
       setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...guestForm }, ...prev]);
       setGuestForm(INITIAL_GUEST_FORM);
-      await showAppAlert("Katılım bildirimin kaydedildi.", { title: "Kaydedildi", tone: "success", icon: "✓" });
+      
+      // Sadece "Katılacağım" dediğinde bu başarı mesajı çıksın ("Katılamayacağım" diyenlere pop-up InteractiveSections içinde çıkıyor)
+      if (guestForm.attendance === "Katılacağım") {
+        await showAppAlert(isEn ? "Your RSVP has been saved." : "Katılım bildirimin kaydedildi.", { title: isEn ? "Saved" : "Kaydedildi", tone: "success", icon: "✓" });
+      }
     } catch (error) {
       console.error("Katılım kaydedilemedi:", error);
-      await showAppAlert(`Katılım bildirimi kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: "Kayıt hatası", tone: "danger", icon: "!" });
+      await showAppAlert(isEn ? `Could not save RSVP. Detail: ${error?.message || "Unknown error"}` : `Katılım bildirimi kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası", tone: "danger", icon: "!" });
     }
-  }, [guestForm, showAppAlert]);
+  }, [guestForm, showAppAlert, isEn]);
 
   const submitWish = useCallback(async (e) => {
     e.preventDefault();
     if (!wishForm.name.trim() || !wishForm.message.trim()) {
-      await showAppAlert("Lütfen isim ve mesaj gir.", { title: "Eksik bilgi", tone: "warning", icon: "!" });
+      await showAppAlert(isEn ? "Please enter your name and message." : "Lütfen isim ve mesaj gir.", { title: isEn ? "Missing info" : "Eksik bilgi", tone: "warning", icon: "!" });
       return;
     }
     if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
+      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
       return;
     }
     const shouldPublishNow = !settings.requireWishApproval;
@@ -319,21 +351,21 @@ function App() {
         setWishes((prev) => [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...wishForm, approved: true }, ...prev]);
       }
       setWishForm(INITIAL_WISH_FORM);
-      await showAppAlert(settings.requireWishApproval ? "Güzel dileğin admin onayına gönderildi." : "Güzel dileğin kaydedildi.", { title: settings.requireWishApproval ? "Onaya gönderildi" : "Kaydedildi", tone: "success", icon: "✓" });
+      await showAppAlert(settings.requireWishApproval ? (isEn ? "Your wish has been sent for admin approval." : "Güzel dileğin admin onayına gönderildi.") : (isEn ? "Your wish has been saved." : "Güzel dileğin kaydedildi."), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : (isEn ? "Saved" : "Kaydedildi"), tone: "success", icon: "✓" });
     } catch (error) {
       console.error("Mesaj kaydedilemedi:", error);
-      await showAppAlert(`Mesaj kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: "Kayıt hatası", tone: "danger", icon: "!" });
+      await showAppAlert(isEn ? `Could not save message. Detail: ${error?.message || "Unknown error"}` : `Mesaj kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası", tone: "danger", icon: "!" });
     }
-  }, [wishForm, settings.requireWishApproval, showAppAlert]);
+  }, [wishForm, settings.requireWishApproval, showAppAlert, isEn]);
 
   const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
-      await showAppAlert("Davetiye linki kopyalandı.", { title: "Kopyalandı", tone: "success", icon: "✓" });
+      await showAppAlert(isEn ? "Invitation link copied." : "Davetiye linki kopyalandı.", { title: isEn ? "Copied" : "Kopyalandı", tone: "success", icon: "✓" });
     } catch {
-      await showAppAlert("Link kopyalanamadı.", { title: "Kopyalama hatası", tone: "danger", icon: "!" });
+      await showAppAlert(isEn ? "Could not copy link." : "Link kopyalanamadı.", { title: isEn ? "Copy error" : "Kopyalama hatası", tone: "danger", icon: "!" });
     }
-  }, [currentShareLink, showAppAlert]);
+  }, [currentShareLink, showAppAlert, isEn]);
 
   const copyAdminLink = useCallback(async (linkToCopy, successMessage = "Link kopyalandı.") => {
     try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(successMessage); } catch { setAdminSaveMessage("Link kopyalanamadı."); }
