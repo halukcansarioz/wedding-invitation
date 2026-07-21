@@ -146,7 +146,6 @@ function App() {
     });
   }, []);
 
-  // --- POP-UP DİL DESTEĞİ EKLENDİ ---
   const showAppAlert = useCallback(async (message, options = {}) => {
     await openAppModal({ 
       type: "alert", 
@@ -185,7 +184,6 @@ function App() {
       cancelText: options.cancelText || (isEn ? "Cancel" : "Vazgeç") 
     });
   }, [openAppModal, isEn]);
-  // ----------------------------------
 
   const {
     submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery,
@@ -200,7 +198,7 @@ function App() {
     setAdminNewPasswordAgain, setRecoveryPassword, setRecoveryPasswordAgain,
     setRecoveryMessage, setRecoveryLoading, setForgotPasswordLoading,
     setAdminAuthLoading, setIsPasswordRecovery, setActiveAdminTab,
-    setSiteData, setAdminDraft, setGuests, setWishes, showAppConfirm,
+    setSiteData, setAdminDraft, setGuests, setWishes, showAppConfirm, isEn
   });
 
   useEffect(() => {
@@ -300,10 +298,11 @@ function App() {
 
   const updateAttendance = useCallback((attendance) => {
     setGuestForm((prev) => ({
-      ...prev, attendance,
-      personCount: attendance === "Katılacağım" ? "1" : "0",
-      side: attendance === "Katılacağım" ? "Gelin Tarafı" : "-",
-      hasChild: attendance === "Katılacağım" ? prev.hasChild : "Hayır",
+      ...prev, 
+      attendance,
+      personCount: attendance === "Katılacağım" ? (prev.personCount === "0" ? "1" : prev.personCount) : "0",
+      side: attendance === "Katılacağım" ? (prev.side === "-" ? "Gelin Tarafı" : prev.side) : "-",
+      hasChild: attendance === "Katılacağım" ? (prev.hasChild === "-" ? "Hayır" : prev.hasChild) : "-",
     }));
   }, []);
 
@@ -323,7 +322,6 @@ function App() {
       setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...guestForm }, ...prev]);
       setGuestForm(INITIAL_GUEST_FORM);
       
-      // Sadece "Katılacağım" dediğinde bu başarı mesajı çıksın ("Katılamayacağım" diyenlere pop-up InteractiveSections içinde çıkıyor)
       if (guestForm.attendance === "Katılacağım") {
         await showAppAlert(isEn ? "Your RSVP has been saved." : "Katılım bildirimin kaydedildi.", { title: isEn ? "Saved" : "Kaydedildi", tone: "success", icon: "✓" });
       }
@@ -367,9 +365,9 @@ function App() {
     }
   }, [currentShareLink, showAppAlert, isEn]);
 
-  const copyAdminLink = useCallback(async (linkToCopy, successMessage = "Link kopyalandı.") => {
-    try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(successMessage); } catch { setAdminSaveMessage("Link kopyalanamadı."); }
-  }, []);
+  const copyAdminLink = useCallback(async (linkToCopy, successMessage) => {
+    try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(successMessage || (isEn ? "Link copied." : "Link kopyalandı.")); } catch { setAdminSaveMessage(isEn ? "Could not copy link." : "Link kopyalanamadı."); }
+  }, [isEn]);
 
   const updateDraftObject = useCallback((group, key, value) => {
     setAdminDraft((prev) => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
@@ -383,38 +381,38 @@ function App() {
       const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
       const url = await uploadMediaFile(compressedFile, "images");
       updateDraftObject(group, key, url);
-      setAdminSaveMessage("Görsel yüklendi. Değişiklikleri Kaydet butonuna bas.");
+      setAdminSaveMessage(isEn ? "Image uploaded. Click Save Changes." : "Görsel yüklendi. Değişiklikleri Kaydet butonuna bas.");
     } catch (error) {
       console.error("Görsel yüklenemedi:", error);
-      setAdminSaveMessage(error.message || "Görsel yüklenemedi.");
+      setAdminSaveMessage(error.message || (isEn ? "Failed to upload image." : "Görsel yüklenemedi."));
     }
-  }, [updateDraftObject]);
+  }, [updateDraftObject, isEn]);
 
   const clearDraftImage = useCallback((group, key) => {
     updateDraftObject(group, key, "");
-    setAdminSaveMessage("Görsel kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
-  }, [updateDraftObject]);
+    setAdminSaveMessage(isEn ? "Image removed. Save changes to apply." : "Görsel kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
+  }, [updateDraftObject, isEn]);
 
   const updateDraftMusic = useCallback(async (file) => {
     try {
       if (!file) return;
       if (file.size > MAX_AUDIO_FILE_SIZE) {
-        setAdminSaveMessage("Müzik dosyası çok büyük. 4 MB altında olmalı.");
+        setAdminSaveMessage(isEn ? "Music file is too large. Must be under 4 MB." : "Müzik dosyası çok büyük. 4 MB altında olmalı.");
         return;
       }
       const url = await uploadMediaFile(file, "music");
-      setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: url, musicName: file.name || "Yüklenen müzik" } }));
-      setAdminSaveMessage("Müzik yüklendi. Canlı sayfada çalması için Kaydet'e bas.");
+      setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: url, musicName: file.name || (isEn ? "Uploaded music" : "Yüklenen müzik") } }));
+      setAdminSaveMessage(isEn ? "Music uploaded. Save changes to apply." : "Müzik yüklendi. Canlı sayfada çalması için Kaydet'e bas.");
     } catch (error) {
       console.error("Müzik yüklenemedi:", error);
-      setAdminSaveMessage(error.message || "Müzik yüklenemedi.");
+      setAdminSaveMessage(error.message || (isEn ? "Failed to upload music." : "Müzik yüklenemedi."));
     }
-  }, []);
+  }, [isEn]);
 
   const clearDraftMusic = useCallback(() => {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } }));
-    setAdminSaveMessage("Özel müzik kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
-  }, []);
+    setAdminSaveMessage(isEn ? "Custom music removed. Save changes to apply." : "Özel müzik kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
+  }, [isEn]);
 
   const updateDraftArrayItem = useCallback((arrayKey, index, key, value) => {
     setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].map((item, itemIdx) => itemIdx === index ? { ...item, [key]: value } : item) }));
@@ -440,12 +438,12 @@ function App() {
       const compressedFile = new File([compressedBlob], file.name, { type: "image/jpeg" });
       const url = await uploadMediaFile(compressedFile, "gallery");
       updateGalleryItem(index, url);
-      setAdminSaveMessage("Galeri görseli yüklendi. Değişiklikleri Kaydet butonuna bas.");
+      setAdminSaveMessage(isEn ? "Gallery image uploaded. Click Save Changes." : "Galeri görseli yüklendi. Değişiklikleri Kaydet butonuna bas.");
     } catch (error) {
       console.error("Galeri görseli yüklenemedi:", error);
-      setAdminSaveMessage(error.message || "Galeri görseli yüklenemedi.");
+      setAdminSaveMessage(error.message || (isEn ? "Failed to upload gallery image." : "Galeri görseli yüklenemedi."));
     }
-  }, [updateGalleryItem]);
+  }, [updateGalleryItem, isEn]);
 
   const addGalleryItem = useCallback(() => {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: [...prev.invitation.gallery, ""] } }));
@@ -461,19 +459,26 @@ function App() {
       await saveSettingsToDatabase(cleanedData);
       localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));
       setSiteData(cleanedData); setAdminDraft(cleanedData);
-      setAdminSaveMessage("Davetiyedeki tüm içerikler başarıyla Supabase'e kaydedildi.");
+      setAdminSaveMessage(isEn ? "All content saved to Supabase successfully." : "Davetiyedeki tüm içerikler başarıyla Supabase'e kaydedildi.");
       setTimeout(() => setAdminSaveMessage(""), 3000);
     } catch (error) {
       console.error("Ayarlar kaydedilemedi:", error);
-      setAdminSaveMessage(`Değişiklikler kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
+      setAdminSaveMessage(isEn ? `Could not save changes. Detail: ${error?.message || "Supabase error"}` : `Değişiklikler kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
     }
-  }, [adminDraft]);
+  }, [adminDraft, isEn]);
 
   const handleThemeChange = useCallback(async (themeValue) => {
     updateDraftObject("settings", "theme", themeValue);
     const confirmed = await showAppConfirm(
-      "Seçtiğiniz temaya uygun varsayılan davetiye resimleri ve videosu yüklensin mi?\n(Mevcut ana ekran ve galeri görselleriniz değişecektir)",
-      { title: "Tema Medyalarını Yükle", confirmText: "Evet, Yükle", cancelText: "Hayır, Sadece Tema Değişsin", tone: "info" }
+      isEn 
+        ? "Load default theme images and video?\n(Your current intro and gallery images will be replaced)"
+        : "Seçtiğiniz temaya uygun varsayılan davetiye resimleri ve videosu yüklensin mi?\n(Mevcut ana ekran ve galeri görselleriniz değişecektir)",
+      { 
+        title: isEn ? "Load Theme Media" : "Tema Medyalarını Yükle", 
+        confirmText: isEn ? "Yes, Load" : "Evet, Yükle", 
+        cancelText: isEn ? "No, Just Change Theme" : "Hayır, Sadece Tema Değişsin", 
+        tone: "info" 
+      }
     );
     if (confirmed) {
       const themeImages = THEME_DEFAULT_IMAGES[themeValue];
@@ -481,10 +486,13 @@ function App() {
         setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, introImage: themeImages.introImage, heroImage: themeImages.heroImage, heroVideo: themeImages.heroVideo || "", gallery: themeImages.gallery } }));
       }
     }
-  }, [updateDraftObject, showAppConfirm]);
+  }, [updateDraftObject, showAppConfirm, isEn]);
 
   const resetSiteContent = useCallback(async () => {
-    const confirmed = await showAppConfirm("Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", { title: "Varsayılana döndür", confirmText: "Döndür", tone: "warning" });
+    const confirmed = await showAppConfirm(
+      isEn ? "Reset editable fields to default?" : "Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", 
+      { title: isEn ? "Reset to Default" : "Varsayılana döndür", confirmText: isEn ? "Reset" : "Döndür", tone: "warning" }
+    );
     if (!confirmed) return;
     const chosenDefaultTheme = adminDraft.settings.defaultTheme || "lavanta";
     const defaultData = normalizeSiteData(null);
@@ -501,82 +509,98 @@ function App() {
       await saveSettingsToDatabase(defaultData);
       localStorage.setItem(SITE_DATA_KEY, JSON.stringify(defaultData));
       setSiteData(defaultData); setAdminDraft(defaultData);
-      setAdminSaveMessage("Davetiyedeki içerikler seçtiğiniz varsayılan temaya göre sıfırlandı.");
+      setAdminSaveMessage(isEn ? "Content reset to default theme settings." : "Davetiyedeki içerikler seçtiğiniz varsayılan temaya göre sıfırlandı.");
     } catch (error) {
       console.error("Varsayılan ayarlar kaydedilemedi:", error);
-      setAdminSaveMessage(`Varsayılan ayarlar kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
+      setAdminSaveMessage(isEn ? `Could not save default settings. Detail: ${error?.message || "Supabase error"}` : `Varsayılan ayarlar kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
     }
-  }, [adminDraft.settings.defaultTheme, showAppConfirm]);
+  }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn]);
 
   const clearGuests = useCallback(async () => {
-    const confirmed = await showAppConfirm("Tüm katılım kayıtları silinsin mi?", { title: "Katılım kayıtlarını sil", confirmText: "Sil", tone: "danger", icon: "!" });
+    const confirmed = await showAppConfirm(
+      isEn ? "Delete all RSVP records?" : "Tüm katılım kayıtları silinsin mi?", 
+      { title: isEn ? "Clear Guests" : "Katılım kayıtlarını sil", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
     const { error } = await supabase.from("guests").delete().not("id", "is", null);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage("Silinemedi."); return; }
+    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
     setGuests([]);
-  }, [showAppConfirm]);
+  }, [showAppConfirm, isEn]);
 
   const clearWishes = useCallback(async () => {
-    const confirmed = await showAppConfirm("Tüm anı defteri mesajları silinsin mi?", { title: "Anı defterini temizle", confirmText: "Sil", tone: "danger", icon: "!" });
+    const confirmed = await showAppConfirm(
+      isEn ? "Delete all guestbook messages?" : "Tüm anı defteri mesajları silinsin mi?", 
+      { title: isEn ? "Clear Guestbook" : "Anı defterini temizle", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
     const { error } = await supabase.from("wishes").delete().not("id", "is", null);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage("Silinemedi."); return; }
+    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
     setWishes([]);
-  }, [showAppConfirm]);
+  }, [showAppConfirm, isEn]);
 
   const deleteGuest = useCallback(async (guestId) => {
-    const confirmed = await showAppConfirm("Bu katılım kaydı silinsin mi?", { title: "Kaydı sil", confirmText: "Sil", tone: "danger", icon: "!" });
+    const confirmed = await showAppConfirm(
+      isEn ? "Delete this RSVP record?" : "Bu katılım kaydı silinsin mi?", 
+      { title: isEn ? "Delete Record" : "Kaydı sil", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
     const { error } = await supabase.from("guests").delete().eq("id", guestId);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage("Silinemedi."); return; }
+    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
     setGuests((prev) => prev.filter((g) => g.id !== guestId));
-  }, [showAppConfirm]);
+  }, [showAppConfirm, isEn]);
 
   const editGuest = useCallback(async (guestId) => {
     const guest = guests.find((item) => item.id === guestId);
     if (!guest) return;
-    const name = await showAppPrompt("Ad Soyad", guest.name || "", { title: "Katılım kaydını düzenle" }); if (name === null) return;
-    const phone = await showAppPrompt("Telefon", guest.phone || "", { title: "Katılım kaydını düzenle" }); if (phone === null) return;
-    const attendance = await showAppPrompt("Katılım durumu", guest.attendance || "Katılacağım", { title: "Katılım kaydını düzenle" }); if (attendance === null) return;
-    const personCount = await showAppPrompt("Kişi sayısı", guest.personCount || "1", { title: "Katılım kaydını düzenle" }); if (personCount === null) return;
-    const side = await showAppPrompt("Taraf", guest.side || "Gelin Tarafı", { title: "Katılım kaydını düzenle" }); if (side === null) return;
-    const hasChild = await showAppPrompt("Çocuk var mı? Evet/Hayır", guest.hasChild || "Hayır", { title: "Katılım kaydını düzenle" }); if (hasChild === null) return;
-    const note = await showAppPrompt("Not", guest.note || "", { title: "Katılım kaydını düzenle", multiline: true }); if (note === null) return;
+    const title = isEn ? "Edit RSVP" : "Katılım kaydını düzenle";
+    
+    const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", guest.name || "", { title }); if (name === null) return;
+    const phone = await showAppPrompt(isEn ? "Phone" : "Telefon", guest.phone || "", { title }); if (phone === null) return;
+    const attendance = await showAppPrompt(isEn ? "Attendance (Katılacağım/Katılamayacağım)" : "Katılım durumu", guest.attendance || "Katılacağım", { title }); if (attendance === null) return;
+    const personCount = await showAppPrompt(isEn ? "Person Count" : "Kişi sayısı", guest.personCount || "1", { title }); if (personCount === null) return;
+    const side = await showAppPrompt(isEn ? "Side" : "Taraf", guest.side || "Gelin Tarafı", { title }); if (side === null) return;
+    const hasChild = await showAppPrompt(isEn ? "Has children? (Evet/Hayır)" : "Çocuk var mı? Evet/Hayır", guest.hasChild || "Hayır", { title }); if (hasChild === null) return;
+    const note = await showAppPrompt(isEn ? "Note" : "Not", guest.note || "", { title, multiline: true }); if (note === null) return;
 
     const nextGuest = { ...guest, name, phone, attendance, personCount, side, hasChild, note };
     const { error } = await supabase.from("guests").update(uiGuestToDb(nextGuest)).eq("id", guestId);
-    if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage("Güncellenemedi."); return; }
+    if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage(isEn ? "Could not update." : "Güncellenemedi."); return; }
     setGuests((prev) => prev.map((item) => (item.id === guestId ? nextGuest : item)));
-  }, [guests, showAppPrompt]);
+  }, [guests, showAppPrompt, isEn]);
 
   const deleteWish = useCallback(async (wishId) => {
-    const confirmed = await showAppConfirm("Bu anı defteri mesajı silinsin mi?", { title: "Mesajı sil", confirmText: "Sil", tone: "danger", icon: "!" });
+    const confirmed = await showAppConfirm(
+      isEn ? "Delete this message?" : "Bu anı defteri mesajı silinsin mi?", 
+      { title: isEn ? "Delete Message" : "Mesajı sil", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
     const { error } = await supabase.from("wishes").delete().eq("id", wishId);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage("Silinemedi."); return; }
+    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
     setWishes((prev) => prev.filter((w) => w.id !== wishId));
-  }, [showAppConfirm]);
+  }, [showAppConfirm, isEn]);
 
   const editWish = useCallback(async (wishId) => {
     const wish = wishes.find((item) => item.id === wishId);
     if (!wish) return;
-    const name = await showAppPrompt("Ad Soyad", wish.name || "", { title: "Mesajı düzenle" }); if (name === null) return;
-    const message = await showAppPrompt("Mesaj", wish.message || "", { title: "Mesajı düzenle", multiline: true }); if (message === null) return;
+    const title = isEn ? "Edit Message" : "Mesajı düzenle";
+    
+    const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", wish.name || "", { title }); if (name === null) return;
+    const message = await showAppPrompt(isEn ? "Message" : "Mesaj", wish.message || "", { title, multiline: true }); if (message === null) return;
 
     const nextWish = { ...wish, name, message };
     const { error } = await supabase.from("wishes").update(uiWishToDb(nextWish)).eq("id", wishId);
-    if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage("Güncellenemedi."); return; }
+    if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage(isEn ? "Could not update." : "Güncellenemedi."); return; }
     setWishes((prev) => prev.map((item) => (item.id === wishId ? nextWish : item)));
-  }, [wishes, showAppPrompt]);
+  }, [wishes, showAppPrompt, isEn]);
 
   const toggleWishApproval = useCallback(async (wishId) => {
     const wish = wishes.find((item) => item.id === wishId);
     if (!wish) return;
     const nextApproved = wish.approved === false;
     const { error } = await supabase.from("wishes").update({ approved: nextApproved }).eq("id", wishId);
-    if (error) { console.error("Değiştirilemedi:", error); setAdminSaveMessage("Değiştirilemedi."); return; }
+    if (error) { console.error("Değiştirilemedi:", error); setAdminSaveMessage(isEn ? "Could not change status." : "Değiştirilemedi."); return; }
     setWishes((prev) => prev.map((item) => (item.id === wishId ? { ...item, approved: nextApproved } : item)));
-  }, [wishes]);
+  }, [wishes, isEn]);
 
   const getGuestExportData = useCallback(() => {
     const headers = ["Ad Soyad", "Telefon", "Katılım Durumu", "Kişi Sayısı", "Taraf", "Çocuk", "Not"];
@@ -597,11 +621,16 @@ function App() {
   const exportAllDataJson = useCallback(() => { const data = { siteData, guests, wishes, exportedAt: new Date().toISOString() }; downloadTextFile("dugun-davetiyesi-yedek.json", JSON.stringify(data, null, 2), "application/json;charset=utf-8"); }, [siteData, guests, wishes]);
 
   const importAllDataJson = useCallback(async () => {
-    const confirmed = await showAppConfirm("DİKKAT: Bu işlem mevcut tüm ayarları ve kayıtları SİLECEK ve yerine yedeği yükleyecektir. Emin misiniz?", { title: "Yedeği Geri Yükle", confirmText: "Evet, Geri Yükle", tone: "danger", icon: "!" });
+    const confirmed = await showAppConfirm(
+      isEn 
+        ? "WARNING: This action will DELETE all current settings and records, replacing them with the backup. Are you sure?" 
+        : "DİKKAT: Bu işlem mevcut tüm ayarları ve kayıtları SİLECEK ve yerine yedeği yükleyecektir. Emin misiniz?", 
+      { title: isEn ? "Restore Backup" : "Yedeği Geri Yükle", confirmText: isEn ? "Yes, Restore" : "Evet, Geri Yükle", tone: "danger", icon: "!" }
+    );
     if (!confirmed) return;
     try {
       const parsed = JSON.parse(dataImportText);
-      if (!parsed || typeof parsed !== "object") throw new Error("Geçerli bir yedek nesnesi değil.");
+      if (!parsed || typeof parsed !== "object") throw new Error(isEn ? "Not a valid backup object." : "Geçerli bir yedek nesnesi değil.");
       if (parsed.siteData) {
         const nextSiteData = mergeSiteData(parsed.siteData);
         await saveSettingsToDatabase(nextSiteData);
@@ -619,17 +648,17 @@ function App() {
         if (wishRows.length > 0) await supabase.from("wishes").insert(wishRows);
         setWishes(await loadAllWishesFromDatabase());
       }
-      setDataImportText(""); setAdminSaveMessage("Yedek başarıyla aktarıldı.");
+      setDataImportText(""); setAdminSaveMessage(isEn ? "Backup imported successfully." : "Yedek başarıyla aktarıldı.");
     } catch (error) {
       console.error("İçe aktarılamadı:", error);
-      setAdminSaveMessage(`İçe aktarılamadı. Detay: ${error?.message || "Hata"}`);
+      setAdminSaveMessage(isEn ? `Import failed. Detail: ${error?.message || "Error"}` : `İçe aktarılamadı. Detay: ${error?.message || "Hata"}`);
     }
-  }, [dataImportText, showAppConfirm]);
+  }, [dataImportText, showAppConfirm, isEn]);
 
   const downloadQrCode = useCallback(async () => {
     try {
       const response = await fetch(qrImageUrl);
-      if (!response.ok) throw new Error("İndirilemedi.");
+      if (!response.ok) throw new Error(isEn ? "Download failed." : "İndirilemedi.");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -639,9 +668,9 @@ function App() {
     } catch (error) {
       console.error("Hata:", error);
       window.open(qrImageUrl, "_blank", "noopener,noreferrer");
-      setAdminSaveMessage("QR kod yeni sekmede açıldı. Sağ tıklayıp kaydedebilirsin.");
+      setAdminSaveMessage(isEn ? "QR opened in new tab. Right click to save." : "QR kod yeni sekmede açıldı. Sağ tıklayıp kaydedebilirsin.");
     }
-  }, [qrImageUrl]);
+  }, [qrImageUrl, isEn]);
 
   const closeAdminPage = useCallback(async () => {
     const signedOut = await performAdminSignOut();
@@ -708,62 +737,79 @@ function App() {
         onConfirm={(value) => resolveAppModal(value)}
         onCancel={() => resolveAppModal(appModal?.type === "prompt" ? null : false)}
       />
+      
+        {!isAdminPage && (
+        <>
+          {/* Hızlı Admin Giriş Butonu (Sol Üst Köşe) */}
+          <div className="admin-quick-access">
+            <a 
+              href="#admin" 
+              className="admin-btn" 
+              title={isEn ? "Admin Panel" : "Yönetici Paneli"}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
+              </svg>
+            </a>
+          </div>
 
-     {!isAdminPage && (
-        <div className="floating-actions glass-dock">
-          {/* Dil Değiştirme */}
-          <button
-            type="button"
-            className="dock-btn"
-            onClick={toggleLanguage}
-            title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
-          >
-            {isEn ? 'EN' : 'TR'}
-          </button>
+          <div className="floating-actions glass-dock">
+            {/* Dil Değiştirme */}
+            <button
+              type="button"
+              className="dock-btn"
+              onClick={toggleLanguage}
+              title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
+            >
+              {isEn ? 'TR' : 'EN'}
+            </button>
 
-          {/* Paylaş (İkonlu) */}
-          <a 
-            className="dock-btn" 
-            href={`https://wa.me/?text=${shareText}`} 
-            target="_blank" 
-            rel="noreferrer"
-            title={isEn ? 'Share via WhatsApp' : 'WhatsApp ile Paylaş'}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="5" r="3"></circle>
-              <circle cx="6" cy="12" r="3"></circle>
-              <circle cx="18" cy="19" r="3"></circle>
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-            </svg>
-          </a>
+            {/* Paylaş (İkonlu) */}
+            <a 
+              className="dock-btn" 
+              href={`https://wa.me/?text=${shareText}`} 
+              target="_blank" 
+              rel="noreferrer"
+              title={isEn ? 'Share via WhatsApp' : 'WhatsApp ile Paylaş'}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </a>
 
-          {/* Müzik Aç / Kapat */}
-          <button
-            type="button"
-            className="dock-btn"
-            onClick={toggleMusic}
-            aria-pressed={isMusicPlaying}
-            title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {isMusicPlaying ? (
-                <>
-                  <path d="M9 18V5l12-2v13" />
-                  <circle cx="6" cy="18" r="3" />
-                  <circle cx="18" cy="16" r="3" />
-                </>
-              ) : (
-                <>
-                  <path d="M9 18V5l12-2v13" />
-                  <circle cx="6" cy="18" r="3" />
-                  <circle cx="18" cy="16" r="3" />
-                  <line x1="3" y1="3" x2="21" y2="21" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
+            {/* Müzik Aç / Kapat */}
+            <button
+              type="button"
+              className="dock-btn"
+              onClick={toggleMusic}
+              aria-pressed={isMusicPlaying}
+              title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {isMusicPlaying ? (
+                  <>
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                    <line x1="3" y1="3" x2="21" y2="21" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
+        </>
       )}
 
       {isAdminPage ? (

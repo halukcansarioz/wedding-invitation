@@ -473,7 +473,10 @@
 
 .admin-actions-sticky .main-button,
 .admin-actions-sticky .secondary-button {
-  width: auto;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  min-width: auto !important;
+  white-space: nowrap !important;
 }
 
 .admin-actions-sticky span {
@@ -3504,3 +3507,10 @@ html[data-theme="minimal"] {
   }
 }
 
+@media (max-width: 1024px) {
+  .admin-actions-sticky .main-button,
+  .admin-actions-sticky .secondary-button {
+    padding: 10px 16px !important;
+    font-size: 13px !important;
+  }
+}

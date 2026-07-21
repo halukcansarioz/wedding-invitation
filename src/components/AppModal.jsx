@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 export function AppModal({ modal, onInputChange, onConfirm, onCancel }) {
   const inputRef = useRef(null);
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
 
   useEffect(() => {
     if (!modal || modal.type !== "prompt") return;
@@ -73,11 +76,11 @@ export function AppModal({ modal, onInputChange, onConfirm, onCancel }) {
         <div className="app-modal-actions">
           {showCancel && (
             <button type="button" className="secondary-button app-modal-cancel" onClick={onCancel}>
-              {modal.cancelText || "Vazgeç"}
+              {modal.cancelText || (isEn ? "Cancel" : "Vazgeç")}
             </button>
           )}
           <button type="submit" className={modal.tone === "danger" ? "main-button app-modal-danger-button" : "main-button"}>
-            {modal.confirmText || "Tamam"}
+            {modal.confirmText || (isEn ? "OK" : "Tamam")}
           </button>
         </div>
       </form>

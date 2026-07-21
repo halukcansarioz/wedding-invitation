@@ -971,6 +971,112 @@ body,
   .scroll-indicator {
     bottom: 25px;
   }
+
+  body .app .floating-actions,
+  body .app .glass-dock {
+    top: 20px !important;
+    bottom: auto !important;
+    right: 16px !important;
+    left: auto !important;
+    transform: none !important; /* Ortalama (translateX) işlemini iptal eder */
+    flex-direction: column !important; /* Sağ üst köşede yatay yerine dikey durarak yazıları kapatmasını önler */
+    padding: 8px 6px !important;
+    gap: 8px !important;
+  }
+
+  body .app .glass-dock .dock-btn,
+  body .app .floating-actions .dock-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    font-size: 12px !important; /* EN/TR yazısını küçültür */
+  }
+
+  body .app .glass-dock .dock-btn svg,
+  body .app .floating-actions .dock-btn svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+}
+
+/* =================================================================
+   ADMİN HIZLI ERİŞİM BUTONU (SOL ÜST KÖŞE)
+   ================================================================= */
+.admin-quick-access {
+  position: fixed !important;
+  /* Sayfa üst boşluğu (30px) + resmin kavis payı (16px) = 46px */
+  top: 46px !important;
+  /* Geniş ekranlarda (1500px+) resmin tam nerede başladığını hesaplar ve kavisin içine (56px) oturtur */
+  left: calc(max(50vw - 750px, 0px) + 56px) !important;
+  transform: none !important;
+  z-index: 9999 !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 50px !important;
+  padding: 8px !important; /* Daha zarif durması için dış boşluk hafif kısıldı */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+}
+
+.admin-quick-access .admin-btn {
+  width: 42px !important; /* Resim kavisinin içine tam sığması için 46'dan 42'ye çekildi */
+  height: 42px !important;
+  min-width: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  color: var(--text-soft, #777) !important;
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  border-radius: 50% !important;
+  transition: all 0.3s ease !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+}
+
+.admin-quick-access .admin-btn:hover {
+  transform: translateY(-3px) scale(1.05) !important;
+  background: #ffffff !important;
+  color: var(--rose-dark, #9f4f68) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="dark"] .admin-quick-access {
+  background: rgba(20, 15, 18, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .admin-quick-access .admin-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="dark"] .admin-quick-access .admin-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: var(--rose-light, #f8d7df) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Mobil uyumluluk: Sağ taraftaki gibi mobilde küçülüp köşeye yerleşir */
+@media (max-width: 650px) {
+  .admin-quick-access {
+    top: 34px !important; /* Tablet padding payı */
+    left: 28px !important; /* Tablet padding payı */
+  }
+  
+  .admin-quick-access .admin-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+  
+  .admin-quick-access .admin-btn svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
 }
 
 
@@ -1439,6 +1545,22 @@ body,
     width: 28px;
     height: 28px;
   }
+
+  .admin-quick-access {
+    top: 24px !important;
+    left: 18px !important;
+    padding: 6px !important;
+  }
+  
+  .admin-quick-access .admin-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+  }
+  .admin-quick-access .admin-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
 }
 
 /* =============================
@@ -1697,3 +1819,11 @@ html[data-theme="minimal"] body {
   }
 }
 
+body .app .invitation-page .option-group.disabled .option-button.active {
+  background: color-mix(in srgb, var(--paper, #ffffff) 80%, transparent) !important;
+  color: color-mix(in srgb, var(--text-soft, #666) 50%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #8f7fb8) 15%, transparent) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: not-allowed !important;
+}

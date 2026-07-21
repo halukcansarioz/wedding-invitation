@@ -83,7 +83,7 @@ function AdminDashboard({
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button type="button" className="secondary-button" style={{ margin: 0, minHeight: '56px', padding: '0 24px' }} onClick={toggleLanguage}>
-                {isEn ? "TR" : "EN"}
+                {isEn ? "EN" : "TR"}
               </button>
             </div>
           </div>

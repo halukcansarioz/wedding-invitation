@@ -56,6 +56,7 @@ export function useAdminSession({
   setGuests,
   setWishes,
   showAppConfirm,
+  isEn
 }) {
   useEffect(() => {
     if (!isAdminPage || !isSupabaseReady()) return undefined;
@@ -79,7 +80,7 @@ export function useAdminSession({
           setIsAdminUnlocked(false);
           setAdminPassword("");
           setAdminError("");
-          setAdminLoginNotice("Admin paneline girmek için giriş yapmalısın.");
+          setAdminLoginNotice(isEn ? "Please log in to access the admin panel." : "Admin paneline girmek için giriş yapmalısın.");
           return;
         }
 
@@ -89,7 +90,7 @@ export function useAdminSession({
           setIsAdminUnlocked(false);
           setAdminPassword("");
           setAdminError("");
-          setAdminLoginNotice("Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
+          setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
           return;
         }
 
@@ -97,7 +98,7 @@ export function useAdminSession({
         setAdminUser(session.user);
         setAdminPassword("");
         setAdminError("");
-        setAdminLoginNotice("Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
+        setAdminLoginNotice(isEn ? "Session is active. No need to log in again." : "Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
         setIsAdminUnlocked(true);
 
         const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
@@ -121,7 +122,7 @@ export function useAdminSession({
     };
 
     loadSessionForAdmin();
-  }, [isAdminPage, setAdminDraft, setAdminError, setAdminLoginNotice, setAdminPassword, setAdminUser, setGuests, setIsAdminUnlocked, setSiteData, setWishes]);
+  }, [isAdminPage, setAdminDraft, setAdminError, setAdminLoginNotice, setAdminPassword, setAdminUser, setGuests, setIsAdminUnlocked, setSiteData, setWishes, isEn]);
 
   useEffect(() => {
     if (!isAdminPage || !isAdminUnlocked) return undefined;
@@ -150,7 +151,7 @@ export function useAdminSession({
       setShowForgotPassword(false);
       setForgotPasswordEmail("");
       setForgotPasswordMessage("");
-      setAdminLoginNotice("Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
+      setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
     };
 
     markActivity();
@@ -166,7 +167,7 @@ export function useAdminSession({
       });
       window.clearInterval(timeoutCheckInterval);
     };
-  }, [isAdminPage, isAdminUnlocked, setActiveAdminTab, setAdminError, setAdminLoginNotice, setAdminPassword, setAdminPasswordMessage, setAdminSaveMessage, setAdminUser, setForgotPasswordEmail, setForgotPasswordMessage, setIsAdminUnlocked, setShowForgotPassword]);
+  }, [isAdminPage, isAdminUnlocked, setActiveAdminTab, setAdminError, setAdminLoginNotice, setAdminPassword, setAdminPasswordMessage, setAdminSaveMessage, setAdminUser, setForgotPasswordEmail, setForgotPasswordMessage, setIsAdminUnlocked, setShowForgotPassword, isEn]);
 
   const submitAdminPassword = async (e) => {
     e.preventDefault();
@@ -181,7 +182,7 @@ export function useAdminSession({
       }
 
       if (!adminEmail.trim() || !adminPassword.trim()) {
-        setAdminError("Lütfen admin e-posta ve şifresini gir.");
+        setAdminError(isEn ? "Please enter admin email and password." : "Lütfen admin e-posta ve şifresini gir.");
         return;
       }
 
@@ -245,7 +246,7 @@ export function useAdminSession({
       const email = (adminEmail || "").trim();
 
       if (!email) {
-        setForgotPasswordMessage("Şifre sıfırlama linki için admin e-postanı yazmalısın.");
+        setForgotPasswordMessage(isEn ? "Please enter admin email to reset password." : "Şifre sıfırlama linki için admin e-postanı yazmalısın.");
         return;
       }
 
@@ -260,7 +261,9 @@ export function useAdminSession({
       }
 
       setForgotPasswordMessage(
-        `Şifre sıfırlama linki ${email} adresine gönderildi. Link çalışmazsa Supabase > Authentication > URL Configuration bölümüne şu adresi ekle: ${getAdminRedirectUrl()}`
+        isEn 
+        ? `Password reset link sent to ${email}. If it doesn't work, ensure ${getAdminRedirectUrl()} is allowed in Supabase > Authentication > URL Configuration.`
+        : `Şifre sıfırlama linki ${email} adresine gönderildi. Link çalışmazsa Supabase > Authentication > URL Configuration bölümüne şu adresi ekle: ${getAdminRedirectUrl()}`
       );
     } catch (error) {
       console.error("Şifre sıfırlama bağlantı hatası:", error);
@@ -277,12 +280,12 @@ export function useAdminSession({
 
     try {
       if (recoveryPassword.trim().length < 6) {
-        setRecoveryMessage("Yeni şifre en az 6 karakter olmalı.");
+        setRecoveryMessage(isEn ? "New password must be at least 6 characters." : "Yeni şifre en az 6 karakter olmalı.");
         return;
       }
 
       if (recoveryPassword !== recoveryPasswordAgain) {
-        setRecoveryMessage("Yeni şifreler aynı değil.");
+        setRecoveryMessage(isEn ? "Passwords do not match." : "Yeni şifreler aynı değil.");
         return;
       }
 
@@ -307,7 +310,7 @@ export function useAdminSession({
       }
 
       if (!sessionData.session?.user) {
-        setRecoveryMessage("Şifre sıfırlama oturumu bulunamadı. Linkin süresi dolmuş olabilir; tekrar 'Şifremi unuttum' linki gönder.");
+        setRecoveryMessage(isEn ? "Recovery session not found. The link might have expired." : "Şifre sıfırlama oturumu bulunamadı. Linkin süresi dolmuş olabilir; tekrar 'Şifremi unuttum' linki gönder.");
         return;
       }
 
@@ -338,7 +341,7 @@ export function useAdminSession({
       setAdminEmail(recoveredEmail);
       setAdminPassword("");
       setIsAdminUnlocked(false);
-      setAdminLoginNotice("Şifren güncellendi. Güvenlik için oturum kapatıldı; yeni şifrenle tekrar giriş yap.");
+      setAdminLoginNotice(isEn ? "Password updated. Session closed for security; log in with your new password." : "Şifren güncellendi. Güvenlik için oturum kapatıldı; yeni şifrenle tekrar giriş yap.");
 
       if (typeof window !== "undefined") {
         window.history.replaceState(null, "", `${window.location.pathname}?admin=1`);
@@ -358,22 +361,22 @@ export function useAdminSession({
     const email = adminUser?.email || adminEmail;
 
     if (!email) {
-      setAdminPasswordMessage("Admin e-posta bilgisi bulunamadı. Çıkış yapıp tekrar giriş yap.");
+      setAdminPasswordMessage(isEn ? "Admin email not found. Log out and in again." : "Admin e-posta bilgisi bulunamadı. Çıkış yapıp tekrar giriş yap.");
       return;
     }
 
     if (!adminCurrentPassword.trim()) {
-      setAdminPasswordMessage("Mevcut şifreyi yazmalısın.");
+      setAdminPasswordMessage(isEn ? "Enter current password." : "Mevcut şifreyi yazmalısın.");
       return;
     }
 
     if (adminNewPassword.trim().length < 6) {
-      setAdminPasswordMessage("Yeni şifre en az 6 karakter olmalı.");
+      setAdminPasswordMessage(isEn ? "New password must be at least 6 characters." : "Yeni şifre en az 6 karakter olmalı.");
       return;
     }
 
     if (adminNewPassword !== adminNewPasswordAgain) {
-      setAdminPasswordMessage("Yeni şifreler aynı değil.");
+      setAdminPasswordMessage(isEn ? "Passwords do not match." : "Yeni şifreler aynı değil.");
       return;
     }
 
@@ -401,7 +404,7 @@ export function useAdminSession({
 
     if (signOutError) {
       console.error("Şifre değişti ama oturum kapatılamadı:", signOutError);
-      setAdminPasswordMessage("Şifre güncellendi fakat oturum otomatik kapatılamadı. Lütfen sayfayı yenileyip yeni şifrenle giriş yap.");
+      setAdminPasswordMessage(isEn ? "Password updated but session couldn't auto-close. Please refresh." : "Şifre güncellendi fakat oturum otomatik kapatılamadı. Lütfen sayfayı yenileyip yeni şifrenle giriş yap.");
       return;
     }
 
@@ -418,7 +421,7 @@ export function useAdminSession({
     setAdminPasswordMessage("");
     setAdminSaveMessage("");
     setAdminError("");
-    setAdminLoginNotice("Admin şifresi güncellendi. Güvenlik için oturum kapatıldı. Yeni şifrenle tekrar giriş yapmalısın.");
+    setAdminLoginNotice(isEn ? "Password updated. Log in again with your new password." : "Admin şifresi güncellendi. Güvenlik için oturum kapatıldı. Yeni şifrenle tekrar giriş yapmalısın.");
   };
 
   const performAdminSignOut = async () => {
@@ -441,7 +444,10 @@ export function useAdminSession({
   };
 
   const logoutAdmin = async () => {
-    const confirmed = await showAppConfirm("Admin panelden çıkış yapmak istiyor musun?", { title: "Çıkış yap", confirmText: "Çıkış Yap", tone: "warning" });
+    const confirmed = await showAppConfirm(
+      isEn ? "Are you sure you want to log out of the admin panel?" : "Admin panelden çıkış yapmak istiyor musun?", 
+      { title: isEn ? "Log Out" : "Çıkış yap", confirmText: isEn ? "Log Out" : "Çıkış Yap", tone: "warning" }
+    );
     if (!confirmed) return;
 
     const signedOut = await performAdminSignOut();
@@ -458,7 +464,7 @@ export function useAdminSession({
     setShowForgotPassword(false);
     setForgotPasswordEmail("");
     setForgotPasswordMessage("");
-    setAdminLoginNotice("Çıkış yapıldı. Admin paneline girmek için tekrar giriş yapmalısın.");
+    setAdminLoginNotice(isEn ? "Logged out. Please log in again to access the admin panel." : "Çıkış yapıldı. Admin paneline girmek için tekrar giriş yapmalısın.");
   };
 
   return {
