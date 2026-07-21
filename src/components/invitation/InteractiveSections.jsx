@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { OptionGroup } from "../common/UIComponents";
 import {
@@ -23,8 +24,12 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const isDeclining = guestForm.attendance === "Katılamayacağım";
+    const currentName = guestForm.name.trim();
+
     await submitGuest(e);
-    if (isDeclining && guestForm.name.trim()) {
+    
+    // Sadece "Katılamayacağım" seçildiyse VE isim boş değilse bu pop-up çıkar
+    if (isDeclining && currentName.length > 0) {
       setShowDeclineModal(true);
     }
   };
@@ -62,65 +67,74 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         <button type="submit" className="main-button form-button">{isEn ? t('form.submitRsvp') : "Katılımı Gönder"}</button>
       </form>
 
-      <div className="button-group" style={{ marginTop: "20px" }}>
-        <a className="secondary-button whatsapp-button" style={{ margin: 0 }} href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-          {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
-        </a>
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={() => setShowGiftModal(true)}>
-          🎁 {isEn ? "Gift & Registry" : copy.giftButton || "Hediye & Takı Gönder"}
-        </button>
-      </div>
+      <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+        {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
+      </a>
 
-      {/* IBAN ve Takı Modal Ekranı */}
-      {showGiftModal && (
-        <div className="app-modal-backdrop" onClick={() => setShowGiftModal(false)}>
-          <div className="app-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: "480px", textAlign: "center", padding: "34px 28px" }}>
-            <h3 style={{ color: "var(--rose-dark)", marginBottom: "12px", fontFamily: "Playfair Display, serif", fontSize: "24px" }}>
+      {/* IBAN ve Takı Modal Ekranı (createPortal ile doğrudan ekranın ortasına ışınlanır) */}
+      {showGiftModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={() => setShowGiftModal(false)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2147483647, backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()} 
+            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "460px", textAlign: "center", padding: "40px 24px", border: "2px solid #b56c83", position: "relative" }}
+          >
+            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
               {isEn ? "Gift & Registry" : giftData.title}
             </h3>
-            <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text)", marginBottom: "20px" }}>
+            <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "20px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
               {isEn ? "For those who wish to send a gift or contribute to our new life together:" : giftData.description}
             </p>
-            <div style={{ background: "var(--paper-soft)", padding: "16px", borderRadius: "16px", border: "1px solid var(--border)", marginBottom: "20px" }}>
-              <strong style={{ display: "block", fontSize: "18px", color: "var(--rose-deep)" }}>{giftData.receiver}</strong>
-              <span style={{ display: "block", fontSize: "14px", color: "var(--text-soft)", margin: "4px 0 10px" }}>{giftData.bankName}</span>
-              <code style={{ display: "block", fontSize: "16px", wordBreak: "break-all", background: "#fff", padding: "10px", borderRadius: "8px", border: "1px dashed var(--rose)" }}>
+            <div style={{ backgroundColor: "#fff7f9", padding: "16px", borderRadius: "16px", border: "1px solid #eab4c5", marginBottom: "20px" }}>
+              <strong style={{ display: "block", fontSize: "18px", color: "#7a2f49", fontFamily: "Playfair Display, serif" }}>{giftData.receiver}</strong>
+              <span style={{ display: "block", fontSize: "14px", color: "#6f4451", margin: "4px 0 10px", fontFamily: "Playfair Display, serif" }}>{giftData.bankName}</span>
+              <code style={{ display: "block", fontSize: "16px", wordBreak: "break-all", backgroundColor: "#ffffff", padding: "10px", borderRadius: "8px", border: "1px dashed #d98ca1", color: "#08060d", fontFamily: "monospace" }}>
                 {giftData.iban}
               </code>
             </div>
-            <div className="app-modal-actions" style={{ justifyContent: "center" }}>
-              <button type="button" className="main-button" onClick={copyIban}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+              <button type="button" className="main-button" onClick={copyIban} style={{ margin: 0, minWidth: "160px" }}>
                 {copied ? (isEn ? "Copied!" : "IBAN Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
               </button>
-              <button type="button" className="secondary-button" onClick={() => setShowGiftModal(false)}>
+              <button type="button" className="secondary-button" onClick={() => setShowGiftModal(false)} style={{ margin: 0, minWidth: "120px" }}>
                 {isEn ? "Close" : "Kapat"}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Katılamayacağım diyenler için Özel Üzüntü Modalı */}
-      {showDeclineModal && (
-        <div className="app-modal-backdrop" onClick={() => setShowDeclineModal(false)}>
-          <div className="app-modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth: "450px", textAlign: "center", padding: "34px 28px" }}>
-            <div style={{ fontSize: "40px", marginBottom: "10px" }}>💌</div>
-            <h3 style={{ color: "var(--rose-dark)", marginBottom: "12px", fontFamily: "Playfair Display, serif", fontSize: "24px" }}>
+      {/* Katılamayacağım diyenler için Özel Üzüntü Modalı (createPortal ile doğrudan ekranın ortasına ışınlanır) */}
+      {showDeclineModal && typeof document !== 'undefined' && createPortal(
+        <div 
+          onClick={() => setShowDeclineModal(false)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2147483647, backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()} 
+            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "450px", textAlign: "center", padding: "40px 24px", border: "2px solid #b56c83", position: "relative" }}
+          >
+            <div style={{ fontSize: "44px", marginBottom: "10px" }}>💌</div>
+            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
               {isEn ? "We'll Miss You!" : copy.declineTitle || "Çok Üzüldük!"}
             </h3>
-            <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text)", marginBottom: "24px" }}>
+            <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
               {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or send a gift via our registry screen." : copy.declineMessage}
             </p>
-            <div className="app-modal-actions" style={{ justifyContent: "center" }}>
-              <button type="button" className="main-button" onClick={() => { setShowDeclineModal(false); setShowGiftModal(true); }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+              <button type="button" className="main-button" onClick={() => { setShowDeclineModal(false); setShowGiftModal(true); }} style={{ margin: 0 }}>
                 🎁 {isEn ? "View Registry" : "Hediye Ekranını Aç"}
               </button>
-              <button type="button" className="secondary-button" onClick={() => setShowDeclineModal(false)}>
+              <button type="button" className="secondary-button" onClick={() => setShowDeclineModal(false)} style={{ margin: 0 }}>
                 {isEn ? "Close" : "Tamam"}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
@@ -134,26 +148,30 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
     <section className="card">
       <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy.guestsLabel}</p>
       <h2>{isEn ? t('invitation.guestsTitle') : copy.guestsTitle}</h2>
+      
+      {/* Sadece genel sayılar (İstatistikler) görünür */}
       <div className="guest-stats">
         <div><strong>{guests.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
         <div><strong>{totalPersonCount}</strong><span>{isEn ? "Attending" : "Katılacak Kişi"}</span></div>
         <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılamayacak"}</span></div>
       </div>
-      <div className="guest-list">
-        {guests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No responses yet." : "Henüz katılım bildirimi yok."}</p>
-        ) : (
-          guests.slice(0, 6).map((guest) => (
-            <div className="guest-item" key={guest.id}>
-              <div>
-                <strong>{guest.name}</strong>
-                <span>{isEn ? (guest.side === "Gelin Tarafı" ? "Bride's Side" : guest.side === "Damat Tarafı" ? "Groom's Side" : "Mutual") : guest.side} · {guest.personCount} {isEn ? (guest.personCount === "1" ? "Person" : "People") : "kişi"} · {isEn ? "Children" : "Çocuk"}: {isEn ? (guest.hasChild === "Evet" ? "Yes" : "No") : (guest.hasChild || "Hayır")}</span>
-                {guest.phone && <small>{guest.phone}</small>}
-              </div>
-              <em>{isEn ? (guest.attendance === "Katılacağım" ? "Attending" : "Not Attending") : guest.attendance}</em>
-            </div>
-          ))
-        )}
+      
+      {/* Yazının ve ikonun hem yatay hem dikey tam ortalandığı gizlilik kutusu */}
+      <div style={{ 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        textAlign: "center", 
+        marginTop: "24px", 
+        padding: "22px 18px", 
+        background: "var(--paper-soft)", 
+        borderRadius: "16px", 
+        border: "1px dashed var(--border)",
+        minHeight: "80px"
+      }}>
+        <p style={{ margin: 0, fontSize: "15px", lineHeight: "1.6", color: "var(--text-soft)", fontStyle: "italic", width: "100%" }}>
+          🔒 {isEn ? "Guest list and RSVP details are kept private and can only be viewed by the bride and groom." : "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir."}
+        </p>
       </div>
     </section>
   );

@@ -100,9 +100,10 @@ function App() {
   const [adminWishStatusFilter, setAdminWishStatusFilter] = useState("all");
   const [personalLinkName, setPersonalLinkName] = useState("");
   const [dataImportText, setDataImportText] = useState("");
-  const [appModal, setAppModal] = useState(null);
-
-  const modalResolverRef = useRef(null);
+  
+  const [customAlert, setCustomAlert] = useState(null);
+  const [customConfirm, setCustomConfirm] = useState(null);
+  const [customPrompt, setCustomPrompt] = useState(null);
 
   const invitation = useMemo(() => siteData.invitation, [siteData.invitation]);
   const familyInfo = useMemo(() => siteData.familyInfo, [siteData.familyInfo]);
@@ -130,60 +131,31 @@ function App() {
   const googleCalendarLink = useMemo(() => createGoogleCalendarLink(siteData, coupleName), [siteData, coupleName]);
 
   const timeLeft = useCountdown(invitation.weddingDate);
-  const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
+  const { audioRef, isMusicPlaying, startMusic, toggleMusic, stopMusic } = useAudio(invitation.musicFile);
 
-  const resolveAppModal = useCallback((result) => {
-    const resolver = modalResolverRef.current;
-    modalResolverRef.current = null;
-    setAppModal(null);
-    if (resolver) resolver(result);
-  }, []);
+  useEffect(() => {
+    if (isAdminPage) {
+      stopMusic();
+    }
+  }, [isAdminPage, stopMusic]);
 
-  const openAppModal = useCallback((config) => {
+  const showAppAlert = useCallback((message, options = {}) => {
     return new Promise((resolve) => {
-      modalResolverRef.current = resolve;
-      setAppModal({ tone: "info", closeOnBackdrop: false, ...config });
+      setCustomAlert({ message, title: options.title || (isEn ? "Information" : "Bilgi"), resolve });
     });
-  }, []);
+  }, [isEn]);
 
-  const showAppAlert = useCallback(async (message, options = {}) => {
-    await openAppModal({ 
-      type: "alert", 
-      title: options.title || (isEn ? "Information" : "Bilgi"), 
-      message, 
-      tone: options.tone || "info", 
-      icon: options.icon, 
-      confirmText: options.confirmText || (isEn ? "OK" : "Tamam") 
+  const showAppConfirm = useCallback((message, options = {}) => {
+    return new Promise((resolve) => {
+      setCustomConfirm({ message, title: options.title || (isEn ? "Confirmation" : "Onay"), resolve });
     });
-    return true;
-  }, [openAppModal, isEn]);
+  }, [isEn]);
 
-  const showAppConfirm = useCallback(async (message, options = {}) => {
-    return Boolean(await openAppModal({ 
-      type: "confirm", 
-      title: options.title || (isEn ? "Confirmation needed" : "Onay gerekiyor"), 
-      message, 
-      tone: options.tone || "warning", 
-      icon: options.icon || "?", 
-      confirmText: options.confirmText || (isEn ? "Yes" : "Evet"), 
-      cancelText: options.cancelText || (isEn ? "Cancel" : "Vazgeç") 
-    }));
-  }, [openAppModal, isEn]);
-
-  const showAppPrompt = useCallback(async (label, defaultValue = "", options = {}) => {
-    return openAppModal({ 
-      type: "prompt", 
-      title: options.title || (isEn ? "Edit information" : "Bilgi düzenle"), 
-      message: label, 
-      inputValue: defaultValue, 
-      placeholder: options.placeholder || label, 
-      multiline: Boolean(options.multiline), 
-      tone: options.tone || "info", 
-      icon: options.icon || "✎", 
-      confirmText: options.confirmText || (isEn ? "Save" : "Kaydet"), 
-      cancelText: options.cancelText || (isEn ? "Cancel" : "Vazgeç") 
+  const showAppPrompt = useCallback((label, defaultValue = "", options = {}) => {
+    return new Promise((resolve) => {
+      setCustomPrompt({ label, value: defaultValue, title: options.title || (isEn ? "Edit" : "Düzenle"), resolve, multiline: options.multiline });
     });
-  }, [openAppModal, isEn]);
+  }, [isEn]);
 
   const {
     submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery,
@@ -309,11 +281,11 @@ function App() {
   const submitGuest = useCallback(async (e) => {
     if (e) e.preventDefault();
     if (!guestForm.name.trim()) {
-      await showAppAlert(isEn ? "Please enter your full name." : "Lütfen ad soyad gir.", { title: isEn ? "Missing info" : "Eksik bilgi", tone: "warning", icon: "!" });
+      await showAppAlert(isEn ? "Please enter your full name." : "Lütfen ad soyad gir.", { title: isEn ? "Missing info" : "Eksik bilgi" });
       return;
     }
     if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
+      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik" });
       return;
     }
     try {
@@ -323,22 +295,22 @@ function App() {
       setGuestForm(INITIAL_GUEST_FORM);
       
       if (guestForm.attendance === "Katılacağım") {
-        await showAppAlert(isEn ? "Your RSVP has been saved." : "Katılım bildirimin kaydedildi.", { title: isEn ? "Saved" : "Kaydedildi", tone: "success", icon: "✓" });
+        await showAppAlert(isEn ? "Your RSVP has been successfully received." : "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz!", { title: isEn ? "Saved" : "Bilgileriniz Alındı" });
       }
     } catch (error) {
       console.error("Katılım kaydedilemedi:", error);
-      await showAppAlert(isEn ? `Could not save RSVP. Detail: ${error?.message || "Unknown error"}` : `Katılım bildirimi kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası", tone: "danger", icon: "!" });
+      await showAppAlert(isEn ? `Could not save RSVP. Detail: ${error?.message || "Unknown error"}` : `Katılım bildirimi kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası" });
     }
   }, [guestForm, showAppAlert, isEn]);
 
   const submitWish = useCallback(async (e) => {
     e.preventDefault();
     if (!wishForm.name.trim() || !wishForm.message.trim()) {
-      await showAppAlert(isEn ? "Please enter your name and message." : "Lütfen isim ve mesaj gir.", { title: isEn ? "Missing info" : "Eksik bilgi", tone: "warning", icon: "!" });
+      await showAppAlert(isEn ? "Please enter your name and message." : "Lütfen isim ve mesaj gir.", { title: isEn ? "Missing info" : "Eksik bilgi" });
       return;
     }
     if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik", tone: "danger", icon: "!" });
+      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik" });
       return;
     }
     const shouldPublishNow = !settings.requireWishApproval;
@@ -349,19 +321,19 @@ function App() {
         setWishes((prev) => [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...wishForm, approved: true }, ...prev]);
       }
       setWishForm(INITIAL_WISH_FORM);
-      await showAppAlert(settings.requireWishApproval ? (isEn ? "Your wish has been sent for admin approval." : "Güzel dileğin admin onayına gönderildi.") : (isEn ? "Your wish has been saved." : "Güzel dileğin kaydedildi."), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : (isEn ? "Saved" : "Kaydedildi"), tone: "success", icon: "✓" });
+      await showAppAlert(settings.requireWishApproval ? (isEn ? "Your wish has been sent for admin approval." : "Güzel dileğin admin onayına gönderildi.") : (isEn ? "Your wish has been saved." : "Güzel dileğin kaydedildi."), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : (isEn ? "Saved" : "Kaydedildi") });
     } catch (error) {
       console.error("Mesaj kaydedilemedi:", error);
-      await showAppAlert(isEn ? `Could not save message. Detail: ${error?.message || "Unknown error"}` : `Mesaj kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası", tone: "danger", icon: "!" });
+      await showAppAlert(isEn ? `Could not save message. Detail: ${error?.message || "Unknown error"}` : `Mesaj kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası" });
     }
   }, [wishForm, settings.requireWishApproval, showAppAlert, isEn]);
 
   const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
-      await showAppAlert(isEn ? "Invitation link copied." : "Davetiye linki kopyalandı.", { title: isEn ? "Copied" : "Kopyalandı", tone: "success", icon: "✓" });
+      await showAppAlert(isEn ? "Invitation link copied." : "Davetiye linki kopyalandı.", { title: isEn ? "Copied" : "Kopyalandı" });
     } catch {
-      await showAppAlert(isEn ? "Could not copy link." : "Link kopyalanamadı.", { title: isEn ? "Copy error" : "Kopyalama hatası", tone: "danger", icon: "!" });
+      await showAppAlert(isEn ? "Could not copy link." : "Link kopyalanamadı.", { title: isEn ? "Copy error" : "Kopyalama hatası" });
     }
   }, [currentShareLink, showAppAlert, isEn]);
 
@@ -475,9 +447,6 @@ function App() {
         : "Seçtiğiniz temaya uygun varsayılan davetiye resimleri ve videosu yüklensin mi?\n(Mevcut ana ekran ve galeri görselleriniz değişecektir)",
       { 
         title: isEn ? "Load Theme Media" : "Tema Medyalarını Yükle", 
-        confirmText: isEn ? "Yes, Load" : "Evet, Yükle", 
-        cancelText: isEn ? "No, Just Change Theme" : "Hayır, Sadece Tema Değişsin", 
-        tone: "info" 
       }
     );
     if (confirmed) {
@@ -491,7 +460,7 @@ function App() {
   const resetSiteContent = useCallback(async () => {
     const confirmed = await showAppConfirm(
       isEn ? "Reset editable fields to default?" : "Davetiyedeki düzenlenebilir alanlar varsayılan hale dönsün mü?", 
-      { title: isEn ? "Reset to Default" : "Varsayılana döndür", confirmText: isEn ? "Reset" : "Döndür", tone: "warning" }
+      { title: isEn ? "Reset to Default" : "Varsayılana döndür" }
     );
     if (!confirmed) return;
     const chosenDefaultTheme = adminDraft.settings.defaultTheme || "lavanta";
@@ -519,7 +488,7 @@ function App() {
   const clearGuests = useCallback(async () => {
     const confirmed = await showAppConfirm(
       isEn ? "Delete all RSVP records?" : "Tüm katılım kayıtları silinsin mi?", 
-      { title: isEn ? "Clear Guests" : "Katılım kayıtlarını sil", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+      { title: isEn ? "Clear Guests" : "Katılım kayıtlarını sil" }
     );
     if (!confirmed) return;
     const { error } = await supabase.from("guests").delete().not("id", "is", null);
@@ -530,7 +499,7 @@ function App() {
   const clearWishes = useCallback(async () => {
     const confirmed = await showAppConfirm(
       isEn ? "Delete all guestbook messages?" : "Tüm anı defteri mesajları silinsin mi?", 
-      { title: isEn ? "Clear Guestbook" : "Anı defterini temizle", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+      { title: isEn ? "Clear Guestbook" : "Anı defterini temizle" }
     );
     if (!confirmed) return;
     const { error } = await supabase.from("wishes").delete().not("id", "is", null);
@@ -541,7 +510,7 @@ function App() {
   const deleteGuest = useCallback(async (guestId) => {
     const confirmed = await showAppConfirm(
       isEn ? "Delete this RSVP record?" : "Bu katılım kaydı silinsin mi?", 
-      { title: isEn ? "Delete Record" : "Kaydı sil", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+      { title: isEn ? "Delete Record" : "Kaydı sil" }
     );
     if (!confirmed) return;
     const { error } = await supabase.from("guests").delete().eq("id", guestId);
@@ -571,7 +540,7 @@ function App() {
   const deleteWish = useCallback(async (wishId) => {
     const confirmed = await showAppConfirm(
       isEn ? "Delete this message?" : "Bu anı defteri mesajı silinsin mi?", 
-      { title: isEn ? "Delete Message" : "Mesajı sil", confirmText: isEn ? "Delete" : "Sil", tone: "danger", icon: "!" }
+      { title: isEn ? "Delete Message" : "Mesajı sil" }
     );
     if (!confirmed) return;
     const { error } = await supabase.from("wishes").delete().eq("id", wishId);
@@ -625,7 +594,7 @@ function App() {
       isEn 
         ? "WARNING: This action will DELETE all current settings and records, replacing them with the backup. Are you sure?" 
         : "DİKKAT: Bu işlem mevcut tüm ayarları ve kayıtları SİLECEK ve yerine yedeği yükleyecektir. Emin misiniz?", 
-      { title: isEn ? "Restore Backup" : "Yedeği Geri Yükle", confirmText: isEn ? "Yes, Restore" : "Evet, Geri Yükle", tone: "danger", icon: "!" }
+      { title: isEn ? "Restore Backup" : "Yedeği Geri Yükle" }
     );
     if (!confirmed) return;
     try {
@@ -731,14 +700,102 @@ function App() {
         preload="auto"
       />
       
-      <AppModal
-        modal={appModal}
-        onInputChange={(value) => setAppModal((prev) => (prev ? { ...prev, inputValue: value } : prev))}
-        onConfirm={(value) => resolveAppModal(value)}
-        onCancel={() => resolveAppModal(appModal?.type === "prompt" ? null : false)}
-      />
-      
-        {!isAdminPage && (
+      {/* Özel Alert Zırhlı Modal (Siyah ekranda kalma hatası çözümü) */}
+      {customAlert && (
+        <div 
+          onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()} 
+            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "400px", textAlign: "center", padding: "34px 24px", border: "2px solid #b56c83" }}
+          >
+            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "22px", fontWeight: "800" }}>
+              {customAlert.title}
+            </h3>
+            <p style={{ fontSize: "17px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
+              {customAlert.message}
+            </p>
+            <button type="button" className="main-button" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }} style={{ margin: 0, minWidth: "140px" }}>
+              {isEn ? "OK" : "Tamam"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Özel Confirm Zırhlı Modal */}
+      {customConfirm && (
+        <div 
+          onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()} 
+            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "400px", textAlign: "center", padding: "34px 24px", border: "2px solid #b56c83" }}
+          >
+            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "22px", fontWeight: "800" }}>
+              {customConfirm.title}
+            </h3>
+            <p style={{ fontSize: "17px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
+              {customConfirm.message}
+            </p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+              <button type="button" className="main-button" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }} style={{ margin: 0, minWidth: "120px" }}>
+                {isEn ? "Yes" : "Evet"}
+              </button>
+              <button type="button" className="secondary-button" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }} style={{ margin: 0, minWidth: "120px" }}>
+                {isEn ? "Cancel" : "Vazgeç"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Özel Prompt Zırhlı Modal */}
+      {customPrompt && (
+        <div 
+          onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
+        >
+          <form 
+            onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }}
+            onClick={e => e.stopPropagation()} 
+            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "440px", textAlign: "center", padding: "34px 24px", border: "2px solid #b56c83", display: "flex", flexDirection: "column", gap: "16px" }}
+          >
+            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0", fontFamily: "Playfair Display, serif", fontSize: "22px", fontWeight: "800" }}>
+              {customPrompt.title}
+            </h3>
+            <p style={{ fontSize: "16px", margin: "0", color: "var(--text, #55303b)", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
+              {customPrompt.label}
+            </p>
+            {customPrompt.multiline ? (
+              <textarea 
+                autoFocus 
+                value={customPrompt.value} 
+                onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} 
+                style={{ width: "100%", padding: "14px", borderRadius: "14px", border: "1.5px solid #d98ca1", outline: "none", minHeight: "100px", fontFamily: "Playfair Display, serif", fontSize: "16px" }} 
+              />
+            ) : (
+              <input 
+                autoFocus 
+                value={customPrompt.value} 
+                onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} 
+                style={{ width: "100%", padding: "14px", borderRadius: "14px", border: "1.5px solid #d98ca1", outline: "none", fontFamily: "Playfair Display, serif", fontSize: "16px" }} 
+              />
+            )}
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap", marginTop: "8px" }}>
+              <button type="submit" className="main-button" style={{ margin: 0, minWidth: "120px" }}>
+                {isEn ? "Save" : "Kaydet"}
+              </button>
+              <button type="button" className="secondary-button" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }} style={{ margin: 0, minWidth: "120px" }}>
+                {isEn ? "Cancel" : "Vazgeç"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+     {!isAdminPage && (
         <>
           {/* Hızlı Admin Giriş Butonu (Sol Üst Köşe) */}
           <div className="admin-quick-access">
@@ -763,10 +820,10 @@ function App() {
               onClick={toggleLanguage}
               title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
             >
-              {isEn ? 'TR' : 'EN'}
+              {isEn ? 'EN' : 'TR'}
             </button>
 
-            {/* Paylaş (İkonlu) */}
+            {/* Paylaş (İkonlu) - Sadece Admin Değilse Çıkar */}
             <a 
               className="dock-btn" 
               href={`https://wa.me/?text=${shareText}`} 
@@ -783,7 +840,7 @@ function App() {
               </svg>
             </a>
 
-            {/* Müzik Aç / Kapat */}
+            {/* Müzik Aç / Kapat - Sadece Admin Değilse Çıkar */}
             <button
               type="button"
               className="dock-btn"
@@ -913,6 +970,8 @@ function App() {
           dataImportText={dataImportText}
           setDataImportText={setDataImportText}
           importAllDataJson={importAllDataJson}
+          toggleMusic={toggleMusic}
+          isMusicPlaying={isMusicPlaying}
         />
       ) : !opened ? (
         <IntroPage

@@ -1004,10 +1004,8 @@ body,
    ================================================================= */
 .admin-quick-access {
   position: fixed !important;
-  /* Sayfa üst boşluğu (30px) + resmin kavis payı (16px) = 46px */
-  top: 46px !important;
-  /* Geniş ekranlarda (1500px+) resmin tam nerede başladığını hesaplar ve kavisin içine (56px) oturtur */
-  left: calc(max(50vw - 750px, 0px) + 56px) !important;
+  top: 22px !important;
+  left: 22px !important;
   transform: none !important;
   z-index: 9999 !important;
   background: rgba(255, 255, 255, 0.25) !important;
@@ -1015,14 +1013,14 @@ body,
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
   border-radius: 50px !important;
-  padding: 8px !important; /* Daha zarif durması için dış boşluk hafif kısıldı */
+  padding: 10px !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
 }
 
 .admin-quick-access .admin-btn {
-  width: 42px !important; /* Resim kavisinin içine tam sığması için 46'dan 42'ye çekildi */
-  height: 42px !important;
-  min-width: 42px !important;
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1043,9 +1041,10 @@ body,
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
 }
 
-[data-theme="dark"] .admin-quick-access {
-  background: rgba(20, 15, 18, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+[data-theme="dark"] .admin-quick-access .admin-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 [data-theme="dark"] .admin-quick-access .admin-btn {
@@ -1063,22 +1062,20 @@ body,
 /* Mobil uyumluluk: Sağ taraftaki gibi mobilde küçülüp köşeye yerleşir */
 @media (max-width: 650px) {
   .admin-quick-access {
-    top: 34px !important; /* Tablet padding payı */
-    left: 28px !important; /* Tablet padding payı */
+    top: 16px !important;
+    left: 16px !important;
+    padding: 6px !important;
   }
-  
   .admin-quick-access .admin-btn {
     width: 38px !important;
     height: 38px !important;
     min-width: 38px !important;
   }
-  
   .admin-quick-access .admin-btn svg {
     width: 17px !important;
     height: 17px !important;
   }
 }
-
 
 /* =============================
    YENİ EKLENEN ÖZELLİKLER
