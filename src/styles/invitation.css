@@ -1076,6 +1076,16 @@ body,
     width: 17px !important;
     height: 17px !important;
   }
+
+  .glass-dock {
+    top: auto !important;
+    bottom: 24px !important;
+    right: 50% !important;
+    transform: translateX(50%) !important; 
+    flex-direction: row !important;
+    padding: 8px 14px !important;
+    gap: 14px !important;
+  }
 }
 
 /* =============================
