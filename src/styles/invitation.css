@@ -1078,13 +1078,26 @@ body,
   }
 
   .glass-dock {
-    top: auto !important;
-    bottom: 24px !important;
-    right: 50% !important;
-    transform: translateX(50%) !important; 
-    flex-direction: row !important;
-    padding: 8px 14px !important;
-    gap: 14px !important;
+    top: 16px !important;
+    bottom: auto !important;
+    right: 16px !important;
+    left: auto !important;
+    transform: none !important;
+    flex-direction: column !important;
+    padding: 6px !important;
+    gap: 8px !important;
+  }
+
+  .glass-dock .dock-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    font-size: 12px !important;
+  }
+
+  .glass-dock .dock-btn svg {
+    width: 17px !important;
+    height: 17px !important;
   }
 }
 
