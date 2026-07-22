@@ -130,16 +130,12 @@ export const DEFAULT_SITE_DATA = {
   },
 };
 
-export const DEFAULT_ADMIN_PASSWORD = "1234";
-export const ADMIN_PASSWORD_KEY = "wedding-admin-password";
 export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 export const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
 export const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
 export const NOTE_MAX_LENGTH = 160;
 export const WISH_MAX_LENGTH = 220;
 export const SITE_DATA_KEY = "wedding-site-data";
-export const GUESTS_KEY = "wedding-guests";
-export const WISHES_KEY = "wedding-wishes";
 
 export const THEMES = [
   { label: "Pembe Romantik", value: "rose" },

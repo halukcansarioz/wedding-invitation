@@ -8,8 +8,6 @@ import {
   IMAGE_QUALITY,
   MAX_AUDIO_FILE_SIZE,
   SITE_DATA_KEY,
-  DEFAULT_ADMIN_PASSWORD,
-  ADMIN_PASSWORD_KEY,
   ADMIN_SESSION_LAST_ACTIVE_KEY,
   ADMIN_SESSION_TIMEOUT_MS
 } from "../config/constants";
@@ -51,17 +49,8 @@ export const mergeSiteData = (storedData) => {
 
 export const normalizeSiteData = (data) => applyDefaultWeddingMusic(fixShareLink(mergeSiteData(data)));
 
-export const loadStoredList = (key) => {
-  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
-};
-
 export const loadStoredSiteData = () => {
   try { return normalizeSiteData(JSON.parse(localStorage.getItem(SITE_DATA_KEY))); } catch { return normalizeSiteData(null); }
-};
-
-export const getStoredAdminPassword = () => {
-  if (typeof window === "undefined") return DEFAULT_ADMIN_PASSWORD;
-  return localStorage.getItem(ADMIN_PASSWORD_KEY) || DEFAULT_ADMIN_PASSWORD;
 };
 
 export const createGoogleCalendarLink = (siteData, coupleName) => {
