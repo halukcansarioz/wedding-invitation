@@ -354,24 +354,42 @@ export function renderAdminActivePanel({
             <button type="button" className="secondary-button" onClick={exportGuestsCsv}>CSV İndir</button>
           </div>
           <div className="admin-list admin-list-full">
-            {filteredGuests.length === 0 ? <p className="empty-text">Bu filtreye uygun kayıt yok.</p> : filteredGuests.map((guest) => (
-              <div className="admin-row" key={guest.id}>
-                <strong>{guest.name}</strong>
-                <span>{guest.attendance} · {guest.personCount} kişi · {guest.side}</span>
-                <span>Telefon: {guest.phone || "-"}</span>
-                <span>Çocuk: {guest.hasChild || "Hayır"}</span>
-                {guest.note && <em>Not: {guest.note}</em>}
-                <div className="admin-row-actions">
-                  <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>Düzenle</button>
-                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>Sil</button>
+            {filteredGuests.length === 0 ? <p className="empty-text">Bu filtreye uygun kayıt yok.</p> : filteredGuests.map((guest) => {
+              // WhatsApp hatırlatma mesajı ve linki hazırlığı
+              const cleanPhone = guest.phone ? guest.phone.replace(/\D/g, "") : "";
+              const personalUrl = `${window.location.origin}/?guest=${encodeURIComponent(guest.name)}`;
+              const reminderText = `Merhaba ${guest.name}, düğünümüze çok az kaldı! 💍 Katılım durumunu kontrol etmek veya güncellemek için sana özel hazırladığımız davetiye linkini inceleyebilirsin:\n${personalUrl}`;
+              const whatsappHref = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(reminderText)}` : "";
+
+              return (
+                <div className="admin-row" key={guest.id}>
+                  <strong>{guest.name}</strong>
+                  <span>{guest.attendance} · {guest.personCount} kişi · {guest.side}</span>
+                  <span>Telefon: {guest.phone || "-"}</span>
+                  <span>Çocuk: {guest.hasChild || "Hayır"}</span>
+                  {guest.note && <em>Not: {guest.note}</em>}
+                  <div className="admin-row-actions">
+                    {cleanPhone && (
+                      <a 
+                        href={whatsappHref} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="secondary-button small-admin-button"
+                        style={{ backgroundColor: "#25D366", color: "#fff", borderColor: "#25D366", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        💬 WhatsApp Hatırlat
+                      </a>
+                    )}
+                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>Düzenle</button>
+                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>Sil</button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             <button type="button" className="secondary-button danger-button" onClick={clearGuests}>Katılım Kayıtlarını Temizle</button>
           </div>
         </AdminSection>
-      );
-
+      ); 
     case "wishes":
       return (
         <AdminSection title="Anı Defteri Formu Mesajları">

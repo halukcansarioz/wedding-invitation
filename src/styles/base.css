@@ -1301,3 +1301,27 @@ button {
     transform: translateX(0); 
   }
 }
+
+/* =========================================================
+   MÜZİK ÇALARKEN HAREKETLİ SES DALGASI / NABIZ EFEKTİ
+   ========================================================= */
+body .app .floating-actions button.music-toggle-button.music-on,
+body .app .glass-dock .dock-btn.music-on {
+  animation: musicPulseGlow 1.8s infinite ease-in-out !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+}
+
+@keyframes musicPulseGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0.45);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(159, 79, 104, 0);
+    transform: scale(1.04);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0);
+    transform: scale(1);
+  }
+}
