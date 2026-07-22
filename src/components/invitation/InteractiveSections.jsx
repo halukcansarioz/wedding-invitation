@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { OptionGroup } from "../common/UIComponents";
+import { getGuestNameFromUrl } from "../../utils/helpers";
 import {
   NOTE_MAX_LENGTH,
   WISH_MAX_LENGTH,
@@ -18,8 +19,46 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  const [urlGuestName, setUrlGuestName] = useState("");
+  const [hasExtraPreFill, setHasExtraPreFill] = useState(false); // Rozet kontrolü için
 
   const giftData = DEFAULT_SITE_DATA.giftRegistry;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    
+    const guestName = params.get("guest") || params.get("davetli") || "";
+    const sideParam = params.get("side") || params.get("taraf") || "";
+    const countParam = params.get("count") || params.get("kisi") || "";
+
+    if (guestName) {
+      setUrlGuestName(guestName);
+      
+      // Sadece isim haricinde ekstra bilgi gönderilmişse rozeti aç
+      if (sideParam || countParam) {
+        setHasExtraPreFill(true);
+      }
+      
+      setGuestForm((prev) => {
+        let resolvedSide = prev.side;
+        if (sideParam.toLowerCase().includes("damat")) resolvedSide = "Damat Tarafı";
+        else if (sideParam.toLowerCase().includes("gelin")) resolvedSide = "Gelin Tarafı";
+        else if (sideParam.toLowerCase().includes("ortak")) resolvedSide = "Ortak";
+
+        let resolvedCount = prev.personCount;
+        if (["1", "2", "3", "4"].includes(countParam)) resolvedCount = countParam;
+
+        return {
+          ...prev,
+          name: prev.name || guestName,
+          side: resolvedSide,
+          personCount: resolvedCount
+        };
+      });
+    }
+  }, [setGuestForm]);
 
   const deadline = invitation?.rsvpDeadline ? new Date(invitation.rsvpDeadline) : null;
   if (deadline && !Number.isNaN(deadline.getTime())) {
@@ -82,6 +121,23 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         </div>
       ) : (
         <form className="rsvp-form" onSubmit={handleFormSubmit}>
+          {urlGuestName && hasExtraPreFill && (
+            <div style={{
+              background: "rgba(159, 79, 104, 0.08)",
+              border: "1px dashed rgba(159, 79, 104, 0.35)",
+              padding: "12px 18px",
+              borderRadius: "16px",
+              color: "var(--rose-dark, #9f4f68)",
+              fontSize: "15px",
+              fontWeight: "700",
+              textAlign: "center",
+              marginBottom: "8px",
+              fontFamily: "Playfair Display, serif"
+            }}>
+              ✨ {isEn ? `Dear ${urlGuestName}, this form is pre-filled for you.` : `Sevgili ${urlGuestName}, form senin için otomatik dolduruldu.`}
+            </div>
+          )}
+
           <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} />
           <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder={isEn ? t('form.phonePlaceholder') : "Telefon Numaranız"} maxLength="20" />
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   AdminField,
   AdminTextarea,
@@ -6,10 +6,59 @@ import {
   AdminImageField,
   AdminMusicField,
   AdminSection,
+  AdminSelect,
 } from "../AdminUI";
 import { ThemeDropdown, CustomDropdown } from "../common/UIComponents";
-import { THEMES } from "../../config/constants";
-import { getCurrentShareLink } from "../../utils/helpers";
+import { THEMES, SIDE_OPTIONS, PERSON_COUNT_OPTIONS } from "../../config/constants";
+import { getCurrentShareLink, buildPersonalLink } from "../../utils/helpers";
+
+function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLinkName, setPersonalLinkName }) {
+  // Varsayılan olarak "Seçilmedi" (boş) gelsin
+  const [selectedSide, setSelectedSide] = useState("");
+  const [selectedCount, setSelectedCount] = useState("");
+
+  const generatedLink = buildPersonalLink(currentShareLink, personalLinkName, selectedSide, selectedCount);
+
+  const openWhatsAppShare = () => {
+    if (!personalLinkName.trim()) return;
+    const text = `Sevgili ${personalLinkName}, düğün davetiyemiz sana özel olarak hazırlandı! 💍\n\nKatılım durumunu aşağıdaki linkten tek tıkla bize bildirebilirsin:\n${generatedLink}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  };
+
+  // Menülere "Boş Bırak" seçeneği eklendi
+  const extendedSideOptions = [{ label: "Seçilmedi (Boş Bırak)", value: "" }, ...SIDE_OPTIONS];
+  const extendedCountOptions = [{ label: "Seçilmedi (Boş Bırak)", value: "" }, ...PERSON_COUNT_OPTIONS];
+
+  return (
+    <AdminSection title="Kişiye Özel Akıllı Link Üretici">
+      <div className="admin-personal-link-box personal-link-standalone" style={{ display: "grid", gap: "18px" }}>
+        <p className="admin-help-text" style={{ margin: 0 }}>
+          Sadece isim yazarak davetiye linki üretebilirsiniz. Eğer taraf ve kişi sayısını da seçerseniz LCV formu tam otomatik doldurulur.
+        </p>
+
+        <div className="admin-edit-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+          <AdminField label="Davetli Adı Soyadı" onChange={setPersonalLinkName} placeholder="Örn: Ahmet Yılmaz" value={personalLinkName} />
+          <AdminSelect label="Yakınlık / Taraf (Opsiyonel)" value={selectedSide} options={extendedSideOptions} onChange={setSelectedSide} />
+          <AdminSelect label="Kişi Sayısı (Opsiyonel)" value={selectedCount} options={extendedCountOptions} onChange={setSelectedCount} />
+        </div>
+
+        <div style={{ marginTop: "4px" }}>
+          <span style={{ display: "block", marginBottom: "6px", fontWeight: "700", color: "var(--rose-dark)" }}>Üretilen Akıllı Link:</span>
+          <input value={generatedLink} readOnly style={{ width: "100%", padding: "14px 16px", borderRadius: "14px", border: "1.5px dashed var(--rose-dark)", background: "var(--paper-soft)", fontWeight: "700", color: "var(--text)" }} />
+        </div>
+
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "6px" }}>
+          <button type="button" className="main-button" onClick={() => copyAdminLink(generatedLink, "Akıllı davetiye linki kopyalandı!")} style={{ flex: "1", minWidth: "180px", margin: 0 }}>
+            🔗 Linki Kopyala
+          </button>
+          <button type="button" className="secondary-button" onClick={openWhatsAppShare} disabled={!personalLinkName.trim()} style={{ flex: "1", minWidth: "180px", margin: 0, backgroundColor: "#25D366", color: "#fff", borderColor: "#25D366" }}>
+            💬 WhatsApp ile Gönder
+          </button>
+        </div>
+      </div>
+    </AdminSection>
+  );
+}
 
 export function renderAdminActivePanel({
   activeAdminTab,
@@ -373,13 +422,12 @@ export function renderAdminActivePanel({
 
     case "personalLink":
       return (
-        <AdminSection title="Kişiye Özel Davetli Linki">
-          <div className="admin-personal-link-box personal-link-standalone">
-            <AdminField label="Davetli adı" onChange={setPersonalLinkName} placeholder="Örn. Ahmet Yılmaz" value={personalLinkName} />
-            <input value={personalGuestLink} readOnly />
-            <button type="button" className="secondary-button" onClick={() => copyAdminLink(personalGuestLink, "Kişiye özel link kopyalandı.")}>Özel Linki Kopyala</button>
-          </div>
-        </AdminSection>
+        <PersonalLinkPanel 
+          currentShareLink={currentShareLink} 
+          copyAdminLink={copyAdminLink} 
+          personalLinkName={personalLinkName} 
+          setPersonalLinkName={setPersonalLinkName} 
+        />
       );
 
     case "data":

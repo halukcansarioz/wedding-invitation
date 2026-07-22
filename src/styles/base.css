@@ -840,6 +840,7 @@ button {
 /* =========================================================
    ZARF İSİM ETİKETİ (ÖZEL DAVETLİLER İÇİN)
    ========================================================= */
+
 .envelope-guest-badge {
   position: absolute !important;
   bottom: 24px !important;
@@ -852,10 +853,14 @@ button {
   border-radius: 0 !important;
   font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
   font-size: 15px !important;
-  font-weight: 600 !important;
+  font-weight: 800 !important;
   color: var(--amp-color) !important;
   letter-spacing: 0.5px !important;
-  opacity: 0.85 !important;
+  
+  /* Başlangıçta tam görünür */
+  opacity: 1 !important; 
+  visibility: visible !important;
+  
   font-style: normal !important;
   text-align: right !important;
   max-width: 45% !important;
@@ -863,13 +868,17 @@ button {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   pointer-events: none !important;
-  transition: opacity 0.3s ease !important;
+  
+  transform: translateZ(30px) !important;
+  /* Zarf açılırken (opening) ismin anında gitmesini engelliyoruz, animasyon süresiyle senkronize ediyoruz */
+  transition: opacity 0.4s ease 0.8s, visibility 0.4s ease 0.8s !important;
 }
 
+/* Zarf açılış animasyonu başladıktan sonra bile yazı zarifle birlikte kalır, 
+   ancak zarf yukarı süzülüp biterken (yaklaşık 1.2 saniye sonra) kaybolur */
 .intro-page.opening .envelope-guest-badge {
-  opacity: 0.85 !important;
-  visibility: visible !important;
-  transform: translateZ(30px) !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 /* =========================================================

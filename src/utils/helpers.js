@@ -14,7 +14,6 @@ import {
   ADMIN_SESSION_TIMEOUT_MS
 } from "../config/constants";
 
-// exportUtils içindeki fonksiyonları tekrar yazmak yerine doğrudan aktarıyoruz:
 export { normalizeText, downloadTextFile, csvEscape, createCsv, excelEscape, createExcelTable } from "./exportUtils";
 
 export const getFaviconUrl = (theme) => {
@@ -182,15 +181,38 @@ export const getGuestNameFromUrl = () => {
   return params.get("guest") || params.get("davetli") || "";
 };
 
-export const buildPersonalLink = (baseLink, guestName) => {
-  if (!guestName.trim()) return baseLink;
+// DÜZELTME: Her dokunuşta ve seçimde linki anında güncelleyen güçlendirilmiş fonksiyon
+export const buildPersonalLink = (baseLink, guestName = "", side = "", count = "") => {
+  const defaultBase = baseLink || getCurrentShareLink() || "https://siten.com/";
   try {
-    const url = new URL(baseLink || getCurrentShareLink());
-    url.searchParams.set("guest", guestName.trim());
+    const url = new URL(defaultBase);
+    if (guestName && guestName.trim()) {
+      url.searchParams.set("guest", guestName.trim());
+    } else {
+      url.searchParams.delete("guest");
+    }
+    if (side && side !== "all") {
+      url.searchParams.set("side", side);
+    } else {
+      url.searchParams.delete("side");
+    }
+    if (count && count !== "all") {
+      url.searchParams.set("count", count);
+    } else {
+      url.searchParams.delete("count");
+    }
     return url.toString();
   } catch {
-    const separator = baseLink.includes("?") ? "&" : "?";
-    return `${baseLink}${separator}guest=${encodeURIComponent(guestName.trim())}`;
+    let result = defaultBase;
+    const params = [];
+    if (guestName && guestName.trim()) params.push(`guest=${encodeURIComponent(guestName.trim())}`);
+    if (side && side !== "all") params.push(`side=${encodeURIComponent(side)}`);
+    if (count && count !== "all") params.push(`count=${encodeURIComponent(count)}`);
+    if (params.length > 0) {
+      const separator = result.includes("?") ? "&" : "?";
+      result += separator + params.join("&");
+    }
+    return result;
   }
 };
 
