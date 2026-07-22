@@ -1048,12 +1048,6 @@ body,
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-[data-theme="dark"] .admin-quick-access .admin-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
 [data-theme="dark"] .admin-quick-access .admin-btn:hover {
   background: rgba(255, 255, 255, 0.15) !important;
   color: var(--rose-light, #f8d7df) !important;
@@ -1871,31 +1865,6 @@ body .app .glass-dock .dock-btn.music-on {
     box-shadow: 0 0 0 0 rgba(159, 79, 104, 0);
     transform: scale(1);
   }
-}
-
-/* Lightbox Kapatma Butonu - Modern & Şık Tasarım */
-.invitation-page .lightbox-close-btn, 
-div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button {
-  position: absolute !important;
-  top: 24px !important;
-  right: 24px !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
-  font-size: 22px !important;
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 50% !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1 !important;
-  z-index: 2147483647 !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .invitation-page .lightbox-close-btn:hover, 
