@@ -21,8 +21,10 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
 
   const giftData = DEFAULT_SITE_DATA.giftRegistry;
 
-  // LCV Tarihinin Geçip Geçmediğini Kontrol Ediyoruz
-  const deadline = invitation.rsvpDeadline ? new Date(invitation.rsvpDeadline) : null;
+  const deadline = invitation?.rsvpDeadline ? new Date(invitation.rsvpDeadline) : null;
+  if (deadline && !Number.isNaN(deadline.getTime())) {
+    deadline.setHours(23, 59, 59, 999);
+  }
   const isDeadlinePassed = deadline && !Number.isNaN(deadline.getTime()) && new Date() > deadline;
 
   const handleFormSubmit = async (e) => {
@@ -32,7 +34,6 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
 
     await submitGuest(e);
     
-    // Sadece "Katılamayacağım" seçildiyse VE isim boş değilse bu pop-up çıkar
     if (isDeclining && currentName.length > 0) {
       setShowDeclineModal(true);
     }
@@ -51,11 +52,10 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
 
   return (
     <section className="card rsvp-card">
-      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy.rsvpLabel}</p>
-      <h2>{isEn ? t('invitation.rsvpTitle') : copy.rsvpTitle}</h2>
-      <p>{isEn ? t('invitation.rsvpText') : copy.rsvpText}</p>
+      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
+      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
+      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
       
-      {/* TARİH GEÇTİYSE KİLİT KARTI, GEÇMEDİYSE NORMAL FORM GÖSTERİLİR */}
       {isDeadlinePassed ? (
         <div style={{
           margin: "32px auto 0",
@@ -69,16 +69,15 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         }}>
           <div style={{ fontSize: "40px", marginBottom: "10px" }}>⏳</div>
           <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 10px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
-            {isEn ? t('invitation.deadlineTitle') : (copy.deadlineTitle || "LCV Bildirim Süresi Doldu")}
+            {isEn ? t('invitation.deadlineTitle') : (copy?.deadlineTitle || "LCV Bildirim Süresi Doldu")}
           </h3>
           
-          {/* TARİHİ ÇOK ŞIK BİR ROZET İÇİNDE GÖSTERİYORUZ */}
           <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(159, 79, 104, 0.12)", border: "1px solid rgba(159, 79, 104, 0.3)", borderRadius: "999px", color: "var(--rose-dark, #9f4f68)", fontWeight: "800", fontSize: "14px", marginBottom: "18px", fontFamily: "Playfair Display, serif", letterSpacing: "1px" }}>
-            📅 {isEn ? "Deadline:" : "Son Tarih:"} {invitation.rsvpDeadline}
+            📅 {isEn ? "Deadline:" : "Son Tarih:"} {invitation?.rsvpDeadline}
           </span>
 
           <p style={{ fontSize: "16px", lineHeight: "1.7", color: "var(--text, #55303b)", margin: "0 auto", fontFamily: "Playfair Display, serif", fontWeight: "600", maxWidth: "520px" }}>
-            {isEn ? t('invitation.deadlineText') : (copy.deadlineText || "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.")}
+            {isEn ? t('invitation.deadlineText') : (copy?.deadlineText || "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.")}
           </p>
         </div>
       ) : (
@@ -99,12 +98,10 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         </form>
       )}
 
-      {/* WHATSAPP BUTONU HER ZAMAN GÖRÜNÜR */}
-      <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+      <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
         {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
       </a>
 
-      {/* IBAN ve Takı Modal Ekranı */}
       {showGiftModal && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setShowGiftModal(false)}
@@ -140,7 +137,6 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         document.body
       )}
 
-      {/* Katılamayacağım diyenler için Özel Üzüntü Modalı */}
       {showDeclineModal && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setShowDeclineModal(false)}
@@ -152,10 +148,10 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
           >
             <div style={{ fontSize: "44px", marginBottom: "10px" }}>💌</div>
             <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
-              {isEn ? "We'll Miss You!" : copy.declineTitle || "Çok Üzüldük!"}
+              {isEn ? "We'll Miss You!" : copy?.declineTitle || "Çok Üzüldük!"}
             </h3>
             <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or send a gift via our registry screen." : copy.declineMessage}
+              {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or send a gift via our registry screen." : copy?.declineMessage}
             </p>
             <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
               <button type="button" className="main-button" onClick={() => { setShowDeclineModal(false); setShowGiftModal(true); }} style={{ margin: 0 }}>
@@ -173,25 +169,22 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
   );
 }
 
-// Dosyanın altındaki GuestsListSection ve WishesSection bileşenleri aynen kalıyor...
-
 export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
+  const guestList = Array.isArray(guests) ? guests : [];
 
   return (
     <section className="card">
-      <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy.guestsLabel}</p>
-      <h2>{isEn ? t('invitation.guestsTitle') : copy.guestsTitle}</h2>
+      <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
+      <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
-      {/* Sadece genel sayılar (İstatistikler) görünür */}
       <div className="guest-stats">
-        <div><strong>{guests.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
-        <div><strong>{totalPersonCount}</strong><span>{isEn ? "Attending" : "Katılacak Kişi"}</span></div>
-        <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılamayacak"}</span></div>
+        <div><strong>{guestList.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
+        <div><strong>{totalPersonCount || 0}</strong><span>{isEn ? "Attending" : "Katılacak Kişi"}</span></div>
+        <div><strong>{notAttendingCount || 0}</strong><span>{isEn ? "Not Attending" : "Katılamayacak"}</span></div>
       </div>
       
-      {/* Yazının ve ikonun hem yatay hem dikey tam ortalandığı gizlilik kutusu */}
       <div style={{ 
         display: "flex", 
         alignItems: "center", 
@@ -215,11 +208,12 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
 export function WishesSection({ copy, wishForm, handleWishChange, submitWish, approvedWishes }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
+  const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
 
   return (
     <section className="card">
-      <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy.wishesLabel}</p>
-      <h2>{isEn ? t('invitation.wishesTitle') : copy.wishesTitle}</h2>
+      <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
+      <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
       <form className="wish-form" onSubmit={submitWish}>
         <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} />
         <div className="field-with-counter">
@@ -229,10 +223,10 @@ export function WishesSection({ copy, wishForm, handleWishChange, submitWish, ap
         <button type="submit" className="main-button form-button">{isEn ? t('form.submitWish') : "Mesajı Gönder"}</button>
       </form>
       <div className="wish-list">
-        {approvedWishes.length === 0 ? (
+        {wishes.length === 0 ? (
           <p className="empty-text">{isEn ? "No wishes yet." : "Henüz güzel dilek yok."}</p>
         ) : (
-          approvedWishes.slice(0, 4).map((wish) => (
+          wishes.slice(0, 4).map((wish) => (
             <div className="wish-item" key={wish.id}>
               <p>"{wish.message}"</p>
               <strong>{wish.name}</strong>

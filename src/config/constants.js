@@ -83,7 +83,9 @@ export const DEFAULT_SITE_DATA = {
     footerSmall: "Made with love",
     giftButton: "Hediye & Takı Gönder",
     declineTitle: "Çok Üzüldük!",
-    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz."
+    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
+    deadlineTitle: "LCV Bildirim Süresi Doldu",
+    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
   },
   eventDetails: [
     {

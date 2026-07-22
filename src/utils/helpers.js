@@ -14,6 +14,9 @@ import {
   ADMIN_SESSION_TIMEOUT_MS
 } from "../config/constants";
 
+// exportUtils içindeki fonksiyonları tekrar yazmak yerine doğrudan aktarıyoruz:
+export { normalizeText, downloadTextFile, csvEscape, createCsv, excelEscape, createExcelTable } from "./exportUtils";
+
 export const getFaviconUrl = (theme) => {
   const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.rose;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="17" fill="${colors.bg}"/><circle cx="32" cy="32" r="21" fill="${colors.circle}" opacity="0.72"/><g fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="2" stroke-linejoin="round"><path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/></g><circle cx="32" cy="32" r="6" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="2"/></svg>`;
@@ -77,7 +80,6 @@ export const downloadIcsCalendar = (invitation) => {
   const start = new Date(invitation.weddingDate);
   if (Number.isNaN(start.getTime())) return;
   
-  // Düğün süresini ortalama 4 saat olarak hesaplıyoruz
   const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
 
   const formatDate = (date) => date.toISOString().replace(/-|:|\.\d+/g, "");
@@ -90,7 +92,6 @@ export const downloadIcsCalendar = (invitation) => {
   const description = invitation.message || "";
   const location = `${invitation.venue}, ${invitation.address}`;
 
-  // Standart iCalendar (.ics) formatı
   const icsContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -122,14 +123,11 @@ export const downloadIcsCalendar = (invitation) => {
 
 export const handleAddToCalendar = (invitation, googleCalendarLink) => {
   const userAgent = window.navigator.userAgent || window.navigator.vendor || window.opera;
-  // Apple cihazlarını (iPhone, iPad, iPod, macOS) tespit ediyoruz
   const isApple = /iPad|iPhone|iPod|Macintosh|Mac OS X/i.test(userAgent);
 
   if (isApple) {
-    // Apple cihazıysa iCalendar (.ics) indirir ve Apple Takvim açılır
     downloadIcsCalendar(invitation);
   } else {
-    // Android veya PC ise Google Takvim linkini yeni sekmede açar
     window.open(googleCalendarLink, "_blank", "noopener,noreferrer");
   }
 };
@@ -176,34 +174,6 @@ export const readAudioFileAsDataUrl = (file) => {
 
 export const formatMessageTemplate = (template, values) => {
   return String(template || "").replaceAll("{couple}", values.couple || "").replaceAll("{link}", values.link || "").replaceAll("{guest}", values.guest || "");
-};
-
-export const normalizeText = (value) => String(value || "").toLocaleLowerCase("tr-TR").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-export const downloadTextFile = (filename, content, mimeType = "text/plain;charset=utf-8") => {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
-export const csvEscape = (value) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-export const createCsv = (headers, rows) => {
-  const lines = [headers.map(csvEscape).join(";")];
-  rows.forEach((row) => lines.push(headers.map((header) => csvEscape(row[header])).join(";")));
-  return `\ufeff${lines.join("\n")}`;
-};
-
-export const excelEscape = (value) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
-export const createExcelTable = (title, headers, rows) => {
-  const headerCells = headers.map((header) => `<th>${excelEscape(header)}</th>`).join("");
-  const bodyRows = rows.map((row) => `<tr>${headers.map((header) => `<td>${excelEscape(row[header])}</td>`).join("")}</tr>`).join("");
-  return `<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8" /><style>table { border-collapse: collapse; font-family: Arial, sans-serif; } th { background: #f3d7df; font-weight: 700; } th, td { border: 1px solid #9f4f68; padding: 8px 10px; }</style></head><body><h2>${excelEscape(title)}</h2><table><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></body></html>`;
 };
 
 export const getGuestNameFromUrl = () => {
