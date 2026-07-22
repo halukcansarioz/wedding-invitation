@@ -17,9 +17,14 @@ create table if not exists public.guests (
   person_count text not null default '1',
   side text not null default 'Gelin Tarafı',
   has_child text not null default 'Hayır',
+  song_request text,
+  -- YENİ: Müzik İstek Kutusu Sütunu
   note text,
   created_at timestamptz not null default now()
 );
+-- Tablo daha önce oluşturulduysa song_request sütununu güvenle ekler
+alter table public.guests
+add column if not exists song_request text;
 create table if not exists public.wishes (
   id uuid primary key default gen_random_uuid(),
   name text not null,
