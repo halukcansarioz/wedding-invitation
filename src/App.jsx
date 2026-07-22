@@ -61,6 +61,7 @@ function App() {
     i18n.changeLanguage(newLang);
   };
 
+  // Sıfır Gecikme: Sayfa açılır açılmaz son bilinen temayı 0 ms'de yükler (2 saniye bekleme hatası çözümü)
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
@@ -182,15 +183,17 @@ function App() {
     }
   }, [isEn]);
 
+  // ANINDA ÖNİZLEME ÇÖZÜMÜ: Admin panelindeyken seçtiğin tema (adminDraft) anında ekrana yansır!
+  const activeTheme = (isAdminPage ? adminDraft.settings?.theme : settings.theme) || "lavanta";
+
   useLayoutEffect(() => {
-    const currentTheme = settings.theme || "lavanta";
-    document.documentElement.dataset.theme = currentTheme;
+    document.documentElement.dataset.theme = activeTheme;
     const favicon = document.querySelector("link[rel='icon'], link[rel='shortcut icon']") || document.createElement("link");
     favicon.setAttribute("rel", "icon");
     favicon.setAttribute("type", "image/svg+xml");
-    favicon.setAttribute("href", getFaviconUrl(currentTheme));
+    favicon.setAttribute("href", getFaviconUrl(activeTheme));
     if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [settings.theme]);
+  }, [activeTheme]);
 
   useEffect(() => {
     const syncAdminPage = () => {
@@ -231,13 +234,22 @@ function App() {
 
   useEffect(() => {
     const loadInitialData = async () => {
-      const databaseSettings = await loadSettingsFromDatabase();
-      if (databaseSettings) {
-        const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
-        setSiteData(normalizedDatabaseSettings);
-        setAdminDraft(normalizedDatabaseSettings);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
+      let databaseSettings = await loadSettingsFromDatabase();
+      if (!databaseSettings) {
+        const defaultData = normalizeSiteData(null);
+        if (isSupabaseReady()) {
+          await saveSettingsToDatabase(defaultData).catch(console.error);
+        }
+        databaseSettings = defaultData;
       }
+      const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
+      
+      // Hızlı köprü önbellek: Sayfayı yenilediğinde 0 ms'de doğru temayla açması için tarayıcı hafızasını da günceller
+      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
+
+      setSiteData(normalizedDatabaseSettings);
+      setAdminDraft(normalizedDatabaseSettings);
+
       const publishedWishes = await loadPublishedWishesFromDatabase();
       setWishes(publishedWishes);
     };
@@ -425,6 +437,7 @@ function App() {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
   }, []);
 
+  // Supabase bulutuna kaydeder ve anında açılması için tarayıcı hafızasını günceller
   const saveSiteContent = useCallback(async () => {
     const cleanedData = normalizeSiteData({ ...adminDraft, invitation: { ...adminDraft.invitation, gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) } });
     try {
@@ -529,9 +542,10 @@ function App() {
     const personCount = await showAppPrompt(isEn ? "Person Count" : "Kişi sayısı", guest.personCount || "1", { title }); if (personCount === null) return;
     const side = await showAppPrompt(isEn ? "Side" : "Taraf", guest.side || "Gelin Tarafı", { title }); if (side === null) return;
     const hasChild = await showAppPrompt(isEn ? "Has children? (Evet/Hayır)" : "Çocuk var mı? Evet/Hayır", guest.hasChild || "Hayır", { title }); if (hasChild === null) return;
+    const songRequest = await showAppPrompt(isEn ? "Song Request" : "Müzik isteği", guest.songRequest || "", { title }); if (songRequest === null) return;
     const note = await showAppPrompt(isEn ? "Note" : "Not", guest.note || "", { title, multiline: true }); if (note === null) return;
 
-    const nextGuest = { ...guest, name, phone, attendance, personCount, side, hasChild, note };
+    const nextGuest = { ...guest, name, phone, attendance, personCount, side, hasChild, songRequest, note };
     const { error } = await supabase.from("guests").update(uiGuestToDb(nextGuest)).eq("id", guestId);
     if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage(isEn ? "Could not update." : "Güncellenemedi."); return; }
     setGuests((prev) => prev.map((item) => (item.id === guestId ? nextGuest : item)));
@@ -572,8 +586,8 @@ function App() {
   }, [wishes, isEn]);
 
   const getGuestExportData = useCallback(() => {
-    const headers = ["Ad Soyad", "Telefon", "Katılım Durumu", "Kişi Sayısı", "Taraf", "Çocuk", "Not"];
-    const rows = guests.map((g) => ({ "Ad Soyad": g.name || "", "Telefon": g.phone || "", "Katılım Durumu": g.attendance || "", "Kişi Sayısı": g.personCount || "", "Taraf": g.side || "", "Çocuk": g.hasChild || "Hayır", "Not": g.note || "" }));
+    const headers = ["Ad Soyad", "Telefon", "Katılım Durumu", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
+    const rows = guests.map((g) => ({ "Ad Soyad": g.name || "", "Telefon": g.phone || "", "Katılım Durumu": g.attendance || "", "Kişi Sayısı": g.personCount || "", "Taraf": g.side || "", "Çocuk": g.hasChild || "Hayır", "Müzik İsteği": g.songRequest || "", "Not": g.note || "" }));
     return { headers, rows };
   }, [guests]);
 
@@ -603,6 +617,7 @@ function App() {
       if (parsed.siteData) {
         const nextSiteData = mergeSiteData(parsed.siteData);
         await saveSettingsToDatabase(nextSiteData);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(nextSiteData));
         setSiteData(nextSiteData); setAdminDraft(nextSiteData);
       }
       if (Array.isArray(parsed.guests)) {
@@ -686,7 +701,7 @@ function App() {
     <div
       className="app"
       lang={isEn ? "en" : "tr"}
-      data-theme={settings.theme || "lavanta"}
+      data-theme={activeTheme}
       style={{
         "--intro-image": `url(${invitation.introImage})`,
         "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
@@ -700,7 +715,7 @@ function App() {
         preload="auto"
       />
       
-      {/* Özel Alert Zırhlı Modal (Siyah ekranda kalma hatası çözümü) */}
+      {/* Özel Alert Zırhlı Modal */}
       {customAlert && (
         <div 
           onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}
@@ -797,7 +812,7 @@ function App() {
 
      {!isAdminPage && (
         <>
-          {/* Hızlı Admin Giriş Butonu (Sol Üst Köşe) */}
+          {/* Hızlı Admin Giriş Butonu */}
           <div className="admin-quick-access">
             <a 
               href="#admin" 
@@ -825,7 +840,7 @@ function App() {
               {isEn ? 'EN' : 'TR'}
             </button>
 
-            {/* Paylaş (İkonlu) - Sadece Admin Değilse Çıkar */}
+            {/* Paylaş */}
             <a 
               className="dock-btn" 
               href={`https://wa.me/?text=${shareText}`} 
@@ -842,7 +857,7 @@ function App() {
               </svg>
             </a>
 
-            {/* Müzik Aç / Kapat - Sadece Admin Değilse Çıkar */}
+            {/* Müzik Aç / Kapat */}
             <button
               type="button"
               className="dock-btn"
