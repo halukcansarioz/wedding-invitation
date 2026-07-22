@@ -201,36 +201,28 @@ export function GallerySection({ copy, invitation }) {
             padding: "20px", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)"
           }}
         >
+          {/* Kapatma Butonu (Çarpı) */}
           <button 
             type="button" 
             onClick={closeLightbox}
+            className="lightbox-control-btn"
             title={isEn ? "Close (Esc)" : "Kapat (Esc)"}
-            style={{
-              position: "absolute", top: "20px", right: "20px",
-              background: "rgba(255, 255, 255, 0.25)", border: "2px solid rgba(255, 255, 255, 0.7)", 
-              color: "#fff", fontSize: "32px", width: "50px", height: "50px", borderRadius: "50%",
-              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              lineHeight: 1, zIndex: 10, transition: "all 0.2s"
-            }}
-            onMouseOver={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.4)"}
-            onMouseOut={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)"}
+            style={{ top: "24px", right: "24px" }}
           >
-            &times;
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
 
+          {/* Önceki (Sol) Ok Butonu */}
           {gallery.length > 1 && (
             <button 
               type="button" 
               onClick={prevImage}
+              className="lightbox-control-btn"
               title={isEn ? "Previous (←)" : "Önceki (←)"}
-              style={{
-                position: "absolute", left: "20px", background: "rgba(255, 255, 255, 0.25)",
-                border: "1.5px solid rgba(255, 255, 255, 0.5)", color: "#fff", fontSize: "24px", 
-                width: "50px", height: "50px", borderRadius: "50%", cursor: "pointer", 
-                display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.4)"}
-              onMouseOut={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)"}
+              style={{ left: "24px", fontSize: "24px" }}
             >
               &#10094;
             </button>
@@ -253,19 +245,14 @@ export function GallerySection({ copy, invitation }) {
             </span>
           </div>
 
+          {/* Sonraki (Sağ) Ok Butonu */}
           {gallery.length > 1 && (
             <button 
               type="button" 
               onClick={nextImage}
+              className="lightbox-control-btn"
               title={isEn ? "Next (→)" : "Sonraki (→)"}
-              style={{
-                position: "absolute", right: "20px", background: "rgba(255, 255, 255, 0.25)",
-                border: "1.5px solid rgba(255, 255, 255, 0.5)", color: "#fff", fontSize: "24px", 
-                width: "50px", height: "50px", borderRadius: "50%", cursor: "pointer", 
-                display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.4)"}
-              onMouseOut={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)"}
+              style={{ right: "24px", fontSize: "24px" }}
             >
               &#10095;
             </button>
