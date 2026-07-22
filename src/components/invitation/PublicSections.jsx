@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { downloadIcsCalendar, handleAddToCalendar } from "../../utils/helpers";
 
 export function HeroSection({ invitation, copy, guestGreeting }) {
   const { t, i18n } = useTranslation();
@@ -21,7 +22,7 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
         {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
       </div>
 
-      {/* YENİ EKLENEN: Hareketli Aşağı Kaydır İkonu */}
+      {/* Hareketli Aşağı Kaydır İkonu */}
       <div className="scroll-indicator">
         <div className="mouse">
           <div className="wheel"></div>
@@ -127,9 +128,15 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
         <div className="info-row"><span>{isEn ? "Address" : "Adres"}</span><strong>{invitation.address}</strong></div>
       </div>
       <div className="mini-map"><iframe title="Map" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation.venue} ${invitation.address}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe></div>
+      
+      {/* OTOMATİK ALGILAYAN TEK VE ŞIK TAKVİM BUTONU */}
       <div className="button-group">
-        <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">{isEn ? "Go to Map" : "Konuma Git"}</a>
-        <a className="secondary-button" href={googleCalendarLink} target="_blank" rel="noreferrer">{isEn ? "Add to Calendar" : "Takvime Ekle"}</a>
+        <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">
+          📍 {isEn ? "Go to Map" : "Konuma Git"}
+        </a>
+        <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>
+          📅 {isEn ? "Add to Calendar" : "Takvime Ekle"}
+        </button>
       </div>
     </section>
   );
@@ -138,15 +145,104 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
 export function GallerySection({ copy, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const openLightbox = (index) => setLightboxIndex(index);
+  const closeLightbox = () => setLightboxIndex(null);
+  
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setLightboxIndex((prev) => (prev === 0 ? invitation.gallery.length - 1 : prev - 1));
+  };
+  
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setLightboxIndex((prev) => (prev === invitation.gallery.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <section className="card">
       <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy.galleryLabel}</p>
       <h2>{isEn ? t('invitation.galleryTitle') : copy.galleryTitle}</h2>
       <div className="gallery-grid">
         {invitation.gallery.map((image, index) => (
-          <img key={`gallery-img-${index}`} src={image} alt={`Galeri ${index + 1}`} loading="lazy" />
+          <img 
+            key={`gallery-img-${index}`} 
+            src={image} 
+            alt={`Galeri ${index + 1}`} 
+            loading="lazy" 
+            onClick={() => openLightbox(index)}
+            style={{ cursor: "pointer", transition: "transform 0.25s ease" }}
+            onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.03)"}
+            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+          />
         ))}
       </div>
+
+      {/* LIGHTBOX TAM EKRAN BÜYÜTME MODALI */}
+      {lightboxIndex !== null && (
+        <div 
+          onClick={closeLightbox}
+          style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.88)", zIndex: 999999,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "20px", backdropFilter: "blur(8px)"
+          }}
+        >
+          <button 
+            type="button" 
+            onClick={closeLightbox}
+            style={{
+              position: "absolute", top: "20px", right: "25px",
+              background: "rgba(255, 255, 255, 0.2)", border: "none", color: "#fff",
+              fontSize: "32px", width: "48px", height: "48px", borderRadius: "50%",
+              cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+              lineHeight: 1
+            }}
+          >
+            &times;
+          </button>
+
+          {invitation.gallery.length > 1 && (
+            <button 
+              type="button" 
+              onClick={prevImage}
+              style={{
+                position: "absolute", left: "20px", background: "rgba(255, 255, 255, 0.2)",
+                border: "none", color: "#fff", fontSize: "28px", width: "50px", height: "50px",
+                borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+              }}
+            >
+              &#10094;
+            </button>
+          )}
+
+          <img 
+            src={invitation.gallery[lightboxIndex]} 
+            alt="Büyütülmüş Fotoğraf" 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxHeight: "85vh", maxWidth: "90vw", borderRadius: "16px",
+              boxShadow: "0 25px 50px rgba(0,0,0,0.5)", objectFit: "contain"
+            }}
+          />
+
+          {invitation.gallery.length > 1 && (
+            <button 
+              type="button" 
+              onClick={nextImage}
+              style={{
+                position: "absolute", right: "20px", background: "rgba(255, 255, 255, 0.2)",
+                border: "none", color: "#fff", fontSize: "28px", width: "50px", height: "50px",
+                borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+              }}
+            >
+              &#10095;
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 }

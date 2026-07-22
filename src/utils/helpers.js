@@ -73,6 +73,67 @@ export const createGoogleCalendarLink = (siteData, coupleName) => {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(start)}/${formatDate(end)}&details=${details}&location=${location}`;
 };
 
+export const downloadIcsCalendar = (invitation) => {
+  const start = new Date(invitation.weddingDate);
+  if (Number.isNaN(start.getTime())) return;
+  
+  // Düğün süresini ortalama 4 saat olarak hesaplıyoruz
+  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
+
+  const formatDate = (date) => date.toISOString().replace(/-|:|\.\d+/g, "");
+  const now = formatDate(new Date());
+  const dtStart = formatDate(start);
+  const dtEnd = formatDate(end);
+
+  const coupleName = `${invitation.bride} & ${invitation.groom}`;
+  const title = `${coupleName} Düğünü`;
+  const description = invitation.message || "";
+  const location = `${invitation.venue}, ${invitation.address}`;
+
+  // Standart iCalendar (.ics) formatı
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Biz Evleniyoruz//Dugun Davetiyesi//TR",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `DTSTAMP:${now}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${title}`,
+    `DESCRIPTION:${description}`,
+    `LOCATION:${location}`,
+    "STATUS:CONFIRMED",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", `${invitation.bride}_${invitation.groom}_Dugun.ics`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+export const handleAddToCalendar = (invitation, googleCalendarLink) => {
+  const userAgent = window.navigator.userAgent || window.navigator.vendor || window.opera;
+  // Apple cihazlarını (iPhone, iPad, iPod, macOS) tespit ediyoruz
+  const isApple = /iPad|iPhone|iPod|Macintosh|Mac OS X/i.test(userAgent);
+
+  if (isApple) {
+    // Apple cihazıysa iCalendar (.ics) indirir ve Apple Takvim açılır
+    downloadIcsCalendar(invitation);
+  } else {
+    // Android veya PC ise Google Takvim linkini yeni sekmede açar
+    window.open(googleCalendarLink, "_blank", "noopener,noreferrer");
+  }
+};
+
 export const readImageFileAsDataUrl = (file) => {
   return new Promise((resolve, reject) => {
     if (!file || !file.type?.startsWith("image/")) { reject(new Error("Lütfen geçerli bir görsel dosyası seçin.")); return; }
