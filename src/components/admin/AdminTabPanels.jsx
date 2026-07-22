@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   AdminField,
   AdminTextarea,
@@ -11,6 +12,194 @@ import {
 import { ThemeDropdown, CustomDropdown } from "../common/UIComponents";
 import { THEMES, SIDE_OPTIONS, PERSON_COUNT_OPTIONS } from "../../config/constants";
 import { getCurrentShareLink, buildPersonalLink } from "../../utils/helpers";
+
+function GuestsAdminPanel({
+  guests,
+  totalPersonCount,
+  notAttendingCount,
+  childGuestCount,
+  brideSideCount,
+  groomSideCount,
+  adminGuestSearch,
+  setAdminGuestSearch,
+  adminGuestAttendanceFilter,
+  setAdminGuestAttendanceFilter,
+  adminGuestSideFilter,
+  setAdminGuestSideFilter,
+  adminGuestChildFilter,
+  setAdminGuestChildFilter,
+  exportGuestsExcel,
+  exportGuestsCsv,
+  filteredGuests,
+  editGuest,
+  deleteGuest,
+  clearGuests
+}) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
+  return (
+    <AdminSection title={isEn ? "RSVP Responses" : "Katılım Formu Kayıtları"}>
+      <div className="admin-stats admin-stats-inside">
+        <div><strong>{guests.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
+        <div><strong>{totalPersonCount}</strong><span>{isEn ? "Attending Guests" : "Katılacak Kişi"}</span></div>
+        <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılamayacak"}</span></div>
+        <div><strong>{childGuestCount}</strong><span>{isEn ? "With Children" : "Çocuklu Yanıt"}</span></div>
+        <div><strong>{brideSideCount}</strong><span>{isEn ? "Bride's Side" : "Gelin Tarafı"}</span></div>
+        <div><strong>{groomSideCount}</strong><span>{isEn ? "Groom's Side" : "Damat Tarafı"}</span></div>
+      </div>
+      <div className="admin-toolbar">
+        <input 
+          value={adminGuestSearch} 
+          onChange={(e) => setAdminGuestSearch(e.target.value)} 
+          placeholder={isEn ? "Search responses..." : "Kayıtlarda ara"} 
+        />
+        <CustomDropdown 
+          value={adminGuestAttendanceFilter} 
+          onChange={setAdminGuestAttendanceFilter} 
+          options={[
+            { value: "all", label: isEn ? "All RSVPs" : "Tüm Katılımlar" }, 
+            { value: "Katılacağım", label: isEn ? "Attending" : "Katılacağım" }, 
+            { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılamayacağım" }
+          ]} 
+        />
+        <CustomDropdown 
+          value={adminGuestSideFilter} 
+          onChange={setAdminGuestSideFilter} 
+          options={[
+            { value: "all", label: isEn ? "All Sides" : "Tüm Taraflar" }, 
+            { value: "Damat Tarafı", label: isEn ? "Groom's Side" : "Damat Tarafı" }, 
+            { value: "Gelin Tarafı", label: isEn ? "Bride's Side" : "Gelin Tarafı" }, 
+            { value: "Ortak", label: isEn ? "Mutual" : "Ortak" }
+          ]} 
+        />
+        <CustomDropdown 
+          value={adminGuestChildFilter} 
+          onChange={setAdminGuestChildFilter} 
+          options={[
+            { value: "all", label: isEn ? "Children: All" : "Çocuk: Tümü" }, 
+            { value: "Evet", label: isEn ? "Yes" : "Evet" }, 
+            { value: "Hayır", label: isEn ? "No" : "Hayır" }
+          ]} 
+        />
+        <button type="button" className="secondary-button" onClick={exportGuestsExcel}>
+          {isEn ? "Export Excel" : "Excel İndir"}
+        </button>
+        <button type="button" className="secondary-button" onClick={exportGuestsCsv}>
+          {isEn ? "Export CSV" : "CSV İndir"}
+        </button>
+      </div>
+      <div className="admin-list admin-list-full">
+        {filteredGuests.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching responses found." : "Bu filtreye uygun kayıt yok."}</p>
+        ) : (
+          filteredGuests.map((guest) => {
+            const cleanPhone = guest.phone ? guest.phone.replace(/\D/g, "") : "";
+            const personalUrl = `${window.location.origin}/?guest=${encodeURIComponent(guest.name)}`;
+            
+            const reminderText = isEn 
+              ? `Hello ${guest.name}, our wedding day is approaching! 💍 You can check or update your attendance status using your personal invitation link:\n${personalUrl}`
+              : `Merhaba ${guest.name}, düğünümüze çok az kaldı! 💍 Katılım durumunu kontrol etmek veya güncellemek için sana özel hazırladığımız davetiye linkini inceleyebilirsin:\n${personalUrl}`;
+            
+            const whatsappHref = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(reminderText)}` : "";
+
+            // Çeviriler
+            let translatedAttendance = guest.attendance;
+            if (isEn && guest.attendance === "Katılacağım") translatedAttendance = "Attending";
+            if (isEn && guest.attendance === "Katılamayacağım") translatedAttendance = "Not Attending";
+
+            let translatedSide = guest.side;
+            if (isEn && guest.side === "Gelin Tarafı") translatedSide = "Bride's Side";
+            if (isEn && guest.side === "Damat Tarafı") translatedSide = "Groom's Side";
+            if (isEn && guest.side === "Ortak") translatedSide = "Mutual";
+
+            let translatedChild = guest.hasChild || "Hayır";
+            if (isEn && translatedChild === "Evet") translatedChild = "Yes";
+            if (isEn && translatedChild === "Hayır") translatedChild = "No";
+
+            return (
+              <div className="admin-row" key={guest.id} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <strong>{guest.name}</strong>
+                <span>{translatedAttendance} · {guest.personCount} {isEn ? "people" : "kişi"} · {translatedSide}</span>
+                <span>{isEn ? "Phone:" : "Telefon:"} {guest.phone || "-"}</span>
+                <span>{isEn ? "Children:" : "Çocuk:"} {translatedChild}</span>
+                {guest.note && <em>{isEn ? "Note:" : "Not:"} {guest.note}</em>}
+                
+                <div 
+                  className="admin-row-actions" 
+                  style={{ 
+                    display: "flex", 
+                    flexWrap: "wrap", 
+                    alignItems: "center",
+                    gap: "8px", 
+                    marginTop: "12px", 
+                    paddingTop: "12px", 
+                    borderTop: "1px dashed var(--border, #eab4c5)",
+                    width: "100%",
+                    overflow: "visible"
+                  }}
+                >
+                  {cleanPhone && (
+                    <a 
+                      href={whatsappHref} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="secondary-button small-admin-button"
+                      style={{ 
+                        flexShrink: 0,
+                        minWidth: "max-content",
+                        margin: 0,
+                        padding: "8px 14px",
+                        textDecoration: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "visible"
+                      }}
+                    >
+                      💬 WhatsApp
+                    </a>
+                  )}
+                  <button 
+                    type="button" 
+                    className="secondary-button small-admin-button" 
+                    onClick={() => editGuest(guest.id)}
+                    style={{ 
+                      flexShrink: 0,
+                      minWidth: "max-content",
+                      margin: 0,
+                      padding: "8px 14px",
+                      overflow: "visible"
+                    }}
+                  >
+                    {isEn ? "Edit" : "Düzenle"}
+                  </button>
+                  <button 
+                    type="button" 
+                    className="secondary-button danger-button small-admin-button" 
+                    onClick={() => deleteGuest(guest.id)}
+                    style={{ 
+                      flexShrink: 0,
+                      minWidth: "max-content",
+                      margin: 0,
+                      padding: "8px 14px",
+                      overflow: "visible"
+                    }}
+                  >
+                    {isEn ? "Delete" : "Sil"}
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+        <button type="button" className="secondary-button danger-button" onClick={clearGuests}>
+          {isEn ? "Clear All Responses" : "Katılım Kayıtlarını Temizle"}
+        </button>
+      </div>
+    </AdminSection>
+  );
+}
 
 function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLinkName, setPersonalLinkName }) {
   // Varsayılan olarak "Seçilmedi" (boş) gelsin
@@ -47,11 +236,31 @@ function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLinkName, 
           <input value={generatedLink} readOnly style={{ width: "100%", padding: "14px 16px", borderRadius: "14px", border: "1.5px dashed var(--rose-dark)", background: "var(--paper-soft)", fontWeight: "700", color: "var(--text)" }} />
         </div>
 
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "6px" }}>
+       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "6px" }}>
           <button type="button" className="main-button" onClick={() => copyAdminLink(generatedLink, "Akıllı davetiye linki kopyalandı!")} style={{ flex: "1", minWidth: "180px", margin: 0 }}>
             🔗 Linki Kopyala
           </button>
-          <button type="button" className="secondary-button" onClick={openWhatsAppShare} disabled={!personalLinkName.trim()} style={{ flex: "1", minWidth: "180px", margin: 0, backgroundColor: "#25D366", color: "#fff", borderColor: "#25D366" }}>
+          <button 
+            type="button" 
+            className="secondary-button" 
+            onClick={() => {
+              if (!personalLinkName.trim()) {
+                alert("Lütfen önce bir davetli adı yazın!");
+                return;
+              }
+              openWhatsAppShare();
+            }} 
+            style={{ 
+              flex: "1", 
+              minWidth: "180px", 
+              margin: 0, 
+              backgroundColor: "#25D366", 
+              color: "#fff", 
+              borderColor: "#25D366",
+              opacity: personalLinkName.trim() ? 1 : 0.6,
+              cursor: personalLinkName.trim() ? "pointer" : "not-allowed"
+            }}
+          >
             💬 WhatsApp ile Gönder
           </button>
         </div>
@@ -336,60 +545,30 @@ export function renderAdminActivePanel({
 
     case "guests":
       return (
-        <AdminSection title="Katılım Formu Kayıtları">
-          <div className="admin-stats admin-stats-inside">
-            <div><strong>{guests.length}</strong><span>Toplam Yanıt</span></div>
-            <div><strong>{totalPersonCount}</strong><span>Katılacak Kişi</span></div>
-            <div><strong>{notAttendingCount}</strong><span>Katılamayacak</span></div>
-            <div><strong>{childGuestCount}</strong><span>Çocuklu Yanıt</span></div>
-            <div><strong>{brideSideCount}</strong><span>Gelin Tarafı</span></div>
-            <div><strong>{groomSideCount}</strong><span>Damat Tarafı</span></div>
-          </div>
-          <div className="admin-toolbar">
-            <input value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder="Kayıtlarda ara" />
-            <CustomDropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: "Tüm Katılımlar" }, { value: "Katılacağım", label: "Katılacağım" }, { value: "Katılamayacağım", label: "Katılamayacağım" }]} />
-            <CustomDropdown value={adminGuestSideFilter} onChange={setAdminGuestSideFilter} options={[{ value: "all", label: "Tüm Taraflar" }, { value: "Damat Tarafı", label: "Damat Tarafı" }, { value: "Gelin Tarafı", label: "Gelin Tarafı" }, { value: "Ortak", label: "Ortak" }]} />
-            <CustomDropdown value={adminGuestChildFilter} onChange={setAdminGuestChildFilter} options={[{ value: "all", label: "Çocuk: Tümü" }, { value: "Evet", label: "Çocuk: Evet" }, { value: "Hayır", label: "Çocuk: Hayır" }]} />
-            <button type="button" className="secondary-button" onClick={exportGuestsExcel}>Excel İndir</button>
-            <button type="button" className="secondary-button" onClick={exportGuestsCsv}>CSV İndir</button>
-          </div>
-          <div className="admin-list admin-list-full">
-            {filteredGuests.length === 0 ? <p className="empty-text">Bu filtreye uygun kayıt yok.</p> : filteredGuests.map((guest) => {
-              // WhatsApp hatırlatma mesajı ve linki hazırlığı
-              const cleanPhone = guest.phone ? guest.phone.replace(/\D/g, "") : "";
-              const personalUrl = `${window.location.origin}/?guest=${encodeURIComponent(guest.name)}`;
-              const reminderText = `Merhaba ${guest.name}, düğünümüze çok az kaldı! 💍 Katılım durumunu kontrol etmek veya güncellemek için sana özel hazırladığımız davetiye linkini inceleyebilirsin:\n${personalUrl}`;
-              const whatsappHref = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(reminderText)}` : "";
+        <GuestsAdminPanel 
+          guests={guests}
+          totalPersonCount={totalPersonCount}
+          notAttendingCount={notAttendingCount}
+          childGuestCount={childGuestCount}
+          brideSideCount={brideSideCount}
+          groomSideCount={groomSideCount}
+          adminGuestSearch={adminGuestSearch}
+          setAdminGuestSearch={setAdminGuestSearch}
+          adminGuestAttendanceFilter={adminGuestAttendanceFilter}
+          setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
+          adminGuestSideFilter={adminGuestSideFilter}
+          setAdminGuestSideFilter={setAdminGuestSideFilter}
+          adminGuestChildFilter={adminGuestChildFilter}
+          setAdminGuestChildFilter={setAdminGuestChildFilter}
+          exportGuestsExcel={exportGuestsExcel}
+          exportGuestsCsv={exportGuestsCsv}
+          filteredGuests={filteredGuests}
+          editGuest={editGuest}
+          deleteGuest={deleteGuest}
+          clearGuests={clearGuests}
+        />
+      );
 
-              return (
-                <div className="admin-row" key={guest.id}>
-                  <strong>{guest.name}</strong>
-                  <span>{guest.attendance} · {guest.personCount} kişi · {guest.side}</span>
-                  <span>Telefon: {guest.phone || "-"}</span>
-                  <span>Çocuk: {guest.hasChild || "Hayır"}</span>
-                  {guest.note && <em>Not: {guest.note}</em>}
-                  <div className="admin-row-actions">
-                    {cleanPhone && (
-                      <a 
-                        href={whatsappHref} 
-                        target="_blank" 
-                        rel="noreferrer" 
-                        className="secondary-button small-admin-button"
-                        style={{ backgroundColor: "#25D366", color: "#fff", borderColor: "#25D366", textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
-                      >
-                        💬 WhatsApp Hatırlat
-                      </a>
-                    )}
-                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>Düzenle</button>
-                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>Sil</button>
-                  </div>
-                </div>
-              );
-            })}
-            <button type="button" className="secondary-button danger-button" onClick={clearGuests}>Katılım Kayıtlarını Temizle</button>
-          </div>
-        </AdminSection>
-      ); 
     case "wishes":
       return (
         <AdminSection title="Anı Defteri Formu Mesajları">
