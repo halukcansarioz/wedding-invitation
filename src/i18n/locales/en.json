@@ -28,7 +28,9 @@
     "shareTitle": "Share the Invitation",
     "shareDescription": "You can share our invitation with your loved ones.",
     "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love"
+    "footerSmall": "Made with love",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
   },
   "form": {
     "namePlaceholder": "Full Name",

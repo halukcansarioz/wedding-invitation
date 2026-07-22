@@ -21,6 +21,10 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
 
   const giftData = DEFAULT_SITE_DATA.giftRegistry;
 
+  // LCV Tarihinin Geçip Geçmediğini Kontrol Ediyoruz
+  const deadline = invitation.rsvpDeadline ? new Date(invitation.rsvpDeadline) : null;
+  const isDeadlinePassed = deadline && !Number.isNaN(deadline.getTime()) && new Date() > deadline;
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const isDeclining = guestForm.attendance === "Katılamayacağım";
@@ -51,27 +55,56 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
       <h2>{isEn ? t('invitation.rsvpTitle') : copy.rsvpTitle}</h2>
       <p>{isEn ? t('invitation.rsvpText') : copy.rsvpText}</p>
       
-      <form className="rsvp-form" onSubmit={handleFormSubmit}>
-        <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} />
-        <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder={isEn ? t('form.phonePlaceholder') : "Telefon Numaranız"} maxLength="20" />
+      {/* TARİH GEÇTİYSE KİLİT KARTI, GEÇMEDİYSE NORMAL FORM GÖSTERİLİR */}
+      {isDeadlinePassed ? (
+        <div style={{
+          margin: "32px auto 0",
+          padding: "34px 24px",
+          background: "var(--paper-soft, #fff7f9)",
+          border: "1.5px dashed var(--rose-dark, #9f4f68)",
+          borderRadius: "24px",
+          maxWidth: "620px",
+          textAlign: "center",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.03)"
+        }}>
+          <div style={{ fontSize: "40px", marginBottom: "10px" }}>⏳</div>
+          <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 10px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
+            {isEn ? t('invitation.deadlineTitle') : (copy.deadlineTitle || "LCV Bildirim Süresi Doldu")}
+          </h3>
+          
+          {/* TARİHİ ÇOK ŞIK BİR ROZET İÇİNDE GÖSTERİYORUZ */}
+          <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(159, 79, 104, 0.12)", border: "1px solid rgba(159, 79, 104, 0.3)", borderRadius: "999px", color: "var(--rose-dark, #9f4f68)", fontWeight: "800", fontSize: "14px", marginBottom: "18px", fontFamily: "Playfair Display, serif", letterSpacing: "1px" }}>
+            📅 {isEn ? "Deadline:" : "Son Tarih:"} {invitation.rsvpDeadline}
+          </span>
 
-        <OptionGroup onChange={updateAttendance} options={translatedAttendance} value={guestForm.attendance} />
-        <OptionGroup disabled={!isAttending} onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))} options={translatedPerson} value={guestForm.personCount} />
-        <OptionGroup disabled={!isAttending} onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))} options={translatedSide} value={guestForm.side} />
-        <OptionGroup disabled={!isAttending} onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))} options={translatedChild} value={guestForm.hasChild} />
-
-        <div className="field-with-counter">
-          <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder={isEn ? t('form.notePlaceholder') : "Notunuz"} maxLength={NOTE_MAX_LENGTH}></textarea>
-          <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
+          <p style={{ fontSize: "16px", lineHeight: "1.7", color: "var(--text, #55303b)", margin: "0 auto", fontFamily: "Playfair Display, serif", fontWeight: "600", maxWidth: "520px" }}>
+            {isEn ? t('invitation.deadlineText') : (copy.deadlineText || "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.")}
+          </p>
         </div>
-        <button type="submit" className="main-button form-button">{isEn ? t('form.submitRsvp') : "Katılımı Gönder"}</button>
-      </form>
+      ) : (
+        <form className="rsvp-form" onSubmit={handleFormSubmit}>
+          <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} />
+          <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder={isEn ? t('form.phonePlaceholder') : "Telefon Numaranız"} maxLength="20" />
 
+          <OptionGroup onChange={updateAttendance} options={translatedAttendance} value={guestForm.attendance} />
+          <OptionGroup disabled={!isAttending} onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))} options={translatedPerson} value={guestForm.personCount} />
+          <OptionGroup disabled={!isAttending} onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))} options={translatedSide} value={guestForm.side} />
+          <OptionGroup disabled={!isAttending} onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))} options={translatedChild} value={guestForm.hasChild} />
+
+          <div className="field-with-counter">
+            <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder={isEn ? t('form.notePlaceholder') : "Notunuz"} maxLength={NOTE_MAX_LENGTH}></textarea>
+            <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
+          </div>
+          <button type="submit" className="main-button form-button">{isEn ? t('form.submitRsvp') : "Katılımı Gönder"}</button>
+        </form>
+      )}
+
+      {/* WHATSAPP BUTONU HER ZAMAN GÖRÜNÜR */}
       <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
         {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
       </a>
 
-      {/* IBAN ve Takı Modal Ekranı (createPortal ile doğrudan ekranın ortasına ışınlanır) */}
+      {/* IBAN ve Takı Modal Ekranı */}
       {showGiftModal && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setShowGiftModal(false)}
@@ -107,7 +140,7 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         document.body
       )}
 
-      {/* Katılamayacağım diyenler için Özel Üzüntü Modalı (createPortal ile doğrudan ekranın ortasına ışınlanır) */}
+      {/* Katılamayacağım diyenler için Özel Üzüntü Modalı */}
       {showDeclineModal && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={() => setShowDeclineModal(false)}
@@ -139,6 +172,8 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
     </section>
   );
 }
+
+// Dosyanın altındaki GuestsListSection ve WishesSection bileşenleri aynen kalıyor...
 
 export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
   const { t, i18n } = useTranslation();

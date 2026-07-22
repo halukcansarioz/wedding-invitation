@@ -28,7 +28,9 @@
     "shareTitle": "Davetiyeyi Paylaş",
     "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
     "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    "footerSmall": "Made with love"
+    "footerSmall": "Made with love",
+    "deadlineTitle": "LCV Bildirim Süresi Doldu",
+    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
   },
   "form": {
     "namePlaceholder": "Ad Soyad",

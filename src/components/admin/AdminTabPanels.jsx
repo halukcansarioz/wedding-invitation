@@ -99,7 +99,8 @@ export function renderAdminActivePanel({
             <AdminField label="Damat adı" onChange={(v) => updateDraftObject("invitation", "groom", v)} value={adminDraft.invitation.groom} />
             <AdminField label="Görünen tarih" onChange={(v) => updateDraftObject("invitation", "dateText", v)} value={adminDraft.invitation.dateText} />
             <AdminField label="Saat" onChange={(v) => updateDraftObject("invitation", "timeText", v)} value={adminDraft.invitation.timeText} />
-            <AdminField label="Geri sayım tarihi" onChange={(v) => updateDraftObject("invitation", "weddingDate", v)} value={adminDraft.invitation.weddingDate} placeholder="2026-09-12T19:00:00" />
+            <AdminField label="Geri sayım tarihi" onChange={(v) => updateDraftObject("invitation", "weddingDate", v)} value={adminDraft.invitation.weddingDate} placeholder="2027-07-07T19:00:00" />
+            <AdminField label="LCV Son Bildirim Tarihi" onChange={(v) => updateDraftObject("invitation", "rsvpDeadline", v)} value={adminDraft.invitation.rsvpDeadline} placeholder="Örn: 2027-07-01" />
             <AdminField label="WhatsApp numarası" onChange={(v) => updateDraftObject("invitation", "whatsappNumber", v)} value={adminDraft.invitation.whatsappNumber} />
             <AdminField label="Mekan adı" onChange={(v) => updateDraftObject("invitation", "venue", v)} value={adminDraft.invitation.venue} />
             <AdminField label="Adres" onChange={(v) => updateDraftObject("invitation", "address", v)} value={adminDraft.invitation.address} />

@@ -16,9 +16,10 @@ export const DEFAULT_SITE_DATA = {
   invitation: {
     bride: "Handenur",
     groom: "Haluk Can",
-    dateText: "12 Eylül 2026",
+    dateText: "07 Ağustos 2027",
     timeText: "19:00",
-    weddingDate: "2026-09-12T19:00:00",
+    weddingDate: "2027-07-07T19:00:00",
+    rsvpDeadline: "2027-07-01", 
     venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
     address: "Kadıköy / İstanbul",
     mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
@@ -123,7 +124,7 @@ export const DEFAULT_SITE_DATA = {
   messages: {
     whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
     rsvpWhatsappMessage: "Merhaba, {couple} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.",
-    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız.",
+    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız."
   },
 };
 
