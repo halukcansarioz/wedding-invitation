@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { downloadIcsCalendar, handleAddToCalendar } from "../../utils/helpers";
 
@@ -129,7 +130,7 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
       </div>
       <div className="mini-map"><iframe title="Map" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation.venue} ${invitation.address}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe></div>
       
-      {/* OTOMATİK ALGILAYAN TEK VE ŞIK TAKVİM BUTONU */}
+      {/* AKILLI TAKVİM BUTONU */}
       <div className="button-group">
         <a className="main-button" href={invitation.mapLink} target="_blank" rel="noreferrer">
           📍 {isEn ? "Go to Map" : "Konuma Git"}
@@ -179,69 +180,92 @@ export function GallerySection({ copy, invitation }) {
         ))}
       </div>
 
-      {/* LIGHTBOX TAM EKRAN BÜYÜTME MODALI */}
-      {lightboxIndex !== null && (
+      {/* LIGHTBOX TAM EKRAN BÜYÜTME MODALI (createPortal ile ekranın ortasına açılır) */}
+      {lightboxIndex !== null && typeof document !== 'undefined' && createPortal(
         <div 
           onClick={closeLightbox}
           style={{
             position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.88)", zIndex: 999999,
+            backgroundColor: "rgba(0, 0, 0, 0.9)", zIndex: 2147483647,
             display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "20px", backdropFilter: "blur(8px)"
+            padding: "20px", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)"
           }}
         >
+          {/* Kapatma Butonu (Sağ Üst Köşede Çok Belirgin) */}
           <button 
             type="button" 
             onClick={closeLightbox}
+            title={isEn ? "Close" : "Kapat"}
             style={{
-              position: "absolute", top: "20px", right: "25px",
-              background: "rgba(255, 255, 255, 0.2)", border: "none", color: "#fff",
-              fontSize: "32px", width: "48px", height: "48px", borderRadius: "50%",
+              position: "absolute", top: "20px", right: "20px",
+              background: "rgba(255, 255, 255, 0.25)", border: "2px solid rgba(255, 255, 255, 0.7)", 
+              color: "#fff", fontSize: "32px", width: "50px", height: "50px", borderRadius: "50%",
               cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              lineHeight: 1
+              lineHeight: 1, zIndex: 10, transition: "all 0.2s"
             }}
+            onMouseOver={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.4)"}
+            onMouseOut={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)"}
           >
             &times;
           </button>
 
+          {/* Önceki Fotoğraf Ok Butonu */}
           {invitation.gallery.length > 1 && (
             <button 
               type="button" 
               onClick={prevImage}
+              title={isEn ? "Previous" : "Önceki"}
               style={{
-                position: "absolute", left: "20px", background: "rgba(255, 255, 255, 0.2)",
-                border: "none", color: "#fff", fontSize: "28px", width: "50px", height: "50px",
-                borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+                position: "absolute", left: "20px", background: "rgba(255, 255, 255, 0.25)",
+                border: "1.5px solid rgba(255, 255, 255, 0.5)", color: "#fff", fontSize: "24px", 
+                width: "50px", height: "50px", borderRadius: "50%", cursor: "pointer", 
+                display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10
               }}
+              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.4)"}
+              onMouseOut={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)"}
             >
               &#10094;
             </button>
           )}
 
-          <img 
-            src={invitation.gallery[lightboxIndex]} 
-            alt="Büyütülmüş Fotoğraf" 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxHeight: "85vh", maxWidth: "90vw", borderRadius: "16px",
-              boxShadow: "0 25px 50px rgba(0,0,0,0.5)", objectFit: "contain"
-            }}
-          />
+          {/* Fotoğraf ve Sayaç Alanı */}
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "90vw", maxHeight: "85vh" }}
+          >
+            <img 
+              src={invitation.gallery[lightboxIndex]} 
+              alt="Büyütülmüş Fotoğraf" 
+              style={{
+                maxHeight: "78vh", maxWidth: "85vw", borderRadius: "16px",
+                boxShadow: "0 25px 50px rgba(0,0,0,0.7)", objectFit: "contain"
+              }}
+            />
+            <span style={{ color: "rgba(255,255,255,0.9)", fontSize: "16px", marginTop: "14px", fontWeight: 700, fontFamily: "Playfair Display, serif", letterSpacing: "2px" }}>
+              {lightboxIndex + 1} / {invitation.gallery.length}
+            </span>
+          </div>
 
+          {/* Sonraki Fotoğraf Ok Butonu */}
           {invitation.gallery.length > 1 && (
             <button 
               type="button" 
               onClick={nextImage}
+              title={isEn ? "Next" : "Sonraki"}
               style={{
-                position: "absolute", right: "20px", background: "rgba(255, 255, 255, 0.2)",
-                border: "none", color: "#fff", fontSize: "28px", width: "50px", height: "50px",
-                borderRadius: "50%", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center"
+                position: "absolute", right: "20px", background: "rgba(255, 255, 255, 0.25)",
+                border: "1.5px solid rgba(255, 255, 255, 0.5)", color: "#fff", fontSize: "24px", 
+                width: "50px", height: "50px", borderRadius: "50%", cursor: "pointer", 
+                display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10
               }}
+              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.4)"}
+              onMouseOut={(e) => e.currentTarget.style.background = "rgba(255, 255, 255, 0.25)"}
             >
               &#10095;
             </button>
           )}
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
