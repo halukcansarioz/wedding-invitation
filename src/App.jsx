@@ -17,6 +17,7 @@ import {
   MAX_AUDIO_FILE_SIZE,
   INITIAL_GUEST_FORM,
   INITIAL_WISH_FORM,
+  DEFAULT_SITE_DATA
 } from "./config/constants";
 import {
   getFaviconUrl,
@@ -232,29 +233,50 @@ function App() {
     return () => subscription.unsubscribe();
   }, [adminEmail]);
 
+  // =========================================================================
+  // ADIM 3: SAYFA AÇILIR AÇILMAZ TÜM VERİLERİ SUPABASE'DEN ÇEKME ENTEGRASYONU
+  // =========================================================================
   useEffect(() => {
-    const loadInitialData = async () => {
-      let databaseSettings = await loadSettingsFromDatabase();
-      if (!databaseSettings) {
-        const defaultData = normalizeSiteData(null);
-        if (isSupabaseReady()) {
-          await saveSettingsToDatabase(defaultData).catch(console.error);
-        }
-        databaseSettings = defaultData;
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) {
+        console.warn("Supabase bağlantısı eksik, varsayılan/yerel veriler kullanılıyor.");
+        return;
       }
-      const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
-      
-      // Hızlı köprü önbellek: Sayfayı yenilediğinde 0 ms'de doğru temayla açması için tarayıcı hafızasını da günceller
-      localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
 
-      setSiteData(normalizedDatabaseSettings);
-      setAdminDraft(normalizedDatabaseSettings);
+      try {
+        // 1. Ayarları, içerikleri ve aktif temayı veritabanından çek
+        let databaseSettings = await loadSettingsFromDatabase();
+        
+        // Veritabanı boşsa varsayılanı yükle ve veritabanını oluştur
+        if (!databaseSettings) {
+          const defaultData = normalizeSiteData(null);
+          await saveSettingsToDatabase(defaultData).catch(console.error);
+          databaseSettings = defaultData;
+        }
 
-      const publishedWishes = await loadPublishedWishesFromDatabase();
-      setWishes(publishedWishes);
-    };
-    loadInitialData();
+        const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
+        
+        // Çevrimdışı durumlarda hızlı açılış için yerel hafızaya da yaz
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
+
+        setSiteData(normalizedDatabaseSettings);
+        setAdminDraft(normalizedDatabaseSettings);
+
+        // 2. Yayında olan (veya tüm) anı defteri mesajlarını çek
+        const publishedWishes = await loadPublishedWishesFromDatabase();
+        setWishes(publishedWishes || []);
+
+        // 3. Katılım (RSVP) kayıtlarını çek
+        const dbGuests = await loadGuestsFromDatabase();
+        setGuests(dbGuests || []);
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+
+    initDatabaseData();
   }, []);
+  // =========================================================================
 
   useEffect(() => {
     if (isAdminPage) return;
