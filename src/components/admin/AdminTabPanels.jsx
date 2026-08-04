@@ -405,20 +405,39 @@ export function renderAdminActivePanel({
               options={THEMES}
             />
           </div>
-          <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-            <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>Bölüm Görünürlüğü (Aç/Kapat)</h4>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
-              <AdminCheckbox checked={adminDraft.settings.visibility?.countdown ?? false} label="Geri Sayım" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.family ?? false} label="Aile Bilgileri" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.ceremony ?? false} label="Nikah / Düğün Detayları" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.schedule ?? false} label="Düğün Takvimi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.location ?? false} label="Tarih ve Harita" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? false} label="Fotoğraf Galerisi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? false} label="Katılım (LCV) Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? false} label="Misafir Listesi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? false} label="Anı Defteri Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
-              <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label="IBAN ve Hediye Ekranı" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
-            </div>
+        </AdminSection>
+      );
+
+    case "visibility":
+      return (
+        <AdminSection title="Bölüm Görünürlüğü (Aç/Kapat)">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
+            <AdminCheckbox checked={adminDraft.settings.visibility?.countdown ?? false} label="Geri Sayım" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.family ?? false} label="Aile Bilgileri" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.ceremony ?? false} label="Nikah / Düğün Detayları" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.schedule ?? false} label="Düğün Takvimi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.location ?? false} label="Tarih ve Harita" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? false} label="Fotoğraf Galerisi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? false} label="Katılım (LCV) Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? false} label="Misafir Listesi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? false} label="Anı Defteri Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label="IBAN ve Hediye Ekranı" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
+          </div>
+        </AdminSection>
+      );
+    
+    case "gift":
+      return (
+        <AdminSection title="IBAN ve Hediye Ekranı Bilgileri">
+          <p className="admin-help-text">
+            Hediye ve takı gönderimi için misafirlere gösterilecek banka ve hesap bilgilerini buradan düzenleyebilirsiniz. (Bu bölümü sayfada tamamen gizlemek için 'Bölüm Görünürlüğü' sekmesini kullanın).
+          </p>
+          <div className="admin-edit-grid">
+            <AdminField label="Bölüm Başlığı" onChange={(v) => updateDraftObject("giftRegistry", "title", v)} value={adminDraft.giftRegistry?.title || ""} />
+            <AdminField label="Alıcı Adı Soyadı" onChange={(v) => updateDraftObject("giftRegistry", "receiver", v)} value={adminDraft.giftRegistry?.receiver || ""} />
+            <AdminField label="Banka Adı" onChange={(v) => updateDraftObject("giftRegistry", "bankName", v)} value={adminDraft.giftRegistry?.bankName || ""} />
+            <AdminField label="IBAN Numarası" onChange={(v) => updateDraftObject("giftRegistry", "iban", v)} value={adminDraft.giftRegistry?.iban || ""} />
+            <AdminTextarea label="Açıklama Metni" onChange={(v) => updateDraftObject("giftRegistry", "description", v)} value={adminDraft.giftRegistry?.description || ""} />
           </div>
         </AdminSection>
       );

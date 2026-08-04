@@ -13,16 +13,16 @@ import {
   DEFAULT_SITE_DATA
 } from "../../config/constants";
 
-export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, isAttending, submitGuest, invitation, rsvpWhatsappText, showIban = true }) {  const { t, i18n } = useTranslation();
+export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, isAttending, submitGuest, invitation, rsvpWhatsappText, showIban = true, giftData }) {
+  const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [copied, setCopied] = useState(false);
   
   const [urlGuestName, setUrlGuestName] = useState("");
-  const [hasExtraPreFill, setHasExtraPreFill] = useState(false); // Rozet kontrolü için
+  const [hasExtraPreFill, setHasExtraPreFill] = useState(false);
 
-  const giftData = DEFAULT_SITE_DATA.giftRegistry;
 
   useEffect(() => {
     if (typeof window === "undefined") return;

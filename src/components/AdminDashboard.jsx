@@ -50,6 +50,19 @@ function AdminDashboard({
     i18n.changeLanguage(isEn ? 'tr' : 'en');
   };
 
+  const enhancedAdminTabs = React.useMemo(() => {
+    const tabs = [];
+    (adminTabs || []).forEach(tab => {
+      tabs.push(tab);
+      if (tab.id === "theme") {
+        tabs.push({ id: "visibility", label: "Bölüm Görünürlüğü", description: "Sayfadaki alanları aç/kapat" });
+        tabs.push({ id: "gift", label: "IBAN & Hediye", description: "Hesap ve banka bilgileri" }); // BU SATIRI EKLEDİK
+      }
+    });
+    return tabs;
+  }, [adminTabs]);
+
+  const currentTabInfo = activeTabInfo || enhancedAdminTabs.find(t => t.id === activeAdminTab);
   // Sol menü sekmeleri için otomatik çeviri sözlüğü
   const translateTab = (id, field, fallback) => {
     if (!isEn) return fallback;
@@ -224,7 +237,7 @@ function AdminDashboard({
               <div></div>
 
               <div className="admin-sidebar-menu">
-                {adminTabs.map((tab) => (
+                {enhancedAdminTabs.map((tab) => (
                   <button
                     type="button"
                     key={tab.id}
@@ -241,8 +254,8 @@ function AdminDashboard({
             <div className="admin-main-panel">
               <div className="admin-actions-sticky">
                 <div className="admin-current-section">
-                  <strong>{translateTab(activeTabInfo?.id, "label", activeTabInfo?.label)}</strong>
-                  <span>{translateTab(activeTabInfo?.id, "desc", activeTabInfo?.description)}</span>
+                  <strong>{translateTab(currentTabInfo?.id, "label", currentTabInfo?.label)}</strong>
+                  <span>{translateTab(currentTabInfo?.id, "desc", currentTabInfo?.description)}</span>
                 </div>
                 <button type="button" className="main-button" onClick={saveSiteContent}>
                   {isEn ? "Save Changes" : "Değişiklikleri Kaydet"}

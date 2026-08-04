@@ -62,7 +62,6 @@ function App() {
     i18n.changeLanguage(newLang);
   };
 
-  // Sıfır Gecikme: Sayfa açılır açılmaz son bilinen temayı 0 ms'de yükler (2 saniye bekleme hatası çözümü)
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
   const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
   const [opened, setOpened] = useState(false);
