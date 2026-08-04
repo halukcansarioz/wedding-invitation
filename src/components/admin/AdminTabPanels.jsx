@@ -13,256 +13,73 @@ import { ThemeDropdown, CustomDropdown } from "../common/UIComponents";
 import { THEMES, SIDE_OPTIONS, PERSON_COUNT_OPTIONS } from "../../config/constants";
 import { getCurrentShareLink, buildPersonalLink } from "../../utils/helpers";
 
-function GuestsAdminPanel({
-  guests,
-  totalPersonCount,
-  notAttendingCount,
-  childGuestCount,
-  brideSideCount,
-  groomSideCount,
-  adminGuestSearch,
-  setAdminGuestSearch,
-  adminGuestAttendanceFilter,
-  setAdminGuestAttendanceFilter,
-  adminGuestSideFilter,
-  setAdminGuestSideFilter,
-  adminGuestChildFilter,
-  setAdminGuestChildFilter,
-  exportGuestsExcel,
-  exportGuestsCsv,
-  filteredGuests,
-  editGuest,
-  deleteGuest,
-  clearGuests
-}) {
+function GuestsAdminPanel({ guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, filteredGuests, editGuest, deleteGuest, clearGuests }) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
 
   return (
-    <AdminSection title={isEn ? "RSVP Responses" : "Katılım Formu Kayıtları"}>
-      <div className="admin-stats admin-stats-inside">
+    <AdminSection title={isEn ? "RSVP Responses" : "Kayıtlı Form Yanıtları"}>
+      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(3, 1fr)", maxWidth: "500px" }}>
         <div><strong>{guests.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
-        <div><strong>{totalPersonCount}</strong><span>{isEn ? "Attending Guests" : "Katılacak Kişi"}</span></div>
-        <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılamayacak"}</span></div>
-        <div><strong>{childGuestCount}</strong><span>{isEn ? "With Children" : "Çocuklu Yanıt"}</span></div>
-        <div><strong>{brideSideCount}</strong><span>{isEn ? "Bride's Side" : "Gelin Tarafı"}</span></div>
-        <div><strong>{groomSideCount}</strong><span>{isEn ? "Groom's Side" : "Damat Tarafı"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılacağım").length}</strong><span>{isEn ? "Attending" : "Katılacak"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
       </div>
-      <div className="admin-toolbar">
-        <input 
-          value={adminGuestSearch} 
-          onChange={(e) => setAdminGuestSearch(e.target.value)} 
-          placeholder={isEn ? "Search responses..." : "Kayıtlarda ara"} 
-        />
-        <CustomDropdown 
-          value={adminGuestAttendanceFilter} 
-          onChange={setAdminGuestAttendanceFilter} 
-          options={[
-            { value: "all", label: isEn ? "All RSVPs" : "Tüm Katılımlar" }, 
-            { value: "Katılacağım", label: isEn ? "Attending" : "Katılacağım" }, 
-            { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılamayacağım" }
-          ]} 
-        />
-        <CustomDropdown 
-          value={adminGuestSideFilter} 
-          onChange={setAdminGuestSideFilter} 
-          options={[
-            { value: "all", label: isEn ? "All Sides" : "Tüm Taraflar" }, 
-            { value: "Damat Tarafı", label: isEn ? "Groom's Side" : "Damat Tarafı" }, 
-            { value: "Gelin Tarafı", label: isEn ? "Bride's Side" : "Gelin Tarafı" }, 
-            { value: "Ortak", label: isEn ? "Mutual" : "Ortak" }
-          ]} 
-        />
-        <CustomDropdown 
-          value={adminGuestChildFilter} 
-          onChange={setAdminGuestChildFilter} 
-          options={[
-            { value: "all", label: isEn ? "Children: All" : "Çocuk: Tümü" }, 
-            { value: "Evet", label: isEn ? "Yes" : "Evet" }, 
-            { value: "Hayır", label: isEn ? "No" : "Hayır" }
-          ]} 
-        />
-        <button type="button" className="secondary-button" onClick={exportGuestsExcel}>
-          {isEn ? "Export Excel" : "Excel İndir"}
-        </button>
-        <button type="button" className="secondary-button" onClick={exportGuestsCsv}>
-          {isEn ? "Export CSV" : "CSV İndir"}
-        </button>
+      <div className="admin-toolbar" style={{ gridTemplateColumns: "1fr 140px 140px" }}>
+        <input value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search..." : "Kayıtlarda ara"} />
+        <button type="button" className="secondary-button" onClick={exportGuestsExcel}>{isEn ? "Export Excel" : "Excel İndir"}</button>
+        <button type="button" className="secondary-button" onClick={exportGuestsCsv}>{isEn ? "Export CSV" : "CSV İndir"}</button>
       </div>
       <div className="admin-list admin-list-full">
         {filteredGuests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching responses found." : "Bu filtreye uygun kayıt yok."}</p>
+          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
         ) : (
           filteredGuests.map((guest) => {
-            const cleanPhone = guest.phone ? guest.phone.replace(/\D/g, "") : "";
-            const personalUrl = `${window.location.origin}/?guest=${encodeURIComponent(guest.name)}`;
-            
-            const reminderText = isEn 
-              ? `Hello ${guest.name}, our wedding day is approaching! 💍 You can check or update your attendance status using your personal invitation link:\n${personalUrl}`
-              : `Merhaba ${guest.name}, düğünümüze çok az kaldı! 💍 Katılım durumunu kontrol etmek veya güncellemek için sana özel hazırladığımız davetiye linkini inceleyebilirsin:\n${personalUrl}`;
-            
-            const whatsappHref = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(reminderText)}` : "";
-
-            // Çeviriler
-            let translatedAttendance = guest.attendance;
-            if (isEn && guest.attendance === "Katılacağım") translatedAttendance = "Attending";
-            if (isEn && guest.attendance === "Katılamayacağım") translatedAttendance = "Not Attending";
-
-            let translatedSide = guest.side;
-            if (isEn && guest.side === "Gelin Tarafı") translatedSide = "Bride's Side";
-            if (isEn && guest.side === "Damat Tarafı") translatedSide = "Groom's Side";
-            if (isEn && guest.side === "Ortak") translatedSide = "Mutual";
-
-            let translatedChild = guest.hasChild || "Hayır";
-            if (isEn && translatedChild === "Evet") translatedChild = "Yes";
-            if (isEn && translatedChild === "Hayır") translatedChild = "No";
+            let translatedAttendance = guest.attendance || "Katılacağım";
+            if (isEn && translatedAttendance === "Katılacağım") translatedAttendance = "Attending";
+            if (isEn && translatedAttendance === "Katılamayacağım") translatedAttendance = "Not Attending";
 
             return (
               <div className="admin-row" key={guest.id} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <strong>{guest.name}</strong>
-                <span>{translatedAttendance} · {guest.personCount} {isEn ? "people" : "kişi"} · {translatedSide}</span>
-                <span>{isEn ? "Phone:" : "Telefon:"} {guest.phone || "-"}</span>
-                <span>{isEn ? "Children:" : "Çocuk:"} {translatedChild}</span>
+                <span>{translatedAttendance}</span>
                 {guest.note && <em>{isEn ? "Note:" : "Not:"} {guest.note}</em>}
-                
-                <div 
-                  className="admin-row-actions" 
-                  style={{ 
-                    display: "flex", 
-                    flexWrap: "wrap", 
-                    alignItems: "center",
-                    gap: "8px", 
-                    marginTop: "12px", 
-                    paddingTop: "12px", 
-                    borderTop: "1px dashed var(--border, #eab4c5)",
-                    width: "100%",
-                    overflow: "visible"
-                  }}
-                >
-                  {cleanPhone && (
-                    <a 
-                      href={whatsappHref} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="secondary-button small-admin-button"
-                      style={{ 
-                        flexShrink: 0,
-                        minWidth: "max-content",
-                        margin: 0,
-                        padding: "8px 14px",
-                        textDecoration: "none",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        overflow: "visible"
-                      }}
-                    >
-                      💬 WhatsApp
-                    </a>
-                  )}
-                  <button 
-                    type="button" 
-                    className="secondary-button small-admin-button" 
-                    onClick={() => editGuest(guest.id)}
-                    style={{ 
-                      flexShrink: 0,
-                      minWidth: "max-content",
-                      margin: 0,
-                      padding: "8px 14px",
-                      overflow: "visible"
-                    }}
-                  >
-                    {isEn ? "Edit" : "Düzenle"}
-                  </button>
-                  <button 
-                    type="button" 
-                    className="secondary-button danger-button small-admin-button" 
-                    onClick={() => deleteGuest(guest.id)}
-                    style={{ 
-                      flexShrink: 0,
-                      minWidth: "max-content",
-                      margin: 0,
-                      padding: "8px 14px",
-                      overflow: "visible"
-                    }}
-                  >
-                    {isEn ? "Delete" : "Sil"}
-                  </button>
+                <div className="admin-row-actions" style={{ display: "flex", gap: "8px", marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed var(--border)", width: "100%" }}>
+                  <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>{isEn ? "Edit" : "Düzenle"}</button>
+                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>{isEn ? "Delete" : "Sil"}</button>
                 </div>
               </div>
             );
           })
         )}
-        <button type="button" className="secondary-button danger-button" onClick={clearGuests}>
-          {isEn ? "Clear All Responses" : "Katılım Kayıtlarını Temizle"}
-        </button>
+        <button type="button" className="secondary-button danger-button" onClick={clearGuests}>{isEn ? "Clear All Responses" : "Kayıtları Temizle"}</button>
       </div>
     </AdminSection>
   );
 }
 
 function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLinkName, setPersonalLinkName }) {
-  // Varsayılan olarak "Seçilmedi" (boş) gelsin
-  const [selectedSide, setSelectedSide] = useState("");
-  const [selectedCount, setSelectedCount] = useState("");
-
-  const generatedLink = buildPersonalLink(currentShareLink, personalLinkName, selectedSide, selectedCount);
+  const generatedLink = buildPersonalLink(currentShareLink, personalLinkName);
 
   const openWhatsAppShare = () => {
     if (!personalLinkName.trim()) return;
-    const text = `Sevgili ${personalLinkName}, düğün davetiyemiz sana özel olarak hazırlandı! 💍\n\nKatılım durumunu aşağıdaki linkten tek tıkla bize bildirebilirsin:\n${generatedLink}`;
+    const text = `Sevgili ${personalLinkName}, düğün davetiyemiz sana özel olarak hazırlandı! 💍\n\nDavetiyemizi aşağıdaki linkten inceleyebilirsin:\n${generatedLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   };
-
-  // Menülere "Boş Bırak" seçeneği eklendi
-  const extendedSideOptions = [{ label: "Seçilmedi (Boş Bırak)", value: "" }, ...SIDE_OPTIONS];
-  const extendedCountOptions = [{ label: "Seçilmedi (Boş Bırak)", value: "" }, ...PERSON_COUNT_OPTIONS];
 
   return (
     <AdminSection title="Kişiye Özel Akıllı Link Üretici">
       <div className="admin-personal-link-box personal-link-standalone" style={{ display: "grid", gap: "18px" }}>
-        <p className="admin-help-text" style={{ margin: 0 }}>
-          Sadece isim yazarak davetiye linki üretebilirsiniz. Eğer taraf ve kişi sayısını da seçerseniz LCV formu tam otomatik doldurulur.
-        </p>
-
-        <div className="admin-edit-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+        <p className="admin-help-text" style={{ margin: 0 }}>Sadece isim yazarak davetiye linki üretebilirsiniz.</p>
+        <div className="admin-edit-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "14px" }}>
           <AdminField label="Davetli Adı Soyadı" onChange={setPersonalLinkName} placeholder="Örn: Ahmet Yılmaz" value={personalLinkName} />
-          <AdminSelect label="Yakınlık / Taraf (Opsiyonel)" value={selectedSide} options={extendedSideOptions} onChange={setSelectedSide} />
-          <AdminSelect label="Kişi Sayısı (Opsiyonel)" value={selectedCount} options={extendedCountOptions} onChange={setSelectedCount} />
         </div>
-
         <div style={{ marginTop: "4px" }}>
           <span style={{ display: "block", marginBottom: "6px", fontWeight: "700", color: "var(--rose-dark)" }}>Üretilen Akıllı Link:</span>
           <input value={generatedLink} readOnly style={{ width: "100%", padding: "14px 16px", borderRadius: "14px", border: "1.5px dashed var(--rose-dark)", background: "var(--paper-soft)", fontWeight: "700", color: "var(--text)" }} />
         </div>
-
-       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "6px" }}>
-          <button type="button" className="main-button" onClick={() => copyAdminLink(generatedLink, "Akıllı davetiye linki kopyalandı!")} style={{ flex: "1", minWidth: "180px", margin: 0 }}>
-            🔗 Linki Kopyala
-          </button>
-          <button 
-            type="button" 
-            className="secondary-button" 
-            onClick={() => {
-              if (!personalLinkName.trim()) {
-                alert("Lütfen önce bir davetli adı yazın!");
-                return;
-              }
-              openWhatsAppShare();
-            }} 
-            style={{ 
-              flex: "1", 
-              minWidth: "180px", 
-              margin: 0, 
-              backgroundColor: "#25D366", 
-              color: "#fff", 
-              borderColor: "#25D366",
-              opacity: personalLinkName.trim() ? 1 : 0.6,
-              cursor: personalLinkName.trim() ? "pointer" : "not-allowed"
-            }}
-          >
-            💬 WhatsApp ile Gönder
-          </button>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "6px" }}>
+          <button type="button" className="main-button" onClick={() => copyAdminLink(generatedLink, "Akıllı davetiye linki kopyalandı!")} style={{ flex: "1", minWidth: "180px", margin: 0 }}>🔗 Linki Kopyala</button>
+          <button type="button" className="secondary-button" onClick={() => { if (!personalLinkName.trim()) { alert("Lütfen önce bir davetli adı yazın!"); return; } openWhatsAppShare(); }} style={{ flex: "1", minWidth: "180px", margin: 0, backgroundColor: "#25D366", color: "#fff", borderColor: "#25D366", opacity: personalLinkName.trim() ? 1 : 0.6, cursor: personalLinkName.trim() ? "pointer" : "not-allowed" }}>💬 WhatsApp ile Gönder</button>
         </div>
       </div>
     </AdminSection>

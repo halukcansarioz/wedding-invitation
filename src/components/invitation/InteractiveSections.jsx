@@ -13,49 +13,21 @@ import {
   DEFAULT_SITE_DATA
 } from "../../config/constants";
 
-export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, isAttending, submitGuest, invitation, rsvpWhatsappText, showIban = true, giftData }) {
+export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, submitGuest, invitation, rsvpWhatsappText }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  const [showGiftModal, setShowGiftModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [copied, setCopied] = useState(false);
   
   const [urlGuestName, setUrlGuestName] = useState("");
-  const [hasExtraPreFill, setHasExtraPreFill] = useState(false);
-
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    
     const guestName = params.get("guest") || params.get("davetli") || "";
-    const sideParam = params.get("side") || params.get("taraf") || "";
-    const countParam = params.get("count") || params.get("kisi") || "";
 
     if (guestName) {
       setUrlGuestName(guestName);
-      
-      // Sadece isim haricinde ekstra bilgi gönderilmişse rozeti aç
-      if (sideParam || countParam) {
-        setHasExtraPreFill(true);
-      }
-      
-      setGuestForm((prev) => {
-        let resolvedSide = prev.side;
-        if (sideParam.toLowerCase().includes("damat")) resolvedSide = "Damat Tarafı";
-        else if (sideParam.toLowerCase().includes("gelin")) resolvedSide = "Gelin Tarafı";
-        else if (sideParam.toLowerCase().includes("ortak")) resolvedSide = "Ortak";
-
-        let resolvedCount = prev.personCount;
-        if (["1", "2", "3", "4"].includes(countParam)) resolvedCount = countParam;
-
-        return {
-          ...prev,
-          name: prev.name || guestName,
-          side: resolvedSide,
-          personCount: resolvedCount
-        };
-      });
+      setGuestForm((prev) => ({ ...prev, name: prev.name || guestName }));
     }
   }, [setGuestForm]);
 
@@ -68,25 +40,16 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     const isDeclining = guestForm.attendance === "Katılamayacağım";
-    const currentName = guestForm.name.trim();
+    const currentName = guestForm.name?.trim();
 
     await submitGuest(e);
     
-    if (isDeclining && currentName.length > 0) {
+    if (isDeclining && currentName && currentName.length > 0) {
       setShowDeclineModal(true);
     }
   };
 
-  const copyIban = () => {
-    navigator.clipboard.writeText(giftData.iban);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
   const translatedAttendance = ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? "Attending" : "Not Attending") : opt.label }));
-  const translatedPerson = PERSON_COUNT_OPTIONS.map(opt => ({ ...opt, label: isEn ? opt.label.replace('Kişi', 'Person').replace('2 Person', '2 People').replace('3 Person', '3 People').replace('4 Person', '4 People') : opt.label }));
-  const translatedSide = SIDE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Gelin Tarafı" ? "Bride's Side" : opt.value === "Damat Tarafı" ? "Groom's Side" : "Mutual") : opt.label }));
-  const translatedChild = CHILD_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Hayır" ? "No Children" : "With Children") : opt.label }));
 
   return (
     <section className="card rsvp-card">
@@ -95,133 +58,57 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
       <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
       
       {isDeadlinePassed ? (
-        <div style={{
-          margin: "32px auto 0",
-          padding: "34px 24px",
-          background: "var(--paper-soft, #fff7f9)",
-          border: "1.5px dashed var(--rose-dark, #9f4f68)",
-          borderRadius: "24px",
-          maxWidth: "620px",
-          textAlign: "center",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.03)"
-        }}>
+        <div style={{ margin: "32px auto 0", padding: "34px 24px", background: "var(--paper-soft, #fff7f9)", border: "1.5px dashed var(--rose-dark, #9f4f68)", borderRadius: "24px", maxWidth: "620px", textAlign: "center", boxShadow: "0 10px 25px rgba(0,0,0,0.03)" }}>
           <div style={{ fontSize: "40px", marginBottom: "10px" }}>⏳</div>
           <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 10px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
-            {isEn ? t('invitation.deadlineTitle') : (copy?.deadlineTitle || "LCV Bildirim Süresi Doldu")}
+            {isEn ? t('invitation.deadlineTitle') : (copy?.deadlineTitle || "Form Kapatıldı")}
           </h3>
-          
-          <span style={{ display: "inline-block", padding: "6px 16px", background: "rgba(159, 79, 104, 0.12)", border: "1px solid rgba(159, 79, 104, 0.3)", borderRadius: "999px", color: "var(--rose-dark, #9f4f68)", fontWeight: "800", fontSize: "14px", marginBottom: "18px", fontFamily: "Playfair Display, serif", letterSpacing: "1px" }}>
-            📅 {isEn ? "Deadline:" : "Son Tarih:"} {invitation?.rsvpDeadline}
-          </span>
-
           <p style={{ fontSize: "16px", lineHeight: "1.7", color: "var(--text, #55303b)", margin: "0 auto", fontFamily: "Playfair Display, serif", fontWeight: "600", maxWidth: "520px" }}>
-            {isEn ? t('invitation.deadlineText') : (copy?.deadlineText || "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.")}
+            {isEn ? t('invitation.deadlineText') : (copy?.deadlineText || "Form süresi dolmuştur.")}
           </p>
         </div>
       ) : (
         <form className="rsvp-form" onSubmit={handleFormSubmit}>
-          {urlGuestName && hasExtraPreFill && (
-            <div style={{
-              background: "rgba(159, 79, 104, 0.08)",
-              border: "1px dashed rgba(159, 79, 104, 0.35)",
-              padding: "12px 18px",
-              borderRadius: "16px",
-              color: "var(--rose-dark, #9f4f68)",
-              fontSize: "15px",
-              fontWeight: "700",
-              textAlign: "center",
-              marginBottom: "8px",
-              fontFamily: "Playfair Display, serif"
-            }}>
+          {urlGuestName && (
+            <div style={{ background: "rgba(159, 79, 104, 0.08)", border: "1px dashed rgba(159, 79, 104, 0.35)", padding: "12px 18px", borderRadius: "16px", color: "var(--rose-dark, #9f4f68)", fontSize: "15px", fontWeight: "700", textAlign: "center", marginBottom: "8px", fontFamily: "Playfair Display, serif" }}>
               ✨ {isEn ? `Dear ${urlGuestName}, this form is pre-filled for you.` : `Sevgili ${urlGuestName}, form senin için otomatik dolduruldu.`}
             </div>
           )}
 
-          <input name="name" value={guestForm.name} onChange={handleGuestChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} />
-          <input name="phone" type="tel" value={guestForm.phone} onChange={handleGuestChange} placeholder={isEn ? t('form.phonePlaceholder') : "Telefon Numaranız"} maxLength="20" />
+          <input name="name" value={guestForm.name || ""} onChange={handleGuestChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} required />
 
+          {/* SADECE KATILIM DURUMU BUTONLARI EKLENDİ */}
           <OptionGroup onChange={updateAttendance} options={translatedAttendance} value={guestForm.attendance} />
-          <OptionGroup disabled={!isAttending} onChange={(personCount) => setGuestForm((prev) => ({ ...prev, personCount }))} options={translatedPerson} value={guestForm.personCount} />
-          <OptionGroup disabled={!isAttending} onChange={(side) => setGuestForm((prev) => ({ ...prev, side }))} options={translatedSide} value={guestForm.side} />
-          <OptionGroup disabled={!isAttending} onChange={(hasChild) => setGuestForm((prev) => ({ ...prev, hasChild }))} options={translatedChild} value={guestForm.hasChild} />
 
           <div className="field-with-counter">
-            <textarea name="note" value={guestForm.note} onChange={handleGuestChange} placeholder={isEn ? t('form.notePlaceholder') : "Notunuz"} maxLength={NOTE_MAX_LENGTH}></textarea>
-            <span>{guestForm.note.length}/{NOTE_MAX_LENGTH}</span>
+            <textarea name="note" value={guestForm.note || ""} onChange={handleGuestChange} placeholder={isEn ? t('form.notePlaceholder') : "Notunuz"} maxLength={NOTE_MAX_LENGTH}></textarea>
+            <span>{(guestForm.note || "").length}/{NOTE_MAX_LENGTH}</span>
           </div>
-          <button type="submit" className="main-button form-button">{isEn ? t('form.submitRsvp') : "Katılımı Gönder"}</button>
+          <button type="submit" className="main-button form-button">{isEn ? t('form.submitRsvp') : "Gönder"}</button>
         </form>
       )}
 
+      {/* SADECE WHATSAPP BUTONU KALDI */}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', marginTop: '18px' }}>
         <a className="secondary-button" style={{ minWidth: "220px", margin: 0 }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
           {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
         </a>
-        
       </div>
 
-      {showGiftModal && typeof document !== 'undefined' && createPortal(
-        <div 
-          onClick={() => setShowGiftModal(false)}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2147483647, backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
-        >
-          <div 
-            onClick={e => e.stopPropagation()} 
-            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "460px", textAlign: "center", padding: "40px 24px", border: "2px solid #b56c83", position: "relative" }}
-          >
-            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
-              {isEn ? "Gift & Registry" : giftData.title}
-            </h3>
-            <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "20px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {isEn ? "For those who wish to send a gift or contribute to our new life together:" : giftData.description}
-            </p>
-            <div style={{ backgroundColor: "#fff7f9", padding: "16px", borderRadius: "16px", border: "1px solid #eab4c5", marginBottom: "20px" }}>
-              <strong style={{ display: "block", fontSize: "18px", color: "#7a2f49", fontFamily: "Playfair Display, serif" }}>{giftData.receiver}</strong>
-              <span style={{ display: "block", fontSize: "14px", color: "#6f4451", margin: "4px 0 10px", fontFamily: "Playfair Display, serif" }}>{giftData.bankName}</span>
-              <code style={{ display: "block", fontSize: "16px", wordBreak: "break-all", backgroundColor: "#ffffff", padding: "10px", borderRadius: "8px", border: "1px dashed #d98ca1", color: "#08060d", fontFamily: "monospace" }}>
-                {giftData.iban}
-              </code>
-            </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-              <button type="button" className="main-button" onClick={copyIban} style={{ margin: 0, minWidth: "160px" }}>
-                {copied ? (isEn ? "Copied!" : "IBAN Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
-              </button>
-              <button type="button" className="secondary-button" onClick={() => setShowGiftModal(false)} style={{ margin: 0, minWidth: "120px" }}>
-                {isEn ? "Close" : "Kapat"}
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
       {showDeclineModal && typeof document !== 'undefined' && createPortal(
-        <div 
-          onClick={() => setShowDeclineModal(false)}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2147483647, backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
-        >
-          <div 
-            onClick={e => e.stopPropagation()} 
-            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "450px", textAlign: "center", padding: "40px 24px", border: "2px solid #b56c83", position: "relative" }}
-          >
-            <div style={{ fontSize: "44px", marginBottom: "10px" }}>💌</div>
+        <div onClick={() => setShowDeclineModal(false)} style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2147483647, backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "#ffffff", borderRadius: "24px", width: "90%", maxWidth: "450px", textAlign: "center", padding: "40px 24px", border: "2px solid #b56c83", position: "relative" }}>
+            
+            {/* ŞU KISMI GÜNCELLEDİK: Alt boşluk 24px'e çıkarıldı */}
+            <div style={{ fontSize: "48px", marginBottom: "24px", lineHeight: "1" }}>💌</div>
+            
             <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
               {isEn ? "We'll Miss You!" : copy?.declineTitle || "Çok Üzüldük!"}
             </h3>
             <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {showIban 
-                ? (isEn 
-                    ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or send a gift via our registry screen." 
-                    : (copy?.declineMessage || "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz."))
-                : (isEn 
-                    ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook." 
-                    : "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilirsiniz.")
-              }
+              {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook." : "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilirsiniz."}
             </p>
             <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-              <button type="button" className="main-button" onClick={() => { setShowDeclineModal(false); setShowGiftModal(true); }} style={{ margin: 0 }}>
-                🎁 {isEn ? "View Registry" : "Hediye Ekranını Aç"}
-              </button>
               <button type="button" className="secondary-button" onClick={() => setShowDeclineModal(false)} style={{ margin: 0 }}>
                 {isEn ? "Close" : "Tamam"}
               </button>
@@ -234,34 +121,26 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
   );
 }
 
-export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
+export function GuestsListSection({ copy, guests }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const guestList = Array.isArray(guests) ? guests : [];
+  
+  const attendingCount = guestList.filter(g => g.attendance === "Katılacağım").length;
+  const notAttendingCount = guestList.filter(g => g.attendance === "Katılamayacağım").length;
 
   return (
     <section className="card">
       <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
       <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
-      <div className="guest-stats">
+      <div className="guest-stats" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
         <div><strong>{guestList.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
-        <div><strong>{totalPersonCount || 0}</strong><span>{isEn ? "Attending" : "Katılacak Kişi"}</span></div>
-        <div><strong>{notAttendingCount || 0}</strong><span>{isEn ? "Not Attending" : "Katılamayacak"}</span></div>
+        <div><strong>{attendingCount}</strong><span>{isEn ? "Attending" : "Katılacak"}</span></div>
+        <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
       </div>
       
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center", 
-        textAlign: "center", 
-        marginTop: "24px", 
-        padding: "22px 18px", 
-        background: "var(--paper-soft)", 
-        borderRadius: "16px", 
-        border: "1px dashed var(--border)",
-        minHeight: "80px"
-      }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", marginTop: "24px", padding: "22px 18px", background: "var(--paper-soft)", borderRadius: "16px", border: "1px dashed var(--border)", minHeight: "80px" }}>
         <p style={{ margin: 0, fontSize: "15px", lineHeight: "1.6", color: "var(--text-soft)", fontStyle: "italic", width: "100%" }}>
           🔒 {isEn ? "Guest list and RSVP details are kept private and can only be viewed by the bride and groom." : "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir."}
         </p>

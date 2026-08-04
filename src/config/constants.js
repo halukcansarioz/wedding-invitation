@@ -227,11 +227,7 @@ export const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
 
 export const INITIAL_GUEST_FORM = {
   name: "",
-  phone: "",
   attendance: "Katılacağım",
-  personCount: "1",
-  side: "Gelin Tarafı",
-  hasChild: "Hayır",
   note: "",
 };
 

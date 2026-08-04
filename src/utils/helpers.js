@@ -171,41 +171,6 @@ export const getGuestNameFromUrl = () => {
   return params.get("guest") || params.get("davetli") || "";
 };
 
-// DÜZELTME: Her dokunuşta ve seçimde linki anında güncelleyen güçlendirilmiş fonksiyon
-export const buildPersonalLink = (baseLink, guestName = "", side = "", count = "") => {
-  const defaultBase = baseLink || getCurrentShareLink() || "https://siten.com/";
-  try {
-    const url = new URL(defaultBase);
-    if (guestName && guestName.trim()) {
-      url.searchParams.set("guest", guestName.trim());
-    } else {
-      url.searchParams.delete("guest");
-    }
-    if (side && side !== "all") {
-      url.searchParams.set("side", side);
-    } else {
-      url.searchParams.delete("side");
-    }
-    if (count && count !== "all") {
-      url.searchParams.set("count", count);
-    } else {
-      url.searchParams.delete("count");
-    }
-    return url.toString();
-  } catch {
-    let result = defaultBase;
-    const params = [];
-    if (guestName && guestName.trim()) params.push(`guest=${encodeURIComponent(guestName.trim())}`);
-    if (side && side !== "all") params.push(`side=${encodeURIComponent(side)}`);
-    if (count && count !== "all") params.push(`count=${encodeURIComponent(count)}`);
-    if (params.length > 0) {
-      const separator = result.includes("?") ? "&" : "?";
-      result += separator + params.join("&");
-    }
-    return result;
-  }
-};
-
 export const getQrImageUrl = (link) => `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(link)}`;
 
 export const isAdminRouteActive = () => {
@@ -237,16 +202,37 @@ export const isAdminSessionFresh = () => {
   return Date.now() - lastActive < ADMIN_SESSION_TIMEOUT_MS;
 };
 
+export const buildPersonalLink = (baseLink, guestName = "") => {
+  const defaultBase = baseLink || getCurrentShareLink() || "https://siten.com/";
+  try {
+    const url = new URL(defaultBase);
+    if (guestName && guestName.trim()) {
+      url.searchParams.set("guest", guestName.trim());
+    } else {
+      url.searchParams.delete("guest");
+    }
+    return url.toString();
+  } catch {
+    let result = defaultBase;
+    if (guestName && guestName.trim()) {
+      result += (result.includes("?") ? "&" : "?") + `guest=${encodeURIComponent(guestName.trim())}`;
+    }
+    return result;
+  }
+};
+
 export const dbGuestToUi = (guest) => ({
-  id: guest.id, name: guest.name || "", phone: guest.phone || "", attendance: guest.attendance || "Katılacağım",
-  personCount: String(guest.person_count ?? guest.personCount ?? "1"), side: guest.side || "Gelin Tarafı",
-  hasChild: guest.has_child ?? guest.hasChild ?? "Hayır", note: guest.note || "", createdAt: guest.created_at || guest.createdAt || "",
+  id: guest.id, 
+  name: guest.name || "", 
+  attendance: guest.attendance || "Katılacağım", // Geri eklendi
+  note: guest.note || "", 
+  createdAt: guest.created_at || guest.createdAt || "",
 });
 
 export const uiGuestToDb = (guest) => ({
-  name: guest.name || "", phone: guest.phone || "", attendance: guest.attendance || "Katılacağım",
-  person_count: String(guest.personCount ?? guest.person_count ?? "1"), side: guest.side || "Gelin Tarafı",
-  has_child: guest.hasChild ?? guest.has_child ?? "Hayır", note: guest.note || "",
+  name: guest.name || "", 
+  attendance: guest.attendance || "Katılacağım", // Geri eklendi
+  note: guest.note || "",
 });
 
 export const dbWishToUi = (wish) => ({
