@@ -238,7 +238,10 @@ export function renderAdminActivePanel({
             <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? false} label="Katılım (LCV) Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? false} label="Misafir Listesi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? false} label="Anı Defteri Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
-            <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label="IBAN ve Hediye Ekranı" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
+            
+            {/* Net bir şekilde ayrılmış iki bağımsız kontrol */}
+            <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label="Ana Sayfa IBAN Bölümü" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label="Pop-up Hediye Butonu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />
           </div>
         </AdminSection>
       );

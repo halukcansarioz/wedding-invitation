@@ -87,7 +87,7 @@ export default function InvitationView({
           submitGuest={submitGuest}
           invitation={invitation}
           rsvpWhatsappText={rsvpWhatsappText}
-          showIban={settings.visibility?.iban !== false}
+          showIban={settings.visibility?.popupIban !== false}
           giftData={siteData.giftRegistry}
         />
       )}

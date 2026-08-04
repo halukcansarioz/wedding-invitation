@@ -306,28 +306,28 @@ export function GiftSection({ giftData }) {
       </p>
       
       <div style={{ 
-        backgroundColor: "var(--paper-soft)", 
+        backgroundColor: "var(--theme-surface-soft, var(--paper-soft))", 
         padding: "24px 20px", 
         borderRadius: "20px", 
-        border: "1.5px dashed var(--rose)", 
+        border: "1.5px dashed var(--amp-color, var(--rose))", 
         maxWidth: "500px", 
         margin: "0 auto 28px" 
       }}>
-        <strong style={{ display: "block", fontSize: "22px", color: "var(--rose-deep)", fontFamily: "Playfair Display, serif" }}>
+        <strong style={{ display: "block", fontSize: "22px", color: "var(--amp-color, var(--rose-deep))", fontFamily: "Playfair Display, serif" }}>
           {giftData.receiver}
         </strong>
-        <span style={{ display: "block", fontSize: "17px", color: "var(--text-soft)", margin: "8px 0 18px", fontFamily: "Playfair Display, serif" }}>
+        <span style={{ display: "block", fontSize: "17px", color: "var(--theme-text-muted, var(--text-soft))", margin: "8px 0 18px", fontFamily: "Playfair Display, serif" }}>
           {giftData.bankName}
         </span>
         <code style={{ 
           display: "block", 
           fontSize: "18px", 
           wordBreak: "break-all", 
-          backgroundColor: "#ffffff", 
+          backgroundColor: "var(--theme-surface, #ffffff)", 
           padding: "14px", 
           borderRadius: "12px", 
-          border: "1px solid var(--rose-light)", 
-          color: "var(--text)", 
+          border: "1px solid color-mix(in srgb, var(--amp-color) 30%, transparent)", 
+          color: "var(--theme-text-main, var(--text))", 
           fontFamily: "monospace", 
           letterSpacing: "1px" 
         }}>

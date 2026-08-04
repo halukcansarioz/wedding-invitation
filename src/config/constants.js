@@ -122,6 +122,7 @@ export const DEFAULT_SITE_DATA = {
       guests: true,
       wishes: true,
       iban: true,
+      popupIban: true,
     },
   },
   messages: {
