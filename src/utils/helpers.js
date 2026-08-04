@@ -44,6 +44,7 @@ export const mergeSiteData = (storedData) => {
     scheduleItems: Array.isArray(stored.scheduleItems) && stored.scheduleItems.length > 0 ? stored.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
     settings: { ...DEFAULT_SITE_DATA.settings, ...(stored.settings || {}), visibility: { ...(DEFAULT_SITE_DATA.settings.visibility || {}), ...(stored.settings?.visibility || {}) } },
     messages: { ...DEFAULT_SITE_DATA.messages, ...(stored.messages || {}) },
+    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(stored.giftRegistry || {}) },
   };
 };
 

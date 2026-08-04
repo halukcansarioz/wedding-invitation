@@ -417,6 +417,7 @@ export function renderAdminActivePanel({
               <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? false} label="Katılım (LCV) Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
               <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? false} label="Misafir Listesi" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
               <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? false} label="Anı Defteri Formu" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+              <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label="IBAN ve Hediye Ekranı" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
             </div>
           </div>
         </AdminSection>

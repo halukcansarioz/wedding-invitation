@@ -9,7 +9,8 @@ import {
   LocationSection,
   GallerySection,
   ShareSection,
-  FooterSection
+  FooterSection,
+  GiftSection
 } from "../components/invitation/PublicSections";
 import {
   RsvpSection,
@@ -86,6 +87,7 @@ export default function InvitationView({
           submitGuest={submitGuest}
           invitation={invitation}
           rsvpWhatsappText={rsvpWhatsappText}
+          showIban={settings.visibility?.iban !== false}
         />
       )}
 
@@ -106,6 +108,10 @@ export default function InvitationView({
           submitWish={submitWish}
           approvedWishes={approvedWishes}
         />
+      )}
+
+      {settings.visibility?.iban !== false && (
+        <GiftSection giftData={siteData.giftRegistry} />
       )}
 
       <ShareSection

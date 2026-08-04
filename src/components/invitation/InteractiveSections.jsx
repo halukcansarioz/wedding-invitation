@@ -13,8 +13,7 @@ import {
   DEFAULT_SITE_DATA
 } from "../../config/constants";
 
-export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, isAttending, submitGuest, invitation, rsvpWhatsappText }) {
-  const { t, i18n } = useTranslation();
+export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, isAttending, submitGuest, invitation, rsvpWhatsappText, showIban = true }) {  const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showDeclineModal, setShowDeclineModal] = useState(false);
@@ -154,9 +153,12 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         </form>
       )}
 
-      <a className="secondary-button whatsapp-button" href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-        {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
-      </a>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', marginTop: '18px' }}>
+        <a className="secondary-button" style={{ minWidth: "220px", margin: 0 }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+          {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
+        </a>
+        
+      </div>
 
       {showGiftModal && typeof document !== 'undefined' && createPortal(
         <div 
@@ -207,7 +209,14 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
               {isEn ? "We'll Miss You!" : copy?.declineTitle || "Çok Üzüldük!"}
             </h3>
             <p style={{ fontSize: "16px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or send a gift via our registry screen." : copy?.declineMessage}
+              {showIban 
+                ? (isEn 
+                    ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or send a gift via our registry screen." 
+                    : (copy?.declineMessage || "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz."))
+                : (isEn 
+                    ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook." 
+                    : "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilirsiniz.")
+              }
             </p>
             <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
               <button type="button" className="main-button" onClick={() => { setShowDeclineModal(false); setShowGiftModal(true); }} style={{ margin: 0 }}>

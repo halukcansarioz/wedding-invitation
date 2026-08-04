@@ -52,6 +52,11 @@ export function useAudio(musicFile) {
       musicGainRef.current = null;
     }
     setIsMusicPlaying(false);
+    
+    // YENİ: Kullanıcının müziği kapattığını tarayıcı hafızasına kaydet
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wedding-music-muted", "true");
+    }
   }, []);
 
   const startGeneratedMusic = useCallback(async () => {
@@ -109,7 +114,15 @@ export function useAudio(musicFile) {
     playNote();
   }, []);
 
-  const startMusic = useCallback(async () => {
+  // YENİ: forcePlay parametresi ile zorla çalma durumu kontrolü eklendi
+  const startMusic = useCallback(async (forcePlay = false) => {
+    // Ziyaretçi müziği daha önce kapattıysa ve butona kendi basarak açmıyorsa müziği başlatma
+    if (forcePlay !== true && typeof window !== "undefined") {
+      if (localStorage.getItem("wedding-music-muted") === "true") {
+        return;
+      }
+    }
+
     try {
       if (musicFile && audioRef.current) {
         if (musicIntervalRef.current) {
@@ -124,6 +137,10 @@ export function useAudio(musicFile) {
           audioRef.current.volume = 0.15;
           await audioRef.current.play();
           setIsMusicPlaying(true);
+          
+          // Müzik başarılı çalarsa hafızadaki "kapalı" tercihini kaldır
+          if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
+          
           return;
         } catch (audioError) {
           console.log("Müzik dosyası çalınamadı, yedek melodi deneniyor:", audioError);
@@ -132,6 +149,7 @@ export function useAudio(musicFile) {
       }
       await startGeneratedMusic();
       setIsMusicPlaying(true);
+      if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
     } catch (error) {
       setIsMusicPlaying(false);
       console.log("Müzik başlatılamadı:", error);
@@ -139,8 +157,12 @@ export function useAudio(musicFile) {
   }, [musicFile, startGeneratedMusic]);
 
   const toggleMusic = useCallback(async () => {
-    if (isMusicPlaying) stopMusic();
-    else await startMusic();
+    if (isMusicPlaying) {
+      stopMusic();
+    } else {
+      // Müzik butonuna basıldığında zorla başlatması için "true" gönderiyoruz
+      await startMusic(true); 
+    }
   }, [isMusicPlaying, stopMusic, startMusic]);
 
   return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };

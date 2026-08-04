@@ -121,6 +121,7 @@ export const DEFAULT_SITE_DATA = {
       rsvp: true,
       guests: true,
       wishes: true,
+      iban: true,
     },
   },
   messages: {

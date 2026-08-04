@@ -284,6 +284,64 @@ export function ShareSection({ copy, qrImageUrl, shareText, copyInvitationLink }
   );
 }
 
+export function GiftSection({ giftData }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const [copied, setCopied] = useState(false);
+
+  const copyIban = () => {
+    navigator.clipboard.writeText(giftData?.iban);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  if (!giftData) return null;
+
+  return (
+    <section className="card">
+      <p className="section-label">{isEn ? "Gift & Registry" : "Hediye & Takı"}</p>
+      <h2>{isEn ? "Gift & Registry" : giftData.title}</h2>
+      <p style={{ marginBottom: "28px", maxWidth: "600px" }}>
+        {isEn ? "For those who wish to send a gift or contribute to our new life together:" : giftData.description}
+      </p>
+      
+      <div style={{ 
+        backgroundColor: "var(--paper-soft)", 
+        padding: "24px 20px", 
+        borderRadius: "20px", 
+        border: "1.5px dashed var(--rose)", 
+        maxWidth: "500px", 
+        margin: "0 auto 28px" 
+      }}>
+        <strong style={{ display: "block", fontSize: "22px", color: "var(--rose-deep)", fontFamily: "Playfair Display, serif" }}>
+          {giftData.receiver}
+        </strong>
+        <span style={{ display: "block", fontSize: "17px", color: "var(--text-soft)", margin: "8px 0 18px", fontFamily: "Playfair Display, serif" }}>
+          {giftData.bankName}
+        </span>
+        <code style={{ 
+          display: "block", 
+          fontSize: "18px", 
+          wordBreak: "break-all", 
+          backgroundColor: "#ffffff", 
+          padding: "14px", 
+          borderRadius: "12px", 
+          border: "1px solid var(--rose-light)", 
+          color: "var(--text)", 
+          fontFamily: "monospace", 
+          letterSpacing: "1px" 
+        }}>
+          {giftData.iban}
+        </code>
+      </div>
+      
+      <button type="button" className="main-button" onClick={copyIban} style={{ margin: "0 auto", display: "block", minWidth: "200px" }}>
+        {copied ? (isEn ? "Copied! ✓" : "IBAN Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
+      </button>
+    </section>
+  );
+}
+
 export function FooterSection({ coupleName, invitation, copy }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
