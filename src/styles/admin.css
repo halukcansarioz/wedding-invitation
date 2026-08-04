@@ -98,13 +98,26 @@
 
 .admin-nav-button.active {
   border-color: rgba(159, 79, 104, 0.64);
-  background: linear-gradient(135deg, rgba(230, 154, 174, 0.95), rgba(159, 79, 104, 0.95));
-  box-shadow: 0 14px 30px rgba(159, 79, 104, 0.22);
+  background: linear-gradient(135deg, #8f7fb8, #6f4b7a);
+  box-shadow: 0 18px 40px rgba(100, 50, 90, 0.26), inset 0 -4px 18px rgba(0,0,0,0.06);
+  padding: 18px 20px;
+  border-radius: 24px;
+  position: relative;
 }
 
 .admin-nav-button.active span,
 .admin-nav-button.active small {
   color: #ffffff;
+}
+
+/* add subtle outline around active nav button to mimic screenshot */
+.admin-nav-button.active::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 28px;
+  border: 2px solid rgba(0,0,0,0.12);
+  pointer-events: none;
 }
 
 .admin-main-panel {
@@ -114,7 +127,8 @@
 .admin-main-panel .admin-actions-sticky {
   top: 18px;
   margin: 0 0 22px;
-  justify-content: flex-start;
+  justify-content: center;
+  gap: 18px;
 }
 
 .admin-current-section {

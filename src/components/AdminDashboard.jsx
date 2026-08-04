@@ -29,7 +29,6 @@ function AdminDashboard({
   setAdminLoginNotice,
   setRecoveryPassword,
   setRecoveryPasswordAgain,
-  setRecoveryMessage,
   setForgotPasswordMessage,
   submitAdminPassword,
   completePasswordRecovery,

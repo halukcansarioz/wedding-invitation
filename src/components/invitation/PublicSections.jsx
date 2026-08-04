@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { downloadIcsCalendar, handleAddToCalendar } from "../../utils/helpers";
+import { handleAddToCalendar } from "../../utils/helpers";
 
 export function HeroSection({ invitation, copy, guestGreeting }) {
   const { t, i18n } = useTranslation();
@@ -142,6 +142,41 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
   );
 }
 
+function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextImage, isEn }) {
+  if (lightboxIndex === null || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div onClick={closeLightbox} className="gallery-lightbox-overlay">
+      <button type="button" onClick={closeLightbox} className="lightbox-control-btn lightbox-close" title={isEn ? "Close (Esc)" : "Kapat (Esc)"}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      {gallery.length > 1 && (
+        <button type="button" onClick={prevImage} className="lightbox-control-btn lightbox-prev" title={isEn ? "Previous (←)" : "Önceki (←)"}>
+          &#10094;
+        </button>
+      )}
+
+      <div onClick={(e) => e.stopPropagation()} className="gallery-lightbox-content">
+        <img src={gallery[lightboxIndex]} alt="Büyütülmüş Fotoğraf" className="gallery-lightbox-image" />
+        <span className="gallery-lightbox-caption">
+          {lightboxIndex + 1} / {gallery.length}
+        </span>
+      </div>
+
+      {gallery.length > 1 && (
+        <button type="button" onClick={nextImage} className="lightbox-control-btn lightbox-next" title={isEn ? "Next (→)" : "Sonraki (→)"}>
+          &#10095;
+        </button>
+      )}
+    </div>,
+    document.body
+  );
+}
+
 export function GallerySection({ copy, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
@@ -184,82 +219,12 @@ export function GallerySection({ copy, invitation }) {
             alt={`Galeri ${index + 1}`} 
             loading="lazy" 
             onClick={() => openLightbox(index)}
-            style={{ cursor: "pointer", transition: "transform 0.25s ease" }}
-            onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.03)"}
-            onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+            className="gallery-image"
           />
         ))}
       </div>
 
-      {lightboxIndex !== null && typeof document !== 'undefined' && createPortal(
-        <div 
-          onClick={closeLightbox}
-          style={{
-            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.9)", zIndex: 2147483647,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "20px", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)"
-          }}
-        >
-          {/* Kapatma Butonu (Çarpı) */}
-          <button 
-            type="button" 
-            onClick={closeLightbox}
-            className="lightbox-control-btn"
-            title={isEn ? "Close (Esc)" : "Kapat (Esc)"}
-            style={{ top: "24px", right: "24px" }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-
-          {/* Önceki (Sol) Ok Butonu */}
-          {gallery.length > 1 && (
-            <button 
-              type="button" 
-              onClick={prevImage}
-              className="lightbox-control-btn"
-              title={isEn ? "Previous (←)" : "Önceki (←)"}
-              style={{ left: "24px", fontSize: "24px" }}
-            >
-              &#10094;
-            </button>
-          )}
-
-          <div 
-            onClick={(e) => e.stopPropagation()} 
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "90vw", maxHeight: "85vh" }}
-          >
-            <img 
-              src={gallery[lightboxIndex]} 
-              alt="Büyütülmüş Fotoğraf" 
-              style={{
-                maxHeight: "78vh", maxWidth: "85vw", borderRadius: "16px",
-                boxShadow: "0 25px 50px rgba(0,0,0,0.7)", objectFit: "contain"
-              }}
-            />
-            <span style={{ color: "rgba(255,255,255,0.9)", fontSize: "16px", marginTop: "14px", fontWeight: 700, fontFamily: "Playfair Display, serif", letterSpacing: "2px" }}>
-              {lightboxIndex + 1} / {gallery.length}
-            </span>
-          </div>
-
-          {/* Sonraki (Sağ) Ok Butonu */}
-          {gallery.length > 1 && (
-            <button 
-              type="button" 
-              onClick={nextImage}
-              className="lightbox-control-btn"
-              title={isEn ? "Next (→)" : "Sonraki (→)"}
-              style={{ right: "24px", fontSize: "24px" }}
-            >
-              &#10095;
-            </button>
-          )}
-        </div>,
-        document.body
-      )}
+      <LightboxModal gallery={gallery} lightboxIndex={lightboxIndex} closeLightbox={closeLightbox} prevImage={prevImage} nextImage={nextImage} isEn={isEn} />
     </section>
   );
 }
@@ -301,41 +266,17 @@ export function GiftSection({ giftData }) {
     <section className="card">
       <p className="section-label">{isEn ? "Gift & Registry" : "Hediye & Takı"}</p>
       <h2>{isEn ? "Gift & Registry" : giftData.title}</h2>
-      <p style={{ marginBottom: "28px", maxWidth: "600px" }}>
+      <p className="gift-description">
         {isEn ? "For those who wish to send a gift or contribute to our new life together:" : giftData.description}
       </p>
       
-      <div style={{ 
-        backgroundColor: "var(--theme-surface-soft, var(--paper-soft))", 
-        padding: "24px 20px", 
-        borderRadius: "20px", 
-        border: "1.5px dashed var(--amp-color, var(--rose))", 
-        maxWidth: "500px", 
-        margin: "0 auto 28px" 
-      }}>
-        <strong style={{ display: "block", fontSize: "22px", color: "var(--amp-color, var(--rose-deep))", fontFamily: "Playfair Display, serif" }}>
-          {giftData.receiver}
-        </strong>
-        <span style={{ display: "block", fontSize: "17px", color: "var(--theme-text-muted, var(--text-soft))", margin: "8px 0 18px", fontFamily: "Playfair Display, serif" }}>
-          {giftData.bankName}
-        </span>
-        <code style={{ 
-          display: "block", 
-          fontSize: "18px", 
-          wordBreak: "break-all", 
-          backgroundColor: "var(--theme-surface, #ffffff)", 
-          padding: "14px", 
-          borderRadius: "12px", 
-          border: "1px solid color-mix(in srgb, var(--amp-color) 30%, transparent)", 
-          color: "var(--theme-text-main, var(--text))", 
-          fontFamily: "monospace", 
-          letterSpacing: "1px" 
-        }}>
-          {giftData.iban}
-        </code>
+      <div className="gift-card">
+        <strong className="gift-card-receiver">{giftData.receiver}</strong>
+        <span className="gift-card-bank">{giftData.bankName}</span>
+        <code className="gift-card-iban">{giftData.iban}</code>
       </div>
       
-      <button type="button" className="main-button" onClick={copyIban} style={{ margin: "0 auto", display: "block", minWidth: "200px" }}>
+      <button type="button" className="main-button gift-copy-button" onClick={copyIban}>
         {copied ? (isEn ? "Copied! ✓" : "IBAN Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
       </button>
     </section>

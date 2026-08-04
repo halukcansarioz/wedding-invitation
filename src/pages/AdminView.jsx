@@ -1,6 +1,6 @@
 import React from "react";
 import AdminDashboard from "../components/AdminDashboard";
-import { renderAdminActivePanel } from "../components/admin/AdminTabPanels";
+import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
 
 export default function AdminView(props) {
   const adminTabs = [
@@ -51,7 +51,6 @@ export default function AdminView(props) {
       setAdminLoginNotice={props.setAdminLoginNotice}
       setRecoveryPassword={props.setRecoveryPassword}
       setRecoveryPasswordAgain={props.setRecoveryPasswordAgain}
-      setRecoveryMessage={props.setRecoveryMessage}
       setForgotPasswordMessage={props.setForgotPasswordMessage}
       submitAdminPassword={props.submitAdminPassword}
       completePasswordRecovery={props.completePasswordRecovery}
@@ -61,7 +60,7 @@ export default function AdminView(props) {
       resetSiteContent={props.resetSiteContent}
       logoutAdmin={props.logoutAdmin}
       closeAdminPage={props.closeAdminPage}
-      renderAdminActivePanel={() => renderAdminActivePanel(props)}
+      renderAdminActivePanel={() => <AdminPanelContent {...props} />}
     />
   );
 }

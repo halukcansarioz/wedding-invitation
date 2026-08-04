@@ -26,11 +26,11 @@ export function useAudio(musicFile) {
         musicIntervalRef.current = null;
       }
       if (musicGainRef.current) {
-        try { musicGainRef.current.disconnect(); } catch (e) {}
+        try { musicGainRef.current.disconnect(); } catch {}
         musicGainRef.current = null;
       }
       if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-        try { audioContextRef.current.close(); } catch (e) {}
+        try { audioContextRef.current.close(); } catch {}
         audioContextRef.current = null;
       }
       setIsMusicPlaying(false);
@@ -48,7 +48,7 @@ export function useAudio(musicFile) {
       musicIntervalRef.current = null;
     }
     if (musicGainRef.current) {
-      try { musicGainRef.current.disconnect(); } catch (e) {}
+      try { musicGainRef.current.disconnect(); } catch {}
       musicGainRef.current = null;
     }
     setIsMusicPlaying(false);
@@ -130,7 +130,7 @@ export function useAudio(musicFile) {
           musicIntervalRef.current = null;
         }
         if (musicGainRef.current) {
-          try { musicGainRef.current.disconnect(); } catch (e) {}
+          try { musicGainRef.current.disconnect(); } catch {}
           musicGainRef.current = null;
         }
         try {

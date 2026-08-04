@@ -2,16 +2,70 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { OptionGroup } from "../common/UIComponents";
-import { getGuestNameFromUrl } from "../../utils/helpers";
 import {
   NOTE_MAX_LENGTH,
   WISH_MAX_LENGTH,
-  ATTENDANCE_OPTIONS,
-  PERSON_COUNT_OPTIONS,
-  SIDE_OPTIONS,
-  CHILD_OPTIONS,
-  DEFAULT_SITE_DATA
+  ATTENDANCE_OPTIONS
 } from "../../config/constants";
+
+function DeadlineBanner({ isEn, title, text }) {
+  return (
+    <div className="rsvp-deadline-banner">
+      <div className="deadline-icon">⏳</div>
+      <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
+      <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
+    </div>
+  );
+}
+
+function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied }) {
+  if (!showDeclineModal) return null;
+
+  return createPortal(
+    <div onClick={resetAndCloseModal} className="app-modal-backdrop">
+      <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
+        <div className="app-modal-icon">💌</div>
+        <div className="app-modal-content">
+          <h3>{isEn ? "We'll Miss You!" : copy?.declineTitle || "Çok Üzüldük!"}</h3>
+          <p className="deadline-text modal-message">
+            {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook." : "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilirsiniz."}
+          </p>
+        </div>
+
+        {!showDeclineGift ? (
+          <div className="app-modal-actions">
+            <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>
+              {isEn ? "Close" : "Tamam"}
+            </button>
+            {showIban && giftData && (
+              <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}>
+                <span className="modal-button-icon">🎁</span>
+                <span>{isEn ? "Would you like to send a gift?" : "Hediye Göndermek İster misiniz?"}</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="app-modal-content">
+            <div className="modal-gift-card">
+              <strong className="modal-gift-receiver">{giftData.receiver}</strong>
+              <span className="modal-gift-bank">{giftData.bankName}</span>
+              <code className="modal-gift-iban">{giftData.iban}</code>
+            </div>
+            <div className="app-modal-actions">
+              <button type="button" className="main-button" onClick={copyIban}>
+                {copied ? (isEn ? "Copied! ✓" : "Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
+              </button>
+              <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>
+                {isEn ? "Close" : "Kapat"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+}
 
 export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, submitGuest, invitation, rsvpWhatsappText, showIban, giftData }) {
   const { t, i18n } = useTranslation();
@@ -77,19 +131,11 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
       <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
       
       {isDeadlinePassed ? (
-        <div style={{ margin: "32px auto 0", padding: "34px 24px", background: "var(--theme-surface-soft, #fff7f9)", border: "1.5px dashed var(--amp-color)", borderRadius: "24px", maxWidth: "620px", textAlign: "center", boxShadow: "0 10px 25px rgba(0,0,0,0.03)" }}>
-          <div style={{ fontSize: "40px", marginBottom: "10px" }}>⏳</div>
-          <h3 style={{ color: "var(--amp-color)", margin: "0 0 10px", fontFamily: "Playfair Display, serif", fontSize: "24px", fontWeight: "800" }}>
-            {isEn ? t('invitation.deadlineTitle') : (copy?.deadlineTitle || "Form Kapatıldı")}
-          </h3>
-          <p style={{ fontSize: "16px", lineHeight: "1.7", color: "var(--theme-text-main)", margin: "0 auto", fontFamily: "Playfair Display, serif", fontWeight: "600", maxWidth: "520px" }}>
-            {isEn ? t('invitation.deadlineText') : (copy?.deadlineText || "Form süresi dolmuştur.")}
-          </p>
-        </div>
+        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
         <form className="rsvp-form" onSubmit={handleFormSubmit}>
           {urlGuestName && (
-            <div style={{ background: "color-mix(in srgb, var(--amp-color) 8%, transparent)", border: "1px dashed color-mix(in srgb, var(--amp-color) 35%, transparent)", padding: "12px 18px", borderRadius: "16px", color: "var(--amp-color)", fontSize: "15px", fontWeight: "700", textAlign: "center", marginBottom: "8px", fontFamily: "Playfair Display, serif" }}>
+            <div className="guest-badge-banner">
               ✨ {isEn ? `Dear ${urlGuestName}, this form is pre-filled for you.` : `Sevgili ${urlGuestName}, form senin için otomatik dolduruldu.`}
             </div>
           )}
@@ -106,81 +152,13 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         </form>
       )}
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', marginTop: '18px' }}>
-        <a className="secondary-button" style={{ minWidth: "220px", margin: 0 }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+      <div className="rsvp-actions">
+        <a className="secondary-button rsvp-whatsapp-button" href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
           {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
         </a>
       </div>
 
-      {showDeclineModal && typeof document !== 'undefined' && createPortal(
-        <div onClick={resetAndCloseModal} style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2147483647, backgroundColor: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}>
-          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: "var(--theme-surface)", borderRadius: "24px", width: "90%", maxWidth: "450px", textAlign: "center", padding: "clamp(24px, 6vw, 40px) clamp(16px, 5vw, 24px)", border: "2px solid var(--amp-color)", position: "relative", boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}>
-            
-            <div style={{ fontSize: "clamp(36px, 8vw, 48px)", marginBottom: "20px", lineHeight: "1" }}>💌</div>
-            
-            <h3 style={{ color: "var(--amp-color)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "clamp(20px, 5vw, 24px)", fontWeight: "800" }}>
-              {isEn ? "We'll Miss You!" : copy?.declineTitle || "Çok Üzüldük!"}
-            </h3>
-            <p style={{ fontSize: "clamp(14px, 3.5vw, 16px)", lineHeight: "1.6", color: "var(--theme-text-main)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook." : "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilirsiniz."}
-            </p>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
-              {!showDeclineGift ? (
-                <>
-                  <button type="button" className="secondary-button" onClick={resetAndCloseModal} style={{ margin: 0, width: "100%", padding: "12px", fontSize: "clamp(14px, 3.5vw, 15px)" }}>
-                    {isEn ? "Close" : "Tamam"}
-                  </button>
-                  {showIban && giftData && (
-                    <button 
-                      type="button" 
-                      className="main-button" 
-                      onClick={() => setShowDeclineGift(true)} 
-                      style={{ 
-                        margin: 0, 
-                        width: "100%", 
-                        padding: "12px", 
-                        fontSize: "clamp(14px, 3.5vw, 15px)",
-                        display: "flex", 
-                        alignItems: "center", 
-                        justifyContent: "center", 
-                        gap: "8px"
-                      }}
-                    >
-                      <span style={{ fontSize: "18px", lineHeight: "1" }}>🎁</span>
-                      <span>{isEn ? "Would you like to send a gift?" : "Hediye Göndermek İster misiniz?"}</span>
-                    </button>
-                  )}
-                </>
-              ) : (
-                <div style={{ textAlign: "center", animation: "adminFadeUp 0.4s ease", width: "100%" }}>
-                  <div style={{ backgroundColor: "var(--theme-surface-soft)", padding: "16px", borderRadius: "16px", border: "1.5px dashed color-mix(in srgb, var(--amp-color) 60%, transparent)", marginBottom: "16px" }}>
-                    <strong style={{ display: "block", fontSize: "clamp(16px, 4vw, 18px)", color: "var(--amp-color)", fontFamily: "Playfair Display, serif" }}>
-                      {giftData.receiver}
-                    </strong>
-                    <span style={{ display: "block", fontSize: "clamp(13px, 3.5vw, 15px)", color: "var(--theme-text-muted)", margin: "4px 0 12px", fontFamily: "Playfair Display, serif" }}>
-                      {giftData.bankName}
-                    </span>
-                    <code style={{ display: "block", fontSize: "clamp(12px, 3.5vw, 15px)", wordBreak: "break-all", backgroundColor: "var(--theme-surface)", padding: "10px", borderRadius: "8px", border: "1px solid color-mix(in srgb, var(--amp-color) 30%, transparent)", color: "var(--theme-text-main)", fontFamily: "monospace" }}>
-                      {giftData.iban}
-                    </code>
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%" }}>
-                    <button type="button" className="main-button" onClick={copyIban} style={{ margin: 0, width: "100%", padding: "12px", fontSize: "clamp(14px, 3.5vw, 15px)" }}>
-                      {copied ? (isEn ? "Copied! ✓" : "Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
-                    </button>
-                    <button type="button" className="secondary-button" onClick={resetAndCloseModal} style={{ margin: 0, width: "100%", padding: "12px", fontSize: "clamp(14px, 3.5vw, 15px)" }}>
-                      {isEn ? "Close" : "Kapat"}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-          </div>
-        </div>,
-        document.body
-      )}
+      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} />
     </section>
   );
 }
@@ -198,14 +176,14 @@ export function GuestsListSection({ copy, guests }) {
       <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
       <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
-      <div className="guest-stats" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+      <div className="guest-stats">
         <div><strong>{guestList.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
         <div><strong>{attendingCount}</strong><span>{isEn ? "Attending" : "Katılacak"}</span></div>
         <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
       </div>
       
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", marginTop: "24px", padding: "22px 18px", background: "var(--paper-soft)", borderRadius: "16px", border: "1px dashed var(--border)", minHeight: "80px" }}>
-        <p style={{ margin: 0, fontSize: "15px", lineHeight: "1.6", color: "var(--text-soft)", fontStyle: "italic", width: "100%" }}>
+      <div className="private-note-card">
+        <p className="private-note-text">
           🔒 {isEn ? "Guest list and RSVP details are kept private and can only be viewed by the bride and groom." : "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir."}
         </p>
       </div>

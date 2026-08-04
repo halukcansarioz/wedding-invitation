@@ -1709,6 +1709,46 @@ html[data-theme="minimal"] body {
   font-weight: 800;
 }
 
+/* Gift section: center IBAN and copy button like design */
+.gift-description {
+  max-width: 900px;
+  margin: 12px auto 18px;
+  color: var(--text-soft);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.gift-card {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.gift-card code,
+.modal-gift-iban,
+.modal-gift-iban code {
+  background: #0f0f0f;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
+  font-size: 15px;
+}
+
+.gift-copy-button {
+  display: block;
+  margin: 22px auto 0;
+  min-width: 220px;
+  padding: 18px 42px;
+  font-size: 18px;
+  border-radius: 999px;
+  box-shadow: 0 18px 42px rgba(111,47,67,0.14);
+}
+
 .admin-field select,
 .admin-toolbar select,
 .admin-toolbar input,
@@ -1873,3 +1913,50 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
   border-color: rgba(255, 255, 255, 0.6) !important;
   transform: scale(1.08) !important;
 }
+
+/* Gallery lightbox styles (fallback if not present in base.css) */
+.gallery-lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 6, 8, 0.9);
+  z-index: 10000;
+  padding: 18px;
+}
+
+.gallery-lightbox-content {
+  position: relative;
+  max-width: min(1200px, 96vw);
+  max-height: 92vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-lightbox-image {
+  max-width: 100%;
+  max-height: 86vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.6);
+}
+
+.gallery-lightbox-caption {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  background: rgba(0,0,0,0.32);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.gallery-lightbox-overlay .lightbox-control-btn { z-index: 10001 !important; }
+.lightbox-prev { left: 18px; top: 50%; transform: translateY(-50%); }
+.lightbox-next { right: 18px; top: 50%; transform: translateY(-50%); }
+.lightbox-close { position: absolute; right: 18px; top: 18px; }

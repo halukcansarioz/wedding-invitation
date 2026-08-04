@@ -1,14 +1,14 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
-import { AppModal } from "./components/AppModal";
 import { useAdminSession } from "./hooks/useAdminSession";
 import { useCountdown } from "./hooks/useCountdown";
 import { useAudio } from "./hooks/useAudio";
 import IntroPage from "./components/invitation/IntroPage";
-import InvitationView from "./pages/InvitationView";
-import AdminView from "./pages/AdminView";
+
+const InvitationView = lazy(() => import("./pages/InvitationView"));
+const AdminView = lazy(() => import("./pages/AdminView"));
 import {
   DEFAULT_WEDDING_MUSIC_FILE,
   DEFAULT_WEDDING_MUSIC_NAME,
@@ -16,8 +16,7 @@ import {
   THEME_DEFAULT_IMAGES,
   MAX_AUDIO_FILE_SIZE,
   INITIAL_GUEST_FORM,
-  INITIAL_WISH_FORM,
-  DEFAULT_SITE_DATA
+  INITIAL_WISH_FORM
 } from "./config/constants";
 import {
   getFaviconUrl,
@@ -908,109 +907,111 @@ function App() {
       )}
 
       {isAdminPage ? (
-        <AdminView
-          isAdminUnlocked={isAdminUnlocked}
-          isPasswordRecovery={isPasswordRecovery}
-          showForgotPassword={showForgotPassword}
-          adminEmail={adminEmail}
-          adminPassword={adminPassword}
-          recoveryPassword={recoveryPassword}
-          recoveryPasswordAgain={recoveryPasswordAgain}
-          recoveryLoading={recoveryLoading}
-          recoveryMessage={recoveryMessage}
-          forgotPasswordEmail={forgotPasswordEmail}
-          forgotPasswordLoading={forgotPasswordLoading}
-          forgotPasswordMessage={forgotPasswordMessage}
-          adminAuthLoading={adminAuthLoading}
-          adminLoginNotice={adminLoginNotice}
-          adminError={adminError}
-          adminSaveMessage={adminSaveMessage}
-          activeAdminTab={activeAdminTab}
-          setAdminEmail={setAdminEmail}
-          setAdminPassword={setAdminPassword}
-          setForgotPasswordEmail={setForgotPasswordEmail}
-          setShowForgotPassword={setShowForgotPassword}
-          setAdminError={setAdminError}
-          setAdminLoginNotice={setAdminLoginNotice}
-          setRecoveryPassword={setRecoveryPassword}
-          setRecoveryPasswordAgain={setRecoveryPasswordAgain}
-          setRecoveryMessage={setRecoveryMessage}
-          setForgotPasswordMessage={setForgotPasswordMessage}
-          submitAdminPassword={submitAdminPassword}
-          completePasswordRecovery={completePasswordRecovery}
-          sendPasswordResetEmail={sendPasswordResetEmail}
-          openAdminTab={openAdminTab}
-          saveSiteContent={saveSiteContent}
-          resetSiteContent={resetSiteContent}
-          logoutAdmin={logoutAdmin}
-          closeAdminPage={closeAdminPage}
-          adminDraft={adminDraft}
-          updateDraftObject={updateDraftObject}
-          handleThemeChange={handleThemeChange}
-          changeAdminPassword={changeAdminPassword}
-          adminCurrentPassword={adminCurrentPassword}
-          setAdminCurrentPassword={setAdminCurrentPassword}
-          adminNewPassword={adminNewPassword}
-          setAdminNewPassword={setAdminNewPassword}
-          adminNewPasswordAgain={adminNewPasswordAgain}
-          setAdminNewPasswordAgain={setAdminNewPasswordAgain}
-          adminPasswordMessage={adminPasswordMessage}
-          removeDraftArrayItem={removeDraftArrayItem}
-          updateDraftArrayItem={updateDraftArrayItem}
-          addDraftArrayItem={addDraftArrayItem}
-          updateDraftImage={updateDraftImage}
-          clearDraftImage={clearDraftImage}
-          updateDraftMusic={updateDraftMusic}
-          clearDraftMusic={clearDraftMusic}
-          updateGalleryImageFile={updateGalleryImageFile}
-          removeGalleryItem={removeGalleryItem}
-          addGalleryItem={addGalleryItem}
-          guests={guests}
-          totalPersonCount={totalPersonCount}
-          notAttendingCount={notAttendingCount}
-          childGuestCount={childGuestCount}
-          brideSideCount={brideSideCount}
-          groomSideCount={groomSideCount}
-          adminGuestSearch={adminGuestSearch}
-          setAdminGuestSearch={setAdminGuestSearch}
-          adminGuestAttendanceFilter={adminGuestAttendanceFilter}
-          setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
-          adminGuestSideFilter={adminGuestSideFilter}
-          setAdminGuestSideFilter={setAdminGuestSideFilter}
-          adminGuestChildFilter={adminGuestChildFilter}
-          setAdminGuestChildFilter={setAdminGuestChildFilter}
-          exportGuestsExcel={exportGuestsExcel}
-          exportGuestsCsv={exportGuestsCsv}
-          filteredGuests={filteredGuests}
-          editGuest={editGuest}
-          deleteGuest={deleteGuest}
-          clearGuests={clearGuests}
-          wishes={wishes}
-          adminWishSearch={adminWishSearch}
-          setAdminWishSearch={setAdminWishSearch}
-          adminWishStatusFilter={adminWishStatusFilter}
-          setAdminWishStatusFilter={setAdminWishStatusFilter}
-          exportWishesExcel={exportWishesExcel}
-          exportWishesCsv={exportWishesCsv}
-          filteredWishes={filteredWishes}
-          toggleWishApproval={toggleWishApproval}
-          editWish={editWish}
-          deleteWish={deleteWish}
-          clearWishes={clearWishes}
-          qrImageUrl={qrImageUrl}
-          downloadQrCode={downloadQrCode}
-          copyAdminLink={copyAdminLink}
-          currentShareLink={currentShareLink}
-          personalLinkName={personalLinkName}
-          setPersonalLinkName={setPersonalLinkName}
-          personalGuestLink={personalGuestLink}
-          exportAllDataJson={exportAllDataJson}
-          dataImportText={dataImportText}
-          setDataImportText={setDataImportText}
-          importAllDataJson={importAllDataJson}
-          toggleMusic={toggleMusic}
-          isMusicPlaying={isMusicPlaying}
-        />
+        <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
+          <AdminView
+            isAdminUnlocked={isAdminUnlocked}
+            isPasswordRecovery={isPasswordRecovery}
+            showForgotPassword={showForgotPassword}
+            adminEmail={adminEmail}
+            adminPassword={adminPassword}
+            recoveryPassword={recoveryPassword}
+            recoveryPasswordAgain={recoveryPasswordAgain}
+            recoveryLoading={recoveryLoading}
+            recoveryMessage={recoveryMessage}
+            forgotPasswordEmail={forgotPasswordEmail}
+            forgotPasswordLoading={forgotPasswordLoading}
+            forgotPasswordMessage={forgotPasswordMessage}
+            adminAuthLoading={adminAuthLoading}
+            adminLoginNotice={adminLoginNotice}
+            adminError={adminError}
+            adminSaveMessage={adminSaveMessage}
+            activeAdminTab={activeAdminTab}
+            setAdminEmail={setAdminEmail}
+            setAdminPassword={setAdminPassword}
+            setForgotPasswordEmail={setForgotPasswordEmail}
+            setShowForgotPassword={setShowForgotPassword}
+            setAdminError={setAdminError}
+            setAdminLoginNotice={setAdminLoginNotice}
+            setRecoveryPassword={setRecoveryPassword}
+            setRecoveryPasswordAgain={setRecoveryPasswordAgain}
+            setRecoveryMessage={setRecoveryMessage}
+            setForgotPasswordMessage={setForgotPasswordMessage}
+            submitAdminPassword={submitAdminPassword}
+            completePasswordRecovery={completePasswordRecovery}
+            sendPasswordResetEmail={sendPasswordResetEmail}
+            openAdminTab={openAdminTab}
+            saveSiteContent={saveSiteContent}
+            resetSiteContent={resetSiteContent}
+            logoutAdmin={logoutAdmin}
+            closeAdminPage={closeAdminPage}
+            adminDraft={adminDraft}
+            updateDraftObject={updateDraftObject}
+            handleThemeChange={handleThemeChange}
+            changeAdminPassword={changeAdminPassword}
+            adminCurrentPassword={adminCurrentPassword}
+            setAdminCurrentPassword={setAdminCurrentPassword}
+            adminNewPassword={adminNewPassword}
+            setAdminNewPassword={setAdminNewPassword}
+            adminNewPasswordAgain={adminNewPasswordAgain}
+            setAdminNewPasswordAgain={setAdminNewPasswordAgain}
+            adminPasswordMessage={adminPasswordMessage}
+            removeDraftArrayItem={removeDraftArrayItem}
+            updateDraftArrayItem={updateDraftArrayItem}
+            addDraftArrayItem={addDraftArrayItem}
+            updateDraftImage={updateDraftImage}
+            clearDraftImage={clearDraftImage}
+            updateDraftMusic={updateDraftMusic}
+            clearDraftMusic={clearDraftMusic}
+            updateGalleryImageFile={updateGalleryImageFile}
+            removeGalleryItem={removeGalleryItem}
+            addGalleryItem={addGalleryItem}
+            guests={guests}
+            totalPersonCount={totalPersonCount}
+            notAttendingCount={notAttendingCount}
+            childGuestCount={childGuestCount}
+            brideSideCount={brideSideCount}
+            groomSideCount={groomSideCount}
+            adminGuestSearch={adminGuestSearch}
+            setAdminGuestSearch={setAdminGuestSearch}
+            adminGuestAttendanceFilter={adminGuestAttendanceFilter}
+            setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
+            adminGuestSideFilter={adminGuestSideFilter}
+            setAdminGuestSideFilter={setAdminGuestSideFilter}
+            adminGuestChildFilter={adminGuestChildFilter}
+            setAdminGuestChildFilter={setAdminGuestChildFilter}
+            exportGuestsExcel={exportGuestsExcel}
+            exportGuestsCsv={exportGuestsCsv}
+            filteredGuests={filteredGuests}
+            editGuest={editGuest}
+            deleteGuest={deleteGuest}
+            clearGuests={clearGuests}
+            wishes={wishes}
+            adminWishSearch={adminWishSearch}
+            setAdminWishSearch={setAdminWishSearch}
+            adminWishStatusFilter={adminWishStatusFilter}
+            setAdminWishStatusFilter={setAdminWishStatusFilter}
+            exportWishesExcel={exportWishesExcel}
+            exportWishesCsv={exportWishesCsv}
+            filteredWishes={filteredWishes}
+            toggleWishApproval={toggleWishApproval}
+            editWish={editWish}
+            deleteWish={deleteWish}
+            clearWishes={clearWishes}
+            qrImageUrl={qrImageUrl}
+            downloadQrCode={downloadQrCode}
+            copyAdminLink={copyAdminLink}
+            currentShareLink={currentShareLink}
+            personalLinkName={personalLinkName}
+            setPersonalLinkName={setPersonalLinkName}
+            personalGuestLink={personalGuestLink}
+            exportAllDataJson={exportAllDataJson}
+            dataImportText={dataImportText}
+            setDataImportText={setDataImportText}
+            importAllDataJson={importAllDataJson}
+            toggleMusic={toggleMusic}
+            isMusicPlaying={isMusicPlaying}
+          />
+        </Suspense>
       ) : !opened ? (
         <IntroPage
           isOpening={isOpening}
@@ -1020,34 +1021,36 @@ function App() {
           openInvitation={openInvitation}
         />
       ) : (
-        <InvitationView
-          siteData={siteData}
-          settings={settings}
-          invitation={invitation}
-          copy={copy}
-          familyInfo={familyInfo}
-          coupleName={coupleName}
-          guestGreeting={guestGreeting}
-          timeLeft={timeLeft}
-          googleCalendarLink={googleCalendarLink}
-          qrImageUrl={qrImageUrl}
-          shareText={shareText}
-          copyInvitationLink={copyInvitationLink}
-          guestForm={guestForm}
-          handleGuestChange={handleGuestChange}
-          updateAttendance={updateAttendance}
-          setGuestForm={setGuestForm}
-          isAttending={isAttending}
-          submitGuest={submitGuest}
-          rsvpWhatsappText={rsvpWhatsappText}
-          guests={guests}
-          totalPersonCount={totalPersonCount}
-          notAttendingCount={notAttendingCount}
-          wishForm={wishForm}
-          handleWishChange={handleWishChange}
-          submitWish={submitWish}
-          approvedWishes={approvedWishes}
-        />
+        <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
+          <InvitationView
+            siteData={siteData}
+            settings={settings}
+            invitation={invitation}
+            copy={copy}
+            familyInfo={familyInfo}
+            coupleName={coupleName}
+            guestGreeting={guestGreeting}
+            timeLeft={timeLeft}
+            googleCalendarLink={googleCalendarLink}
+            qrImageUrl={qrImageUrl}
+            shareText={shareText}
+            copyInvitationLink={copyInvitationLink}
+            guestForm={guestForm}
+            handleGuestChange={handleGuestChange}
+            updateAttendance={updateAttendance}
+            setGuestForm={setGuestForm}
+            isAttending={isAttending}
+            submitGuest={submitGuest}
+            rsvpWhatsappText={rsvpWhatsappText}
+            guests={guests}
+            totalPersonCount={totalPersonCount}
+            notAttendingCount={notAttendingCount}
+            wishForm={wishForm}
+            handleWishChange={handleWishChange}
+            submitWish={submitWish}
+            approvedWishes={approvedWishes}
+          />
+        </Suspense>
       )}
     </div>
   );
