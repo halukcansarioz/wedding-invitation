@@ -1382,6 +1382,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     top: 16px !important;
     left: 16px !important;
     padding: 6px !important;
+    display: none !important;
   }
 
   .admin-quick-access .admin-btn {
