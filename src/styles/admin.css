@@ -1435,6 +1435,26 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   max-height: 220px;
 }
 
+/* src/styles/admin.css dosyasına eklenecek / güncellenecek kural */
+.admin-page input:not([type="checkbox"]):not([type="radio"]),
+.admin-page textarea,
+.admin-toolbar input,
+.admin-content input {
+  border: 1.5px solid rgba(var(--theme-rgb, 159, 79, 104), 0.4) !important;
+  border-radius: 16px !important;
+  background: var(--paper, #fff) !important;
+  color: var(--text) !important;
+  outline: none !important;
+}
+
+.admin-page input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-page textarea:focus,
+.admin-toolbar input:focus,
+.admin-content input:focus {
+  border-color: var(--rose-dark) !important;
+  box-shadow: 0 0 0 4px rgba(var(--theme-rgb, 159, 79, 104), 0.15) !important;
+}
+
 @media (max-width: 900px) {
   .admin-gallery-upload-row {
     grid-template-columns: 1fr;

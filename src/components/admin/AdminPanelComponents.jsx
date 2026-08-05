@@ -177,7 +177,8 @@ export function AdminPanelContent({
   filteredWishes, toggleWishApproval, editWish, deleteWish, clearWishes,
   qrImageUrl, downloadQrCode, copyAdminLink, currentShareLink, 
   personalLinkName, setPersonalLinkName, exportAllDataJson, 
-  dataImportText, setDataImportText, importAllDataJson 
+  dataImportText, setDataImportText, importAllDataJson,
+  saveSiteContent
 }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
@@ -185,7 +186,7 @@ export function AdminPanelContent({
   switch (activeAdminTab) {
     case "general":
       return (
-        <AdminSection title="Genel Davetiye Bilgileri">
+        <AdminSection title="Genel Davetiye Bilgileri" onSave={saveSiteContent}>
           <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
             <AdminCheckbox checked={adminDraft.settings.visibility?.countdown ?? true} label="Geri Sayım bölümünü davetiyede göster" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.location ?? true} label="Tarih ve Konum (Harita) bölümünü davetiyede göster" onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
@@ -209,7 +210,7 @@ export function AdminPanelContent({
 
     case "visibility":
       return (
-        <AdminSection title={isEn ? "Section Visibility" : "Bölüm Görünürlüğü"}>
+        <AdminSection title={isEn ? "Section Visibility" : "Bölüm Görünürlüğü"} onSave={saveSiteContent}>
           <p className="admin-help-text">
             {isEn ? "You can toggle the visibility of sections on your invitation here." : "Davetiyenizde görünmesini istemediğiniz bölümleri buradan kapatabilirsiniz."}
           </p>
@@ -231,7 +232,7 @@ export function AdminPanelContent({
 
     case "theme":
       return (
-        <AdminSection title={isEn ? "Theme & Publishing Settings" : "Tema ve Yayın Ayarları"}>
+        <AdminSection title={isEn ? "Theme & Publishing Settings" : "Tema ve Yayın Ayarları"} onSave={saveSiteContent}>
           <p className="admin-help-text">
             {isEn 
               ? "When the theme changes, buttons, cards, text colors, backgrounds, and color overlays on hero images adjust accordingly." 
@@ -258,7 +259,7 @@ export function AdminPanelContent({
 
     case "security":
       return (
-        <AdminSection title={isEn ? "Admin Password" : "Admin Şifresi"}>
+        <AdminSection title={isEn ? "Admin Password" : "Admin Şifresi"} onSave={saveSiteContent}>
           <div className="admin-edit-grid">
             <AdminField label={isEn ? "Current Password" : "Mevcut Şifre"} onChange={setAdminCurrentPassword} value={adminCurrentPassword} type="password" />
             <AdminField label={isEn ? "New Password" : "Yeni Şifre"} onChange={setAdminNewPassword} value={adminNewPassword} type="password" />
@@ -273,7 +274,7 @@ export function AdminPanelContent({
 
     case "messages":
       return (
-        <AdminSection title={isEn ? "WhatsApp Messages" : "WhatsApp Mesajları"}>
+        <AdminSection title={isEn ? "WhatsApp Messages" : "WhatsApp Mesajları"} onSave={saveSiteContent}>
           <p className="admin-help-text">
             {isEn 
               ? "Edit default messages sent via invitation link or form. {couple} represents couple names, and {link} represents the invitation link." 
@@ -289,7 +290,7 @@ export function AdminPanelContent({
 
     case "copy":
       return (
-        <AdminSection title={isEn ? "Headings and Page Texts" : "Başlıklar ve Sayfa Metinleri"}>
+        <AdminSection title={isEn ? "Headings and Page Texts" : "Başlıklar ve Sayfa Metinleri"} onSave={saveSiteContent}>
           <p className="admin-help-text">
             {isEn ? "You can change all section titles and descriptions on your invitation here." : "Davetiyedeki tüm bölüm başlıklarını ve alt metinleri buradan değiştirebilirsiniz."}
           </p>
@@ -318,7 +319,7 @@ export function AdminPanelContent({
 
     case "family":
       return (
-        <AdminSection title={isEn ? "Family Information" : "Aile Bilgileri"}>
+        <AdminSection title={isEn ? "Family Information" : "Aile Bilgileri"} onSave={saveSiteContent}>
           <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
             <AdminCheckbox checked={adminDraft.settings.visibility?.family ?? true} label={isEn ? "Show Family Section on Invitation" : "Aile Bilgileri bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
           </div>
@@ -334,7 +335,7 @@ export function AdminPanelContent({
 
     case "ceremony":
       return (
-        <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"}>
+        <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"} onSave={saveSiteContent}>
           <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
             <AdminCheckbox checked={adminDraft.settings.visibility?.ceremony ?? true} label={isEn ? "Show Ceremony Section on Invitation" : "Nikah ve Düğün bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
           </div>
@@ -344,7 +345,25 @@ export function AdminPanelContent({
               <div key={index} className="admin-repeat-item">
                 <div className="admin-repeat-title">
                   <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
-                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => removeDraftArrayItem("eventDetails", index)}>{isEn ? "Delete" : "Sil"}</button>
+                  
+                  {/* BURAYA KAYDET VE SİL BUTONLARINI ALANIN SAĞINA YERLEŞTİRİYORUZ */}
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <button 
+                      type="button" 
+                      className="secondary-button small-admin-button" 
+                      onClick={saveSiteContent}
+                    >
+                      {isEn ? "Save" : "Kaydet"}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="secondary-button danger-button small-admin-button" 
+                      onClick={() => removeDraftArrayItem("eventDetails", index)}
+                    >
+                      {isEn ? "Delete" : "Sil"}
+                    </button>
+                  </div>
+
                 </div>
                 <div className="admin-edit-grid">
                   <AdminField label={isEn ? "Title" : "Başlık"} value={event.label} onChange={(v) => updateDraftArrayItem("eventDetails", index, "label", v)} placeholder="Örn: Nikah Töreni" />
@@ -361,7 +380,7 @@ export function AdminPanelContent({
 
     case "schedule":
       return (
-        <AdminSection title={isEn ? "Wedding Schedule (Timeline)" : "Düğün Programı (Akış)"}>
+        <AdminSection title={isEn ? "Wedding Schedule (Timeline)" : "Düğün Programı (Akış)"} onSave={saveSiteContent}>
           <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
             <AdminCheckbox checked={adminDraft.settings.visibility?.schedule ?? true} label={isEn ? "Show Schedule Section on Invitation" : "Düğün Takvimi bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
           </div>
@@ -371,7 +390,25 @@ export function AdminPanelContent({
               <div key={index} className="admin-repeat-item">
                 <div className="admin-repeat-title">
                   <strong>{isEn ? `Program ${index + 1}` : `Program ${index + 1}`}</strong>
-                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => removeDraftArrayItem("scheduleItems", index)}>{isEn ? "Delete" : "Sil"}</button>
+                  
+                  {/* Program satırı için Kaydet ve Sil butonları */}
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <button 
+                      type="button" 
+                      className="secondary-button small-admin-button" 
+                      onClick={saveSiteContent}
+                    >
+                      {isEn ? "Save" : "Kaydet"}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="secondary-button danger-button small-admin-button" 
+                      onClick={() => removeDraftArrayItem("scheduleItems", index)}
+                    >
+                      {isEn ? "Delete" : "Sil"}
+                    </button>
+                  </div>
+
                 </div>
                 <div className="admin-edit-grid">
                   <AdminField label={isEn ? "Time" : "Saat"} value={item.time} onChange={(v) => updateDraftArrayItem("scheduleItems", index, "time", v)} placeholder="Örn: 18:30" />
@@ -387,7 +424,7 @@ export function AdminPanelContent({
 
     case "gallery":
       return (
-        <AdminSection title={isEn ? "Visuals and Music" : "Görsel ve Müzik"}>
+        <AdminSection title={isEn ? "Visuals and Music" : "Görsel ve Müzik"} onSave={saveSiteContent}>
           <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
             <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? true} label={isEn ? "Show Gallery Section on Invitation" : "Fotoğraf Galerisi bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
           </div>
@@ -402,7 +439,25 @@ export function AdminPanelContent({
               {(adminDraft.invitation?.gallery || []).map((imgUrl, index) => (
                 <div key={index} className="admin-gallery-upload-row">
                   <AdminImageField label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} value={imgUrl} onFileSelect={(e) => updateGalleryImageFile(index, e.target.files[0])} onClear={() => removeGalleryItem(index)} />
-                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => removeGalleryItem(index)}>{isEn ? "Delete" : "Sil"}</button>
+                  
+                  {/* Galeri fotoğrafı için Kaydet ve Sil butonları */}
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
+                    <button 
+                      type="button" 
+                      className="secondary-button small-admin-button" 
+                      onClick={saveSiteContent}
+                    >
+                      {isEn ? "Save" : "Kaydet"}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="secondary-button danger-button small-admin-button" 
+                      onClick={() => removeGalleryItem(index)}
+                    >
+                      {isEn ? "Delete" : "Sil"}
+                    </button>
+                  </div>
+
                 </div>
               ))}
               <button type="button" className="admin-add-button" onClick={addGalleryItem}>+ {isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
@@ -419,35 +474,50 @@ export function AdminPanelContent({
 
     case "qr":
       return (
-        <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"}>
+        <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"} onSave={saveSiteContent}>
           <p className="admin-help-text">{isEn ? "You can download the QR code or copy the link to share your invitation easily." : "Davetiyenizi kolayca paylaşmak için QR kodu indirebilir veya linki kopyalayabilirsiniz."}</p>
-          <div className="admin-qr-panel" style={{ alignItems: "stretch" }}>
-            <div style={{ display: "flex", flexDirection: "column", height: "100%", textAlign: "center" }}>
-              <img src={qrImageUrl} alt="QR Code" style={{ maxWidth: "100%", width: "100%", objectFit: "contain", borderRadius: "16px", marginBottom: "16px" }} />
-              <div style={{ marginTop: "auto" }}>
+          
+          {/* Yan yana iki sütunlu orijinal düzen */}
+          <div className="admin-qr-panel" style={{ display: "grid", gridTemplateName: "auto", gridTemplateColumns: "260px minmax(0, 1fr)", gap: "24px", alignItems: "stretch" }}>
+            
+            {/* Sol Sütun: QR Kod ve İndir Butonu */}
+            <div style={{ display: "flex", flexDirection: "column", height: "100%", textAlign: "center", background: "rgba(255,250,251,0.6)", padding: "20px", borderRadius: "22px", border: "1.5px solid rgba(159,79,104,0.18)" }}>
+              <img 
+                src={qrImageUrl} 
+                alt="QR Code" 
+                style={{ width: "100%", maxWidth: "180px", height: "180px", objectFit: "contain", borderRadius: "16px", margin: "0 auto 16px", background: "#fff", padding: "10px", border: "1px solid rgba(159,79,104,0.2)" }} 
+              />
+              <div style={{ marginTop: "auto", width: "100%" }}>
                 <button type="button" className="main-button" onClick={downloadQrCode} style={{ width: "100%", margin: 0 }}>{isEn ? "Download QR" : "QR İndir"}</button>
               </div>
             </div>
-            <div className="admin-link-preview-box" style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", gap: "16px" }}>
+
+            {/* Sağ Sütun: Link ve Kopyala Butonu */}
+            <div className="admin-link-preview-box" style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", gap: "16px", background: "rgba(255,250,251,0.6)", padding: "24px", borderRadius: "22px", border: "1.5px solid rgba(159,79,104,0.18)" }}>
               <div>
                 <span style={{ fontWeight: 800, color: "var(--rose-dark)", display: "block", marginBottom: "8px", fontSize: "16px" }}>{isEn ? "General Invitation Link" : "Genel Davetiye Linki"}</span>
                 <input value={currentShareLink} readOnly style={{ width: "100%", padding: "14px 16px", borderRadius: "14px", border: "1.5px solid rgba(159, 79, 104, 0.46)", background: "#fff9fb", fontWeight: "700", color: "var(--text)", outline: "none" }} />
                 <small style={{ display: "block", marginTop: "8px", fontSize: "14px", color: "var(--text-soft)", lineHeight: "1.5" }}>{isEn ? "You can copy this link and share it with everyone via WhatsApp or social media." : "Bu linki kopyalayıp WhatsApp veya sosyal medyadan herkesle paylaşabilirsiniz."}</small>
               </div>
-              <div className="admin-qr-actions" style={{ display: "flex", justifyContent: "center", paddingTop: "4px" }}>
+              <div className="admin-qr-actions" style={{ display: "flex", justifyContent: "flex-start", paddingTop: "4px" }}>
                 <button type="button" className="secondary-button" onClick={() => copyAdminLink(currentShareLink, isEn ? "Invitation link copied!" : "Davetiye linki kopyalandı!")} style={{ margin: 0 }}>{isEn ? "Copy Link" : "Linki Kopyala"}</button>
               </div>
             </div>
+
           </div>
         </AdminSection>
       );
-
+      
     case "personalLink":
-      return <PersonalLinkPanel currentShareLink={currentShareLink} copyAdminLink={copyAdminLink} personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} />;
-
+      return (
+        <AdminSection title="Kişiye Özel Akıllı Link Üretici" onSave={saveSiteContent}>
+          <PersonalLinkPanel currentShareLink={currentShareLink} copyAdminLink={copyAdminLink} personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} />
+        </AdminSection>
+    );
+    
     case "data":
       return (
-        <AdminSection title={isEn ? "Data Backup" : "Veri Yedeği"}>
+        <AdminSection title={isEn ? "Data Backup" : "Veri Yedeği"} onSave={saveSiteContent}>
           <p className="admin-help-text">{isEn ? "You can back up all your invitation data as a JSON file or restore an old backup with one click." : "Tüm davetiye verilerinizi (ayarlar, misafirler, mesajlar) tek tıkla JSON dosyası olarak yedekleyebilir veya eski bir yedeği geri yükleyebilirsiniz."}</p>
           <div className="admin-export-grid">
             <div className="admin-export-card">
@@ -466,7 +536,7 @@ export function AdminPanelContent({
       
     case "gift":
       return (
-        <AdminSection title={isEn ? "Gift & IBAN Details" : "Hediye & IBAN Bilgileri"}>
+        <AdminSection title={isEn ? "Gift & IBAN Details" : "Hediye & IBAN Bilgileri"} onSave={saveSiteContent}>
           <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
             <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label={isEn ? "Show Gift Section on Invitation" : "Bu bölümü (IBAN & Hediye) davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={isEn ? "Gift Button for Non-Attending (Modal)" : "Katılmayanlar İçin Hediye Butonu (Form Modalı)"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />

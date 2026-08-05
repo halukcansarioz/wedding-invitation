@@ -108,10 +108,21 @@ export function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
   );
 }
 
-export function AdminSection({ title, children }) {
+export function AdminSection({ title, children, onSave }) {
   return (
     <div className="admin-editor-section">
-      <h3>{title}</h3>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+        <h3 style={{ margin: 0 }}>{title}</h3>
+        {onSave && (
+          <button 
+            type="button" 
+            className="secondary-button small-admin-button" 
+            onClick={onSave}
+          >
+            Kaydet
+          </button>
+        )}
+      </div>
       {children}
     </div>
   );
