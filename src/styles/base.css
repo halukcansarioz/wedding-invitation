@@ -795,19 +795,13 @@ button {
   color: #9a6d78;
 }
 
-/* =================================================================
-   NOTUNUZ (TEXTAREA) KUTUSUNU KÜÇÜLTME VE DÜZENLEME
-   ================================================================= */
 .rsvp-form textarea,
 .wish-form textarea {
-  min-height: 80px !important; /* Orijinal 135px değerini ezer */
-  height: 80px !important; /* Kutunun standart yüksekliğini belirler */
-  padding: 14px 18px !important; /* İç boşlukları biraz daha dengeli hale getirir */
+  min-height: 80px !important; 
+  height: 80px !important; 
+  padding: 14px 18px !important; 
 }
 
-/* =================================================================
-   ADMİN PANELİ - TEMA SEÇİM KARTLARI DÜZENLEMESİ
-   ================================================================= */
 .theme-picker-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
@@ -818,7 +812,7 @@ button {
 .theme-option-card {
   position: relative !important;
   display: flex !important;
-  flex-direction: column !important; /* Elemanları yan yana değil, alt alta dizer */
+  flex-direction: column !important; 
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
@@ -830,7 +824,6 @@ button {
   transition: all 0.2s ease !important;
 }
 
-/* Renk Yuvarlağı (Swatch) */
 .theme-option-card .theme-swatch {
   width: 36px !important;
   height: 36px !important;
@@ -840,7 +833,6 @@ button {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Tema Adı */
 .theme-option-card strong {
   font-size: 16px !important;
   line-height: 1.25 !important;
@@ -849,7 +841,6 @@ button {
   color: var(--rose-deep) !important;
 }
 
-/* "Bu temayı kullan" / "Seçili tema" Yazısı */
 .theme-option-card small {
   font-size: 12px !important;
   opacity: 0.75 !important;
@@ -857,18 +848,16 @@ button {
   font-family: var(--sans) !important;
 }
 
-/* Seçili Tema Durumu (Kutu Kenarlığı ve Arka Plan) */
 .theme-option-card.active {
   border-color: var(--amp-color, #9f4f68) !important;
   background: color-mix(in srgb, var(--amp-color) 8%, transparent) !important;
   transform: translateY(-3px) scale(1.02) !important;
 }
 
-/* Seçili Temadaki Tik (✓) İşaretinin Konumu */
 .theme-option-card.active::after {
   content: "✓" !important;
   position: absolute !important;
-  top: -10px !important; /* Kartın sağ üst köşesine estetik bir şekilde oturtur */
+  top: -10px !important;
   right: -10px !important;
   width: 26px !important;
   height: 26px !important;
@@ -883,22 +872,17 @@ button {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* =================================================================
-   TEMA SEÇİM KARTINDA TİK (✓) İŞARETİNİN KESİLME HATASI ÇÖZÜMÜ
-   ================================================================= */
 .theme-option-card {
-  overflow: visible !important; /* Dışa taşan tik işaretinin kırpılmasını (kesilmesini) engeller */
+  overflow: visible !important; 
 }
 
 .theme-option-card.active::after {
-  z-index: 10 !important; /* Tik işaretinin diğer elemanların altında kalmamasını garanti eder */
+  z-index: 10 !important; 
   top: -10px !important; 
   right: -10px !important;
 }
 
-/* =========================================================
-   YÜZEN BUTONLAR (PAYLAŞ VE MÜZİK) - TEK VE KARARLI TANIM
-   ========================================================= */
+
 .floating-actions {
   position: fixed;
   top: 22px;
@@ -952,10 +936,6 @@ button {
   height: 30px;
 }
 
-/* =========================================================
-   ZARF İSİM ETİKETİ (ÖZEL DAVETLİLER İÇİN)
-   ========================================================= */
-
 .envelope-guest-badge {
   position: absolute !important;
   bottom: 24px !important;
@@ -972,7 +952,6 @@ button {
   color: var(--amp-color) !important;
   letter-spacing: 0.5px !important;
   
-  /* Başlangıçta tam görünür */
   opacity: 1 !important; 
   visibility: visible !important;
   
@@ -985,20 +964,14 @@ button {
   pointer-events: none !important;
   
   transform: translateZ(30px) !important;
-  /* Zarf açılırken (opening) ismin anında gitmesini engelliyoruz, animasyon süresiyle senkronize ediyoruz */
   transition: opacity 0.4s ease 0.8s, visibility 0.4s ease 0.8s !important;
 }
 
-/* Zarf açılış animasyonu başladıktan sonra bile yazı zarifle birlikte kalır, 
-   ancak zarf yukarı süzülüp biterken (yaklaşık 1.2 saniye sonra) kaybolur */
 .intro-page.opening .envelope-guest-badge {
   opacity: 0 !important;
   visibility: hidden !important;
 }
 
-/* =========================================================
-   MEDYA SORGULARI VE RESİZE (TABLET / MOBİL)
-   ========================================================= */
 @media (max-width: 900px) {
   .invitation-page {
     padding: 22px 16px 60px;
@@ -1185,10 +1158,6 @@ button {
   }
 }
 
-/* =========================================================
-   ✨ YENİ ELEGANT YÜZEN BUTONLAR (GLASSMORPHISM DOCK)
-   (Daha Sade, Minimal ve Rengi Azaltılmış Tasarım)
-   ========================================================= */
 .glass-dock {
   position: fixed !important;
   top: 50% !important;
@@ -1200,7 +1169,7 @@ button {
   align-items: center !important;
   gap: 12px !important;
   padding: 10px !important;
-  background: rgba(255, 255, 255, 0.25) !important; /* Kapsül çok daha şeffaf */
+  background: rgba(255, 255, 255, 0.25) !important; 
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
@@ -1209,7 +1178,7 @@ button {
 }
 
 .glass-dock .dock-btn {
-  width: 46px !important; /* Çok hafif küçülttük daha zarif dursun */
+  width: 46px !important; 
   height: 46px !important;
   min-width: 46px !important;
   border-radius: 50% !important;
@@ -1219,9 +1188,8 @@ button {
   padding: 0 !important;
   margin: 0 !important;
   
-  /* MİNİMALİST YAPI: Baskın renkler gitti, hafif buzlu cam efekti geldi */
   background: rgba(255, 255, 255, 0.4) !important;
-  color: var(--text-soft, #777) !important; /* Baskın tema rengi yerine yumuşak/gri ton */
+  color: var(--text-soft, #777) !important; 
   border: 1px solid rgba(255, 255, 255, 0.7) !important; 
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
   
@@ -1235,8 +1203,8 @@ button {
 
 .glass-dock .dock-btn:hover {
   transform: translateY(-3px) scale(1.05) !important;
-  background: #ffffff !important; /* Üzerine gelince tam beyaz */
-  color: var(--rose-dark, #9f4f68) !important; /* Tema rengi SADECE üzerine gelince belirsin */
+  background: #ffffff !important;
+  color: var(--rose-dark, #9f4f68) !important; 
   border-color: #ffffff !important;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
 }
@@ -1249,7 +1217,6 @@ button {
   transition: stroke 0.3s ease !important;
 }
 
-/* Koyu (Dark) Tema Uyumluluğu */
 [data-theme="dark"] .glass-dock {
   background: rgba(20, 15, 18, 0.2) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
@@ -1267,7 +1234,6 @@ button {
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Mobil Görünüm */
 @media (max-width: 650px) {
   .glass-dock {
     top: auto !important;
@@ -1280,12 +1246,10 @@ button {
   }
 }
 
-/* İçeriklerin Sırayla (Staggered) Aşağıdan Yukarı Süzülmesi */
 .hero-content > * {
   animation: heroFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-/* Her satırın geliş gecikmesi (Sırayla gelmeleri için) */
 .hero-content .small-title { animation-delay: 0.2s; }
 .hero-content .couple-title { animation-delay: 0.4s; }
 .hero-content .hero-date { animation-delay: 0.6s; }
@@ -1303,7 +1267,6 @@ button {
   }
 }
 
-/* Hareketli "Aşağı Kaydır" (Mouse) İkonu Tasarımı */
 .scroll-indicator {
   position: absolute;
   bottom: 40px;
@@ -1319,7 +1282,6 @@ button {
   font-weight: 700;
   letter-spacing: 3px;
   z-index: 10;
-  /* Tüm yazılar geldikten sonra en son bu ikon belirecek */
   animation: heroFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.2s both;
 }
 
@@ -1350,40 +1312,30 @@ button {
 
 @media (max-width: 650px) {
   .scroll-indicator {
-    bottom: 25px; /* Mobilde biraz daha aşağıda dursun */
+    bottom: 25px; 
   }
 }
 
-/* =========================================================
-   ✨ ADMİN PANELİ SİNEMATİK GİRİŞ ANİMASYONLARI
-   ========================================================= */
-
-/* 1. Admin kartının tamamı hafifçe büyüyerek ve şeffaflıktan çıkarak gelsin */
 .admin-shell-card {
   animation: adminScaleUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-/* 2. Üst başlık kısmı (Yönetim, Admin Panel vs.) aşağıdan süzülsün */
 .admin-page-header {
   animation: adminFadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
 }
 
-/* 3. Giriş / Şifre ekranı aşağıdan süzülsün */
 .admin-login {
   animation: adminFadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
 }
 
-/* 4. Sol menü (Sidebar) soldan sağa doğru zarifçe kaysın */
 .admin-sidebar {
   animation: adminFadeRight 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both;
 }
 
-/* 5. Sağ içerik paneli (ayarlar, formlar vs.) aşağıdan yukarı süzülsün */
 .admin-main-panel {
   animation: adminFadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s both;
 }
 
-/* Animasyon Tanımlamaları */
 @keyframes adminScaleUp {
   from { 
     opacity: 0; 
@@ -1417,9 +1369,6 @@ button {
   }
 }
 
-/* =========================================================
-   MÜZİK ÇALARKEN HAREKETLİ SES DALGASI / NABIZ EFEKTİ
-   ========================================================= */
 body .app .floating-actions button.music-toggle-button.music-on,
 body .app .glass-dock .dock-btn.music-on {
   animation: musicPulseGlow 1.8s infinite ease-in-out !important;
@@ -1443,7 +1392,7 @@ body .app .glass-dock .dock-btn.music-on {
 
 .lightbox-control-btn {
   position: absolute !important;
-  background: rgba(30, 30, 35, 0.78) !important; /* Koyu antrasit arka plan */
+  background: rgba(30, 30, 35, 0.78) !important; 
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   color: #ffffff !important;
   width: 52px !important;
@@ -1480,11 +1429,10 @@ button,
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  line-height: 1.15 !important; /* Playfair fontunun dikey kaymasını mükemmel dengeler */
-  gap: 8px !important; /* 🎁 veya WhatsApp ikonu ile metin arasına estetik boşluk bırakır */
+  line-height: 1.15 !important; 
+  gap: 8px !important; 
 }
 
-/* 2. ve 3. Resim: Form ve IBAN butonlarının bulunduğu alanı kaplaması/ortalanması için */
 .form-button,
 .rsvp-whatsapp-button,
 .gift-copy-button {
@@ -1493,13 +1441,12 @@ button,
   margin-right: auto !important;
 }
 
-/* 1. Resim: "Çok Üzüldük!" Modalındaki butonların yan yana orantılı durması için */
 .app-modal-actions {
   display: flex !important;
   flex-direction: column-reverse !important;
   gap: 12px !important;
-  margin: 24px 0 0 0 !important; /* Sadece üstten 24px boşluk */
-  padding: 0 !important; /* Alt boşluğu sıfırlar */
+  margin: 24px 0 0 0 !important; 
+  padding: 0 !important; 
 }
 
 .app-modal-actions .main-button,
@@ -1514,7 +1461,7 @@ button,
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  gap: 10px !important; /* Emoji ile yazı arasındaki boşluk */
+  gap: 10px !important; 
 }
 
 .app-modal-content,
@@ -1523,13 +1470,11 @@ button,
   box-sizing: border-box !important;
 }
 
-/* Başlığın başına CSS ile otomatik emoji ekler */
 .app-modal-content h3::before {
-  content: "🥺"; /* Buradaki emojiyi zevkinize göre 😔, 💔, 🥀 olarak değiştirebilirsiniz */
-  font-size: 1.1em; /* Emojinin boyutunu bir tık büyütür */
+  content: "🥺"; 
+  font-size: 1.1em; 
 }
 
-/* Başlık ortalanınca altındaki uzun metnin (paragrafın) de ortalanması daha şık durur */
 .app-modal-content .modal-message {
   text-align: center !important;
 }
@@ -1539,16 +1484,14 @@ button,
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  gap: 10px !important; /* Emoji ile yazı arasındaki boşluk */
+  gap: 10px !important; 
 }
 
-/* Tüm pop-up başlıklarının başına otomatik emoji ekler */
 .app-modal-content h3::before {
-  content: "✨"; /* Tüm modallarda görünecek evrensel emoji (🔔, 💌, 💎, 🥺 yapabilirsiniz) */
+  content: "✨";
   font-size: 1.1em;
 }
 
-/* Pop-up içindeki açıklama metinlerini de her zaman ortalar */
 .app-modal-content p,
 .app-modal-content .modal-message {
   text-align: center !important;
@@ -1562,14 +1505,13 @@ button,
   gap: 6px !important;
   margin: 20px auto 0 !important;
   padding: 18px !important;
-  /* Karta hafif bir arka plan ve kesik çizgili kenarlık vererek belirginleştiririz */
+
   background: var(--paper-soft) !important;
   border: 1.5px dashed color-mix(in srgb, var(--amp-color) 40%, transparent) !important;
   border-radius: 16px !important;
   width: 100% !important;
 }
 
-/* İsim formatı */
 .modal-gift-card .modal-gift-receiver {
   font-size: 20px !important;
   color: var(--rose-deep) !important;
@@ -1578,7 +1520,6 @@ button,
   margin: 0 !important;
 }
 
-/* Banka adı formatı */
 .modal-gift-card .modal-gift-bank {
   font-size: 15px !important;
   color: var(--text-soft) !important;
@@ -1587,7 +1528,6 @@ button,
   font-family: var(--sans) !important; 
 }
 
-/* Siyah IBAN kutusu formatı */
 .modal-gift-card .modal-gift-iban {
   font-size: 15px !important;
   text-align: center !important;
@@ -1601,17 +1541,17 @@ button,
 .gift-card .gift-card-iban,
 .modal-gift-iban code,
 .gift-card code {
-  background: var(--paper, #ffffff) !important; /* Temanın kendi yumuşak zemin rengi */
-  color: var(--rose-deep, #393545) !important; /* Temanın en koyu vurgu rengi */
-  border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent) !important; /* Temaya uygun şık çerçeve */
+  background: var(--paper, #ffffff) !important; 
+  color: var(--rose-deep, #393545) !important; 
+  border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent) !important; 
   border-radius: 12px !important;
   padding: 14px 10px !important;
   font-size: 16px !important;
   font-weight: 700 !important;
-  letter-spacing: 1.5px !important; /* Rakamların daha rahat okunması için aralarını açar */
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.03) !important; /* İçeriye doğru çok hafif ve şık bir gölge */
+  letter-spacing: 1.5px !important; 
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.03) !important; 
   display: block !important;
-  word-break: break-all !important; /* Mobilde dar ekranda taşmayı önler */
+  word-break: break-all !important;
 }
 
 .app-modal-backdrop {
@@ -1619,11 +1559,11 @@ button,
   inset: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  height: 100dvh !important; /* Mobilde adres çubuğu hesaba katılır */
+  height: 100dvh !important; 
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(0, 0, 0, 0.65) !important; /* Arka plan koyuluğu */
+  background: rgba(0, 0, 0, 0.65) !important; 
   z-index: 99999 !important;
   padding: 24px !important;
   box-sizing: border-box !important;
@@ -1631,14 +1571,13 @@ button,
 
 .app-modal-actions {
   display: flex !important;
-  flex-direction: column !important; /* Yönü normale çeviriyoruz */
+  flex-direction: column !important; 
   gap: 12px !important;
   margin: 24px 0 0 0 !important;
   padding: 0 !important;
   width: 100% !important;
 }
 
-/* Ana Eylem Butonu (Hediye Gönder / IBAN Kopyala) -> HER ZAMAN 1. SIRADA (ÜSTTE) */
 .app-modal-actions .main-button {
   order: 1 !important; 
   width: 100% !important;
@@ -1646,7 +1585,6 @@ button,
   min-height: 52px !important;
 }
 
-/* İkincil Eylem Butonu (Tamam / Kapat) -> HER ZAMAN 2. SIRADA (ALTTA) */
 .app-modal-actions .secondary-button {
   order: 2 !important; 
   width: 100% !important;
@@ -1656,24 +1594,22 @@ button,
 
 .gift-card {
   display: flex !important;
-  flex-direction: column !important; /* Yan yana durmayı iptal edip alt alta dizer */
+  flex-direction: column !important; 
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
   margin: 20px auto 0 !important;
   padding: 24px !important;
   
-  /* Arka planı hafif belirginleştirip kesik çizgili şık bir çerçeve ekler */
   background: var(--paper-soft) !important;
   border: 1.5px dashed color-mix(in srgb, var(--amp-color) 40%, transparent) !important;
   border-radius: 20px !important;
   
   width: 100% !important;
-  max-width: 420px !important; /* Masaüstünde devasa büyümesini engeller */
+  max-width: 420px !important; 
   box-sizing: border-box !important;
 }
 
-/* İsim formatı */
 .gift-card .gift-card-receiver {
   font-size: 22px !important;
   color: var(--rose-deep) !important;
@@ -1682,7 +1618,6 @@ button,
   line-height: 1.2 !important;
 }
 
-/* Banka adı formatı */
 .gift-card .gift-card-bank {
   font-size: 16px !important;
   color: var(--text-soft) !important;
@@ -1691,7 +1626,6 @@ button,
   font-family: var(--sans) !important; 
 }
 
-/* IBAN kutusunun genişlik ayarı */
 .gift-card .gift-card-iban {
   width: 100% !important;
   box-sizing: border-box !important;
@@ -1699,18 +1633,16 @@ button,
 }
 
 @media (max-width: 650px) {
-  /* 1. Arka planı kilitler ve tam ekranın merkezini buluruz */
   .app-modal-backdrop {
     position: fixed !important;
     inset: 0 !important;
-    height: 100dvh !important; /* Mobil tarayıcı barlarına göre gerçek yüksekliği hesaplar */
+    height: 100dvh !important; 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     padding: 24px !important;
   }
 
-  /* 2. Kartın alttan çıkma huylarını tamamen sıfırlarız */
 .app-modal-card {
   position: relative !important;
   display: flex !important;
@@ -1722,24 +1654,23 @@ button,
   bottom: auto !important;
   left: auto !important;
   right: auto !important;
-  transform: none !important; /* Kayma ve titremeyi önler */
+  transform: none !important; 
   width: 100% !important;
   max-width: 380px !important;
   height: auto !important;
-  min-height: 0 !important; /* Orijinalden gelen gereksiz yüksekliği yok eder */
+  min-height: 0 !important;
   max-height: 90vh !important;
   background: var(--paper, #fff) !important;
-  border-radius: 28px !important; /* 4 köşe eşit yuvarlanır */
-  padding: 36px 24px !important; /* İçeriğe nefes aldırır */
+  border-radius: 28px !important; 
+  padding: 36px 24px !important; 
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
   box-sizing: border-box !important;
   overflow-y: auto !important;
 }
 
-  /* 3. Butonların altındaki o gereksiz, kalın telefon boşluğunu (safe-area) sileriz */
   .app-modal-actions {
     margin-top: 24px !important;
     margin-bottom: 0 !important;
-    padding-bottom: 0 !important; /* Orijinal tasarımdan gelen gizli boşluğu yok eder */
+    padding-bottom: 0 !important; 
   }
 }
