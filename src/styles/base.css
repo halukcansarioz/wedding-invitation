@@ -1470,11 +1470,6 @@ button,
   box-sizing: border-box !important;
 }
 
-.app-modal-content h3::before {
-  content: "🥺"; 
-  font-size: 1.1em; 
-}
-
 .app-modal-content .modal-message {
   text-align: center !important;
 }
@@ -1537,6 +1532,11 @@ button,
   box-sizing: border-box !important;
 }
 
+.gift-card code, .modal-gift-iban code {
+    font-size: 14px !important;
+    letter-spacing: 0px !important;
+  }
+
 .app-modal-content .modal-gift-card .modal-gift-iban,
 .gift-card .gift-card-iban,
 .modal-gift-iban code,
@@ -1548,10 +1548,11 @@ button,
   padding: 14px 10px !important;
   font-size: 16px !important;
   font-weight: 700 !important;
-  letter-spacing: 1.5px !important; 
+  letter-spacing: 0.5px !important; 
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.03) !important; 
   display: block !important;
-  word-break: break-all !important;
+  word-break: normal !important; 
+  white-space: pre-wrap !important;
 }
 
 .app-modal-backdrop {
@@ -1673,4 +1674,25 @@ button,
     margin-bottom: 0 !important;
     padding-bottom: 0 !important; 
   }
+}
+
+/* Mesaj ve Not Alanındaki Karakter Sayacı Hizalaması */
+.field-with-counter {
+  position: relative;
+  width: 100%;
+}
+
+.field-with-counter textarea {
+  padding-bottom: 35px !important; /* Sayacın metnin üstüne binmemesi için alttan boşluk bırakıyoruz */
+}
+
+.field-with-counter span {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  right: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.6;
+  pointer-events: none; /* Sayacın üstüne tıklanmasını engeller */
 }
