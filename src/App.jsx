@@ -195,6 +195,10 @@ function App() {
   }, [activeTheme]);
 
   useEffect(() => {
+    document.title = `${invitation.bride} & ${invitation.groom} | ${isEn ? "Wedding Invitation" : "Düğün Davetiyesi"}`;
+  }, [invitation.bride, invitation.groom, isEn]);
+  
+  useEffect(() => {
     const syncAdminPage = () => {
       const adminRouteActive = isAdminRouteActive();
       setIsAdminPage(adminRouteActive);

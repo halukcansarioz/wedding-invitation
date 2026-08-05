@@ -27,63 +27,6 @@ export function AdminTextarea({ label, value, onChange, placeholder = "" }) {
   );
 }
 
-export function AdminDropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const selectedOption = options.find(
-    (option) => String(option.value) === String(value)
-  );
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const closeDropdown = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", closeDropdown);
-    return () => document.removeEventListener("mousedown", closeDropdown);
-  }, [isOpen]);
-
-  return (
-    <div className={`admin-custom-select ${isOpen ? "open" : ""}`} ref={dropdownRef}>
-      <button
-        type="button"
-        className="admin-custom-select-button"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <span>{selectedOption?.label || placeholder}</span>
-        <span className="admin-custom-select-arrow">⌄</span>
-      </button>
-
-      {isOpen && (
-        <div className="admin-custom-select-menu">
-          {options.map((option) => (
-            <button
-              type="button"
-              key={option.value}
-              className={
-                String(option.value) === String(value)
-                  ? "admin-custom-select-option selected"
-                  : "admin-custom-select-option"
-              }
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function AdminSelect({ label, value, options, onChange }) {
   return (
     <label className="admin-field">

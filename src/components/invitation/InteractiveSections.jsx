@@ -18,29 +18,28 @@ function DeadlineBanner({ isEn, title, text }) {
   );
 }
 
-function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied }) {
+function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) {
   if (!showDeclineModal) return null;
 
   return createPortal(
     <div onClick={resetAndCloseModal} className="app-modal-backdrop">
       <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
-        <div className="app-modal-icon">💌</div>
         <div className="app-modal-content">
-          <h3>{isEn ? "We'll Miss You!" : copy?.declineTitle || "Çok Üzüldük!"}</h3>
+          <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
           <p className="deadline-text modal-message">
-            {isEn ? "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook." : "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilirsiniz."}
+            {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
           </p>
         </div>
 
         {!showDeclineGift ? (
           <div className="app-modal-actions">
             <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>
-              {isEn ? "Close" : "Tamam"}
+              {t('ui.close')}
             </button>
             {showIban && giftData && (
               <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}>
                 <span className="modal-button-icon">🎁</span>
-                <span>{isEn ? "Would you like to send a gift?" : "Hediye Göndermek İster misiniz?"}</span>
+                <span>{t('ui.sendGift')}</span>
               </button>
             )}
           </div>
@@ -53,10 +52,10 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
             </div>
             <div className="app-modal-actions">
               <button type="button" className="main-button" onClick={copyIban}>
-                {copied ? (isEn ? "Copied! ✓" : "Kopyalandı ✓") : (isEn ? "Copy IBAN" : "IBAN'ı Kopyala")}
+                {copied ? t('ui.copied') : t('ui.copyIban')}
               </button>
               <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>
-                {isEn ? "Close" : "Kapat"}
+                {t('ui.closeBtn')}
               </button>
             </div>
           </div>
@@ -122,7 +121,7 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
     }
   };
 
-  const translatedAttendance = ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? "Attending" : "Not Attending") : opt.label }));
+  const translatedAttendance = ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label }));
 
   return (
     <section className="card rsvp-card">
@@ -136,29 +135,29 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         <form className="rsvp-form" onSubmit={handleFormSubmit}>
           {urlGuestName && (
             <div className="guest-badge-banner">
-              ✨ {isEn ? `Dear ${urlGuestName}, this form is pre-filled for you.` : `Sevgili ${urlGuestName}, form senin için otomatik dolduruldu.`}
+              {t('ui.prefilled', { name: urlGuestName })}
             </div>
           )}
 
-          <input name="name" value={guestForm.name || ""} onChange={handleGuestChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} required />
+          <input name="name" value={guestForm.name || ""} onChange={handleGuestChange} placeholder={t('form.namePlaceholder')} required />
 
           <OptionGroup onChange={updateAttendance} options={translatedAttendance} value={guestForm.attendance} />
 
           <div className="field-with-counter">
-            <textarea name="note" value={guestForm.note || ""} onChange={handleGuestChange} placeholder={isEn ? t('form.notePlaceholder') : "Notunuz"} maxLength={NOTE_MAX_LENGTH}></textarea>
+            <textarea name="note" value={guestForm.note || ""} onChange={handleGuestChange} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>
             <span>{(guestForm.note || "").length}/{NOTE_MAX_LENGTH}</span>
           </div>
-          <button type="submit" className="main-button form-button">{isEn ? t('form.submitRsvp') : "Gönder"}</button>
+          <button type="submit" className="main-button form-button">{t('form.submitRsvp')}</button>
         </form>
       )}
 
       <div className="rsvp-actions">
         <a className="secondary-button rsvp-whatsapp-button" href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-          {isEn ? t('form.whatsappRsvp') : "WhatsApp ile Bildir"}
+          {t('form.whatsappRsvp')}
         </a>
       </div>
 
-      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} />
+      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
     </section>
   );
 }
@@ -177,14 +176,14 @@ export function GuestsListSection({ copy, guests }) {
       <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
       <div className="guest-stats">
-        <div><strong>{guestList.length}</strong><span>{isEn ? "Total Responses" : "Toplam Yanıt"}</span></div>
-        <div><strong>{attendingCount}</strong><span>{isEn ? "Attending" : "Katılacak"}</span></div>
-        <div><strong>{notAttendingCount}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
+        <div><strong>{guestList.length}</strong><span>{t('ui.totalResponses')}</span></div>
+        <div><strong>{attendingCount}</strong><span>{t('ui.attending')}</span></div>
+        <div><strong>{notAttendingCount}</strong><span>{t('ui.notAttending')}</span></div>
       </div>
       
       <div className="private-note-card">
         <p className="private-note-text">
-          🔒 {isEn ? "Guest list and RSVP details are kept private and can only be viewed by the bride and groom." : "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir."}
+          🔒 {t('ui.privateNote')}
         </p>
       </div>
     </section>
@@ -201,16 +200,16 @@ export function WishesSection({ copy, wishForm, handleWishChange, submitWish, ap
       <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
       <form className="wish-form" onSubmit={submitWish}>
-        <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder={isEn ? t('form.namePlaceholder') : "Ad Soyad"} />
+        <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder={t('form.namePlaceholder')} />
         <div className="field-with-counter">
-          <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder={isEn ? t('form.messagePlaceholder') : "Mesajınız"} maxLength={WISH_MAX_LENGTH}></textarea>
+          <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>
           <span>{wishForm.message.length}/{WISH_MAX_LENGTH}</span>
         </div>
-        <button type="submit" className="main-button form-button">{isEn ? t('form.submitWish') : "Mesajı Gönder"}</button>
+        <button type="submit" className="main-button form-button">{t('form.submitWish')}</button>
       </form>
       <div className="wish-list">
         {wishes.length === 0 ? (
-          <p className="empty-text">{isEn ? "No wishes yet." : "Henüz güzel dilek yok."}</p>
+          <p className="empty-text">{t('ui.noWishes')}</p>
         ) : (
           wishes.slice(0, 4).map((wish) => (
             <div className="wish-item" key={wish.id}>

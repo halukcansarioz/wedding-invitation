@@ -18,22 +18,37 @@ export function useAudio(musicFile) {
     cleanupAudioRef.current = () => {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current.load();
+
+        try {
+          audioRef.current.src = "";
+          audioRef.current.load();
+        } catch (e) {
+        }
+
+        if (musicIntervalRef.current) {
+          clearTimeout(musicIntervalRef.current);
+          musicIntervalRef.current = null;
+        }
+
+        if (musicGainRef.current) {
+          try {
+            musicGainRef.current.disconnect();
+          } catch {}
+          musicGainRef.current = null;
+        }
+
+        if (
+          audioContextRef.current &&
+          audioContextRef.current.state !== "closed"
+        ) {
+          try {
+            audioContextRef.current.close();
+          } catch {}
+          audioContextRef.current = null;
+        }
+
+        setIsMusicPlaying(false);
       }
-      if (musicIntervalRef.current) {
-        clearTimeout(musicIntervalRef.current);
-        musicIntervalRef.current = null;
-      }
-      if (musicGainRef.current) {
-        try { musicGainRef.current.disconnect(); } catch {}
-        musicGainRef.current = null;
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-        try { audioContextRef.current.close(); } catch {}
-        audioContextRef.current = null;
-      }
-      setIsMusicPlaying(false);
     };
 
     return () => {

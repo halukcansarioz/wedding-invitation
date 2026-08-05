@@ -54,12 +54,12 @@ function AdminDashboard({
     (adminTabs || []).forEach(tab => {
       tabs.push(tab);
       if (tab.id === "theme") {
-        tabs.push({ id: "visibility", label: "Bölüm Görünürlüğü", description: "Sayfadaki alanları aç/kapat" });
-        tabs.push({ id: "gift", label: "IBAN & Hediye", description: "Hesap ve banka bilgileri" }); // BU SATIRI EKLEDİK
+        tabs.push({ id: "visibility", label: isEn ? "Section Visibility" : "Bölüm Görünürlüğü", description: isEn ? "Toggle sections on page" : "Sayfadaki alanları aç/kapat" });
+        tabs.push({ id: "gift", label: isEn ? "IBAN & Gift" : "IBAN & Hediye", description: isEn ? "Account and bank details" : "Hesap ve banka bilgileri" });
       }
     });
     return tabs;
-  }, [adminTabs]);
+  }, [adminTabs, isEn]);
 
   const currentTabInfo = activeTabInfo || enhancedAdminTabs.find(t => t.id === activeAdminTab);
   // Sol menü sekmeleri için otomatik çeviri sözlüğü
@@ -68,6 +68,8 @@ function AdminDashboard({
     const translations = {
       general: { label: "General", desc: "Main invitation details" },
       theme: { label: "Theme & Layout", desc: "Colors and visibility" },
+      visibility: { label: "Section Visibility", desc: "Toggle sections on page" },
+      gift: { label: "IBAN & Gift", desc: "Account and bank details" },
       security: { label: "Security", desc: "Admin panel password" },
       messages: { label: "Messages", desc: "WhatsApp and greetings" },
       copy: { label: "Headings", desc: "Page titles and descriptions" },
