@@ -97,7 +97,7 @@ export const DEFAULT_SITE_DATA = {
     {
       label: "Düğün & Eğlence",
       time: "20:00",
-      location: "Kır Bahçesi Düğün Alanı",
+      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
       description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
     },
   ],
