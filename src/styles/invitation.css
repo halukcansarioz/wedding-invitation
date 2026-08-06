@@ -708,13 +708,6 @@ body .app .glass-dock .dock-btn.music-on {
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* =================================================================
-   ANİMASYONLAR VE KAYDIRMA (SCROLL) GÖSTERGESİ
-   ================================================================= */
-.invitation-page {
-  animation: smoothPageFadeIn 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
 .scroll-indicator {
   position: absolute;
   bottom: 40px;

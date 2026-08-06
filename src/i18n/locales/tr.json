@@ -29,7 +29,7 @@
     "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
     "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
     "footerSmall": "Made with love",
-    "declineTitle": "Çok Üzüldük!",
+    "declineTitle": "Çok Üzüldük! 😔",
     "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
     "deadlineTitle": "LCV Bildirim Süresi Doldu",
     "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
@@ -41,7 +41,10 @@
     "messagePlaceholder": "Mesajınız",
     "submitRsvp": "Katılımı Gönder",
     "submitWish": "Mesajı Gönder",
-    "whatsappRsvp": "WhatsApp ile Bildir"
+    "whatsappRsvp": "WhatsApp ile Bildir",
+    "missingInfo": "Eksik bilgi",
+    "missingNameMessage": "Lütfen ad soyad gir.",
+    "missingWishMessage": "Lütfen isim ve mesaj gir."
   },
   "ui": {
     "time": "Saat",
@@ -73,7 +76,11 @@
     "notAttending": "Katılmayacak",
     "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
     "noWishes": "Henüz güzel dilek yok.",
-    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu."
+    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
+    "save": "Kaydet",
+    "cancel": "Vazgeç",
+    "yes": "Evet",
+    "ok": "Tamam"
   },
   "visibility": {
     "countdown": "Geri Sayım",
@@ -87,5 +94,19 @@
     "iban": "Hediye / IBAN Bölümü",
     "guests": "Misafir Listesi",
     "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Bilgi",
+    "errorTitle": "Hata",
+    "saveTitle": "Bilgileriniz Alındı 🎉",
+    "saveErrorTitle": "Kayıt hatası 😔",
+    "supabaseMissingTitle": "Supabase bağlantısı eksik",
+    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz!",
+    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}}",
+    "wishSaved": "Güzel dileğin kaydedildi.",
+    "wishSentApproval": "Güzel dileğin admin onayına gönderildi.",
+    "wishError": "Mesaj kaydedilemedi. Detay: {{message}}",
+    "linkCopied": "Davetiye linki kopyalandı.",
+    "linkCopyError": "Link kopyalanamadı."
   }
 }

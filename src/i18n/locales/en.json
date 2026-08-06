@@ -29,7 +29,7 @@
     "shareDescription": "You can share our invitation with your loved ones.",
     "thanksText": "Having you with us on this special day is the greatest gift.",
     "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You!",
+    "declineTitle": "We'll Miss You! 😔",
     "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
     "deadlineTitle": "RSVP Deadline Passed",
     "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
@@ -41,7 +41,10 @@
     "messagePlaceholder": "Your Message",
     "submitRsvp": "Send RSVP",
     "submitWish": "Send Message",
-    "whatsappRsvp": "RSVP via WhatsApp"
+    "whatsappRsvp": "RSVP via WhatsApp",
+    "missingInfo": "Missing info",
+    "missingNameMessage": "Please enter your full name.",
+    "missingWishMessage": "Please enter your name and message."
   },
   "ui": {
     "time": "Time",
@@ -73,7 +76,11 @@
     "notAttending": "Not Attending",
     "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
     "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you."
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "ok": "OK"
   },
   "visibility": {
     "countdown": "Countdown",
@@ -87,5 +94,19 @@
     "iban": "Gift / IBAN Section",
     "guests": "Guest List",
     "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information",
+    "errorTitle": "Error",
+    "saveTitle": "Saved",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing",
+    "rsvpSuccess": "Your RSVP has been successfully received.",
+    "rsvpError": "Could not save RSVP. Detail: {{message}}",
+    "wishSaved": "Your wish has been saved.",
+    "wishSentApproval": "Your wish has been sent for admin approval.",
+    "wishError": "Could not save message. Detail: {{message}}",
+    "linkCopied": "Invitation link copied.",
+    "linkCopyError": "Could not copy link."
   }
 }

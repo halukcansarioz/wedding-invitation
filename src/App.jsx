@@ -53,7 +53,7 @@ import {
 } from "./services/database";
 
 function App() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation(); 
   const isEn = i18n.language.startsWith('en');
 
   const toggleLanguage = () => {
@@ -133,6 +133,12 @@ function App() {
   const timeLeft = useCountdown(invitation.weddingDate);
   const { audioRef, isMusicPlaying, startMusic, toggleMusic, stopMusic } = useAudio(invitation.musicFile);
 
+  const scrollToTop = useCallback(() => {
+    const container = document.querySelector('.invitation-page');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
   useEffect(() => {
     if (isAdminPage) {
       stopMusic();
@@ -317,11 +323,11 @@ function App() {
   const submitGuest = useCallback(async (e) => {
     if (e) e.preventDefault();
     if (!guestForm.name.trim()) {
-      await showAppAlert(isEn ? "Please enter your full name." : "Lütfen ad soyad gir.", { title: isEn ? "Missing info" : "Eksik bilgi" });
+      await showAppAlert(t('form.missingNameMessage'), { title: t('form.missingInfo') });
       return;
     }
     if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik" });
+      await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
       return;
     }
     try {
@@ -331,22 +337,23 @@ function App() {
       setGuestForm(INITIAL_GUEST_FORM);
       
       if (guestForm.attendance === "Katılacağım") {
-        await showAppAlert(isEn ? "Your RSVP has been successfully received." : "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz!", { title: isEn ? "Saved" : "Bilgileriniz Alındı" });
+        await showAppAlert(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
       }
     } catch (error) {
       console.error("Katılım kaydedilemedi:", error);
-      await showAppAlert(isEn ? `Could not save RSVP. Detail: ${error?.message || "Unknown error"}` : `Katılım bildirimi kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası" });
+      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
+      await showAppAlert(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
     }
-  }, [guestForm, showAppAlert, isEn]);
+  }, [guestForm, showAppAlert, t, isEn]);
 
   const submitWish = useCallback(async (e) => {
     e.preventDefault();
     if (!wishForm.name.trim() || !wishForm.message.trim()) {
-      await showAppAlert(isEn ? "Please enter your name and message." : "Lütfen isim ve mesaj gir.", { title: isEn ? "Missing info" : "Eksik bilgi" });
+      await showAppAlert(t('form.missingWishMessage'), { title: t('form.missingInfo') });
       return;
     }
     if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: isEn ? "Supabase connection missing" : "Supabase bağlantısı eksik" });
+      await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
       return;
     }
     const shouldPublishNow = !settings.requireWishApproval;
@@ -357,21 +364,22 @@ function App() {
         setWishes((prev) => [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...wishForm, approved: true }, ...prev]);
       }
       setWishForm(INITIAL_WISH_FORM);
-      await showAppAlert(settings.requireWishApproval ? (isEn ? "Your wish has been sent for admin approval." : "Güzel dileğin admin onayına gönderildi.") : (isEn ? "Your wish has been saved." : "Güzel dileğin kaydedildi."), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : (isEn ? "Saved" : "Kaydedildi") });
+      await showAppAlert(settings.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : t('alerts.saveTitle') });
     } catch (error) {
       console.error("Mesaj kaydedilemedi:", error);
-      await showAppAlert(isEn ? `Could not save message. Detail: ${error?.message || "Unknown error"}` : `Mesaj kaydedilemedi. Detay: ${error?.message || "Bilinmeyen hata"}`, { title: isEn ? "Save error" : "Kayıt hatası" });
+      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
+      await showAppAlert(t('alerts.wishError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
     }
-  }, [wishForm, settings.requireWishApproval, showAppAlert, isEn]);
-
+  }, [wishForm, settings.requireWishApproval, showAppAlert, t, isEn]);
+  
   const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
-      await showAppAlert(isEn ? "Invitation link copied." : "Davetiye linki kopyalandı.", { title: isEn ? "Copied" : "Kopyalandı" });
+      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied" : "Kopyalandı" });
     } catch {
-      await showAppAlert(isEn ? "Could not copy link." : "Link kopyalanamadı.", { title: isEn ? "Copy error" : "Kopyalama hatası" });
+      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error" : "Kopyalama hatası" });
     }
-  }, [currentShareLink, showAppAlert, isEn]);
+  }, [currentShareLink, showAppAlert, t, isEn]);
 
   const copyAdminLink = useCallback(async (linkToCopy, successMessage) => {
     try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(successMessage || (isEn ? "Link copied." : "Link kopyalandı.")); } catch { setAdminSaveMessage(isEn ? "Could not copy link." : "Link kopyalanamadı."); }

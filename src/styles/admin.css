@@ -2601,15 +2601,6 @@ html[data-theme="dark"] .admin-logout-button {
   gap: 9px;
 }
 
-.app-modal-content h3 {
-  margin: 0;
-  color: var(--rose-deep);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: clamp(24px, 4vw, 31px);
-  font-weight: 900;
-  line-height: 1.15;
-}
-
 .app-modal-content p {
   margin: 0;
   color: var(--theme-text-muted, var(--text-soft));
@@ -2805,10 +2796,6 @@ html[data-theme="dark"] .app-modal-cancel {
 
 .app-modal-content {
   gap: 8px;
-}
-
-.app-modal-content h3 {
-  font-size: clamp(23px, 3.2vw, 29px);
 }
 
 .app-modal-content p {

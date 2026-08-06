@@ -1462,6 +1462,13 @@ button,
   justify-content: center !important;
   text-align: center !important;
   gap: 10px !important; 
+  margin: 0;
+  color: var(--rose-deep);
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
+  font-size: clamp(24px, 4vw, 31px);
+  font-weight: 900;
+  line-height: 1.15;
+  font-size: clamp(23px, 3.2vw, 29px);
 }
 
 .app-modal-content,
@@ -1474,16 +1481,8 @@ button,
   text-align: center !important;
 }
 
-.app-modal-content h3 {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  gap: 10px !important; 
-}
-
 .app-modal-content h3::before {
-  content: "✨";
+  content: "😔";
   font-size: 1.1em;
 }
 

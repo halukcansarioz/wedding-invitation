@@ -7,8 +7,20 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
+  const handleScrollDown = () => {
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: 'smooth'
+    });
+  };
+  
   return (
-    <section className="hero-section">
+    // onClick ve cursor:pointer özelliklerini en dıştaki sarmalayıcıya (section) ekliyoruz
+    <section 
+      className="hero-section" 
+      onClick={handleScrollDown} 
+      style={{ cursor: 'pointer' }}
+    >
       {invitation?.heroVideo ? (
         <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
           <source src={invitation.heroVideo} type="video/mp4" />
