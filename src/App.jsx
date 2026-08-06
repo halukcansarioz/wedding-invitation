@@ -126,19 +126,67 @@ function App() {
   const guestGreeting = useMemo(() => personalGuestName ? formatMessageTemplate(messages.guestGreeting, { guest: personalGuestName, couple: coupleName, link: currentShareLink }) : "", [personalGuestName, messages.guestGreeting, coupleName, currentShareLink]);
   const shareText = useMemo(() => encodeURIComponent(formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName })), [messages.whatsappShareMessage, coupleName, currentShareLink, personalGuestName]);
   const rsvpWhatsappText = useMemo(() => encodeURIComponent(formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName })), [messages.rsvpWhatsappMessage, coupleName, currentShareLink, personalGuestName]);
-  const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
   const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
   const googleCalendarLink = useMemo(() => createGoogleCalendarLink(siteData, coupleName), [siteData, coupleName]);
+  const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
 
   const timeLeft = useCountdown(invitation.weddingDate);
   const { audioRef, isMusicPlaying, startMusic, toggleMusic, stopMusic } = useAudio(invitation.musicFile);
 
-  const scrollToTop = useCallback(() => {
-    const container = document.querySelector('.invitation-page');
-    if (container) {
-      container.scrollTo({ top: 0, behavior: 'smooth' });
+  // =========================================================
+  // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ (TEKİL TANIMLAMALAR)
+  // =========================================================
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(true);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
+    if (!sections.length) return;
+
+    sections.forEach((sec, idx) => {
+      if (idx === currentSlideIndex) {
+        sec.classList.add('active-slide');
+      } else {
+        sec.classList.remove('active-slide');
+      }
+    });
+
+    setShowScrollTop(currentSlideIndex > 0);
+    setShowScrollDown(currentSlideIndex < sections.length - 1);
+  }, [currentSlideIndex, isAdminPage, opened]);
+
+  const scrollToNext = useCallback(() => {
+    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
+    if (currentSlideIndex < sections.length - 1) {
+      setCurrentSlideIndex((prev) => prev + 1);
     }
-  }, []);
+  }, [currentSlideIndex]);
+
+  const scrollToPrev = useCallback(() => {
+    if (currentSlideIndex > 0) {
+      setCurrentSlideIndex((prev) => prev - 1);
+    }
+  }, [currentSlideIndex]);
+
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    const handleGlobalClick = (e) => {
+      if (window.innerWidth > 650) return; 
+      const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access');
+      
+      if (!isInteractive) {
+        scrollToNext();
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [isAdminPage, opened, scrollToNext]);
+
   useEffect(() => {
     if (isAdminPage) {
       stopMusic();
@@ -188,7 +236,6 @@ function App() {
     }
   }, [isEn]);
 
-  // ANINDA ÖNİZLEME ÇÖZÜMÜ: Admin panelindeyken seçtiğin tema (adminDraft) anında ekrana yansır!
   const activeTheme = (isAdminPage ? adminDraft.settings?.theme : settings.theme) || "lavanta";
 
   useLayoutEffect(() => {
@@ -241,9 +288,6 @@ function App() {
     return () => subscription.unsubscribe();
   }, [adminEmail]);
 
-  // =========================================================================
-  // ADIM 3: SAYFA AÇILIR AÇILMAZ TÜM VERİLERİ SUPABASE'DEN ÇEKME ENTEGRASYONU
-  // =========================================================================
   useEffect(() => {
     async function initDatabaseData() {
       if (!isSupabaseReady()) {
@@ -252,10 +296,7 @@ function App() {
       }
 
       try {
-        // 1. Ayarları, içerikleri ve aktif temayı veritabanından çek
         let databaseSettings = await loadSettingsFromDatabase();
-        
-        // Veritabanı boşsa varsayılanı yükle ve veritabanını oluştur
         if (!databaseSettings) {
           const defaultData = normalizeSiteData(null);
           await saveSettingsToDatabase(defaultData).catch(console.error);
@@ -263,18 +304,14 @@ function App() {
         }
 
         const normalizedDatabaseSettings = normalizeSiteData(databaseSettings);
-        
-        // Çevrimdışı durumlarda hızlı açılış için yerel hafızaya da yaz
         localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedDatabaseSettings));
 
         setSiteData(normalizedDatabaseSettings);
         setAdminDraft(normalizedDatabaseSettings);
 
-        // 2. Yayında olan (veya tüm) anı defteri mesajlarını çek
         const publishedWishes = await loadPublishedWishesFromDatabase();
         setWishes(publishedWishes || []);
 
-        // 3. Katılım (RSVP) kayıtlarını çek
         const dbGuests = await loadGuestsFromDatabase();
         setGuests(dbGuests || []);
       } catch (error) {
@@ -284,7 +321,6 @@ function App() {
 
     initDatabaseData();
   }, []);
-  // =========================================================================
 
   useEffect(() => {
     if (isAdminPage) return;
@@ -764,7 +800,7 @@ function App() {
               {customAlert.message}
             </p>
             <button type="button" className="main-button" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }} style={{ margin: 0, minWidth: "140px" }}>
-              {isEn ? "OK" : "Tamam"}
+              {t('ui.ok')}
             </button>
           </div>
         </div>
@@ -788,10 +824,10 @@ function App() {
             </p>
             <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
               <button type="button" className="main-button" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }} style={{ margin: 0, minWidth: "120px" }}>
-                {isEn ? "Yes" : "Evet"}
+                {t('ui.yes')}
               </button>
               <button type="button" className="secondary-button" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }} style={{ margin: 0, minWidth: "120px" }}>
-                {isEn ? "Cancel" : "Vazgeç"}
+                {t('ui.cancel')}
               </button>
             </div>
           </div>
@@ -832,10 +868,10 @@ function App() {
             )}
             <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap", marginTop: "8px" }}>
               <button type="submit" className="main-button" style={{ margin: 0, minWidth: "120px" }}>
-                {isEn ? "Save" : "Kaydet"}
+                {t('ui.save')}
               </button>
               <button type="button" className="secondary-button" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }} style={{ margin: 0, minWidth: "120px" }}>
-                {isEn ? "Cancel" : "Vazgeç"}
+                {t('ui.cancel')}
               </button>
             </div>
           </form>
@@ -914,6 +950,35 @@ function App() {
                 )}
               </svg>
             </button>
+
+            {/* TIKLAYARAK AŞAĞI İN BUTONU */}
+            {showScrollDown && (
+              <button
+                type="button"
+                className="dock-btn"
+                onClick={scrollToNext}
+                title={isEn ? "Next Section" : "Sonraki Bölüm"}
+                style={{ background: 'var(--rose-dark)', color: '#fff', borderColor: 'var(--rose-dark)' }}
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            )}
+
+            {/* TIKLAYARAK YUKARI ÇIK BUTONU */}
+            {showScrollTop && (
+              <button
+                type="button"
+                className="dock-btn"
+                onClick={scrollToPrev}
+                title={isEn ? "Previous Section" : "Önceki Bölüm"}
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+              </button>
+            )}
           </div>
         </>
       )}

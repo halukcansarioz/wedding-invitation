@@ -7,19 +7,30 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
-  const handleScrollDown = () => {
-    window.scrollTo({
-      top: window.innerHeight,
-      behavior: 'smooth'
-    });
+  const handleScrollNext = () => {
+    const isMobile = window.innerWidth <= 650;
+    const container = isMobile ? document.querySelector('.invitation-page') : window;
+    if (!container) return;
+
+    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
+    for (let sec of sections) {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top > window.innerHeight * 0.55) { 
+        if (isMobile) {
+          const desiredTop = sec.offsetHeight > window.innerHeight ? 20 : (window.innerHeight - sec.offsetHeight) / 2;
+          container.scrollBy({ top: rect.top - desiredTop, behavior: 'smooth' });
+        } else {
+          sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        break;
+      }
+    }
   };
   
   return (
-    // onClick ve cursor:pointer özelliklerini en dıştaki sarmalayıcıya (section) ekliyoruz
     <section 
       className="hero-section" 
-      onClick={handleScrollDown} 
-      style={{ cursor: 'pointer' }}
+      onClick={window.innerWidth <= 650 ? handleScrollNext : undefined}
     >
       {invitation?.heroVideo ? (
         <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
@@ -35,7 +46,7 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
         {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
       </div>
 
-      <div className="scroll-indicator">
+      <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); handleScrollNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
         <div className="mouse">
           <div className="wheel"></div>
         </div>

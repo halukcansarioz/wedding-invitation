@@ -1467,3 +1467,115 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     margin-top: 4px !important;
   }
 }
+
+/* =================================================================
+   SADECE MOBİL İÇİN TEK SAYFA KART GEÇİŞ SİSTEMİ
+   ================================================================= */
+@media (max-width: 650px) {
+  body, html {
+    overflow: hidden !important; 
+    height: 100%;
+  }
+
+  body, html, .invitation-page {
+    overflow: hidden !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .invitation-page > section,
+  .invitation-page > footer {
+    display: none !important;
+  }
+
+  .invitation-page > section.active-slide,
+  .invitation-page > footer.active-slide {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 92vw !important;
+    max-height: 85dvh !important;
+    overflow-y: auto !important;
+    margin: 0 !important;
+    z-index: 2 !important;
+    animation: slideFadeIn 0.35s ease-out both !important;
+  } 
+
+  .invitation-page > section::-webkit-scrollbar {
+    display: none;
+  }
+
+  .invitation-page > .hero-section.active-slide {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+
+  .invitation-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    overflow-y: hidden; 
+    scroll-behavior: smooth;
+    padding: 0 !important;
+    z-index: 1;
+  }
+
+  .invitation-page::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-section {
+    cursor: pointer;
+  }
+
+  .invitation-page > section:not(.hero-section) {
+    margin: 40vh auto !important; 
+    max-height: 82dvh !important;
+    width: 92vw !important;
+    overflow-y: auto; 
+    border-radius: 30px !important;
+  }
+
+  .invitation-page > section:not(.hero-section)::-webkit-scrollbar {
+    display: none;
+  }
+
+  .invitation-page > .hero-section {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    margin: 0 auto 40vh auto !important;
+    border-radius: 0 !important;
+  }
+
+  .invitation-page > footer {
+    margin: 40vh auto 0 auto !important;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -46%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
