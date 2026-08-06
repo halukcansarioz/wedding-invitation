@@ -37,7 +37,7 @@
   "form": {
     "namePlaceholder": "Full Name",
     "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Your Note",
+    "notePlaceholder": "Please Specify The Number Of People",
     "messagePlaceholder": "Your Message",
     "submitRsvp": "Send RSVP",
     "submitWish": "Send Message",
