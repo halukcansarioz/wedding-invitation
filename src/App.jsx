@@ -140,22 +140,31 @@ function App() {
   const [showScrollDown, setShowScrollDown] = useState(true);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
+  // BEYAZ EKRAN SORUNUNU ÇÖZEN GÜNCEL KOD BURASI
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
-    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
-    if (!sections.length) return;
-
-    sections.forEach((sec, idx) => {
-      if (idx === currentSlideIndex) {
-        sec.classList.add('active-slide');
-      } else {
-        sec.classList.remove('active-slide');
+    const checkAndApplyClasses = () => {
+      const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
+      
+      if (!sections.length) {
+        setTimeout(checkAndApplyClasses, 50);
+        return;
       }
-    });
 
-    setShowScrollTop(currentSlideIndex > 0);
-    setShowScrollDown(currentSlideIndex < sections.length - 1);
+      sections.forEach((sec, idx) => {
+        if (idx === currentSlideIndex) {
+          sec.classList.add('active-slide');
+        } else {
+          sec.classList.remove('active-slide');
+        }
+      });
+
+      setShowScrollTop(currentSlideIndex > 0);
+      setShowScrollDown(currentSlideIndex < sections.length - 1);
+    };
+
+    checkAndApplyClasses();
   }, [currentSlideIndex, isAdminPage, opened]);
 
   const scrollToNext = useCallback(() => {
@@ -505,7 +514,6 @@ function App() {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
   }, []);
 
-  // Supabase bulutuna kaydeder ve anında açılması için tarayıcı hafızasını günceller
   const saveSiteContent = useCallback(async () => {
     const cleanedData = normalizeSiteData({ ...adminDraft, invitation: { ...adminDraft.invitation, gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) } });
     try {

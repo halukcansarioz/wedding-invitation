@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Dropdown } from "./common/UIComponents";
 
 export function AdminField({ label, value, onChange, type = "text", placeholder = "" }) {
   return (
@@ -31,7 +32,7 @@ export function AdminSelect({ label, value, options, onChange }) {
   return (
     <label className="admin-field">
       <span>{label}</span>
-      <AdminDropdown onChange={onChange} options={options} value={value} />
+      <Dropdown onChange={onChange} options={options} value={value} />
     </label>
   );
 }
@@ -124,6 +125,20 @@ export function AdminSection({ title, children, onSave }) {
         )}
       </div>
       {children}
+    </div>
+  );
+}
+
+// Ortaklaştırılmış admin aksiyon butonları
+export function AdminActionButtons({ onSave, onDelete, isEn }) {
+  return (
+    <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
+      <button type="button" className="secondary-button small-admin-button" onClick={onSave}>
+        {isEn ? "Save" : "Kaydet"}
+      </button>
+      <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>
+        {isEn ? "Delete" : "Sil"}
+      </button>
     </div>
   );
 }

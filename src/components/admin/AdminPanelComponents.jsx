@@ -7,9 +7,10 @@ import {
   AdminImageField,
   AdminMusicField,
   AdminSection,
-  AdminSelect
+  AdminSelect,
+  AdminActionButtons
 } from "../AdminUI";
-import { ThemeDropdown, CustomDropdown } from "../common/UIComponents";
+import { Dropdown } from "../common/UIComponents";
 import { THEMES } from "../../config/constants";
 import { getCurrentShareLink, buildPersonalLink } from "../../utils/helpers";
 
@@ -20,7 +21,7 @@ export function GuestsAdminPanel({ guests, adminGuestSearch, setAdminGuestSearch
   return (
     <AdminSection title={isEn ? "RSVP Responses" : "Kayıtlı Form Yanıtları"}>
       
-        <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
+      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
         <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
       </div>
@@ -75,7 +76,6 @@ export function WishesAdminPanel({ wishes, filteredWishes, adminWishSearch, setA
   return (
     <AdminSection title={isEn ? "Guestbook Messages" : "Anı Defteri Mesajları"}>
       
-      {/* Görünürlük Kısayolu */}
       <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? true} label={t('visibility.wishes')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
       </div>
@@ -89,7 +89,7 @@ export function WishesAdminPanel({ wishes, filteredWishes, adminWishSearch, setA
         />
         
         <div style={{ minWidth: "160px", margin: 0 }}>
-          <CustomDropdown
+          <Dropdown
             value={adminWishStatusFilter}
             onChange={setAdminWishStatusFilter}
             options={[
@@ -252,7 +252,7 @@ export function AdminPanelContent({
           </div>
           <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
             <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>{isEn ? "Default Theme (For Reset)" : "Varsayılan Tema (Sıfırlama İçin)"}</h4>
-            <ThemeDropdown value={adminDraft.settings.defaultTheme || "lavanta"} onChange={(value) => updateDraftObject("settings", "defaultTheme", value)} options={THEMES} />
+            <Dropdown value={adminDraft.settings.defaultTheme || "lavanta"} onChange={(value) => updateDraftObject("settings", "defaultTheme", value)} options={THEMES} />
           </div>
         </AdminSection>
       );
@@ -345,25 +345,7 @@ export function AdminPanelContent({
               <div key={index} className="admin-repeat-item">
                 <div className="admin-repeat-title">
                   <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
-                  
-                  {/* BURAYA KAYDET VE SİL BUTONLARINI ALANIN SAĞINA YERLEŞTİRİYORUZ */}
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <button 
-                      type="button" 
-                      className="secondary-button small-admin-button" 
-                      onClick={saveSiteContent}
-                    >
-                      {isEn ? "Save" : "Kaydet"}
-                    </button>
-                    <button 
-                      type="button" 
-                      className="secondary-button danger-button small-admin-button" 
-                      onClick={() => removeDraftArrayItem("eventDetails", index)}
-                    >
-                      {isEn ? "Delete" : "Sil"}
-                    </button>
-                  </div>
-
+                  <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeDraftArrayItem("eventDetails", index)} isEn={isEn} />
                 </div>
                 <div className="admin-edit-grid">
                   <AdminField label={isEn ? "Title" : "Başlık"} value={event.label} onChange={(v) => updateDraftArrayItem("eventDetails", index, "label", v)} placeholder="Örn: Nikah Töreni" />
@@ -390,25 +372,7 @@ export function AdminPanelContent({
               <div key={index} className="admin-repeat-item">
                 <div className="admin-repeat-title">
                   <strong>{isEn ? `Program ${index + 1}` : `Program ${index + 1}`}</strong>
-                  
-                  {/* Program satırı için Kaydet ve Sil butonları */}
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <button 
-                      type="button" 
-                      className="secondary-button small-admin-button" 
-                      onClick={saveSiteContent}
-                    >
-                      {isEn ? "Save" : "Kaydet"}
-                    </button>
-                    <button 
-                      type="button" 
-                      className="secondary-button danger-button small-admin-button" 
-                      onClick={() => removeDraftArrayItem("scheduleItems", index)}
-                    >
-                      {isEn ? "Delete" : "Sil"}
-                    </button>
-                  </div>
-
+                  <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeDraftArrayItem("scheduleItems", index)} isEn={isEn} />
                 </div>
                 <div className="admin-edit-grid">
                   <AdminField label={isEn ? "Time" : "Saat"} value={item.time} onChange={(v) => updateDraftArrayItem("scheduleItems", index, "time", v)} placeholder="Örn: 18:30" />
@@ -439,25 +403,7 @@ export function AdminPanelContent({
               {(adminDraft.invitation?.gallery || []).map((imgUrl, index) => (
                 <div key={index} className="admin-gallery-upload-row">
                   <AdminImageField label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} value={imgUrl} onFileSelect={(e) => updateGalleryImageFile(index, e.target.files[0])} onClear={() => removeGalleryItem(index)} />
-                  
-                  {/* Galeri fotoğrafı için Kaydet ve Sil butonları */}
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
-                    <button 
-                      type="button" 
-                      className="secondary-button small-admin-button" 
-                      onClick={saveSiteContent}
-                    >
-                      {isEn ? "Save" : "Kaydet"}
-                    </button>
-                    <button 
-                      type="button" 
-                      className="secondary-button danger-button small-admin-button" 
-                      onClick={() => removeGalleryItem(index)}
-                    >
-                      {isEn ? "Delete" : "Sil"}
-                    </button>
-                  </div>
-
+                  <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeGalleryItem(index)} isEn={isEn} />
                 </div>
               ))}
               <button type="button" className="admin-add-button" onClick={addGalleryItem}>+ {isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
@@ -477,10 +423,8 @@ export function AdminPanelContent({
         <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"} onSave={saveSiteContent}>
           <p className="admin-help-text">{isEn ? "You can download the QR code or copy the link to share your invitation easily." : "Davetiyenizi kolayca paylaşmak için QR kodu indirebilir veya linki kopyalayabilirsiniz."}</p>
           
-          {/* Yan yana iki sütunlu orijinal düzen */}
           <div className="admin-qr-panel" style={{ display: "grid", gridTemplateName: "auto", gridTemplateColumns: "260px minmax(0, 1fr)", gap: "24px", alignItems: "stretch" }}>
             
-            {/* Sol Sütun: QR Kod ve İndir Butonu */}
             <div style={{ display: "flex", flexDirection: "column", height: "100%", textAlign: "center", background: "rgba(255,250,251,0.6)", padding: "20px", borderRadius: "22px", border: "1.5px solid rgba(159,79,104,0.18)" }}>
               <img 
                 src={qrImageUrl} 
@@ -492,7 +436,6 @@ export function AdminPanelContent({
               </div>
             </div>
 
-            {/* Sağ Sütun: Link ve Kopyala Butonu */}
             <div className="admin-link-preview-box" style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", gap: "16px", background: "rgba(255,250,251,0.6)", padding: "24px", borderRadius: "22px", border: "1.5px solid rgba(159,79,104,0.18)" }}>
               <div>
                 <span style={{ fontWeight: 800, color: "var(--rose-dark)", display: "block", marginBottom: "8px", fontSize: "16px" }}>{isEn ? "General Invitation Link" : "Genel Davetiye Linki"}</span>
