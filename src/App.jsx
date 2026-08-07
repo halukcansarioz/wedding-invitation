@@ -139,7 +139,7 @@ function App() {
   // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ 
   // =========================================================
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(true);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const scrollToNext = useCallback(() => {
@@ -175,7 +175,7 @@ function App() {
       });
 
       setShowScrollTop(currentSlideIndex > 0);
-      setShowScrollDown(currentSlideIndex < sections.length - 1);
+      setShowScrollDown(currentSlideIndex > 0 && currentSlideIndex < sections.length - 1);
     };
 
     checkAndApplyClasses();
@@ -186,7 +186,6 @@ function App() {
 
     const handleGlobalClick = (e) => {
       if (window.innerWidth > 650) return; 
-      /* .mini-map sınıfı burada olduğu için harita tıklandığında sayfa atlamaz */
       const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access, .mini-map');
       
       if (!isInteractive) {
@@ -748,13 +747,12 @@ function App() {
               </svg>
             </button>
 
-            {showScrollDown && (
+            {showScrollDown && currentSlideIndex > 0 && (
               <button
                 type="button"
                 className="dock-btn"
                 onClick={scrollToNext}
                 title={isEn ? "Next Section" : "Sonraki Bölüm"}
-                style={{ background: 'var(--rose-dark)', color: '#fff', borderColor: 'var(--rose-dark)' }}
               >
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="6 9 12 15 18 9"></polyline>

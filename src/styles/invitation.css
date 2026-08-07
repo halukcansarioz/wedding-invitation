@@ -42,7 +42,6 @@ body .app .invitation-page .hero-section {
   border-radius: clamp(20px, 3vw, 40px) !important;
   box-shadow: none !important; 
   
-  /* Bölünmeyi engellemek için overlay efektlerini doğrudan background'a alıyoruz */
   background: 
     linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.40) 50%, rgba(0, 0, 0, 0.65) 100%),
     radial-gradient(circle at center, rgba(120, 52, 78, 0.08) 0%, rgba(120, 52, 78, 0.16) 45%, rgba(60, 24, 38, 0.26) 100%),
@@ -64,23 +63,13 @@ body .app .invitation-page .hero-section [class*="split"],
 body .app .invitation-page .hero-section [class*="divider"],
 body .app .invitation-page .hero-section [class*="handle"],
 body .app .invitation-page .hero-section [class*="compare"] {
-display: none !important;
+  display: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
 body .app .invitation-page .hero-section > div:not(.hero-content):not(.hero-video-bg):not(.scroll-indicator):not(.petal-layer) {
   display: none !important;
-}
-
-body .app .invitation-page .hero-section::before,
-body .app .invitation-page .hero-section .hero-content::before,
-body .app .invitation-page .hero-section .hero-content::after {
-  content: none !important;
-  display: none !important;
-  background: transparent !important;
-  width: 0 !important;
-  height: 0 !important;
 }
 
 body .app .invitation-page .hero-section::after {
@@ -1304,7 +1293,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
 .lightbox-close { position: absolute; right: 18px; top: 18px; }
 
 /* =================================================================
-   MEDIA QUERIES VE MOBİL TEK SAYFA SLAYT SİSTEMİ
+   MEDIA QUERIES - TABLET
    ================================================================= */
 @media (max-width: 900px) {
   .admin-page { padding: 24px 16px 60px; }
@@ -1316,8 +1305,12 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
   .qr-public-card img { width: 128px; height: 128px; }
 }
 
+/* =================================================================
+   MEDIA QUERIES - MOBİL (TÜM TASARIM SABİTLEMELERİ BURADA)
+   ================================================================= */
 @media (max-width: 650px) {
-  /* 1. Ekranı tam kilitle, kaydırmayı KESİNLİKLE engelle */
+
+  /* 1. Ekran Kilidi */
   body, html {
     overflow: hidden !important;
     height: 100dvh !important;
@@ -1340,7 +1333,6 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     z-index: 1 !important;
   }
 
-  /* Kartların arkasına davetiyenin ana görselini flu (bulanık) olarak koyuyoruz. Çok premium durur. */
   .invitation-page::before {
     content: "";
     position: absolute;
@@ -1351,7 +1343,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     pointer-events: none;
   }
 
-  /* 3. Tüm bölümleri (kartları) GİZLE. Üst üste binme hatası (resimdeki) buradan çözüldü. */
+  /* 3. Kartları Gizle / Göster */
   .invitation-page > section,
   .invitation-page > footer {
     display: none !important;
@@ -1359,15 +1351,20 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     z-index: 1;
   }
 
-  /* 4. SADECE aktif olan (o anki) kartı (slaytı) GÖSTER */
   .invitation-page > section.active-slide,
   .invitation-page > footer.active-slide {
     display: flex !important;
+    opacity: 1 !important;
     position: absolute !important;
     z-index: 10 !important;
   }
 
-  /* 5. Ana Görsel (Hero) Slaytı Ayarı - Ekrana Tam Otursun */
+  /* Ekranda üst üste binen kaydır ikonu kaldırıldı */
+  html body .app .invitation-page .scroll-indicator {
+    display: none !important;
+  }
+
+  /* 4. Ana Görsel (Hero) Slaytı Ayarı */
   .invitation-page > .hero-section.active-slide {
     inset: 0 !important;
     width: 100vw !important;
@@ -1379,7 +1376,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     justify-content: center !important;
     align-items: center !important;
     text-align: center !important;
-    animation: slideFadeInHero 0.4s ease-out forwards !important;
+    animation: premiumFadeInHero 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
     background:
       radial-gradient(
         circle at center,
@@ -1390,469 +1387,265 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
       var(--hero-image) center/cover no-repeat !important;
   }
 
-  /* 6. Diğer Kart Slaytları Ayarı - Ekrana "Kutu Slayt" Olarak Ortalanmış Gelsin */
-  .invitation-page > section.card.active-slide,
-  .invitation-page > section.countdown-section.active-slide,
-  .invitation-page > footer.active-slide {
-    top: 50% !important;
+  /* 5. Kart Slaytları Ayarı */
+  html body .app .invitation-page > section.card.active-slide,
+  html body .app .invitation-page > section.countdown-section.active-slide,
+  html body .app .invitation-page > footer.active-slide {
+    top: 45% !important; 
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     width: 90vw !important;
-    max-height: 85dvh !important;
-    overflow-y: auto !important; /* Kartın içindeki yazı/form çok uzunsa sadece kartın İÇİ kaydırılsın */
+    max-height: calc(100dvh - 120px) !important; 
     margin: 0 !important;
-    padding: 34px 20px !important;
+    padding: clamp(36px, 5vh, 44px) clamp(12px, 3vw, 16px) clamp(16px, 3vh, 20px) !important;
     border-radius: 28px !important;
     background: var(--paper) !important;
     box-shadow: 0 25px 65px rgba(0,0,0,0.55) !important;
-    animation: slideFadeInCard 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards !important;
-    flex-direction: column !important;
-  }
-
-  .invitation-page > footer.active-slide {
-    justify-content: center !important;
-    align-items: center !important;
-    text-align: center !important;
-  }
-
-  body .app .invitation-page > section.card.active-slide,
-  body .app .invitation-page > section.countdown-section.active-slide {
-    justify-content: flex-start !important; /* İçeriği ortalamak yerine üstten başlatır */
-    overflow-y: auto !important; /* Sığmayan kısımlar için kart içinde kaydırmayı aktif tutar */
-    padding-top: 36px !important; /* Üst kısımdaki yazıların rahat okunması için boşluk */
-    padding-bottom: 36px !important; 
-  }
-  
-  /* Başlık ve bölüm etiketlerinin ezilmemesi için ekstra koruma */
-  body .app .invitation-page .card > p.section-label,
-  body .app .invitation-page .card > h2 {
-    flex-shrink: 0 !important;
-    margin-top: 0 !important;
-  }
-
-  /* 1. Kartı flex yapıdan kurtarıp normal block yapıyoruz. 
-        Böylece içerik uzunsa bile KESİNLİKLE en üstten başlar, yukarıda kaybolmaz. */
-  html body .app .invitation-page > section.card.active-slide,
-  html body .app .invitation-page > section.countdown-section.active-slide {
+    animation: premiumFadeInCard 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
-    overflow-y: hidden !important; /* KESİNLİKLE KAYDIRMA YAPMAZ */
-    padding-top: clamp(12px, 2vh, 24px) !important;
-    padding-bottom: clamp(12px, 2vh, 24px) !important;
-    max-height: 94dvh !important; /* Kartın ekranı aşmasını sınırlar */
-  }
-  
-  html body .app .invitation-page .mini-map {
-    height: clamp(120px, 18vh, 220px) !important; /* Harita ekrana göre otomatik ufalır/büyür */
-    min-height: auto !important;
-    margin-top: clamp(8px, 1.5vh, 16px) !important;
-  }
-  
-  html body .app .invitation-page .info-row,
-  html body .app .invitation-page .guest-item,
-  html body .app .invitation-page .schedule-item {
-    padding: clamp(8px, 1.5vh, 16px) 12px !important;
-    min-height: auto !important;
-    gap: 4px !important;
+    justify-content: space-between !important; 
+    overflow: hidden !important; 
   }
 
-  /* 2. Kart block olunca içeriklerin sola kaymaması ve ortada kalması için */
-  html body .app .invitation-page .info-list,
-  html body .app .invitation-page .mini-map,
-  html body .app .invitation-page .button-group,
-  html body .app .invitation-page .qr-public-card,
-  html body .app .invitation-page .guest-stats,
-  html body .app .invitation-page .rsvp-form,
-  html body .app .invitation-page .wish-form,
-  html body .app .invitation-page .family-grid,
-  html body .app .invitation-page .ceremony-grid,
-  html body .app .invitation-page .schedule-list {
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  
-  /* 3. Alt kısımdaki butonların kartın dışına taşmaması (ezilmemesi) için ekstra boşluk */
-  html body .app .invitation-page .button-group {
-    margin-top: clamp(12px, 2vh, 20px) !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-    gap: 10px !important;
+  html body .app .invitation-page > section.card::after,
+  html body .app .invitation-page > section.countdown-section::after {
+    top: 16px !important;
+    left: 18px !important;
+    width: 20px !important;
+    height: 20px !important;
   }
 
-  html body .app .invitation-page .button-group .main-button, 
-  html body .app .invitation-page .button-group .secondary-button {
-    min-height: clamp(40px, 6vh, 52px) !important;
-    padding: 8px 16px !important;
+  html body .app .invitation-page > section.card.active-slide > *,
+  html body .app .invitation-page > section.countdown-section.active-slide > *,
+  html body .app .invitation-page > footer.active-slide > * {
+    flex-shrink: 1 !important; 
+    min-height: 0 !important;
   }
-html body .app .invitation-page .card > h2 {
-    margin-bottom: clamp(6px, 1.5vh, 16px) !important;
-    font-size: clamp(24px, 4.5vh, 32px) !important;
-  }
-  /* Kart içi kaydırma yapıldığında çirkin scrollbar'ı gizle */
-  .invitation-page > section.active-slide::-webkit-scrollbar,
-  .invitation-page > footer.active-slide::-webkit-scrollbar {
+
+  html body .app .invitation-page > section.card.active-slide::-webkit-scrollbar,
+  html body .app .invitation-page > section.countdown-section.active-slide::-webkit-scrollbar,
+  html body .app .invitation-page > footer.active-slide::-webkit-scrollbar {
     display: none !important;
   }
 
-  /* Yüzen Butonlar (Menü) sağ alt köşeye sabitlensin, geçişleri engellemesin */
-  .floating-actions, .glass-dock {
+  /* 6. Başlıklar ve Yazılar */
+  body .app .invitation-page .card > h2,
+  body .app .invitation-page .countdown-section > h2 {
+    margin-top: 0 !important;
+    margin-bottom: clamp(4px, 1vh, 12px) !important;
+    font-size: clamp(22px, 4vh, 28px) !important; 
+    flex-shrink: 0 !important;
+    text-align: center !important;
+  }
+
+  body .app .invitation-page .card > p.section-label {
+    flex-shrink: 0 !important;
+    margin-top: 0 !important;
+    font-size: clamp(12px, 2vh, 14px) !important;
+    text-align: center !important;
+  }
+
+  body .app .invitation-page .card > p,
+  body .app .invitation-page .gift-description {
+    font-size: clamp(14px, 2vh, 16px) !important;
+    line-height: 1.55 !important;
+    text-align: center !important;
+    flex-shrink: 1 !important;
+  }
+
+  /* 7. Butonlar */
+  html body .app .invitation-page .button-group {
+    flex-shrink: 0 !important; 
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-top: 26px !important; 
+    margin-bottom: 6px !important; 
+    padding-bottom: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  html body .app .invitation-page .button-group > a,
+  html body .app .invitation-page .button-group > button,
+  html body .app .invitation-page .button-group .main-button,
+  html body .app .invitation-page .button-group .secondary-button {
+    flex: 1 !important;
+    min-height: clamp(38px, 6vh, 44px) !important;
+    padding: 8px 6px !important;
+    font-size: 13px !important;
+    text-align: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    border-radius: 14px !important;
+  }
+
+  /* 8. Harita */
+  html body .app .invitation-page .mini-map {
+    flex: 1 1 auto !important; 
+    height: auto !important; 
+    min-height: 80px !important; 
+    max-height: 240px !important;
+    margin-top: clamp(8px, 1.5vh, 16px) !important;
+    border-radius: 14px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+  }
+
+  /* 9. Havada Süzülen İnci Menü (Glass Dock) */
+  html body .app .glass-dock {
     top: auto !important;
     bottom: 24px !important;
-    right: 16px !important;
-    left: auto !important;
-    flex-direction: column !important;
-    padding: 8px 6px !important;
-    gap: 8px !important;
-    z-index: 100 !important;
-    transform: none !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
+    z-index: 99999 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    gap: 16px !important;
+    padding: 0 !important;
   }
+
+  html body .app .glass-dock .dock-btn:nth-child(1),
+  html body .app .glass-dock .dock-btn:nth-child(2) {
+    display: none !important;
+  }
+
+  html body .app .glass-dock .dock-btn {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f4ecef 100%) !important;
+    border: none !important;
+    box-shadow: 
+      0 10px 20px rgba(0, 0, 0, 0.15), 
+      inset 0 -3px 5px rgba(0, 0, 0, 0.05),
+      inset 0 2px 4px rgba(255, 255, 255, 1) !important;
+    color: var(--rose-dark, #8a4055) !important; 
+    border-radius: 50% !important;
+    animation: magicFloat 3.5s ease-in-out infinite !important;
+  }
+
+  html body .app .glass-dock .dock-btn:nth-child(3),
+  html body .app .glass-dock .dock-btn:nth-child(3):focus,
+  html body .app .glass-dock .dock-btn:nth-child(3):hover { animation-delay: 0s !important; animation-name: magicFloat !important; }
   
-  body .app .glass-dock .dock-btn, body .app .floating-actions .dock-btn {
-    width: 42px !important; height: 42px !important; min-width: 42px !important; font-size: 12px !important;
+  html body .app .glass-dock .dock-btn:nth-child(4),
+  html body .app .glass-dock .dock-btn:nth-child(4):focus,
+  html body .app .glass-dock .dock-btn:nth-child(4):hover { animation-delay: -0.8s !important; animation-name: magicFloat !important; }
+  
+  html body .app .glass-dock .dock-btn:nth-child(5),
+  html body .app .glass-dock .dock-btn:nth-child(5):focus,
+  html body .app .glass-dock .dock-btn:nth-child(5):hover { animation-delay: -1.6s !important; animation-name: magicFloat !important; }
+  
+  html body .app .glass-dock .dock-btn:nth-child(6),
+  html body .app .glass-dock .dock-btn:nth-child(6):focus,
+  html body .app .glass-dock .dock-btn:nth-child(6):hover { animation-delay: -2.4s !important; animation-name: magicFloat !important; }
+
+  html body .app .glass-dock .dock-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke-width: 2.2px !important;
   }
-  body .app .glass-dock .dock-btn svg, body .app .floating-actions .dock-btn svg {
-    width: 18px !important; height: 18px !important;
+
+  html body .app .glass-dock .dock-btn:active {
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.1) !important;
   }
+
   .admin-quick-access { display: none !important; }
 
-  /* Intro page envelope mobile adjustments - Zarf bozulmasın */
-  .intro-page { padding: 18px; }
-  .intro-card { padding: 46px 24px; border-radius: 32px; }
-  .intro-page .couple-title { font-size: 58px; }
-  .intro-page .couple-title em { display: block; margin: 4px 0; }
-  .intro-text { font-size: 19px; }
-
-  /* Kart içi diğer grid mobil düzeltmeleri */
-  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
-  .info-row, .guest-item { flex-direction: column; gap: 6px; text-align: center; }
-  .mini-map { height: 300px; border-radius: 22px; }
-  .timeline::before { display: none; }
-  .timeline-item { grid-template-columns: 1fr; gap: 8px; text-align: center; }
-  .gallery-grid { grid-template-columns: 1fr; }
-  .gallery-grid img { height: 300px; }
-
-  /* =======================================================
-     (Yazı fontlarına dokunulmadı, sadece hizalama yapıldı)
-     ======================================================= */
-  body .app .invitation-page .family-grid,
-  body .app .invitation-page .ceremony-grid,
-  body .app .invitation-page .schedule-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    width: 100% !important;
-    margin-top: 24px !important;
+  /* 10. Form Alanları */
+  body .app .invitation-page .rsvp-form input, 
+  body .app .invitation-page .wish-form input,
+  body .app .invitation-page .option-button {
+    padding: clamp(14px, 2.5vh, 20px) 14px !important; 
+    font-size: clamp(14px, 2.5vh, 16px) !important;
   }
 
-  body .app .invitation-page .family-grid > div,
-  body .app .invitation-page .ceremony-item,
-  body .app .invitation-page .schedule-item {
+  body .app .invitation-page .rsvp-form textarea, 
+  body .app .invitation-page .wish-form textarea {
+    min-height: clamp(80px, 12vh, 100px) !important; 
+    height: clamp(80px, 12vh, 100px) !important;
+    padding-bottom: 24px !important;
+  }
+
+  /* 11. Diğer Kart İçi Düzenlemeler */
+  body .app .invitation-page .info-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(4px, 1vh, 8px) !important;
+    margin-top: clamp(8px, 1.5vh, 16px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    flex-shrink: 1 !important; 
+    width: 100% !important;
+  }
+
+  body .app .invitation-page .info-row {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
-    gap: 10px !important;
-    padding: 24px 16px !important;
+    padding: clamp(8px, 1.5vh, 12px) 8px !important;
+    gap: clamp(2px, 0.5vh, 4px) !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    min-height: auto !important;
+    height: auto !important;
   }
 
-  body .app .invitation-page .family-grid span, 
-  body .app .invitation-page .family-grid strong,
-  body .app .invitation-page .ceremony-item span, 
-  body .app .invitation-page .ceremony-item strong, 
-  body .app .invitation-page .ceremony-item p, 
-  body .app .invitation-page .ceremony-item em,
-  body .app .invitation-page .schedule-item strong, 
-  body .app .invitation-page .schedule-item div, 
-  body .app .invitation-page .schedule-item span, 
-  body .app .invitation-page .schedule-item p {
+  body .app .invitation-page .info-row strong { 
+    font-size: clamp(14px, 2.5vh, 20px) !important; 
+    margin-top: 2px !important; 
     display: block !important;
     width: 100% !important;
-    margin: 0 !important;
     text-align: center !important;
     white-space: normal !important;
     word-wrap: break-word !important;
-  }
-
-  body .app .invitation-page .family-grid strong { margin-top: 4px !important; }
-  body .app .invitation-page .ceremony-item strong { margin: 4px 0 !important; }
-  body .app .invitation-page .schedule-item > strong { margin-bottom: 6px !important; }
-
-  body .app .invitation-page .qr-public-card {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    max-width: 250px !important;
-    margin: 24px auto !important;
-    padding: 24px !important;
-    box-sizing: border-box !important;
-  }
-
-  body .app .invitation-page .qr-public-card img {
-    display: block !important;
-    width: 100% !important;
-    max-width: 180px !important;
-    height: auto !important;
-    margin: 0 auto !important;
-  }
-
-  body .app .invitation-page .qr-public-card span {
-    display: block !important;
-    width: 100% !important;
-    margin-top: 12px !important;
-    text-align: center !important;
-  }
-
-  body .app .invitation-page .button-group {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    gap: 12px !important;
-    margin-top: 24px !important;
-  }
-
-  body .app .invitation-page .button-group .main-button,
-  body .app .invitation-page .button-group .secondary-button,
-  body .app .invitation-page .button-group a {
-    display: flex !important;
-    width: 100% !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  body .app .invitation-page > section:not(.active-slide),
-  body .app .invitation-page > footer:not(.active-slide) {
-    display: none !important;
-    opacity: 0 !important;
-    z-index: -1 !important;
-  }
-
-  body .app .invitation-page > section.active-slide,
-  body .app .invitation-page > footer.active-slide {
-    display: flex !important;
-    opacity: 1 !important;
-    position: absolute !important;
-    z-index: 10 !important;
-  }
-
-  body .app .invitation-page .family-grid div {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    padding: 24px 16px !important;
-  }
-
-  body .app .invitation-page .family-grid span, 
-  body .app .invitation-page .family-grid strong {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    text-align: center !important;
     line-height: 1.3 !important;
   }
 
-  body .app .invitation-page .ceremony-item {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    text-align: center !important;
-    padding: 24px 16px !important;
-  }
-
-  body .app .invitation-page .ceremony-item span, 
-  body .app .invitation-page .ceremony-item strong, 
-  body .app .invitation-page .ceremony-item p, 
-  body .app .invitation-page .ceremony-item em {
+  body .app .invitation-page .info-row span { 
+    font-size: clamp(11px, 1.8vh, 13px) !important; 
     display: block !important;
     width: 100% !important;
-    margin: 0 !important;
-    line-height: 1.4 !important;
-  }
-
-  body .app .invitation-page .ceremony-item strong {
-    font-size: 26px !important;
-  }
-
-  body .app .invitation-page .schedule-item {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 10px !important;
     text-align: center !important;
-    padding: 24px 16px !important;
   }
 
-  body .app .invitation-page .schedule-item strong, 
-  body .app .invitation-page .schedule-item span, 
-  body .app .invitation-page .schedule-item p, 
-  body .app .invitation-page .schedule-item div {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    text-align: center !important;
-    line-height: 1.4 !important;
-  }
-  body .app .invitation-page .schedule-item > strong {
-    font-size: 24px !important;
-  }
-
-  body .app .invitation-page .qr-public-card {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 16px !important;
-    width: 100% !important;
-    max-width: 280px !important;
-    margin: 24px auto !important;
-    padding: 24px !important;
-    box-sizing: border-box !important;
-  }
-
-  body .app .invitation-page .qr-public-card img {
-    display: block !important;
-    width: 100% !important;
-    max-width: 180px !important;
-    height: auto !important;
-    margin: 0 auto !important;
-  }
-
-  body .app .invitation-page .qr-public-card span {
-    display: block !important;
-    text-align: center !important;
-    margin-top: 4px !important;
-    width: 100% !important;
-  }
-
-  body .app .invitation-page .button-group {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    width: 100% !important;
-    gap: 14px !important;
-    margin-top: 24px !important;
-  }
-
-  body .app .invitation-page .button-group .main-button, 
-  body .app .invitation-page .button-group .secondary-button, 
-  body .app .invitation-page .button-group a {
-    display: flex !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-  }
-
+  /* Aileler Grid Box Araları Daraltıldı */
   body .app .invitation-page .family-grid, 
   body .app .invitation-page .ceremony-grid, 
   body .app .invitation-page .schedule-list {
     display: flex !important;
     flex-direction: column !important;
-    gap: 16px !important;
+    gap: 8px !important;
     width: 100% !important;
-  }
-
-  body .app .invitation-page > .hero-section.active-slide {
-    animation: premiumFadeInHero 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  }
-
-  body .app .invitation-page > section.card.active-slide,
-  body .app .invitation-page > section.countdown-section.active-slide,
-  body .app .invitation-page > footer.active-slide {
-    overflow: hidden !important; /* Scroll'u KESİNLİKLE kapat */
-    max-height: 94dvh !important; /* Kart boyutunu ekrana tam yay */
-    padding: clamp(16px, 3vh, 34px) clamp(14px, 3vw, 20px) !important; /* Paddingleri ekrana göre dinamik daralt */
-    display: flex !important;
-    flex-direction: column !important;  
-    justify-content: center !important;
-    animation: premiumFadeInCard 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  }
-
-  body .app .invitation-page .card h2, 
-  body .app .invitation-page .countdown-section h2 { 
-    font-size: clamp(20px, 4vh, 26px) !important; 
-    margin-bottom: clamp(6px, 1.5vh, 12px) !important; 
-  }
-
-  body .app .invitation-page .family-grid, 
-  body .app .invitation-page .ceremony-grid, 
-  body .app .invitation-page .schedule-list,
-  body .app .invitation-page .info-list,
-  body .app .invitation-page .button-group {
-    gap: clamp(6px, 1.2vh, 12px) !important;
-    margin-top: clamp(10px, 2vh, 20px) !important;
+    margin-top: clamp(8px, 1.5vh, 12px) !important;
+    flex-shrink: 1 !important;
   }
 
   body .app .invitation-page .family-grid div,
   body .app .invitation-page .ceremony-item,
-  body .app .invitation-page .schedule-item,
-  body .app .invitation-page .info-row {
-    padding: clamp(10px, 2vh, 16px) 12px !important;
-    min-height: auto !important; /* Min-height sınırını kaldır ki daralabilsin */
-  }
-
-  body .app .invitation-page .family-grid strong { font-size: clamp(22px, 4vh, 32px) !important; }
-  body .app .invitation-page .ceremony-item strong { font-size: clamp(20px, 3.5vh, 26px) !important; }
-  body .app .invitation-page .schedule-item > strong { font-size: clamp(18px, 3vh, 24px) !important; }
-  body .app .invitation-page .info-row strong { font-size: clamp(16px, 3vh, 22px) !important; }
-
-  body .app .invitation-page .info-list {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    height: auto !important; 
-    overflow: visible !important; 
-  }
-
-  body .app .invitation-page .info-row {
+  body .app .invitation-page .schedule-item {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 8px !important;
-    padding: 20px 16px !important;
+    text-align: center !important;
+    gap: 2px !important;
+    padding: 10px 8px !important;
     width: 100% !important;
     box-sizing: border-box !important;
-    min-height: 85px !important; 
-    flex-shrink: 0 !important;
-  }
-
-  body .app .invitation-page .info-row span,
-  body .app .invitation-page .info-row strong {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    text-align: center !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    line-height: 1.4 !important;
-  }
-
-  body .app .invitation-page .mini-map {
-    height: 250px !important; 
-    min-height: 250px !important;
-    margin-top: 16px !important;
-    flex-shrink: 0 !important; 
-  }
-
-  body .app .invitation-page > section.card.active-slide {
-    overflow-y: auto !important; 
-  }
-
-  body .app .invitation-page > section.card.active-slide::-webkit-scrollbar {
-    display: none !important;
   }
 
   body .app .invitation-page .gallery-grid {
@@ -1864,39 +1657,47 @@ html body .app .invitation-page .card > h2 {
   body .app .invitation-page .gallery-grid img {
     width: 100% !important;
     height: 16vh !important; 
-    min-height: 130px !important;
+    min-height: 100px !important;
     object-fit: cover !important;
   }
 
-  body .app .invitation-page .rsvp-form input, 
-  body .app .invitation-page .wish-form input,
-  body .app .invitation-page .option-button {
-    padding: clamp(10px, 2vh, 15px) 12px !important;
-    font-size: clamp(14px, 2.5vh, 16px) !important;
-  }
-
-  body .app .invitation-page .rsvp-form textarea, 
-  body .app .invitation-page .wish-form textarea {
-    min-height: clamp(60px, 10vh, 80px) !important;
-    height: clamp(60px, 10vh, 80px) !important;
-    padding-bottom: 24px !important;
-  }
-
-  ody .app .invitation-page .main-button, 
-  body .app .invitation-page .secondary-button {
-    min-height: clamp(40px, 7vh, 52px) !important;
-    padding: 8px 16px !important;
-  }
-
-  /* 8. QR Kod kısmını daralt */
   body .app .invitation-page .qr-public-card {
-    padding: clamp(12px, 2vh, 24px) !important;
-    margin: clamp(12px, 2vh, 24px) auto !important;
+    flex: 1 1 auto !important; 
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: 250px !important;
+    padding: clamp(12px, 2vh, 18px) !important;
+    margin: clamp(10px, 2vh, 16px) auto !important;
+    box-sizing: border-box !important;
   }
-  
+
   body .app .invitation-page .qr-public-card img {
-    max-width: clamp(100px, 20vh, 160px) !important;
+    display: block !important;
+    width: auto !important;
+    max-width: 150px !important;
+    max-height: 20vh !important;
+    margin: 0 auto !important;
   }
+
+  body .app .invitation-page .qr-public-card span {
+    display: block !important;
+    width: 100% !important;
+    margin-top: 8px !important;
+    text-align: center !important;
+  }
+
+  /* 12. Intro (Zarf) Ekranı Düzeltmeleri */
+  .intro-page { padding: 18px; }
+  .intro-card { padding: 46px 24px; border-radius: 32px; }
+  .intro-page .couple-title { font-size: 58px; }
+  .intro-page .couple-title em { display: block; margin: 4px 0; }
+  .intro-text { font-size: 19px; }
+  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
+  .timeline::before { display: none; }
+  .timeline-item { grid-template-columns: 1fr; gap: 8px; text-align: center; }
 }
 
 @media (max-width: 380px), (max-height: 650px) {
@@ -1907,40 +1708,21 @@ html body .app .invitation-page .card > h2 {
   .intro-page .envelope-container .intro-card .intro-text { font-size: 11px !important; margin-top: 4px !important; }
 }
 
-@keyframes slideFadeInHero {
-  from { opacity: 0; transform: scale(1.06); filter: blur(10px); }
-  to { opacity: 1; transform: scale(1); filter: blur(0); }
-}
-
-@keyframes slideFadeInCard {
-  from { opacity: 0; transform: translate(-50%, -35%) scale(0.94); filter: blur(8px); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
-}
-
+/* =================================================================
+   ANİMASYONLAR (TÜM CİHAZLAR İÇİN)
+   ================================================================= */
 @keyframes premiumFadeInHero {
-  0% { 
-    opacity: 0; 
-    transform: scale(1.1); 
-    filter: blur(15px); 
-  }
-  100% { 
-    opacity: 1; 
-    transform: scale(1); 
-    filter: blur(0); 
-  }
+  0% { opacity: 0; transform: scale(1.1); filter: blur(15px); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
 }
 
 @keyframes premiumFadeInCard {
-  0% { 
-    opacity: 0; 
-    transform: translate(-50%, -35%) scale(0.90); 
-    filter: blur(12px);
-    box-shadow: 0 0 0 rgba(0,0,0,0);
-  }
-  100% { 
-    opacity: 1; 
-    transform: translate(-50%, -50%) scale(1); 
-    filter: blur(0);
-    box-shadow: 0 25px 65px rgba(0,0,0,0.55);
-  }
+  0% { opacity: 0; transform: translate(-50%, -35%) scale(0.90); filter: blur(12px); box-shadow: 0 0 0 rgba(0,0,0,0); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); box-shadow: 0 25px 65px rgba(0,0,0,0.55); }
+}
+
+@keyframes magicFloat {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-5px); } 
+  100% { transform: translateY(0px); }
 }
