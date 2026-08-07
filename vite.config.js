@@ -1,26 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import legacy from '@vitejs/plugin-legacy';
 
-const manualChunks = (id) => {
-  if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
-    return 'vendor-react';
-  }
-  if (id.includes('node_modules/i18next') || id.includes('node_modules/react-i18next')) {
-    return 'vendor-i18n';
-  }
-  if (id.includes('node_modules/@supabase')) {
-    return 'vendor-supabase';
-  }
-};
-
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks,
-      },
-    },
-  },
-})
+  plugins: [
+    react(),
+    legacy({
+      targets: ['defaults', 'not IE 11'], // IE 11 hariç genel tarayıcı standartlarını hedefler
+      polyfills: true, // Eksik JavaScript özelliklerini (örn: Promise, Array.includes) otomatik ekler
+    })
+  ],
+});

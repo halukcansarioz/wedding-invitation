@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
@@ -11,6 +11,7 @@ import { GlobalModals } from "./components/common/GlobalModals";
 
 const InvitationView = lazy(() => import("./pages/InvitationView"));
 const AdminView = lazy(() => import("./pages/AdminView"));
+
 import {
   DEFAULT_WEDDING_MUSIC_FILE,
   DEFAULT_WEDDING_MUSIC_NAME,
@@ -59,8 +60,7 @@ function App() {
   const isEn = i18n.language.startsWith('en');
 
   const toggleLanguage = () => {
-    const newLang = isEn ? 'tr' : 'en';
-    i18n.changeLanguage(newLang);
+    i18n.changeLanguage(isEn ? 'tr' : 'en');
   };
 
   const [siteData, setSiteData] = useState(() => loadStoredSiteData());
@@ -135,9 +135,6 @@ function App() {
   const timeLeft = useCountdown(invitation.weddingDate);
   const { audioRef, isMusicPlaying, startMusic, toggleMusic, stopMusic } = useAudio(invitation.musicFile);
 
-  // =========================================================
-  // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ (Tekerlek, Swipe & Tıklama Destekli)
-  // =========================================================
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -146,61 +143,91 @@ function App() {
   const touchStartYRef = useRef(0);
 
   const scrollToNext = useCallback(() => {
-    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
-    if (currentSlideIndex < sections.length - 1) {
-      setCurrentSlideIndex((prev) => prev + 1);
+    const isMobile = window.innerWidth <= 650;
+    const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+    
+    if (isMobile) {
+      if (currentSlideIndex < sections.length - 1) {
+        setCurrentSlideIndex((prev) => prev + 1);
+      }
+    } else {
+      // MASAÜSTÜ: Ekrandaki mevcut kaydırma pozisyonuna göre bir sonraki kartı hesapla ve oraya pürüzsüzce kay
+      const currentScroll = window.scrollY;
+      const nextSection = sections.find(sec => {
+        const rect = sec.getBoundingClientRect();
+        const absoluteTop = rect.top + window.scrollY;
+        return absoluteTop > currentScroll + (window.innerHeight * 0.5);
+      });
+
+      if (nextSection) {
+        nextSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (sections.length > 0) {
+        sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   }, [currentSlideIndex]);
 
   const scrollToPrev = useCallback(() => {
-    if (currentSlideIndex > 0) {
-      setCurrentSlideIndex((prev) => prev - 1);
+    const isMobile = window.innerWidth <= 650;
+    const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+    
+    if (isMobile) {
+      if (currentSlideIndex > 0) {
+        setCurrentSlideIndex((prev) => prev - 1);
+      }
+    } else {
+      // MASAÜSTÜ: Ekrandaki mevcut kaydırma pozisyonuna göre bir önceki kartı hesapla ve oraya pürüzsüzce kay
+      const currentScroll = window.scrollY;
+      const prevSection = [...sections].reverse().find(sec => {
+        const rect = sec.getBoundingClientRect();
+        const absoluteTop = rect.top + window.scrollY;
+        return absoluteTop < currentScroll - (window.innerHeight * 0.1); 
+      });
+
+      if (prevSection) {
+        prevSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   }, [currentSlideIndex]);
 
-  // Fare Tekerleği (Wheel) ile Geçiş
   const handleWheel = useCallback((e) => {
     if (isAdminPage || !opened || isScrollingRef.current) return;
     
-    if (e.deltaY > 0) {
-      scrollToNext();
-    } else {
-      scrollToPrev();
-    }
-
-    isScrollingRef.current = true;
-    setTimeout(() => {
-      isScrollingRef.current = false;
-    }, 600);
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
-
-  // Dokunmatik Başlangıç (TouchStart)
-  const handleTouchStart = useCallback((e) => {
-    touchStartYRef.current = e.touches[0].clientY;
-  }, []);
-
-  // Dokunmatik Bitiş (TouchEnd / Swipe)
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current) return;
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartYRef.current - touchEndY;
-
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        scrollToNext(); 
-      } else {
-        scrollToPrev(); 
-      }
+    // Yalnızca mobilde scroll'u (tekerleği) ele geçirip tam ekran geçişi sağlıyoruz
+    if (window.innerWidth <= 650) {
+      if (e.deltaY > 0) scrollToNext();
+      else scrollToPrev();
 
       isScrollingRef.current = true;
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 600);
+      setTimeout(() => { isScrollingRef.current = false; }, 600);
     }
   }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
 
-  // Ekranın herhangi bir yerine tıklandığında (butonlar hariç) aşağı kaydırma desteği
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0) return;
+
+    if (window.innerWidth <= 650) {
+      const touchEndY = e.changedTouches[0].clientY;
+      const diff = touchStartYRef.current - touchEndY;
+
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) scrollToNext(); 
+        else scrollToPrev(); 
+
+        isScrollingRef.current = true;
+        setTimeout(() => { isScrollingRef.current = false; }, 600);
+      }
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
+
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
@@ -222,31 +249,45 @@ function App() {
 
     const checkAndApplyClasses = () => {
       const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
-      
       if (!sections.length) {
         setTimeout(checkAndApplyClasses, 50);
         return;
       }
 
-      sections.forEach((sec, idx) => {
-        if (idx === currentSlideIndex) {
-          sec.classList.add('active-slide');
-        } else {
-          sec.classList.remove('active-slide');
-        }
-      });
+      if (window.innerWidth <= 650) {
+        sections.forEach((sec, idx) => {
+          if (idx === currentSlideIndex) sec.classList.add('active-slide');
+          else sec.classList.remove('active-slide');
+        });
 
-      setShowScrollTop(currentSlideIndex > 0);
-      setShowScrollDown(currentSlideIndex < sections.length - 1);
+        setShowScrollTop(currentSlideIndex > 0);
+        setShowScrollDown(currentSlideIndex < sections.length - 1);
+      }
     };
 
     checkAndApplyClasses();
+    
+    // Masaüstünde scroll dinleyicisi ekleyerek aşağı/yukarı oklarının dinamik görünmesini sağla
+    const handleScroll = () => {
+      if (window.innerWidth > 650) {
+        setShowScrollTop(window.scrollY > 100);
+        const isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 100;
+        setShowScrollDown(!isAtBottom);
+      }
+    };
+
+    if (window.innerWidth > 650) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      handleScroll(); // İlk yüklemede kontrol et
+    }
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [currentSlideIndex, isAdminPage, opened]);
 
   useEffect(() => {
-    if (isAdminPage) {
-      stopMusic();
-    }
+    if (isAdminPage) stopMusic();
   }, [isAdminPage, stopMusic]);
 
   const showAppAlert = useCallback((message, options = {}) => {
@@ -294,21 +335,16 @@ function App() {
 
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
-    if (!document.querySelector("meta[charset]")) {
-      const meta = document.createElement("meta");
-      meta.setAttribute("charset", "UTF-8");
-      document.head.prepend(meta);
-    }
   }, [isEn]);
 
   const activeTheme = (isAdminPage ? adminDraft.settings?.theme : settings.theme) || "lavanta";
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     document.documentElement.dataset.theme = activeTheme;
     const favicon = document.querySelector("link[rel='icon'], link[rel='shortcut icon']") || document.createElement("link");
-    favicon.setAttribute("rel", "icon");
-    favicon.setAttribute("type", "image/svg+xml");
-    favicon.setAttribute("href", getFaviconUrl(activeTheme));
+    favicon.rel = "icon";
+    favicon.type = "image/svg+xml";
+    favicon.href = getFaviconUrl(activeTheme);
     if (!favicon.parentNode) document.head.appendChild(favicon);
   }, [activeTheme]);
 
@@ -790,16 +826,18 @@ function App() {
               </svg>
             </button>
 
-            <button
-              type="button"
-              className="dock-btn"
-              onClick={scrollToNext}
-              title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
-            >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </button>
+            {showScrollDown && (
+              <button
+                type="button"
+                className="dock-btn"
+                onClick={scrollToNext}
+                title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
+              >
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+            )}
 
             {showScrollTop && (
               <button
@@ -925,7 +963,6 @@ function App() {
         </Suspense>
       ) : !opened ? (
         <>
-          {/* Sol üst köşeye admin butonu eklendi */}
           <div className="admin-quick-access">
             <a 
               href="#admin" 
@@ -950,7 +987,6 @@ function App() {
             openInvitation={openInvitation}
           />
           
-          {/* Sağ üst köşeye Dil ve Müzik butonları eklendi */}
           <div className="floating-actions glass-dock">
             <button
               type="button"

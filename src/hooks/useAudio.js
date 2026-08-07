@@ -7,72 +7,51 @@ export function useAudio(musicFile) {
   const audioContextRef = useRef(null);
   const musicIntervalRef = useRef(null);
   const musicGainRef = useRef(null);
-  const cleanupAudioRef = useRef(null);
 
+  // Müzik dosyası değiştiğinde sadece yeniden yükleme yapıyoruz.
   useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.load();
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
   }, [musicFile]);
 
-  useEffect(() => {
-    cleanupAudioRef.current = () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-
-        try {
-          audioRef.current.src = "";
-          audioRef.current.load();
-        } catch (e) {
-        }
-
-        if (musicIntervalRef.current) {
-          clearTimeout(musicIntervalRef.current);
-          musicIntervalRef.current = null;
-        }
-
-        if (musicGainRef.current) {
-          try {
-            musicGainRef.current.disconnect();
-          } catch {}
-          musicGainRef.current = null;
-        }
-
-        if (
-          audioContextRef.current &&
-          audioContextRef.current.state !== "closed"
-        ) {
-          try {
-            audioContextRef.current.close();
-          } catch {}
-          audioContextRef.current = null;
-        }
-
-        setIsMusicPlaying(false);
-      }
-    };
-
-    return () => {
-      if (cleanupAudioRef.current) cleanupAudioRef.current();
-    };
-  }, []);
-
   const stopMusic = useCallback(() => {
-    if (audioRef.current) audioRef.current.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     if (musicIntervalRef.current) {
       clearTimeout(musicIntervalRef.current);
       musicIntervalRef.current = null;
     }
     if (musicGainRef.current) {
-      try { musicGainRef.current.disconnect(); } catch {}
+      try { 
+        musicGainRef.current.disconnect(); 
+      } catch (e) { 
+        console.error("Audio disconnect error:", e); 
+      }
       musicGainRef.current = null;
     }
     setIsMusicPlaying(false);
     
-    // YENİ: Kullanıcının müziği kapattığını tarayıcı hafızasına kaydet
     if (typeof window !== "undefined") {
       localStorage.setItem("wedding-music-muted", "true");
     }
   }, []);
+
+  // Hook unmount olduğunda temizleme işlemini standart bir şekilde yapıyoruz.
+  useEffect(() => {
+    return () => {
+      stopMusic();
+      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+        try { 
+          audioContextRef.current.close(); 
+        } catch (e) { 
+          console.error("Audio context close error:", e); 
+        }
+        audioContextRef.current = null;
+      }
+    };
+  }, [stopMusic]);
 
   const startGeneratedMusic = useCallback(async () => {
     if (musicIntervalRef.current) return;
@@ -129,9 +108,7 @@ export function useAudio(musicFile) {
     playNote();
   }, []);
 
-  // YENİ: forcePlay parametresi ile zorla çalma durumu kontrolü eklendi
   const startMusic = useCallback(async (forcePlay = false) => {
-    // Ziyaretçi müziği daha önce kapattıysa ve butona kendi basarak açmıyorsa müziği başlatma
     if (forcePlay !== true && typeof window !== "undefined") {
       if (localStorage.getItem("wedding-music-muted") === "true") {
         return;
@@ -145,7 +122,11 @@ export function useAudio(musicFile) {
           musicIntervalRef.current = null;
         }
         if (musicGainRef.current) {
-          try { musicGainRef.current.disconnect(); } catch {}
+          try { 
+            musicGainRef.current.disconnect(); 
+          } catch (e) {
+            console.error("Disconnect error:", e);
+          }
           musicGainRef.current = null;
         }
         try {
@@ -153,12 +134,10 @@ export function useAudio(musicFile) {
           await audioRef.current.play();
           setIsMusicPlaying(true);
           
-          // Müzik başarılı çalarsa hafızadaki "kapalı" tercihini kaldır
           if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
-          
           return;
         } catch (audioError) {
-          console.log("Müzik dosyası çalınamadı, yedek melodi deneniyor:", audioError);
+          console.error("Müzik dosyası çalınamadı, yedek melodi deneniyor:", audioError);
           if (musicFile !== DEFAULT_WEDDING_MUSIC_FILE) throw audioError;
         }
       }
@@ -167,7 +146,7 @@ export function useAudio(musicFile) {
       if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
     } catch (error) {
       setIsMusicPlaying(false);
-      console.log("Müzik başlatılamadı:", error);
+      console.error("Müzik başlatılamadı:", error);
     }
   }, [musicFile, startGeneratedMusic]);
 
@@ -175,7 +154,6 @@ export function useAudio(musicFile) {
     if (isMusicPlaying) {
       stopMusic();
     } else {
-      // Müzik butonuna basıldığında zorla başlatması için "true" gönderiyoruz
       await startMusic(true); 
     }
   }, [isMusicPlaying, stopMusic, startMusic]);

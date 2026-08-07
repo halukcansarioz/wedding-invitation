@@ -1,3 +1,36 @@
+/* Çapraz Tarayıcı CSS Yamaları */
+
+/* 1. Dinamik Viewport (dvh) desteği olmayan tarayıcılar için vh yedeği */
+@supports not (height: 100dvh) {
+  .invitation-page, 
+  .app-modal-backdrop,
+  .hero-section {
+    height: 100vh !important;
+  }
+}
+
+/* 2. Safari (iOS) için Cam Efekti (Glassmorphism) Desteği */
+.glass-dock, 
+.app-modal-backdrop, 
+.intro-card,
+.admin-sidebar {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/* 3. iOS cihazlarda akıcı kaydırma (smooth scrolling) özelliği */
+html, body {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 4. Eski Safari sürümleri için appearance yedeği */
+select, 
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;

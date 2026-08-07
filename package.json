@@ -18,8 +18,27 @@
     "react-i18next": "^17.0.11"
   },
   "devDependencies": {
+    "@vitejs/plugin-legacy": "^8.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "autoprefixer": "^10.5.4",
     "oxlint": "^1.69.0",
+    "postcss": "^8.5.26",
+    "terser": "^5.49.2",
     "vite": "^8.1.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "ios >= 12",
+      "safari >= 12"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
+
 }
