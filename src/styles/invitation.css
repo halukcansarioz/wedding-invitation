@@ -1415,6 +1415,80 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     text-align: center !important;
   }
 
+  body .app .invitation-page > section.card.active-slide,
+  body .app .invitation-page > section.countdown-section.active-slide {
+    justify-content: flex-start !important; /* İçeriği ortalamak yerine üstten başlatır */
+    overflow-y: auto !important; /* Sığmayan kısımlar için kart içinde kaydırmayı aktif tutar */
+    padding-top: 36px !important; /* Üst kısımdaki yazıların rahat okunması için boşluk */
+    padding-bottom: 36px !important; 
+  }
+  
+  /* Başlık ve bölüm etiketlerinin ezilmemesi için ekstra koruma */
+  body .app .invitation-page .card > p.section-label,
+  body .app .invitation-page .card > h2 {
+    flex-shrink: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* 1. Kartı flex yapıdan kurtarıp normal block yapıyoruz. 
+        Böylece içerik uzunsa bile KESİNLİKLE en üstten başlar, yukarıda kaybolmaz. */
+  html body .app .invitation-page > section.card.active-slide,
+  html body .app .invitation-page > section.countdown-section.active-slide {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    overflow-y: hidden !important; /* KESİNLİKLE KAYDIRMA YAPMAZ */
+    padding-top: clamp(12px, 2vh, 24px) !important;
+    padding-bottom: clamp(12px, 2vh, 24px) !important;
+    max-height: 94dvh !important; /* Kartın ekranı aşmasını sınırlar */
+  }
+  
+  html body .app .invitation-page .mini-map {
+    height: clamp(120px, 18vh, 220px) !important; /* Harita ekrana göre otomatik ufalır/büyür */
+    min-height: auto !important;
+    margin-top: clamp(8px, 1.5vh, 16px) !important;
+  }
+  
+  html body .app .invitation-page .info-row,
+  html body .app .invitation-page .guest-item,
+  html body .app .invitation-page .schedule-item {
+    padding: clamp(8px, 1.5vh, 16px) 12px !important;
+    min-height: auto !important;
+    gap: 4px !important;
+  }
+
+  /* 2. Kart block olunca içeriklerin sola kaymaması ve ortada kalması için */
+  html body .app .invitation-page .info-list,
+  html body .app .invitation-page .mini-map,
+  html body .app .invitation-page .button-group,
+  html body .app .invitation-page .qr-public-card,
+  html body .app .invitation-page .guest-stats,
+  html body .app .invitation-page .rsvp-form,
+  html body .app .invitation-page .wish-form,
+  html body .app .invitation-page .family-grid,
+  html body .app .invitation-page .ceremony-grid,
+  html body .app .invitation-page .schedule-list {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  /* 3. Alt kısımdaki butonların kartın dışına taşmaması (ezilmemesi) için ekstra boşluk */
+  html body .app .invitation-page .button-group {
+    margin-top: clamp(12px, 2vh, 20px) !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    gap: 10px !important;
+  }
+
+  html body .app .invitation-page .button-group .main-button, 
+  html body .app .invitation-page .button-group .secondary-button {
+    min-height: clamp(40px, 6vh, 52px) !important;
+    padding: 8px 16px !important;
+  }
+html body .app .invitation-page .card > h2 {
+    margin-bottom: clamp(6px, 1.5vh, 16px) !important;
+    font-size: clamp(24px, 4.5vh, 32px) !important;
+  }
   /* Kart içi kaydırma yapıldığında çirkin scrollbar'ı gizle */
   .invitation-page > section.active-slide::-webkit-scrollbar,
   .invitation-page > footer.active-slide::-webkit-scrollbar {
@@ -1691,7 +1765,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
   }
 
   body .app .invitation-page > .hero-section.active-slide {
-    animation: slideFadeInHero 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+    animation: premiumFadeInHero 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   }
 
   body .app .invitation-page > section.card.active-slide,
@@ -1703,6 +1777,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     display: flex !important;
     flex-direction: column !important;  
     justify-content: center !important;
+    animation: premiumFadeInCard 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   }
 
   body .app .invitation-page .card h2, 
@@ -1840,4 +1915,32 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
 @keyframes slideFadeInCard {
   from { opacity: 0; transform: translate(-50%, -35%) scale(0.94); filter: blur(8px); }
   to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+}
+
+@keyframes premiumFadeInHero {
+  0% { 
+    opacity: 0; 
+    transform: scale(1.1); 
+    filter: blur(15px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+    filter: blur(0); 
+  }
+}
+
+@keyframes premiumFadeInCard {
+  0% { 
+    opacity: 0; 
+    transform: translate(-50%, -35%) scale(0.90); 
+    filter: blur(12px);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  100% { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1); 
+    filter: blur(0);
+    box-shadow: 0 25px 65px rgba(0,0,0,0.55);
+  }
 }

@@ -5,7 +5,9 @@ import { supabase } from "./supabaseClient";
 import { useAdminSession } from "./hooks/useAdminSession";
 import { useCountdown } from "./hooks/useCountdown";
 import { useAudio } from "./hooks/useAudio";
+import { useDatabaseManager } from "./hooks/useDatabaseManager";
 import IntroPage from "./components/invitation/IntroPage";
+import { GlobalModals } from "./components/common/GlobalModals";
 
 const InvitationView = lazy(() => import("./pages/InvitationView"));
 const AdminView = lazy(() => import("./pages/AdminView"));
@@ -134,13 +136,25 @@ function App() {
   const { audioRef, isMusicPlaying, startMusic, toggleMusic, stopMusic } = useAudio(invitation.musicFile);
 
   // =========================================================
-  // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ (TEKİL TANIMLAMALAR)
+  // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ 
   // =========================================================
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(true);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  // BEYAZ EKRAN SORUNUNU ÇÖZEN GÜNCEL KOD BURASI
+  const scrollToNext = useCallback(() => {
+    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
+    if (currentSlideIndex < sections.length - 1) {
+      setCurrentSlideIndex((prev) => prev + 1);
+    }
+  }, [currentSlideIndex]);
+
+  const scrollToPrev = useCallback(() => {
+    if (currentSlideIndex > 0) {
+      setCurrentSlideIndex((prev) => prev - 1);
+    }
+  }, [currentSlideIndex]);
+
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
@@ -167,33 +181,27 @@ function App() {
     checkAndApplyClasses();
   }, [currentSlideIndex, isAdminPage, opened]);
 
-  const scrollToNext = useCallback(() => {
-    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
-    if (currentSlideIndex < sections.length - 1) {
-      setCurrentSlideIndex((prev) => prev + 1);
-    }
-  }, [currentSlideIndex]);
-
-  const scrollToPrev = useCallback(() => {
-    if (currentSlideIndex > 0) {
-      setCurrentSlideIndex((prev) => prev - 1);
-    }
-  }, [currentSlideIndex]);
-
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
     const handleGlobalClick = (e) => {
       if (window.innerWidth > 650) return; 
-      const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access');
+      /* .mini-map sınıfı burada olduğu için harita tıklandığında sayfa atlamaz */
+      const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access, .mini-map');
       
       if (!isInteractive) {
         scrollToNext();
       }
     };
 
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
+    const container = document.querySelector('.invitation-page');
+    if (container) {
+      container.addEventListener('click', handleGlobalClick);
+      return () => container.removeEventListener('click', handleGlobalClick);
+    } else {
+      document.addEventListener('click', handleGlobalClick);
+      return () => document.removeEventListener('click', handleGlobalClick);
+    }
   }, [isAdminPage, opened, scrollToNext]);
 
   useEffect(() => {
@@ -234,6 +242,15 @@ function App() {
     setRecoveryMessage, setRecoveryLoading, setForgotPasswordLoading,
     setAdminAuthLoading, setIsPasswordRecovery, setActiveAdminTab,
     setSiteData, setAdminDraft, setGuests, setWishes, showAppConfirm, isEn
+  });
+
+  const {
+    submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, 
+    editGuest, deleteWish, editWish, toggleWishApproval
+  } = useDatabaseManager({
+    guests, setGuests, wishes, setWishes, guestForm, setGuestForm, 
+    wishForm, setWishForm, settings, showAppAlert, showAppConfirm, 
+    showAppPrompt, setAdminSaveMessage, t, isEn
   });
 
   useEffect(() => {
@@ -364,58 +381,6 @@ function App() {
       hasChild: attendance === "Katılacağım" ? (prev.hasChild === "-" ? "Hayır" : prev.hasChild) : "-",
     }));
   }, []);
-
-  const submitGuest = useCallback(async (e) => {
-    if (e) e.preventDefault();
-    if (!guestForm.name.trim()) {
-      await showAppAlert(t('form.missingNameMessage'), { title: t('form.missingInfo') });
-      return;
-    }
-    if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    try {
-      const { data, error } = await supabase.from("guests").insert(uiGuestToDb(guestForm)).select("*").single();
-      if (error) throw error;
-      setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...guestForm }, ...prev]);
-      setGuestForm(INITIAL_GUEST_FORM);
-      
-      if (guestForm.attendance === "Katılacağım") {
-        await showAppAlert(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
-      }
-    } catch (error) {
-      console.error("Katılım kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [guestForm, showAppAlert, t, isEn]);
-
-  const submitWish = useCallback(async (e) => {
-    e.preventDefault();
-    if (!wishForm.name.trim() || !wishForm.message.trim()) {
-      await showAppAlert(t('form.missingWishMessage'), { title: t('form.missingInfo') });
-      return;
-    }
-    if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    const shouldPublishNow = !settings.requireWishApproval;
-    try {
-      const { data, error } = await supabase.from("wishes").insert({ name: wishForm.name.trim(), message: wishForm.message.trim(), approved: shouldPublishNow }).select("*").single();
-      if (error) throw error;
-      if (shouldPublishNow) {
-        setWishes((prev) => [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...wishForm, approved: true }, ...prev]);
-      }
-      setWishForm(INITIAL_WISH_FORM);
-      await showAppAlert(settings.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : t('alerts.saveTitle') });
-    } catch (error) {
-      console.error("Mesaj kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert(t('alerts.wishError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [wishForm, settings.requireWishApproval, showAppAlert, t, isEn]);
   
   const copyInvitationLink = useCallback(async () => {
     try {
@@ -574,93 +539,6 @@ function App() {
     }
   }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn]);
 
-  const clearGuests = useCallback(async () => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete all RSVP records?" : "Tüm katılım kayıtları silinsin mi?", 
-      { title: isEn ? "Clear Guests" : "Katılım kayıtlarını sil" }
-    );
-    if (!confirmed) return;
-    const { error } = await supabase.from("guests").delete().not("id", "is", null);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
-    setGuests([]);
-  }, [showAppConfirm, isEn]);
-
-  const clearWishes = useCallback(async () => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete all guestbook messages?" : "Tüm anı defteri mesajları silinsin mi?", 
-      { title: isEn ? "Clear Guestbook" : "Anı defterini temizle" }
-    );
-    if (!confirmed) return;
-    const { error } = await supabase.from("wishes").delete().not("id", "is", null);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
-    setWishes([]);
-  }, [showAppConfirm, isEn]);
-
-  const deleteGuest = useCallback(async (guestId) => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete this RSVP record?" : "Bu katılım kaydı silinsin mi?", 
-      { title: isEn ? "Delete Record" : "Kaydı sil" }
-    );
-    if (!confirmed) return;
-    const { error } = await supabase.from("guests").delete().eq("id", guestId);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
-    setGuests((prev) => prev.filter((g) => g.id !== guestId));
-  }, [showAppConfirm, isEn]);
-
-  const editGuest = useCallback(async (guestId) => {
-    const guest = guests.find((item) => item.id === guestId);
-    if (!guest) return;
-    const title = isEn ? "Edit RSVP" : "Katılım kaydını düzenle";
-    
-    const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", guest.name || "", { title }); if (name === null) return;
-    const phone = await showAppPrompt(isEn ? "Phone" : "Telefon", guest.phone || "", { title }); if (phone === null) return;
-    const attendance = await showAppPrompt(isEn ? "Attendance (Katılacağım/Katılamayacağım)" : "Katılım durumu", guest.attendance || "Katılacağım", { title }); if (attendance === null) return;
-    const personCount = await showAppPrompt(isEn ? "Person Count" : "Kişi sayısı", guest.personCount || "1", { title }); if (personCount === null) return;
-    const side = await showAppPrompt(isEn ? "Side" : "Taraf", guest.side || "Gelin Tarafı", { title }); if (side === null) return;
-    const hasChild = await showAppPrompt(isEn ? "Has children? (Evet/Hayır)" : "Çocuk var mı? Evet/Hayır", guest.hasChild || "Hayır", { title }); if (hasChild === null) return;
-    const songRequest = await showAppPrompt(isEn ? "Song Request" : "Müzik isteği", guest.songRequest || "", { title }); if (songRequest === null) return;
-    const note = await showAppPrompt(isEn ? "Note" : "Not", guest.note || "", { title, multiline: true }); if (note === null) return;
-
-    const nextGuest = { ...guest, name, phone, attendance, personCount, side, hasChild, songRequest, note };
-    const { error } = await supabase.from("guests").update(uiGuestToDb(nextGuest)).eq("id", guestId);
-    if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage(isEn ? "Could not update." : "Güncellenemedi."); return; }
-    setGuests((prev) => prev.map((item) => (item.id === guestId ? nextGuest : item)));
-  }, [guests, showAppPrompt, isEn]);
-
-  const deleteWish = useCallback(async (wishId) => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete this message?" : "Bu anı defteri mesajı silinsin mi?", 
-      { title: isEn ? "Delete Message" : "Mesajı sil" }
-    );
-    if (!confirmed) return;
-    const { error } = await supabase.from("wishes").delete().eq("id", wishId);
-    if (error) { console.error("Silinemedi:", error); setAdminSaveMessage(isEn ? "Could not delete." : "Silinemedi."); return; }
-    setWishes((prev) => prev.filter((w) => w.id !== wishId));
-  }, [showAppConfirm, isEn]);
-
-  const editWish = useCallback(async (wishId) => {
-    const wish = wishes.find((item) => item.id === wishId);
-    if (!wish) return;
-    const title = isEn ? "Edit Message" : "Mesajı düzenle";
-    
-    const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", wish.name || "", { title }); if (name === null) return;
-    const message = await showAppPrompt(isEn ? "Message" : "Mesaj", wish.message || "", { title, multiline: true }); if (message === null) return;
-
-    const nextWish = { ...wish, name, message };
-    const { error } = await supabase.from("wishes").update(uiWishToDb(nextWish)).eq("id", wishId);
-    if (error) { console.error("Güncellenemedi:", error); setAdminSaveMessage(isEn ? "Could not update." : "Güncellenemedi."); return; }
-    setWishes((prev) => prev.map((item) => (item.id === wishId ? nextWish : item)));
-  }, [wishes, showAppPrompt, isEn]);
-
-  const toggleWishApproval = useCallback(async (wishId) => {
-    const wish = wishes.find((item) => item.id === wishId);
-    if (!wish) return;
-    const nextApproved = wish.approved === false;
-    const { error } = await supabase.from("wishes").update({ approved: nextApproved }).eq("id", wishId);
-    if (error) { console.error("Değiştirilemedi:", error); setAdminSaveMessage(isEn ? "Could not change status." : "Değiştirilemedi."); return; }
-    setWishes((prev) => prev.map((item) => (item.id === wishId ? { ...item, approved: nextApproved } : item)));
-  }, [wishes, isEn]);
-
   const getGuestExportData = useCallback(() => {
     const headers = ["Ad Soyad", "Telefon", "Katılım Durumu", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
     const rows = guests.map((g) => ({ "Ad Soyad": g.name || "", "Telefon": g.phone || "", "Katılım Durumu": g.attendance || "", "Kişi Sayısı": g.personCount || "", "Taraf": g.side || "", "Çocuk": g.hasChild || "Hayır", "Müzik İsteği": g.songRequest || "", "Not": g.note || "" }));
@@ -791,104 +669,18 @@ function App() {
         preload="auto"
       />
       
-      {/* Özel Alert Zırhlı Modal */}
-      {customAlert && (
-        <div 
-          onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
-        >
-          <div 
-            onClick={e => e.stopPropagation()} 
-            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "400px", textAlign: "center", padding: "34px 24px", border: "2px solid #b56c83" }}
-          >
-            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "22px", fontWeight: "800" }}>
-              {customAlert.title}
-            </h3>
-            <p style={{ fontSize: "17px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {customAlert.message}
-            </p>
-            <button type="button" className="main-button" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }} style={{ margin: 0, minWidth: "140px" }}>
-              {t('ui.ok')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Özel Confirm Zırhlı Modal */}
-      {customConfirm && (
-        <div 
-          onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
-        >
-          <div 
-            onClick={e => e.stopPropagation()} 
-            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "400px", textAlign: "center", padding: "34px 24px", border: "2px solid #b56c83" }}
-          >
-            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0 0 12px", fontFamily: "Playfair Display, serif", fontSize: "22px", fontWeight: "800" }}>
-              {customConfirm.title}
-            </h3>
-            <p style={{ fontSize: "17px", lineHeight: "1.6", color: "var(--text, #55303b)", marginBottom: "24px", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {customConfirm.message}
-            </p>
-            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-              <button type="button" className="main-button" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }} style={{ margin: 0, minWidth: "120px" }}>
-                {t('ui.yes')}
-              </button>
-              <button type="button" className="secondary-button" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }} style={{ margin: 0, minWidth: "120px" }}>
-                {t('ui.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Özel Prompt Zırhlı Modal */}
-      {customPrompt && (
-        <div 
-          onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}
-          style={{ display: "flex", alignItems: "center", justifyContent: "center", position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}
-        >
-          <form 
-            onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }}
-            onClick={e => e.stopPropagation()} 
-            style={{ backgroundColor: "#ffffff", borderRadius: "24px", boxShadow: "0 25px 50px rgba(0,0,0,0.5)", width: "90%", maxWidth: "440px", textAlign: "center", padding: "34px 24px", border: "2px solid #b56c83", display: "flex", flexDirection: "column", gap: "16px" }}
-          >
-            <h3 style={{ color: "var(--rose-dark, #9f4f68)", margin: "0", fontFamily: "Playfair Display, serif", fontSize: "22px", fontWeight: "800" }}>
-              {customPrompt.title}
-            </h3>
-            <p style={{ fontSize: "16px", margin: "0", color: "var(--text, #55303b)", fontFamily: "Playfair Display, serif", fontWeight: "600" }}>
-              {customPrompt.label}
-            </p>
-            {customPrompt.multiline ? (
-              <textarea 
-                autoFocus 
-                value={customPrompt.value} 
-                onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} 
-                style={{ width: "100%", padding: "14px", borderRadius: "14px", border: "1.5px solid #d98ca1", outline: "none", minHeight: "100px", fontFamily: "Playfair Display, serif", fontSize: "16px" }} 
-              />
-            ) : (
-              <input 
-                autoFocus 
-                value={customPrompt.value} 
-                onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} 
-                style={{ width: "100%", padding: "14px", borderRadius: "14px", border: "1.5px solid #d98ca1", outline: "none", fontFamily: "Playfair Display, serif", fontSize: "16px" }} 
-              />
-            )}
-            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap", marginTop: "8px" }}>
-              <button type="submit" className="main-button" style={{ margin: 0, minWidth: "120px" }}>
-                {t('ui.save')}
-              </button>
-              <button type="button" className="secondary-button" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }} style={{ margin: 0, minWidth: "120px" }}>
-                {t('ui.cancel')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      <GlobalModals 
+        customAlert={customAlert} 
+        setCustomAlert={setCustomAlert} 
+        customConfirm={customConfirm} 
+        setCustomConfirm={setCustomConfirm} 
+        customPrompt={customPrompt} 
+        setCustomPrompt={setCustomPrompt} 
+        t={t} 
+      />
 
      {!isAdminPage && (
         <>
-          {/* Hızlı Admin Giriş Butonu */}
           <div className="admin-quick-access">
             <a 
               href="#admin" 
@@ -906,7 +698,6 @@ function App() {
           </div>
           
           <div className="floating-actions glass-dock">
-            {/* Dil Değiştirme */}
             <button
               type="button"
               className="dock-btn"
@@ -916,7 +707,6 @@ function App() {
               {isEn ? 'EN' : 'TR'}
             </button>
 
-            {/* Paylaş */}
             <a 
               className="dock-btn" 
               href={`https://wa.me/?text=${shareText}`} 
@@ -933,7 +723,6 @@ function App() {
               </svg>
             </a>
 
-            {/* Müzik Aç / Kapat */}
             <button
               type="button"
               className="dock-btn"
@@ -959,7 +748,6 @@ function App() {
               </svg>
             </button>
 
-            {/* TIKLAYARAK AŞAĞI İN BUTONU */}
             {showScrollDown && (
               <button
                 type="button"
@@ -974,7 +762,6 @@ function App() {
               </button>
             )}
 
-            {/* TIKLAYARAK YUKARI ÇIK BUTONU */}
             {showScrollTop && (
               <button
                 type="button"
