@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./styles/index.css";
 import { supabase } from "./supabaseClient";
@@ -136,11 +136,14 @@ function App() {
   const { audioRef, isMusicPlaying, startMusic, toggleMusic, stopMusic } = useAudio(invitation.musicFile);
 
   // =========================================================
-  // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ 
+  // TEK EKRAN SLAYT GEÇİŞ SİSTEMİ (Tekerlek, Swipe & Tıklama Destekli)
   // =========================================================
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
 
   const scrollToNext = useCallback(() => {
     const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
@@ -154,6 +157,65 @@ function App() {
       setCurrentSlideIndex((prev) => prev - 1);
     }
   }, [currentSlideIndex]);
+
+  // Fare Tekerleği (Wheel) ile Geçiş
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current) return;
+    
+    if (e.deltaY > 0) {
+      scrollToNext();
+    } else {
+      scrollToPrev();
+    }
+
+    isScrollingRef.current = true;
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 600);
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
+
+  // Dokunmatik Başlangıç (TouchStart)
+  const handleTouchStart = useCallback((e) => {
+    touchStartYRef.current = e.touches[0].clientY;
+  }, []);
+
+  // Dokunmatik Bitiş (TouchEnd / Swipe)
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current) return;
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEndY;
+
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        scrollToNext(); 
+      } else {
+        scrollToPrev(); 
+      }
+
+      isScrollingRef.current = true;
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 600);
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
+
+  // Ekranın herhangi bir yerine tıklandığında (butonlar hariç) aşağı kaydırma desteği
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    const handleGlobalClick = (e) => {
+      if (window.innerWidth > 650) return; 
+      const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access, .mini-map');
+      
+      if (!isInteractive) {
+        scrollToNext();
+      }
+    };
+
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, [isAdminPage, opened, scrollToNext]);
 
   useEffect(() => {
     if (isAdminPage || !opened) return;
@@ -175,33 +237,11 @@ function App() {
       });
 
       setShowScrollTop(currentSlideIndex > 0);
-      setShowScrollDown(currentSlideIndex > 0 && currentSlideIndex < sections.length - 1);
+      setShowScrollDown(currentSlideIndex < sections.length - 1);
     };
 
     checkAndApplyClasses();
   }, [currentSlideIndex, isAdminPage, opened]);
-
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    const handleGlobalClick = (e) => {
-      if (window.innerWidth > 650) return; 
-      const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access, .mini-map');
-      
-      if (!isInteractive) {
-        scrollToNext();
-      }
-    };
-
-    const container = document.querySelector('.invitation-page');
-    if (container) {
-      container.addEventListener('click', handleGlobalClick);
-      return () => container.removeEventListener('click', handleGlobalClick);
-    } else {
-      document.addEventListener('click', handleGlobalClick);
-      return () => document.removeEventListener('click', handleGlobalClick);
-    }
-  }, [isAdminPage, opened, scrollToNext]);
 
   useEffect(() => {
     if (isAdminPage) {
@@ -659,6 +699,9 @@ function App() {
         "--intro-image": `url(${invitation.introImage})`,
         "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
       }}
+      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <audio
         key={invitation.musicFile}
@@ -678,7 +721,7 @@ function App() {
         t={t} 
       />
 
-     {!isAdminPage && (
+     {!isAdminPage && opened && (
         <>
           <div className="admin-quick-access">
             <a 
@@ -747,25 +790,23 @@ function App() {
               </svg>
             </button>
 
-            {showScrollDown && currentSlideIndex > 0 && (
-              <button
-                type="button"
-                className="dock-btn"
-                onClick={scrollToNext}
-                title={isEn ? "Next Section" : "Sonraki Bölüm"}
-              >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-            )}
+            <button
+              type="button"
+              className="dock-btn"
+              onClick={scrollToNext}
+              title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
 
             {showScrollTop && (
               <button
                 type="button"
                 className="dock-btn"
                 onClick={scrollToPrev}
-                title={isEn ? "Previous Section" : "Önceki Bölüm"}
+                title={isEn ? "Scroll Up" : "Yukarı Kaydır"}
               >
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="18 15 12 9 6 15"></polyline>
@@ -883,13 +924,69 @@ function App() {
           />
         </Suspense>
       ) : !opened ? (
-        <IntroPage
-          isOpening={isOpening}
-          copy={copy}
-          invitation={invitation}
-          personalGuestName={personalGuestName}
-          openInvitation={openInvitation}
-        />
+        <>
+          {/* Sol üst köşeye admin butonu eklendi */}
+          <div className="admin-quick-access">
+            <a 
+              href="#admin" 
+              target="_blank" 
+              rel="noreferrer"
+              className="admin-btn" 
+              title={isEn ? "Admin Panel" : "Yönetici Paneli"}
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <path d="M12 16h.01" />
+              </svg>
+            </a>
+          </div>
+
+          <IntroPage
+            isOpening={isOpening}
+            copy={copy}
+            invitation={invitation}
+            personalGuestName={personalGuestName}
+            openInvitation={openInvitation}
+          />
+          
+          {/* Sağ üst köşeye Dil ve Müzik butonları eklendi */}
+          <div className="floating-actions glass-dock">
+            <button
+              type="button"
+              className="dock-btn"
+              onClick={toggleLanguage}
+              title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
+            >
+              {isEn ? 'EN' : 'TR'}
+            </button>
+
+            <button
+              type="button"
+              className="dock-btn"
+              onClick={toggleMusic}
+              aria-pressed={isMusicPlaying}
+              title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {isMusicPlaying ? (
+                  <>
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                    <line x1="3" y1="3" x2="21" y2="21" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
+        </>
       ) : (
         <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
           <InvitationView
