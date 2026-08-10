@@ -707,6 +707,10 @@ body .app .invitation-page .option-group.disabled .option-button.active {
     bottom: auto !important;
   }
   
+  html body .app .glass-dock .wa-btn {
+    display: none !important;
+  }
+
   /* SADECE Whatsapp Butonunu Masaüstünde Gizle (Yön Okları Görünür Kaldı) */
   html body .app .glass-dock .dock-btn:nth-child(2):not(:last-child) {
     display: none !important;
@@ -1231,6 +1235,31 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
    ================================================================= */
 @media (max-width: 650px) {
 
+  .app-modal-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important; 
+    width: 100% !important;
+    max-width: 380px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important; /* BURASI DEĞİŞTİ */
+    overflow-y: visible !important; /* BURASI DEĞİŞTİ */
+    background: var(--paper, #fff) !important;
+    border-radius: 28px !important; 
+    padding: 36px 24px !important; 
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    box-sizing: border-box !important;
+  }
+  
   /* 1. Ekran Kilidi */
   body, html {
     overflow: hidden !important;

@@ -110,7 +110,6 @@
   color: #ffffff;
 }
 
-/* add subtle outline around active nav button to mimic screenshot */
 .admin-nav-button.active::after {
   content: "";
   position: absolute;
@@ -243,7 +242,6 @@
   }
 }
 
-/* SON DÜZENLEME - Admin panel yazıları daha belirgin */
 .admin-page,
 .admin-page p,
 .admin-page small,
@@ -288,7 +286,6 @@
   font-weight: 800;
 }
 
-/* Admin panel müzik yükleme alanı */
 .admin-music-field {
   padding: 18px;
   border: 1px solid rgba(217, 140, 161, 0.32);
@@ -321,15 +318,10 @@
   margin-top: 14px;
 }
 
-/* Admin panel başlık adı */
 .admin-page-header h2 {
   text-transform: none;
 }
 
-
-/* =============================
-   FINAL - ADMIN PANEL OKUNURLUK VE FORM KAYITLARI
-   ============================= */
 .admin-page {
   color: #3f1f2c;
 }
@@ -462,10 +454,6 @@
   border-color: rgba(122, 47, 73, 0.4) !important;
   font-weight: 900 !important;
 }
-
-/* =============================
-   ADMIN PANEL - TAM SAYFA DÜZENLEME
-   ============================= */
 
 .admin-actions-sticky {
   position: sticky;
@@ -635,12 +623,10 @@
   word-break: break-word;
 }
 
-/* Admin panelde ana sayfa içeriklerini düzenleme alanı uzun olduğu için kart daha geniş kalsın. */
 .admin-page-card {
   width: min(100%, 1320px);
 }
 
-/* Hero görseli açık kalsın, sadece yazı okunurluğu artsın. */
 .hero-section {
   background:
     radial-gradient(
@@ -702,9 +688,6 @@
   }
 }
 
-/* =================================================================
-   ADMİN PANELİ: SATIR TASARIMI VE ÇIKIŞ BUTONU
-   ================================================================= */
 .admin-actions-sticky .admin-logout-button,
 .admin-actions-sticky .secondary-button.admin-logout-button {
   background: var(--paper) !important;
@@ -771,7 +754,7 @@
 
 .admin-row-actions {
   display: flex !important;
-  flex-wrap: wrap !important; /* Genişlik yetmediğinde butonları alt satıra geçirir */
+  flex-wrap: wrap !important;
   gap: 8px !important;
   align-items: center !important;
   justify-content: flex-start !important;
@@ -783,8 +766,8 @@
 
 .admin-row-actions button,
 .admin-row-actions a.small-admin-button {
-flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını sağlar */
-  min-width: 110px !important; /* Butonların aşırı küçülüp ezilmesini engeller */
+  flex: 1 1 auto !important; 
+  min-width: 110px !important; 
   margin: 0 !important;
   padding: 8px 12px !important;
   font-size: 13px !important;
@@ -839,9 +822,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   box-shadow: 0 8px 18px color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
 }
 
-/* =================================================================
-   TEHLİKE (SİLME) BUTONLARI VE GENEL BUTONLAR
-   ================================================================= */
 .admin-row-actions button.danger-button,
 .admin-list .small-admin-button.danger-button,
 .admin-row .secondary-button.danger-button,
@@ -898,9 +878,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   border-color: var(--rose-light) !important;
 }
 
-/* =================================================================
-   ADMİN PANELİ: MÜZİK, GALERİ VE GÖRÜNÜRLÜK AYARLARI
-   ================================================================= */
 .admin-music-field,
 .admin-gallery-upload-row {
   display: grid;
@@ -1057,9 +1034,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   z-index: 1 !important;
 }
 
-/* =================================================================
-   ADMİN PANELİ: ARAMA, EXPORT VE EK BUTONLAR
-   ================================================================= */
 .admin-filters, .admin-filter-row, .admin-list-controls, .admin-export-actions {
   display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
 }
@@ -1335,10 +1309,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   border-color: var(--amp-color, #e3b6c7) !important;
 }
 
-/* =============================
-   ADMIN PANEL - GÖRSEL YÜKLEME
-   ============================= */
-
 .admin-image-field {
   display: grid;
   gap: 12px;
@@ -1435,7 +1405,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   max-height: 220px;
 }
 
-/* src/styles/admin.css dosyasına eklenecek / güncellenecek kural */
 .admin-page input:not([type="checkbox"]):not([type="radio"]),
 .admin-page textarea,
 .admin-toolbar input,
@@ -1476,9 +1445,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   }
 }
 
-/* =================================================================
-   ADMİN PANELİ: TEMA SEÇİMİ VE YAN MENÜ (SIDEBAR)
-   ================================================================= */
 .theme-option-card {
   position: relative;
   overflow: hidden;
@@ -1646,9 +1612,6 @@ flex: 1 1 auto !important; /* Butonların alana eşit ve dengeli yayılmasını 
   padding-right: 4px;
 }
 
-/* =================================================================
-   BİRLEŞTİRİLMİŞ DROPDOWN VE SELECT KURALLARI
-   ================================================================= */
 body .app select,
 body .app .admin-toolbar select,
 body .app .admin-content select {
@@ -1836,10 +1799,6 @@ body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
   border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
 }
 
-/* =========================================================
-   FINAL DÜZELTME - ADMİN PANEL AÇILIR MENÜLERİ
-   Native select yerine özel menü kullanıldığı için mavi seçim sorunu biter.
-   ========================================================= */
 .admin-content,
 .admin-editor-section,
 .admin-toolbar,
@@ -1974,7 +1933,6 @@ html[data-theme="dark"] .admin-custom-select-option.selected {
   color: #ffd8e4 !important;
 }
 
-/* Eski native select kalırsa bile tarayıcı mavisi yerine tema renkleri kullanılmaya çalışılır. */
 .admin-field select,
 .admin-toolbar select {
   appearance: none;
@@ -1996,7 +1954,6 @@ html[data-theme="dark"] .admin-custom-select-option.selected {
   font-weight: 800;
 }
 
-/* Açılış kartındaki küçük yazılar da açık arka planda kaybolmasın. */
 html[data-theme] .intro-card {
   background:
     radial-gradient(circle at top right, rgba(var(--theme-soft-rgb), 0.24), transparent 30%),
@@ -2044,9 +2001,6 @@ html[data-theme] .intro-page .couple-title {
   }
 }
 
-/* =========================================================
-   FINAL DÜZELTME - Admin panel tema uyumu, checkbox, dropdown ve şifre
-   ========================================================= */
 html[data-theme] .admin-help-text {
   margin: 18px 0 24px !important;
   padding: 18px 22px !important;
@@ -2146,7 +2100,6 @@ html[data-theme="dark"] .admin-check-field {
   background: rgba(36, 26, 33, 0.92) !important;
 }
 
-/* Filtre ve açılır menüleri daha premium hale getirir */
 html[data-theme] .admin-toolbar {
   align-items: stretch !important;
 }
@@ -2233,7 +2186,6 @@ html[data-theme="dark"] .admin-custom-select-option.selected {
   color: #ffd8e4 !important;
 }
 
-/* Admin şifre değiştirme alanı */
 .admin-password-form {
   display: grid;
   gap: 18px;
@@ -2259,7 +2211,6 @@ html[data-theme="dark"] .admin-custom-select-option.selected {
   font-weight: 950 !important;
 }
 
-/* Üstteki değişken açıklaması gibi metinler tema dışı kalmasın */
 html[data-theme] .admin-editor-section > p,
 html[data-theme] .admin-current-section span,
 html[data-theme] .admin-link-preview-box small,
@@ -2285,7 +2236,6 @@ html[data-theme] .admin-import-box small {
   }
 }
 
-/* Supabase admin giriş / şifre sıfırlama düzeltmeleri */
 .admin-link-button {
   border: 0;
   background: transparent;
@@ -2349,7 +2299,6 @@ html[data-theme="dark"] .admin-login span {
   color: #f8efe7;
 }
 
-/* Admin giriş ekranı okunabilirlik ve Supabase hata kutuları */
 .admin-page .admin-login {
   width: min(100%, 560px);
   padding: 26px;
@@ -2466,7 +2415,6 @@ html[data-theme="dark"] .admin-page .admin-link-button {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-/* Şifre değiştikten sonra giriş ekranında gösterilen başarılı işlem mesajı */
 .admin-login-message.success,
 .admin-login span.admin-login-message.success {
   background: rgba(var(--theme-faint-rgb, 255, 239, 244), 0.96) !important;
@@ -2482,8 +2430,6 @@ html[data-theme="dark"] .admin-login span.admin-login-message.success {
   color: #f6d5b0 !important;
 }
 
-
-/* Admin çıkış butonu */
 .admin-logout-button {
   color: #ffffff !important;
   border-color: rgba(126, 37, 53, 0.42) !important;
@@ -2522,7 +2468,6 @@ html[data-theme="minimal"] .admin-logout-button {
   box-shadow: 0 12px 24px rgba(17, 24, 39, 0.16) !important;
 }
 
-/* Admin panel çıkış butonu gradyanı */
 html[data-theme="lavanta"] .admin-logout-button {
   background: linear-gradient(135deg, #7a6ba3, #4c3f70) !important;
   border-color: rgba(76, 63, 112, 0.45) !important;
@@ -2536,7 +2481,6 @@ html[data-theme="dark"] .admin-logout-button {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28) !important;
 }
 
-/* Tema uyumlu özel popup / uyarı / onay / düzenleme pencereleri */
 .app-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -2554,11 +2498,11 @@ html[data-theme="dark"] .admin-logout-button {
 
 .app-modal-card {
   position: relative;
-  width: min(92vw, 460px);
+  width: min(92vw, 440px);
+  padding: 26px 26px 22px;
+  gap: 14px;
   margin: 0;
-  padding: 30px 28px 24px;
   display: grid;
-  gap: 18px;
   color: var(--theme-text-main, var(--text));
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.45)),
@@ -2576,35 +2520,23 @@ html[data-theme="dark"] .admin-logout-button {
   content: "";
   position: absolute;
   inset: 0 0 auto 0;
-  height: 7px;
+  height: 6px;
   background: linear-gradient(90deg, var(--rose), var(--rose-dark), var(--gold));
 }
 
 .app-modal-icon {
-  width: 56px;
-  height: 56px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  color: var(--theme-on-accent, #ffffff);
-  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
-  box-shadow: 0 16px 30px rgba(var(--theme-rgb, 217, 140, 161), 0.26);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1;
+  display: none !important;
 }
 
 .app-modal-content {
   display: grid;
-  gap: 9px;
+  gap: 8px;
 }
 
 .app-modal-content p {
   margin: 0;
   color: var(--theme-text-muted, var(--text-soft));
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 750;
   line-height: 1.55;
 }
@@ -2712,7 +2644,6 @@ html[data-theme="minimal"] .app-modal-icon {
   background: linear-gradient(135deg, #9f8b7c, #45362e);
 }
 
-/* Başarılı işlem (Success) modallarındaki ikon rengi */
 html[data-theme="lavanta"] .app-modal-success .app-modal-icon {
   background: linear-gradient(135deg, #a696c8, #4c3f70);
 }
@@ -2782,32 +2713,6 @@ html[data-theme="dark"] .app-modal-cancel {
   }
 }
 
-
-/* === Ghostwriter fixes: remove popup icon block and improve sidebar layout === */
-.app-modal-card {
-  width: min(92vw, 440px);
-  padding: 26px 26px 22px;
-  gap: 14px;
-}
-
-.app-modal-card::before {
-  height: 6px;
-}
-
-.app-modal-content {
-  gap: 8px;
-}
-
-.app-modal-content p {
-  font-size: 17px;
-}
-
-/* Hide the old icon area completely */
-.app-modal-icon {
-  display: none !important;
-}
-
-/* Stronger, cleaner admin layout */
 .admin-layout {
   grid-template-columns: 332px minmax(0, 1fr);
   gap: 28px;
@@ -2986,7 +2891,6 @@ html[data-theme="dark"] .app-modal-cancel {
   line-height: 1.35;
 }
 
-/* Make the long highlighted button less overpowering */
 .admin-nav-button.active {
   background: linear-gradient(135deg, rgba(var(--theme-rgb, 217, 140, 161), 0.96), rgba(var(--theme-dark-rgb, 159, 79, 104), 0.96));
 }
@@ -3026,6 +2930,10 @@ html[data-theme="dark"] .app-modal-cancel {
     width: min(94vw, 420px);
     padding: 24px 20px 20px;
     border-radius: 24px;
+    background: var(--paper, #fff) !important;
+    min-height: 0 !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    box-sizing: border-box !important;
   }
 
   .admin-shell-card {
@@ -3056,24 +2964,16 @@ html[data-theme="dark"] .app-modal-cancel {
   }
 }
 
-
-/* =============================
-   RSVP BUTON HOVER + DISABLED FIX
-   ============================= */
-
-/* Normal buton yazısı net görünsün */
 .option-button {
   color: var(--text) !important;
 }
 
-/* Mouse üstüne gelince yazı kaybolmasın */
 .option-button:hover:not(.active):not(:disabled) {
   color: var(--rose-dark) !important;
   background: #fff0f4 !important;
   border-color: var(--rose-dark) !important;
 }
 
-/* Aktif buton her durumda okunaklı kalsın */
 .option-button.active {
   background: linear-gradient(135deg, #e69aae, var(--rose-dark)) !important;
   color: #ffffff !important;
@@ -3081,19 +2981,16 @@ html[data-theme="dark"] .app-modal-cancel {
   box-shadow: 0 14px 30px rgba(159, 79, 104, 0.28) !important;
 }
 
-/* Aktif butonun üstüne gelince yazı yine beyaz kalsın */
 .option-button.active:hover {
   color: #ffffff !important;
   background: linear-gradient(135deg, #e69aae, var(--rose-dark)) !important;
 }
 
-/* Katılamayacağım seçiliyken pasif olan gruplar aktif gibi görünmesin */
 .option-group.disabled {
   opacity: 1 !important;
   pointer-events: none !important;
 }
 
-/* Disabled gruptaki bütün butonlar pasif görünümde olsun */
 .option-group.disabled .option-button,
 .option-group.disabled .option-button.active,
 .option-group.disabled .option-button:hover,
@@ -3109,9 +3006,6 @@ html[data-theme="dark"] .app-modal-cancel {
   cursor: not-allowed !important;
 }
 
-/* =============================
-   FINAL DÜZENLEME - QR, EXCEL/CSV VE TEMA UYUMU
-   ============================= */
 :root {
   --theme-rgb: 159, 79, 104;
   --theme-strong-rgb: 122, 47, 73;
@@ -3151,7 +3045,6 @@ html[data-theme="minimal"] {
   --theme-faint-rgb: 255, 255, 255;
 }
 
-/* Görsellerin üzerindeki renk katmanı seçilen temaya göre değişir */
 .intro-page {
   background:
     linear-gradient(
@@ -3245,7 +3138,6 @@ html[data-theme="minimal"] {
   color: rgba(var(--theme-rgb), 0.42) !important;
 }
 
-/* Tema seçimi artık native select değil; daha temiz seçim kartları */
 .theme-picker-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(150px, 1fr));
@@ -3325,7 +3217,6 @@ html[data-theme="minimal"] {
   margin-top: 18px;
 }
 
-/* QR alanı sadece QR için; özel link ayrı bölümde */
 .qr-only-panel {
   grid-template-columns: 280px minmax(0, 1fr) !important;
 }
@@ -3367,7 +3258,6 @@ html[data-theme="minimal"] {
   max-width: 760px;
 }
 
-/* Veri indirme alanı: JSON tek kalmasın, Excel/CSV açık görünsün */
 .admin-export-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3411,7 +3301,6 @@ html[data-theme="minimal"] {
   margin-top: 18px;
 }
 
-/* Admin alanındaki hardcode pembe renkleri seçilen temaya bağla */
 .admin-page {
   color: var(--text) !important;
 }
