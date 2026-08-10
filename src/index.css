@@ -1,36 +1,109 @@
-/* Çapraz Tarayıcı CSS Yamaları */
+/* =================================================================
+   MOBİL TARAYICI VE ÇAPRAZ PLATFORM (iOS & Android) UYUMLULUK YAMASI
+   ================================================================= */
 
-/* 1. Dinamik Viewport (dvh) desteği olmayan tarayıcılar için vh yedeği */
-@supports not (height: 100dvh) {
-  .invitation-page, 
-  .app-modal-backdrop,
-  .hero-section {
-    height: 100vh !important;
+/* 1. Temel Sayfa Ayarları */
+html, body {
+  min-height: 100vh !important; /* height: 100% yerine min-height kullandık, scroll geri geldi! */
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important; /* Sayfanın dikey kaydırılmasını zorunlu kıldık */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto !important; /* Fare tekerleği kilidini tamamen kaldırır */
+}
+
+#root, .app, .invitation-page {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: visible !important;
+}
+
+/* 2. Standart Tam Ekran Yüksekliği (Tüm Tarayıcılar İçin) */
+.app, 
+.intro-page, 
+.hero-section, 
+.app-modal-backdrop {
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+}
+
+/* 3. SADECE iOS Safari İçin Tam Ekran Desteği (Masaüstünü Bozmaması İçin İzole Edildi) */
+@supports (-webkit-touch-callout: none) {
+  .app, 
+  .intro-page, 
+  .hero-section, 
+  .app-modal-backdrop {
+    min-height: -webkit-fill-available !important;
   }
 }
 
-/* 2. Safari (iOS) için Cam Efekti (Glassmorphism) Desteği */
+/* 4. Tüm Mobil Platformlarda Buton/Input Varsayılan Görünümlerini Sıfırlama */
+button, 
+input, 
+select, 
+textarea, 
+.option-button {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  outline: none;
+}
+
+/* 5. iOS Safari Form Yakınlaştırma (Zoom) Koruması */
+@media screen and (max-width: 768px) {
+  input, 
+  select, 
+  textarea, 
+  .admin-field input, 
+  .admin-field textarea, 
+  .rsvp-form input, 
+  .rsvp-form textarea, 
+  .wish-form input, 
+  .wish-form textarea,
+  .app-modal-input,
+  .app-modal-textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 6. Yeni Nesil iPhone Çentik (Notch) ve Alt Çizgi (Safe Area) Desteği */
+.floating-actions, 
+.glass-dock {
+  padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  padding-left: max(10px, env(safe-area-inset-left)) !important;
+  padding-right: max(10px, env(safe-area-inset-right)) !important;
+}
+
+.invitation-page, 
+.admin-page {
+  padding-bottom: max(76px, calc(60px + env(safe-area-inset-bottom))) !important;
+}
+
+.app-modal-card {
+  margin-bottom: env(safe-area-inset-bottom) !important;
+}
+
+/* 7. Safari ve Eski Cihazlar İçin Cam Efekti (Glassmorphism) Desteği */
 .glass-dock, 
 .app-modal-backdrop, 
 .intro-card,
-.admin-sidebar {
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+.admin-sidebar,
+.admin-actions-sticky,
+.lightbox-control-btn {
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
 }
 
-/* 3. iOS cihazlarda akıcı kaydırma (smooth scrolling) özelliği */
-html, body {
+/* 8. Mobil Cihazlarda Yumuşak Kaydırma Desteği */
+html, body, .admin-sidebar-menu, .admin-custom-select-menu {
   -webkit-overflow-scrolling: touch;
 }
 
-/* 4. Eski Safari sürümleri için appearance yedeği */
-select, 
-input[type="checkbox"] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
+/* =================================================================
+   VARSAYILAN VITE DEĞİŞKENLERİ VE STİLLERİ
+   ================================================================= */
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -77,14 +150,9 @@ input[type="checkbox"] {
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
 }
 
-h1,
-h2 {
+h1, h2 {
   font-family: var(--heading);
   font-weight: 500;
   color: var(--text-h);
@@ -99,6 +167,7 @@ h1 {
     margin: 20px 0;
   }
 }
+
 h2 {
   font-size: 24px;
   line-height: 118%;
@@ -108,12 +177,12 @@ h2 {
     font-size: 20px;
   }
 }
+
 p {
   margin: 0;
 }
 
-code,
-.counter {
+code, .counter {
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;

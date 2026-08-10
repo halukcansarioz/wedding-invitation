@@ -854,45 +854,56 @@ body .app .glass-dock .dock-btn.music-on {
 
 .scroll-indicator {
   position: absolute;
-  bottom: 40px; /* Sabit pozisyon */
-  left: 50%;
+  bottom: 32px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #ffffff !important; 
   font-family: "Playfair Display", serif;
   font-size: 11px;
   font-weight: 700;
   z-index: 10;
   animation: heroFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.2s both;
+  opacity: 1 !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85) !important; 
+}
+
+.gift-card, 
+.modal-gift-card {
+  margin-bottom: 32px !important; 
 }
 
 .scroll-indicator span {
-  letter-spacing: 3px;
-  margin-right: -3px; /* Optik ortalama düzeltmesi */
-  text-align: center;
+  padding-left: 3px !important; 
+  margin: 0 !important;
+  text-indent: 0 !important;
 }
 
 .scroll-indicator .mouse {
   width: 22px;
   height: 34px;
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border: 2px solid #ffffff !important; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important; 
   border-radius: 12px;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important; 
 }
 
 .scroll-indicator .wheel {
   width: 2px;
   height: 6px;
-  background: #ffffff;
   border-radius: 2px;
   position: absolute;
   top: 6px;
   left: 50%;
   transform: translateX(-50%);
   animation: scrollWheel 1.5s infinite ease-in-out;
+  background: #ffffff !important; 
 }
 
 @keyframes scrollWheel {
@@ -1235,6 +1246,11 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
    ================================================================= */
 @media (max-width: 650px) {
 
+  html body .app .invitation-page .scroll-indicator {
+    display: flex !important;
+    bottom: 95px !important; /* Yüzen menünün (oklar ve müzik butonu) üstüne çıkması için yukarı alındı */
+  }
+
   .app-modal-card {
     position: relative !important;
     display: flex !important;
@@ -1251,8 +1267,8 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     max-width: 380px !important;
     height: auto !important;
     min-height: 0 !important;
-    max-height: none !important; /* BURASI DEĞİŞTİ */
-    overflow-y: visible !important; /* BURASI DEĞİŞTİ */
+    max-height: none !important; 
+    overflow-y: visible !important; 
     background: var(--paper, #fff) !important;
     border-radius: 28px !important; 
     padding: 36px 24px !important; 
@@ -1337,7 +1353,7 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
       110vw calc(100% + 10vh);
       
     opacity: 0.15 !important;
-    z-index: 0 !important; /* Düzeltildi: Kartın üstüne çıkmasını kesin engeller */
+    z-index: 0 !important; 
     pointer-events: none !important;
     transform-origin: center center !important;
     animation: gentleThemeSway 6s ease-in-out infinite alternate !important;
@@ -1374,10 +1390,6 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     opacity: 1 !important;
     position: absolute !important;
     z-index: 10 !important;
-  }
-
-  html body .app .invitation-page .scroll-indicator {
-    display: none !important;
   }
 
   /* 4. Ana Görsel (Hero) Slaytı Ayarı */
@@ -1706,6 +1718,13 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
   /* 12. Düzeltilmiş IBAN & Hediye Kartı Aralığı */
   body .app .invitation-page .gift-copy-button {
     margin: 32px auto 0 !important; 
+  }
+
+  .gift-copy-button {
+    margin-top: 0 !important;
+    transform: translateY(0) !important; /* Butonu yukarı çeken görünmez kuvveti sıfırlar */
+    position: relative !important;
+    z-index: 10 !important;
   }
 
   body .app .invitation-page .gift-card {

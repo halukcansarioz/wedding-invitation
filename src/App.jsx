@@ -278,7 +278,8 @@ function App() {
 
     if (window.innerWidth > 650) {
       window.addEventListener('scroll', handleScroll, { passive: true });
-      handleScroll(); // İlk yüklemede kontrol et
+      setShowScrollDown(true); // Masaüstünde butonu başlangıçta zorla görünür yap
+      setTimeout(handleScroll, 800); // Sayfa görselleri yüklendikten sonra gerçek boyutu hesapla
     }
     
     return () => {
