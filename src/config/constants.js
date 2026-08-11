@@ -48,8 +48,8 @@ export const DEFAULT_SITE_DATA = {
     title: "Hediye & Takı Gönderimi",
     description: "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için hesap bilgilerimiz:",
     receiver: "Haluk Can Sarıöz",
-    iban: "TR00 0000 0000 0000 0000 0000 00",
-    bankName: "Ziraat / Garanti Bankası"
+    iban: "TR53 0011 1000 0000 0145 4005 17",
+    bankName: "QNB Bankası"
   },
   copy: {
     introLabel: "Düğün Davetiyesi",
@@ -123,6 +123,7 @@ export const DEFAULT_SITE_DATA = {
       wishes: true,
       iban: true,
       popupIban: true,
+      trickyDecline: false
     },
   },
   messages: {

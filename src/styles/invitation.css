@@ -685,11 +685,16 @@ body .app .invitation-page .option-group.disabled .option-button.active {
 
 .floating-actions .dock-btn:hover,
 .glass-dock .dock-btn:hover {
-  transform: translateY(-3px) scale(1.05);
+  transform: scale(1.05);
   background: #ffffff;
   color: var(--rose-dark, #9f4f68);
   border-color: #ffffff;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.glass-dock .dock-btn svg {
+  display: block !important;
+  margin: 0 auto !important;
 }
 
 .dock-btn svg {
@@ -759,7 +764,7 @@ body .app .floating-actions button.music-toggle-button:hover {
   color: #ffffff !important;
   border-color: var(--amp-color, #8f7fb8) !important;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
-  transform: translateY(-3px) scale(1.03) !important;
+  transform: scale(1.05) !important; /* translateY kaldırıldı */
 }
 
 body .app .floating-actions button.music-toggle-button:hover svg,
@@ -767,6 +772,20 @@ body .app .floating-actions button.music-toggle-button:hover path {
   stroke: #ffffff !important;
   fill: none !important;
   color: #ffffff !important;
+}
+
+.lightbox-control-btn:hover {
+  background: rgba(45, 45, 52, 0.95) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+.lightbox-close:hover {
+  transform: scale(1.06) !important;
+}
+
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  transform: translateY(-50%) scale(1.06) !important;
 }
 
 [data-theme="dark"] body .app .floating-actions a.share-button,
@@ -833,11 +852,11 @@ body .app .glass-dock .dock-btn.music-on {
 }
 
 .admin-quick-access .admin-btn:hover {
-  transform: translateY(-3px) scale(1.05) !important;
+  transform: scale(1.08) !important; /* translateY kaldırıldı */
   background: #ffffff !important;
   color: var(--rose-dark, #9f4f68) !important;
   border-color: #ffffff !important;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
 }
 
 [data-theme="dark"] .admin-quick-access .admin-btn {
@@ -1242,6 +1261,27 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
 }
 
 /* =================================================================
+   FORM HATA DURUMLARI (CUSTOM VALIDATION)
+   ================================================================= */
+.rsvp-form input:invalid:not(:focus):not(:placeholder-shown),
+.wish-form input:invalid:not(:focus):not(:placeholder-shown),
+.rsvp-form textarea:invalid:not(:focus):not(:placeholder-shown),
+.wish-form textarea:invalid:not(:focus):not(:placeholder-shown),
+.input-error {
+  border-color: #d93838 !important;
+  background: #fff0f0 !important;
+  color: #a02525 !important;
+  box-shadow: 0 0 0 4px rgba(217, 56, 56, 0.15) !important;
+  animation: errorShake 0.4s ease-in-out;
+}
+
+.rsvp-form input.input-error::placeholder,
+.wish-form input.input-error::placeholder {
+  color: #d93838 !important;
+  opacity: 0.8 !important;
+}
+
+/* =================================================================
    MEDIA QUERIES - MOBİL (TÜM TASARIM SABİTLEMELERİ BURADA)
    ================================================================= */
 @media (max-width: 650px) {
@@ -1274,7 +1314,13 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     padding: 36px 24px !important; 
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
     box-sizing: border-box !important;
+    overflow: visible !important; 
   }
+
+  .app-modal-card::before {
+    border-radius: 30px 30px 0 0 !important;
+  }
+  
   
   /* 1. Ekran Kilidi */
   body, html {
@@ -1786,4 +1832,10 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
 @keyframes ambientBokeh {
   0% { transform: translateY(0) scale(1); opacity: 0.3; background-position: 0% 0%; }
   100% { transform: translateY(-40px) scale(1.15); opacity: 1; background-position: 100% 100%; }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
 }

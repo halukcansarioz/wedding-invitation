@@ -53,7 +53,7 @@ export function AdminImageField({ label, value, onFileSelect, onClear }) {
         <span>{label}</span>
         {value && (
           <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            Görseli Kaldır
+            Görseli Kaldır 🗑️
           </button>
         )}
       </div>
@@ -65,7 +65,7 @@ export function AdminImageField({ label, value, onFileSelect, onClear }) {
       )}
 
       <label className="admin-upload-button">
-        Bilgisayardan Görsel Seç
+        Bilgisayardan Görsel Seç 🖼️
         <input type="file" accept="image/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
       </label>
       <small>
@@ -82,7 +82,7 @@ export function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
         <span>Davetiyede çalacak müzik</span>
         {value && (
           <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            Müziği Kaldır
+            Müziği Kaldır 🗑️
           </button>
         )}
       </div>
@@ -99,7 +99,7 @@ export function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
       )}
 
       <label className="admin-upload-button">
-        Bilgisayardan Müzik Seç
+        Bilgisayardan Müzik Seç 🎵
         <input type="file" accept="audio/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
       </label>
       <small>
@@ -120,7 +120,7 @@ export function AdminSection({ title, children, onSave }) {
             className="secondary-button small-admin-button" 
             onClick={onSave}
           >
-            Kaydet
+            Kaydet 💾
           </button>
         )}
       </div>
@@ -134,10 +134,10 @@ export function AdminActionButtons({ onSave, onDelete, isEn }) {
   return (
     <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
       <button type="button" className="secondary-button small-admin-button" onClick={onSave}>
-        {isEn ? "Save" : "Kaydet"}
+        {isEn ? "Save 💾" : "Kaydet 💾"}
       </button>
       <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>
-        {isEn ? "Delete" : "Sil"}
+        {isEn ? "Delete 🗑️" : "Sil 🗑️"}
       </button>
     </div>
   );

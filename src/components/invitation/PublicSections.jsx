@@ -155,10 +155,10 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
       <div className="mini-map"><iframe title="Map" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe></div>
       <div className="button-group">
         <a className="main-button" href={invitation?.mapLink} target="_blank" rel="noreferrer">
-          📍 {t('ui.goToMap')}
+          {t('ui.goToMap')}
         </a>
         <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>
-          📅 {t('ui.addToCalendar')}
+          {t('ui.addToCalendar')}
         </button>
       </div>
     </section>

@@ -293,19 +293,19 @@ function App() {
 
   const showAppAlert = useCallback((message, options = {}) => {
     return new Promise((resolve) => {
-      setCustomAlert({ message, title: options.title || (isEn ? "Information" : "Bilgi"), resolve });
+      setCustomAlert({ message, title: options.title || (isEn ? "Information ℹ️" : "Bilgi ℹ️"), resolve });
     });
   }, [isEn]);
 
   const showAppConfirm = useCallback((message, options = {}) => {
     return new Promise((resolve) => {
-      setCustomConfirm({ message, title: options.title || (isEn ? "Confirmation" : "Onay"), resolve });
+      setCustomConfirm({ message, title: options.title || (isEn ? "Confirmation 🤔" : "Onay 🤔"), resolve });
     });
   }, [isEn]);
 
   const showAppPrompt = useCallback((label, defaultValue = "", options = {}) => {
     return new Promise((resolve) => {
-      setCustomPrompt({ label, value: defaultValue, title: options.title || (isEn ? "Edit" : "Düzenle"), resolve, multiline: options.multiline });
+      setCustomPrompt({ label, value: defaultValue, title: options.title || (isEn ? "Edit ✏️" : "Düzenle ✏️"), resolve, multiline: options.multiline });
     });
   }, [isEn]);
 
@@ -461,9 +461,9 @@ function App() {
   const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
-      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied" : "Kopyalandı" });
+      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied ✅" : "Kopyalandı ✅" });
     } catch {
-      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error" : "Kopyalama hatası" });
+      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error ⚠️" : "Kopyalama hatası ⚠️" });
     }
   }, [currentShareLink, showAppAlert, t, isEn]);
 

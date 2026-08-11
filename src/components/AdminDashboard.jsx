@@ -94,7 +94,7 @@ function AdminDashboard({
             <div></div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button type="button" className="secondary-button admin-back-button" style={{ margin: 0 }} onClick={closeAdminPage}>
-                {isEn ? "Back to Invitation" : "Davetiyeye Dön"}
+                {isEn ? "Back to Invitation" : "Davetiyeye Dön 🏠"}
               </button>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -160,7 +160,7 @@ function AdminDashboard({
                 placeholder={isEn ? "New password again" : "Yeni şifre tekrar"}
               />
               <button className="main-button" type="submit" disabled={recoveryLoading}>
-                {recoveryLoading ? (isEn ? "Saving..." : "Kaydediliyor...") : (isEn ? "Save New Password" : "Yeni Şifreyi Kaydet")}
+                {recoveryLoading ? (isEn ? "Saving..." : "Kaydediliyor...") : (isEn ? "Save New Password" : "Yeni Şifreyi Kaydet 💾")}
               </button>
               {recoveryMessage && <span className="admin-login-message">{recoveryMessage}</span>}
             </form>
@@ -176,7 +176,7 @@ function AdminDashboard({
                 placeholder={isEn ? "Admin email" : "Admin e-posta"}
               />
               <button className="main-button" type="submit" disabled={forgotPasswordLoading}>
-                {forgotPasswordLoading ? (isEn ? "Sending..." : "Gönderiliyor...") : (isEn ? "Send Reset Link" : "Sıfırlama Linki Gönder")}
+                {forgotPasswordLoading ? (isEn ? "Sending..." : "Gönderiliyor...") : (isEn ? "Send Reset Link" : "Sıfırlama Linki Gönder 📧")}
               </button>
               <button
                 type="button"
@@ -186,7 +186,7 @@ function AdminDashboard({
                   setForgotPasswordMessage("");
                 }}
               >
-                {isEn ? "Back to login" : "Giriş ekranına dön"}
+                {isEn ? "Back to login" : "Giriş ekranına dön ⬅️"}
               </button>
               {forgotPasswordMessage && <span className="admin-login-message">{forgotPasswordMessage}</span>}
             </form>
@@ -205,7 +205,7 @@ function AdminDashboard({
                 placeholder={isEn ? "Admin password" : "Admin şifresi"}
               />
               <button className="main-button" type="submit" disabled={adminAuthLoading}>
-                {adminAuthLoading ? (isEn ? "Checking..." : "Giriş kontrol ediliyor...") : (isEn ? "Login" : "Giriş Yap")}
+                {adminAuthLoading ? (isEn ? "Checking..." : "Giriş kontrol ediliyor...") : (isEn ? "Login" : "Giriş Yap 🔐")}
               </button>
               <button
                 type="button"
@@ -217,7 +217,7 @@ function AdminDashboard({
                   setAdminLoginNotice("");
                 }}
               >
-                {isEn ? "Forgot password?" : "Şifremi unuttum"}
+                {isEn ? "Forgot password?" : "Şifremi unuttum 🔑"}
               </button>
               {adminLoginNotice && <span className="admin-login-message success">{adminLoginNotice}</span>}
               {adminError && <span className="admin-login-message error">{adminError}</span>}
@@ -259,13 +259,13 @@ function AdminDashboard({
                   <span>{translateTab(currentTabInfo?.id, "desc", currentTabInfo?.description)}</span>
                 </div>
                 <button type="button" className="main-button" onClick={saveSiteContent}>
-                  {isEn ? "Save Changes" : "Değişiklikleri Kaydet"}
+                  {isEn ? "Save Changes" : "Değişiklikleri Kaydet 💾"}
                 </button>
                 <button type="button" className="secondary-button" onClick={resetSiteContent}>
-                  {isEn ? "Reset Default" : "Varsayılana Döndür"}
+                  {isEn ? "Reset Default" : "Varsayılana Döndür 🔄"}
                 </button>
                 <button type="button" className="secondary-button admin-logout-button" onClick={logoutAdmin}>
-                  {isEn ? "Logout" : "Çıkış Yap"}
+                  {isEn ? "Logout" : "Çıkış Yap 🚪"}
                 </button>
                 {adminSaveMessage && <span className="admin-save-message">{adminSaveMessage}</span>}
               </div>

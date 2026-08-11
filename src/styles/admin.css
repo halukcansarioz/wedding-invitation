@@ -124,10 +124,25 @@
 }
 
 .admin-main-panel .admin-actions-sticky {
-  top: 18px;
-  margin: 0 0 22px;
-  justify-content: center;
-  gap: 18px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important; /* Butonları şıkça sağa grupla */
+  gap: 12px !important;
+  padding: 16px 20px !important;
+}
+
+.admin-actions-sticky .admin-save-message {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  order: 99 !important;
+  margin: 4px 0 0 0 !important;
+  padding: 12px 16px !important;
+  background: rgba(var(--theme-soft-rgb, 248, 215, 223), 0.6) !important;
+  border-radius: 12px !important;
+  text-align: center !important;
+  color: var(--rose-deep) !important;
+  font-weight: 800 !important;
 }
 
 .admin-current-section {
@@ -475,10 +490,15 @@
 
 .admin-actions-sticky .main-button,
 .admin-actions-sticky .secondary-button {
-  padding: 12px 20px !important;
-  font-size: 14px !important;
-  min-width: auto !important;
+  flex: 0 0 auto !important; /* Kendi doğal boyutunda kalır, ekranı kaplamaz! */
+  width: fit-content !important;
   white-space: nowrap !important;
+}
+
+.admin-actions-sticky .admin-current-section {
+  flex: 1 1 200px !important;
+  margin-right: auto !important;
+  text-align: left !important;
 }
 
 .admin-actions-sticky span {
@@ -643,6 +663,78 @@
     var(--hero-image) center/cover no-repeat;
 }
 
+/* =================================================================
+   BUTON KALINLIĞI, EMOJİ HİZALAMASI VE ÜST MENÜ DÜZELTMELERİ
+   ================================================================= */
+
+/* 1. Tüm butonları eski kalın ve tok görünümüne geri döndür */
+.admin-page button,
+.admin-actions-sticky .main-button,
+.admin-actions-sticky .secondary-button,
+.admin-login .main-button,
+.small-admin-button,
+.admin-add-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important; /* İkon ve yazı arası boşluk */
+  padding: 14px 24px !important; /* Üst/alt boşlukları geri getirdik */
+  height: auto !important;
+  min-height: 54px !important; /* Eski kalınlık standartı */
+  font-size: 15px !important;
+  line-height: normal !important;
+}
+
+.admin-page button,
+.admin-actions-sticky .main-button,
+.admin-actions-sticky .secondary-button,
+.admin-login .main-button,
+.small-admin-button,
+.admin-add-button,
+.admin-export-card .main-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+  padding: 12px 24px !important; /* Üst-alt ve sağ-sol kusursuz eşitlik */
+  height: auto !important;
+  min-height: 48px !important; /* Kaba durmayan ideal kalınlık */
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  line-height: normal !important;
+  border-radius: 999px !important; /* Tam oval, modern görünüm */
+}
+
+.admin-page button.theme-option-card {
+  border-radius: 18px !important; /* Orijinal kart köşelerine döndürdük */
+  padding: 20px 12px 18px !important;
+  min-height: 130px !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.admin-export-card > button,
+.admin-export-card > .main-button {
+  padding: 12px 24px !important; /* Bozukluğu düzelten kısım */
+  margin-top: auto !important;
+  width: 100% !important;
+}
+
+@media (max-width: 950px) {
+  .admin-main-panel .admin-actions-sticky {
+    justify-content: center !important; /* Mobilde butonları ortala */
+  }
+
+  .admin-actions-sticky .admin-current-section {
+    flex: 1 1 100% !important;
+    text-align: center !important;
+    margin-right: 0 !important;
+    margin-bottom: 8px !important;
+  }
+}
+
 @media (max-width: 900px) {
   .admin-edit-grid {
     grid-template-columns: 1fr;
@@ -783,31 +875,9 @@
 .admin-row .secondary-button,
 .admin-repeat-title .small-admin-button,
 .admin-gallery-upload-row .small-admin-button {
-  width: 145px !important;
-  min-width: 145px !important;
-  max-width: 145px !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  max-height: 42px !important;
-  padding: 0 10px !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 999px !important;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  padding: 10px 18px !important;
+  min-height: 40px !important;
   font-size: 13.5px !important;
-  font-weight: 800 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  background-color: var(--paper, #ffffff) !important;
-  color: var(--amp-color, #8f7fb8) !important;
-  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 40%, transparent) !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04) !important;
 }
 
 .admin-row-actions button:hover,
@@ -1473,22 +1543,8 @@
 }
 
 .theme-option-card.active::after {
-  content: "✓";
-  position: absolute;
-  top: 13px;
-  right: 13px;
-  z-index: 3;
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
-  color: #ffffff;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 19px;
-  font-weight: 900;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--rose-dark) 26%, transparent);
+  top: -8px !important;
+  right: -8px !important;
 }
 
 .theme-option-card > * { position: relative; z-index: 2; }
@@ -1500,18 +1556,19 @@
 }
 
 .theme-option-card.active small {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
   color: #ffffff !important;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.3px;
-  box-shadow: 0 8px 18px color-mix(in srgb, var(--rose-dark) 18%, transparent);
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  font-weight: 900 !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 28px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  box-shadow: 0 6px 14px rgba(159, 79, 104, 0.3) !important;
 }
 
 .theme-option-card:not(.active) { opacity: 0.82; }
@@ -2002,21 +2059,24 @@ html[data-theme] .intro-page .couple-title {
 }
 
 html[data-theme] .admin-help-text {
-  margin: 18px 0 24px !important;
-  padding: 18px 22px !important;
-  border: 1.5px solid rgba(var(--theme-rgb), 0.28) !important;
-  border-left: 6px solid rgba(var(--theme-rgb), 0.72) !important;
-  border-radius: 20px !important;
+  width: 100% !important;
+  max-width: 100% !important; /* 820px sınırını ezdik, tam hizalandı */
+  box-sizing: border-box !important;
+  margin: 0 0 24px 0 !important;
+  padding: 18px 22px !important; /* İç boşluklar geri geldi */
+  border: 1.5px solid rgba(var(--theme-rgb), 0.28) !important; /* Dış çerçeve */
+  border-left: 6px solid rgba(var(--theme-rgb), 0.72) !important; /* Şık sol çizgi */
+  border-radius: 16px !important;
   background:
     radial-gradient(circle at top left, rgba(var(--theme-soft-rgb), 0.34), transparent 34%),
-    rgba(var(--theme-faint-rgb), 0.84) !important;
+    rgba(var(--theme-faint-rgb), 0.84) !important; /* Kutu arka planı geri geldi */
   color: var(--theme-text-main) !important;
   font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
   font-size: 17px !important;
   font-weight: 900 !important;
   line-height: 1.75 !important;
   text-align: left !important;
-  box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.07) !important;
+  box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.07) !important; /* Derinlik gölgesi */
 }
 
 html[data-theme="dark"] .admin-help-text {
@@ -3252,6 +3312,28 @@ html[data-theme="minimal"] {
   color: var(--text-soft) !important;
   font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-weight: 850 !important;
+}
+
+/* =================================================================
+   BUTON VE EMOJİ HİZALAMA DÜZELTMELERİ
+   ================================================================= */
+
+/* 1. Tüm butonların içindeki emoji ve yazıların kusursuz ortalanması */
+.admin-page button,
+.admin-actions-sticky .main-button,
+.admin-actions-sticky .secondary-button,
+.small-admin-button,
+.admin-add-button,
+.admin-list > button.danger-button,
+.admin-list > .secondary-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: normal !important; /* Emojilerin yüksekliği bozmasını engeller */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important; /* Yükseklik sadece flex ile sabitlenir */
+  box-sizing: border-box !important;
+  gap: 6px !important; /* İkon ve yazı arası dengeli boşluk */
 }
 
 .personal-link-standalone {

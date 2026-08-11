@@ -39,9 +39,9 @@ export function GuestsAdminPanel({ guests, adminGuestSearch, setAdminGuestSearch
           onChange={(e) => setAdminGuestSearch(e.target.value)} 
           placeholder={isEn ? "Search..." : "Kayıtlarda ara"} 
         />
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportGuestsExcel}>{isEn ? "Excel" : "Excel İndir"}</button>
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportGuestsCsv}>{isEn ? "CSV" : "CSV İndir"}</button>
-        <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearGuests}>{isEn ? "Clear All" : "Tümünü Sil"}</button>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportGuestsExcel}>{isEn ? "Excel" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportGuestsCsv}>{isEn ? "CSV" : "CSV CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearGuests}>{isEn ? "Clear All" : "Tümünü Sil 🚨"}</button>
       </div>
 
       <div className="admin-list admin-list-full">
@@ -59,8 +59,8 @@ export function GuestsAdminPanel({ guests, adminGuestSearch, setAdminGuestSearch
                 <span>{translatedAttendance}</span>
                 {guest.note && <em>{isEn ? "Note:" : "Not:"} {guest.note}</em>}
                 <div className="admin-row-actions" style={{ display: "flex", gap: "8px", marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed var(--border)", width: "100%" }}>
-                  <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>{isEn ? "Edit" : "Düzenle"}</button>
-                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>{isEn ? "Delete" : "Sil"}</button>
+                  <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>{isEn ? "Edit" : "Düzenle ✏️"}</button>
+                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>{isEn ? "Delete" : "Sil 🗑️"}</button>
                 </div>
               </div>
             );
@@ -120,7 +120,7 @@ export function WishesAdminPanel({ wishes, filteredWishes, adminWishSearch, setA
               <p style={{ margin: "8px 0", fontStyle: "italic", fontSize: "16px" }}>"{wish.message}"</p>
               <div className="admin-row-actions">
                 <button type="button" className="secondary-button small-admin-button" onClick={() => toggleWishApproval(wish.id)}>
-                  {wish.approved ? (isEn ? "Hide" : "Yayından Kaldır") : (isEn ? "Publish" : "Yayınla")}
+                  {wish.approved ? (isEn ? "Hide" : "Yayından Kaldır 🙈") : (isEn ? "Publish" : "Yayınla 👁️")}
                 </button>
                 <button type="button" className="secondary-button small-admin-button" onClick={() => editWish(wish.id)}>{isEn ? "Edit" : "Düzenle"}</button>
                 <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteWish(wish.id)}>{isEn ? "Delete" : "Sil"}</button>
@@ -226,6 +226,7 @@ export function AdminPanelContent({
             <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label={t('visibility.iban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={t('visibility.popupIban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />
+            <AdminCheckbox checked={adminDraft.settings.visibility?.trickyDecline ?? false} label={t('visibility.trickyDecline')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, trickyDecline: v })} />
           </div>
         </AdminSection>
       );
@@ -266,7 +267,7 @@ export function AdminPanelContent({
             <AdminField label={isEn ? "New Password Again" : "Yeni Şifre Tekrar"} onChange={setAdminNewPasswordAgain} value={adminNewPasswordAgain} type="password" />
           </div>
           <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-            <button type="button" className="main-button" onClick={changeAdminPassword}>{isEn ? "Change Password" : "Şifreyi Değiştir"}</button>
+            <button type="button" className="main-button" onClick={changeAdminPassword}>{isEn ? "Change Password" : "Şifreyi Değiştir 🔐"}</button>
           </div>
           {adminPasswordMessage ? <p className="admin-help-text">{adminPasswordMessage}</p> : null}
         </AdminSection>
@@ -355,7 +356,7 @@ export function AdminPanelContent({
                 </div>
               </div>
             ))}
-            <button type="button" className="admin-add-button" onClick={() => addDraftArrayItem("eventDetails", { label: "Yeni Etkinlik", time: "20:00", location: "", description: "" })}>+ {isEn ? "Add New Event" : "Yeni Etkinlik Ekle"}</button>
+            <button type="button" className="admin-add-button" onClick={() => addDraftArrayItem("eventDetails", { label: "Yeni Etkinlik", time: "20:00", location: "", description: "" })}>{isEn ? "Add New Event" : "Yeni Etkinlik Ekle"}</button>
           </div>
         </AdminSection>
       );
@@ -381,7 +382,7 @@ export function AdminPanelContent({
                 </div>
               </div>
             ))}
-            <button type="button" className="admin-add-button" onClick={() => addDraftArrayItem("scheduleItems", { time: "22:00", title: "Yeni Program", description: "" })}>+ {isEn ? "Add New Program" : "Yeni Program Ekle"}</button>
+            <button type="button" className="admin-add-button" onClick={() => addDraftArrayItem("scheduleItems", { time: "22:00", title: "Yeni Program", description: "" })}>{isEn ? "Add New Program" : "Yeni Program Ekle"}</button>
           </div>
         </AdminSection>
       );
@@ -406,7 +407,7 @@ export function AdminPanelContent({
                   <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeGalleryItem(index)} isEn={isEn} />
                 </div>
               ))}
-              <button type="button" className="admin-add-button" onClick={addGalleryItem}>+ {isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
+              <button type="button" className="admin-add-button" onClick={addGalleryItem}>{isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
             </div>
           </div>
         </AdminSection>
@@ -431,7 +432,7 @@ export function AdminPanelContent({
                 alt="QR Code" 
                 style={{ width: "180px", height: "180px", objectFit: "contain", borderRadius: "16px", margin: "0 auto 20px", background: "#fff", padding: "12px", border: "1px solid var(--border)" }} 
               />
-              <button type="button" className="main-button" onClick={downloadQrCode} style={{ minWidth: "220px", margin: 0 }}>{isEn ? "Download QR" : "QR İndir"}</button>
+              <button type="button" className="main-button" onClick={downloadQrCode} style={{ minWidth: "220px", margin: 0 }}>{isEn ? "Download QR" : "QR İndir 📥"}</button>
             </div>
 
             <div className="admin-link-preview-box" style={{ display: "flex", flexDirection: "column", gap: "16px", background: "var(--paper-soft)", padding: "24px", borderRadius: "22px", border: "1px solid var(--border)" }}>
@@ -440,7 +441,7 @@ export function AdminPanelContent({
                 <input value={currentShareLink} readOnly style={{ width: "100%", padding: "14px 16px", borderRadius: "14px", border: "1.5px solid rgba(159, 79, 104, 0.46)", background: "#fff", fontWeight: "700", color: "var(--text)", outline: "none" }} />
                 <small style={{ display: "block", marginTop: "12px", fontSize: "14px", color: "var(--text-soft)", lineHeight: "1.5" }}>{isEn ? "You can copy this link and share it with everyone via WhatsApp or social media." : "Bu linki kopyalayıp WhatsApp veya sosyal medyadan herkesle paylaşabilirsiniz."}</small>
               </div>
-              <button type="button" className="secondary-button" onClick={() => copyAdminLink(currentShareLink, isEn ? "Invitation link copied!" : "Davetiye linki kopyalandı!")} style={{ alignSelf: "flex-start", margin: 0 }}>{isEn ? "Copy Link" : "Linki Kopyala"}</button>
+              <button type="button" className="secondary-button" onClick={() => copyAdminLink(currentShareLink, isEn ? "Invitation link copied!" : "Davetiye linki kopyalandı!")} style={{ alignSelf: "flex-start", margin: 0 }}>{isEn ? "Copy Link" : "Linki Kopyala 🔗"}</button>
             </div>
 
           </div>
@@ -462,12 +463,12 @@ export function AdminPanelContent({
             <div className="admin-export-card">
               <strong>{isEn ? "Backup (Export)" : "Yedek Al (Dışa Aktar)"}</strong>
               <span>{isEn ? "Downloads the entire system as a JSON file." : "Tüm sistemi JSON formatında bilgisayarınıza indirir."}</span>
-              <button type="button" className="main-button" onClick={exportAllDataJson}>{isEn ? "Download JSON" : "JSON İndir"}</button>
+              <button type="button" className="main-button" onClick={exportAllDataJson}>{isEn ? "Download JSON" : "JSON İndir ⬇️"}</button>
             </div>
             <div className="admin-import-box" style={{ margin: 0 }}>
               <strong style={{ display: "block", marginBottom: "8px", color: "var(--rose-deep)" }}>{isEn ? "Restore Backup (Import)" : "Yedeği Geri Yükle (İçe Aktar)"}</strong>
               <AdminTextarea label="" value={dataImportText} onChange={setDataImportText} placeholder={isEn ? "Paste downloaded JSON file content here..." : "İndirdiğiniz JSON dosyasının içeriğini buraya yapıştırın..."} />
-              <button type="button" className="secondary-button danger-button" style={{ marginTop: "12px", width: "100%" }} onClick={importAllDataJson}>{isEn ? "Import Backup" : "Yedeği İçe Aktar"}</button>
+              <button type="button" className="secondary-button danger-button" style={{ marginTop: "12px", width: "100%" }} onClick={importAllDataJson}>{isEn ? "Import Backup" : "Yedeği İçe Aktar ⬆️"}</button>
             </div>
           </div>
         </AdminSection>

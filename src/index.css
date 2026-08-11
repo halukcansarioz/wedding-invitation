@@ -4,14 +4,14 @@
 
 /* 1. Temel Sayfa Ayarları */
 html, body {
-  min-height: 100vh !important; /* height: 100% yerine min-height kullandık, scroll geri geldi! */
+  min-height: 100vh !important;
   margin: 0 !important;
   padding: 0 !important;
   overflow-x: hidden !important;
-  overflow-y: auto !important; /* Sayfanın dikey kaydırılmasını zorunlu kıldık */
+  overflow-y: auto !important; 
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
-  overscroll-behavior-y: auto !important; /* Fare tekerleği kilidini tamamen kaldırır */
+  overscroll-behavior-y: auto !important; 
 }
 
 #root, .app, .invitation-page {
@@ -29,7 +29,7 @@ html, body {
   min-height: 100dvh !important;
 }
 
-/* 3. SADECE iOS Safari İçin Tam Ekran Desteği (Masaüstünü Bozmaması İçin İzole Edildi) */
+/* 3. SADECE iOS Safari İçin Tam Ekran Desteği */
 @supports (-webkit-touch-callout: none) {
   .app, 
   .intro-page, 
@@ -68,7 +68,7 @@ textarea,
   }
 }
 
-/* 6. Yeni Nesil iPhone Çentik (Notch) ve Alt Çizgi (Safe Area) Desteği */
+/* 6. Yeni Nesil Çentik (Notch) ve Alt Çizgi (Safe Area) Desteği */
 .floating-actions, 
 .glass-dock {
   padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
@@ -83,6 +83,23 @@ textarea,
 
 .app-modal-card {
   margin-bottom: env(safe-area-inset-bottom) !important;
+}
+
+/* BUTON ÇAKIŞMASI DÜZELTMESİ: Mobil ekranlar için dock ve scroll yönlendirmeleri yukarı çekildi */
+@media (max-width: 650px) {
+  .glass-dock {
+    top: auto !important;
+    bottom: calc(45px + env(safe-area-inset-bottom)) !important; 
+    right: 50% !important;
+    transform: translateX(50%) !important;
+    flex-direction: row !important;
+    padding: 8px 14px !important;
+    gap: 14px !important;
+  }
+  
+  .scroll-indicator {
+    bottom: calc(45px + env(safe-area-inset-bottom)) !important;
+  }
 }
 
 /* 7. Safari ve Eski Cihazlar İçin Cam Efekti (Glassmorphism) Desteği */

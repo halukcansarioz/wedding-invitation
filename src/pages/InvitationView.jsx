@@ -89,6 +89,7 @@ export default function InvitationView({
           rsvpWhatsappText={rsvpWhatsappText}
           showIban={settings.visibility?.popupIban !== false}
           giftData={siteData.giftRegistry}
+          trickyDecline={settings.visibility?.trickyDecline} // <--- BU SATIRI EKLE
         />
       )}
 
