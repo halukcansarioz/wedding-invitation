@@ -123,7 +123,6 @@ export const DEFAULT_SITE_DATA = {
       wishes: true,
       iban: true,
       popupIban: true,
-      trickyDecline: false
     },
   },
   messages: {

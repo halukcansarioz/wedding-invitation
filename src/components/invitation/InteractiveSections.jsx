@@ -18,40 +18,9 @@ function DeadlineBanner({ isEn, title, text }) {
   );
 }
 
-function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t, trickyDecline }) {
-  const [runawayStyle, setRunawayStyle] = useState({});
-
-  // Butonu kutudan tamamen koparıp tüm ekranda uçuran fonksiyon
-  const handleRunaway = (e) => {
-    if (trickyDecline) {
-      // Ekranın mevcut genişlik ve yüksekliğini al (Taşmayı önlemek için)
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      
-      // Butonun mevcut boyutlarını al (Yoksa varsayılan 160x50)
-      const btnWidth = e.target.offsetWidth || 160;
-      const btnHeight = e.target.offsetHeight || 50;
-
-      // Ekran sınırları içinde kalacak rastgele X ve Y koordinatları üret
-      const randomX = Math.max(20, Math.floor(Math.random() * (windowWidth - btnWidth - 40)));
-      const randomY = Math.max(20, Math.floor(Math.random() * (windowHeight - btnHeight - 40)));
-
-      // SİHİRLİ KISIM: Butonu "fixed" yaparak kutudan bağımsızlaştırıyoruz.
-      // Artık transform yerine doğrudan left ve top değerleriyle hareket edecek.
-      setRunawayStyle({
-        position: "fixed", 
-        left: `${randomX}px`,
-        top: `${randomY}px`,
-        margin: "0",
-        width: `${btnWidth}px`, // Şeklinin bozulmaması için genişliği sabitliyoruz
-        transition: "left 0.2s ease-out, top 0.2s ease-out", // Kayma animasyonu
-        zIndex: 9999999, // Her şeyin en üstünde durmasını sağlar
-      });
-    }
-  };
-
+function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) {
+  
   const handleClose = () => {
-    setRunawayStyle({});
     resetAndCloseModal();
   };
 
@@ -69,20 +38,11 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
 
         {!showDeclineGift ? (
           <div className="app-modal-actions">
-            {/* 1. ŞAKACI BUTON (Tamam 👍) */}
+            {/* Normal Buton (Tamam 👍) */}
             <button 
               type="button" 
               className="secondary-button app-modal-cancel" 
-              onClick={(e) => {
-                if (trickyDecline) {
-                  e.preventDefault();
-                  handleRunaway(e);
-                } else {
-                  handleClose();
-                }
-              }}
-              onMouseEnter={handleRunaway}
-              style={runawayStyle}
+              onClick={handleClose}
             >
               {t('ui.close')}
             </button>
@@ -91,7 +51,7 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
               <button 
                 type="button" 
                 className="main-button" 
-                onClick={() => { setShowDeclineGift(true); setRunawayStyle({}); }}
+                onClick={() => setShowDeclineGift(true)}
               >
                 <span>{t('ui.sendGift')}</span>
               </button>
@@ -109,20 +69,11 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
                 {copied ? t('ui.copied') : t('ui.copyIban')}
               </button>
               
-              {/* 2. ŞAKACI BUTON (Kapat ❌) */}
+              {/* Normal Buton (Kapat ❌) */}
               <button 
                 type="button" 
                 className="secondary-button app-modal-cancel" 
-                onClick={(e) => {
-                  if (trickyDecline) {
-                    e.preventDefault();
-                    handleRunaway(e);
-                  } else {
-                    handleClose();
-                  }
-                }}
-                onMouseEnter={handleRunaway}
-                style={runawayStyle}
+                onClick={handleClose}
               >
                 {t('ui.closeBtn')}
               </button>
@@ -135,7 +86,7 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
   );
 }
 
-export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, trickyDecline }) {
+export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, submitGuest, invitation, rsvpWhatsappText, showIban, giftData }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
@@ -225,9 +176,8 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
           {t('form.whatsappRsvp')}
         </a>
       </div>
-
-    <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} trickyDecline={trickyDecline} />    </section>
-  );
+      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
+    </section>);
 }
 
 export function GuestsListSection({ copy, guests }) {

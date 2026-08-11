@@ -109,6 +109,5 @@
     "linkCopied": "Invitation link copied. 🔗",
     "linkCopyError": "Could not copy link. ⚠️"
   },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "trickyDecline": "Runaway 'OK' Button (Prank for declining guests)"
+  "popupIban": "Gift Button for Non-Attending (Modal)"
 }

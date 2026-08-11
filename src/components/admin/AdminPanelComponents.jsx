@@ -208,7 +208,7 @@ export function AdminPanelContent({
         </AdminSection>
       );
 
-    case "visibility":
+case "visibility":
       return (
         <AdminSection title={isEn ? "Section Visibility" : "Bölüm Görünürlüğü"} onSave={saveSiteContent}>
           <p className="admin-help-text">
@@ -226,11 +226,9 @@ export function AdminPanelContent({
             <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label={t('visibility.iban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
             <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={t('visibility.popupIban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />
-            <AdminCheckbox checked={adminDraft.settings.visibility?.trickyDecline ?? false} label={t('visibility.trickyDecline')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, trickyDecline: v })} />
           </div>
         </AdminSection>
       );
-
     case "theme":
       return (
         <AdminSection title={isEn ? "Theme & Publishing Settings" : "Tema ve Yayın Ayarları"} onSave={saveSiteContent}>
