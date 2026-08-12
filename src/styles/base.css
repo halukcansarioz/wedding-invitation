@@ -833,6 +833,14 @@ button {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
+[data-theme-preview="rose"] .theme-swatch { background: linear-gradient(135deg, #f8d7e2, #d98ca1) !important; }
+[data-theme-preview="sage"] .theme-swatch { background: linear-gradient(135deg, #dce8c8, #9cad75) !important; }
+[data-theme-preview="gold"] .theme-swatch { background: linear-gradient(135deg, #f4dfad, #c9a45d) !important; }
+[data-theme-preview="burgundy"] .theme-swatch { background: linear-gradient(135deg, #e2b6c4, #b55b79) !important; }
+[data-theme-preview="lavanta"] .theme-swatch { background: linear-gradient(135deg, #e6dcf2, #9b7cbf) !important; }
+[data-theme-preview="minimal"] .theme-swatch { background: linear-gradient(135deg, #e8e1dc, #b69f91) !important; }
+[data-theme-preview="dark"] .theme-swatch { background: linear-gradient(135deg, #5c5c5c, #2a2a2a) !important; }
+
 .theme-option-card strong {
   font-size: 16px !important;
   line-height: 1.25 !important;

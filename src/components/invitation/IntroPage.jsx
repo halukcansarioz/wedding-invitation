@@ -5,7 +5,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
-  // Animasyon gibi algılanan ve yapıyı bozan emojiyi metinden temizliyoruz
+  // Dil seçimine göre metni ayarlar (İngilizceyse en.json'dan, Türkçeyse panelden/copy'den alır)
   const openText = isEn 
     ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
     : copy.openButton;
@@ -43,8 +43,21 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
           </div>
         )}
 
+        {/* --- DEĞİŞTİRİLECEK BUTON KISMI --- */}
         <button className="envelope-seal" onClick={openInvitation}>
-          <span style={{ display: 'block', textAlign: 'center', lineHeight: '1.2' }}>
+          <span 
+            style={{ 
+              display: 'block', 
+              textAlign: 'center', 
+              lineHeight: '1.2',
+              color: '#ffffff', 
+              WebkitTextFillColor: '#ffffff', /* Arka plandaki mor rengin yazıya sızmasını kesin olarak engeller */
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', /* Beyazın parlaması için arkasına net bir gölge ekler */
+              fontWeight: '900',
+              fontSize: '18px',
+              letterSpacing: '0.5px'
+            }}
+          >
             {openText}
           </span>
         </button>

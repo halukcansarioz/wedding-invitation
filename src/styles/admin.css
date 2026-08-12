@@ -125,10 +125,10 @@
 
 .admin-main-panel .admin-actions-sticky {
   display: flex !important;
-  flex-wrap: nowrap !important; /* Diller arası yükseklik sorunu için nowrap zorlandı */
+  flex-wrap: wrap !important; /* nowrap mesaj kutusunu bozar, wrap yapmalıyız */
   align-items: center !important;
   justify-content: flex-end !important; 
-  gap: 8px !important; /* Butonların sığması için aralık optimize edildi */
+  gap: 8px !important; 
   padding: 16px 20px !important;
 }
 
