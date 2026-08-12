@@ -416,7 +416,7 @@ function App() {
   const openInvitation = useCallback(() => {
     setIsOpening(true);
     startMusic().catch((err) => console.log("Müzik başlatılamadı:", err));
-    setTimeout(() => { setOpened(true); }, 2100);
+    setTimeout(() => { setOpened(true); }, 4000);
   }, [startMusic]);
 
   const handleGuestChange = useCallback((e) => {

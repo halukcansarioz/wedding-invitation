@@ -5,6 +5,11 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
+  // Animasyon gibi algılanan ve yapıyı bozan emojiyi metinden temizliyoruz
+  const openText = isEn 
+    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
+    : copy.openButton;
+
   return (
     <section className={`intro-page ${isOpening ? "opening" : ""}`}>
       <div className="petal-layer" aria-hidden="true">
@@ -12,9 +17,6 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
           <span key={index}></span>
         ))}
       </div>
-
-      <div className="ribbon ribbon-left"></div>
-      <div className="ribbon ribbon-right"></div>
 
       <div className="envelope-container">
         <div className="envelope-back"></div>
@@ -42,7 +44,9 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
         )}
 
         <button className="envelope-seal" onClick={openInvitation}>
-          {isEn ? t('invitation.openButton') : copy.openButton}
+          <span style={{ display: 'block', textAlign: 'center', lineHeight: '1.2' }}>
+            {openText}
+          </span>
         </button>
       </div>
     </section>
