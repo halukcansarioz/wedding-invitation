@@ -8,6 +8,7 @@ import { useAudio } from "./hooks/useAudio";
 import { useDatabaseManager } from "./hooks/useDatabaseManager";
 import IntroPage from "./components/invitation/IntroPage";
 import { GlobalModals } from "./components/common/GlobalModals";
+import FloatingMenu from "./components/common/FloatingMenu";
 
 const InvitationView = lazy(() => import("./pages/InvitationView"));
 const AdminView = lazy(() => import("./pages/AdminView"));
@@ -151,7 +152,6 @@ function App() {
         setCurrentSlideIndex((prev) => prev + 1);
       }
     } else {
-      // MASAÜSTÜ: Ekrandaki mevcut kaydırma pozisyonuna göre bir sonraki kartı hesapla ve oraya pürüzsüzce kay
       const currentScroll = window.scrollY;
       const nextSection = sections.find(sec => {
         const rect = sec.getBoundingClientRect();
@@ -176,7 +176,6 @@ function App() {
         setCurrentSlideIndex((prev) => prev - 1);
       }
     } else {
-      // MASAÜSTÜ: Ekrandaki mevcut kaydırma pozisyonuna göre bir önceki kartı hesapla ve oraya pürüzsüzce kay
       const currentScroll = window.scrollY;
       const prevSection = [...sections].reverse().find(sec => {
         const rect = sec.getBoundingClientRect();
@@ -195,7 +194,6 @@ function App() {
   const handleWheel = useCallback((e) => {
     if (isAdminPage || !opened || isScrollingRef.current) return;
     
-    // Yalnızca mobilde scroll'u (tekerleği) ele geçirip tam ekran geçişi sağlıyoruz
     if (window.innerWidth <= 650) {
       if (e.deltaY > 0) scrollToNext();
       else scrollToPrev();
@@ -231,22 +229,6 @@ function App() {
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
-    const handleGlobalClick = (e) => {
-      if (window.innerWidth > 650) return; 
-      const isInteractive = e.target.closest('button, a, input, textarea, select, label, .glass-dock, .gallery-image, .gallery-lightbox-overlay, .app-modal-backdrop, .admin-quick-access, .mini-map');
-      
-      if (!isInteractive) {
-        scrollToNext();
-      }
-    };
-
-    document.addEventListener('click', handleGlobalClick);
-    return () => document.removeEventListener('click', handleGlobalClick);
-  }, [isAdminPage, opened, scrollToNext]);
-
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
     const checkAndApplyClasses = () => {
       const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
       if (!sections.length) {
@@ -267,7 +249,6 @@ function App() {
 
     checkAndApplyClasses();
     
-    // Masaüstünde scroll dinleyicisi ekleyerek aşağı/yukarı oklarının dinamik görünmesini sağla
     const handleScroll = () => {
       if (window.innerWidth > 650) {
         setShowScrollTop(window.scrollY > 100);
@@ -278,8 +259,8 @@ function App() {
 
     if (window.innerWidth > 650) {
       window.addEventListener('scroll', handleScroll, { passive: true });
-      setShowScrollDown(true); // Masaüstünde butonu başlangıçta zorla görünür yap
-      setTimeout(handleScroll, 800); // Sayfa görselleri yüklendikten sonra gerçek boyutu hesapla
+      setShowScrollDown(true); 
+      setTimeout(handleScroll, 800); 
     }
     
     return () => {
@@ -759,101 +740,17 @@ function App() {
       />
 
      {!isAdminPage && opened && (
-        <>
-          <div className="admin-quick-access">
-            <a 
-              href="#admin" 
-              target="_blank" 
-              rel="noreferrer"
-              className="admin-btn" 
-              title={isEn ? "Admin Panel" : "Yönetici Paneli"}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M12 8v4" />
-                <path d="M12 16h.01" />
-              </svg>
-            </a>
-          </div>
-          
-          <div className="floating-actions glass-dock">
-            <button
-              type="button"
-              className="dock-btn lang-btn"
-              onClick={toggleLanguage}
-              title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
-            >
-              {isEn ? 'EN' : 'TR'}
-            </button>
-
-            <a 
-              className="dock-btn wa-btn" 
-              href={`https://wa.me/?text=${shareText}`} 
-              target="_blank" 
-              rel="noreferrer"
-              title={isEn ? 'Share via WhatsApp' : 'WhatsApp ile Paylaş'}
-            >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
-            </a>
-
-            <button
-              type="button"
-              className="dock-btn music-btn"
-              onClick={toggleMusic}
-              aria-pressed={isMusicPlaying}
-              title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-            >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {isMusicPlaying ? (
-                  <>
-                    <path d="M9 18V5l12-2v13" />
-                    <circle cx="6" cy="18" r="3" />
-                    <circle cx="18" cy="16" r="3" />
-                  </>
-                ) : (
-                  <>
-                    <path d="M9 18V5l12-2v13" />
-                    <circle cx="6" cy="18" r="3" />
-                    <circle cx="18" cy="16" r="3" />
-                    <line x1="3" y1="3" x2="21" y2="21" />
-                  </>
-                )}
-              </svg>
-            </button>
-
-            {showScrollDown && (
-              <button
-                type="button"
-                className="dock-btn scroll-down-btn"
-                onClick={scrollToNext}
-                title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
-              >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-            )}
-
-            {showScrollTop && (
-              <button
-                type="button"
-                className="dock-btn scroll-up-btn"
-                onClick={scrollToPrev}
-                title={isEn ? "Scroll Up" : "Yukarı Kaydır"}
-              >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-              </button>
-            )}
-          </div>
-        </>
+        <FloatingMenu 
+          isEn={isEn}
+          toggleLanguage={toggleLanguage}
+          shareText={shareText}
+          toggleMusic={toggleMusic}
+          isMusicPlaying={isMusicPlaying}
+          showScrollDown={showScrollDown}
+          scrollToNext={scrollToNext}
+          showScrollTop={showScrollTop}
+          scrollToPrev={scrollToPrev}
+        />
       )}
 
       {isAdminPage ? (
@@ -964,22 +861,6 @@ function App() {
         </Suspense>
       ) : !opened ? (
         <>
-          <div className="admin-quick-access">
-            <a 
-              href="#admin" 
-              target="_blank" 
-              rel="noreferrer"
-              className="admin-btn" 
-              title={isEn ? "Admin Panel" : "Yönetici Paneli"}
-            >
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M12 8v4" />
-                <path d="M12 16h.01" />
-              </svg>
-            </a>
-          </div>
-
           <IntroPage
             isOpening={isOpening}
             copy={copy}
@@ -987,84 +868,17 @@ function App() {
             personalGuestName={personalGuestName}
             openInvitation={openInvitation}
           />
-          
-          <div className="floating-actions glass-dock">
-            <button
-              type="button"
-              className="dock-btn lang-btn"
-              onClick={toggleLanguage}
-              title={isEn ? "Türkçe'ye Geç" : "Switch to English"}
-            >
-              {isEn ? 'EN' : 'TR'}
-            </button>
-
-            <a 
-              className="dock-btn wa-btn" 
-              href={`https://wa.me/?text=${shareText}`} 
-              target="_blank" 
-              rel="noreferrer"
-              title={isEn ? 'Share via WhatsApp' : 'WhatsApp ile Paylaş'}
-            >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
-            </a>
-
-            <button
-              type="button"
-              className="dock-btn music-btn"
-              onClick={toggleMusic}
-              aria-pressed={isMusicPlaying}
-              title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-            >
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {isMusicPlaying ? (
-                  <>
-                    <path d="M9 18V5l12-2v13" />
-                    <circle cx="6" cy="18" r="3" />
-                    <circle cx="18" cy="16" r="3" />
-                  </>
-                ) : (
-                  <>
-                    <path d="M9 18V5l12-2v13" />
-                    <circle cx="6" cy="18" r="3" />
-                    <circle cx="18" cy="16" r="3" />
-                    <line x1="3" y1="3" x2="21" y2="21" />
-                  </>
-                )}
-              </svg>
-            </button>
-
-            {showScrollDown && (
-              <button
-                type="button"
-                className="dock-btn scroll-down-btn"
-                onClick={scrollToNext}
-                title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
-              >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-              </button>
-            )}
-
-            {showScrollTop && (
-              <button
-                type="button"
-                className="dock-btn scroll-up-btn"
-                onClick={scrollToPrev}
-                title={isEn ? "Scroll Up" : "Yukarı Kaydır"}
-              >
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="18 15 12 9 6 15"></polyline>
-                </svg>
-              </button>
-            )}
-          </div>
+          <FloatingMenu 
+            isEn={isEn}
+            toggleLanguage={toggleLanguage}
+            shareText={shareText}
+            toggleMusic={toggleMusic}
+            isMusicPlaying={isMusicPlaying}
+            showScrollDown={showScrollDown}
+            scrollToNext={scrollToNext}
+            showScrollTop={showScrollTop}
+            scrollToPrev={scrollToPrev}
+          />
         </>
       ) : (
         <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Dropdown } from "./common/UIComponents";
+import { useTranslation } from "react-i18next";
 
 export function AdminField({ label, value, onChange, type = "text", placeholder = "" }) {
   return (
@@ -7,7 +8,7 @@ export function AdminField({ label, value, onChange, type = "text", placeholder 
       <span>{label}</span>
       <input
         type={type}
-        value={value || ""}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
       />
@@ -20,7 +21,7 @@ export function AdminTextarea({ label, value, onChange, placeholder = "" }) {
     <label className="admin-field admin-field-wide">
       <span>{label}</span>
       <textarea
-        value={value || ""}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
       />
@@ -47,69 +48,84 @@ export function AdminCheckbox({ label, checked, onChange }) {
 }
 
 export function AdminImageField({ label, value, onFileSelect, onClear }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
   return (
     <div className="admin-image-field admin-field-wide">
       <div className="admin-image-header">
         <span>{label}</span>
         {value && (
           <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            Görseli Kaldır 🗑️
+            {isEn ? "Remove Image 🗑️" : "Görseli Kaldır 🗑️"}
           </button>
         )}
       </div>
 
       {value ? (
-        <img className="admin-image-preview" src={value} alt={`${label} önizleme`} />
+        <img className="admin-image-preview" src={value} alt={`${label} preview`} />
       ) : (
-        <div className="admin-image-empty">Henüz görsel seçilmedi.</div>
+        <div className="admin-image-empty">{isEn ? "No image selected." : "Henüz görsel seçilmedi."}</div>
       )}
 
       <label className="admin-upload-button">
-        Bilgisayardan Görsel Seç 🖼️
+        {isEn ? "Select Image from PC 🖼️" : "Bilgisayardan Görsel Seç 🖼️"}
         <input type="file" accept="image/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
       </label>
       <small>
-        Görsel otomatik küçültülür ve bu tarayıcıda saklanır. Büyük fotoğraf yüklerken kaydettikten sonra kontrol et.
+        {isEn 
+          ? "Images are auto-compressed and stored in your browser. Check live site after uploading large photos." 
+          : "Görsel otomatik küçültülür ve bu tarayıcıda saklanır. Büyük fotoğraf yüklerken kaydettikten sonra kontrol et."}
       </small>
     </div>
   );
 }
 
 export function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
   return (
     <div className="admin-music-field admin-field-wide">
       <div className="admin-image-header">
-        <span>Davetiyede çalacak müzik</span>
+        <span>{isEn ? "Invitation Background Music" : "Davetiyede çalacak müzik"}</span>
         {value && (
           <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            Müziği Kaldır 🗑️
+            {isEn ? "Remove Music 🗑️" : "Müziği Kaldır 🗑️"}
           </button>
         )}
       </div>
 
       {value ? (
         <div className="admin-music-preview">
-          <strong>{fileName || "Yüklenen müzik"}</strong>
+          <strong>{fileName || (isEn ? "Uploaded music" : "Yüklenen müzik")}</strong>
           <audio controls src={value}></audio>
         </div>
       ) : (
         <div className="admin-image-empty">
-          Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar.
+          {isEn 
+            ? "No custom music selected. Default wedding music will play." 
+            : "Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar."}
         </div>
       )}
 
       <label className="admin-upload-button">
-        Bilgisayardan Müzik Seç 🎵
+        {isEn ? "Select Music from PC 🎵" : "Bilgisayardan Müzik Seç 🎵"}
         <input type="file" accept="audio/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
       </label>
       <small>
-        MP3/M4A gibi kısa ve 4 MB altı bir dosya seç. Kaydettikten sonra davetiyede bu müzik çalar.
+        {isEn 
+          ? "Select a short MP3/M4A file under 4 MB. It will play automatically on the invitation." 
+          : "MP3/M4A gibi kısa ve 4 MB altı bir dosya seç. Kaydettikten sonra davetiyede bu müzik çalar."}
       </small>
     </div>
   );
 }
 
 export function AdminSection({ title, children, onSave }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
   return (
     <div className="admin-editor-section">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
@@ -120,7 +136,7 @@ export function AdminSection({ title, children, onSave }) {
             className="secondary-button small-admin-button" 
             onClick={onSave}
           >
-            Kaydet 💾
+            {isEn ? "Save 💾" : "Kaydet 💾"}
           </button>
         )}
       </div>
@@ -129,7 +145,6 @@ export function AdminSection({ title, children, onSave }) {
   );
 }
 
-// Ortaklaştırılmış admin aksiyon butonları
 export function AdminActionButtons({ onSave, onDelete, isEn }) {
   return (
     <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>

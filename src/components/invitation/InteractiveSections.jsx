@@ -180,13 +180,15 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
     </section>);
 }
 
-export function GuestsListSection({ copy, guests }) {
+export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const guestList = Array.isArray(guests) ? guests : [];
   
-  const attendingCount = guestList.filter(g => g.attendance === "Katılacağım").length;
-  const notAttendingCount = guestList.filter(g => g.attendance === "Katılamayacağım").length;
+  const totalResponses = guestList.length;
+  // Fallback sağlanarak direkt kişi sayısı prop olarak gelmiyorsa formu dolduranların sayısı hesaplanır
+  const attending = totalPersonCount !== undefined ? totalPersonCount : guestList.filter(g => g.attendance === "Katılacağım").length;
+  const notAttending = notAttendingCount !== undefined ? notAttendingCount : guestList.filter(g => g.attendance === "Katılamayacağım").length;
 
   return (
     <section className="card">
@@ -194,9 +196,9 @@ export function GuestsListSection({ copy, guests }) {
       <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
       <div className="guest-stats">
-        <div><strong>{guestList.length}</strong><span>{t('ui.totalResponses')}</span></div>
-        <div><strong>{attendingCount}</strong><span>{t('ui.attending')}</span></div>
-        <div><strong>{notAttendingCount}</strong><span>{t('ui.notAttending')}</span></div>
+        <div><strong>{totalResponses}</strong><span>{t('ui.totalResponses')}</span></div>
+        <div><strong>{attending}</strong><span>{t('ui.attending')}</span></div>
+        <div><strong>{notAttending}</strong><span>{t('ui.notAttending')}</span></div>
       </div>
       
       <div className="private-note-card">
