@@ -1342,8 +1342,6 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     margin: 0 !important;
     overflow: hidden !important;
     background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft)) !important;
-    background-size: 200% 200% !important;
-    animation: gradientShift 15s ease infinite !important;
     z-index: 1 !important;
   }
 
@@ -1352,22 +1350,6 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
-  }
-
-  /* Arkadaki bulanık resmin yavaşça nefes alan efekti */
-  .invitation-page::before {
-    content: "";
-    position: absolute;
-    inset: -30px;
-    background: var(--intro-image) center/cover no-repeat;
-    z-index: 0;
-    pointer-events: none;
-    animation: pulseBlurHero 12s infinite alternate ease-in-out !important;
-  }
-
-  @keyframes pulseBlurHero {
-    0% { filter: blur(18px) brightness(0.65); transform: scale(1); }
-    100% { filter: blur(24px) brightness(0.75); transform: scale(1.1); }
   }
 
   /* YENİ: Mobilde arka planın boş kalmaması için ALT ve ÜST kısımdan uzanan botanik animasyon */
@@ -1402,7 +1384,6 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     z-index: 0 !important; 
     pointer-events: none !important;
     transform-origin: center center !important;
-    animation: gentleThemeSway 6s ease-in-out infinite alternate !important;
   }
 
   /* YENİ: Arka planda uçuşan mistik ışıklar (Ambient Bokeh Efekti) GÜÇLENDİRİLDİ */
@@ -1419,7 +1400,6 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
       radial-gradient(circle at 20% 90%, rgba(255,255,255,0.1) 0%, transparent 10%),
       radial-gradient(circle at 80% 90%, rgba(255,255,255,0.1) 0%, transparent 10%);
     background-size: 150% 150%;
-    animation: ambientBokeh 12s ease-in-out infinite alternate !important;
   }
 
   /* 3. Kartları Gizle / Göster */

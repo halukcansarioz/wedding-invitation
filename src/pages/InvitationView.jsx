@@ -44,10 +44,27 @@ export default function InvitationView({
   wishForm,
   handleWishChange,
   submitWish,
-  approvedWishes
+  approvedWishes,
+  scrollToNext // <-- 1. BURAYI EKLEDİK
 }) {
+
+  // <-- 2. BURAYI EKLEDİK: Ekrana tıklayınca kaydırma fonksiyonu
+  const handlePageClick = (e) => {
+    // Sadece mobil görünümde çalışsın
+    if (window.innerWidth > 650) return;
+
+    // Eğer tıklanan yer bir buton, link, input veya form elemanıysa kaydırma yapma
+    const target = e.target;
+    const isInteractive = target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn');
+
+    if (!isInteractive && scrollToNext) {
+      scrollToNext();
+    }
+  };
+
   return (
-    <main className="invitation-page">
+    // <-- 3. BURAYI EKLEDİK: onClick={handlePageClick}
+    <main className="invitation-page" onClick={handlePageClick}>
       <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} />
 
       {settings.visibility?.countdown !== false && (

@@ -857,6 +857,7 @@ function App() {
             importAllDataJson={importAllDataJson}
             toggleMusic={toggleMusic}
             isMusicPlaying={isMusicPlaying}
+            scrollToNext={scrollToNext}
           />
         </Suspense>
       ) : !opened ? (
@@ -880,7 +881,7 @@ function App() {
             scrollToPrev={scrollToPrev}
           />
         </>
-      ) : (
+) : (
         <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
           <InvitationView
             siteData={siteData}
@@ -909,6 +910,9 @@ function App() {
             handleWishChange={handleWishChange}
             submitWish={submitWish}
             approvedWishes={approvedWishes}
+            
+            // AŞAĞIDAKİ SATIRI EKLEMELİSİN:
+            scrollToNext={scrollToNext} 
           />
         </Suspense>
       )}
