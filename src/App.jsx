@@ -213,10 +213,15 @@ function App() {
     if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0) return;
 
     if (window.innerWidth <= 650) {
+      const target = e.target;
+      if (target.closest('input, textarea, select, .wish-list, .guest-list, .gallery-lightbox-overlay')) {
+        return; 
+      }
+
       const touchEndY = e.changedTouches[0].clientY;
       const diff = touchStartYRef.current - touchEndY;
 
-      if (Math.abs(diff) > 40) {
+      if (Math.abs(diff) > 60) {
         if (diff > 0) scrollToNext(); 
         else scrollToPrev(); 
 
@@ -910,8 +915,6 @@ function App() {
             handleWishChange={handleWishChange}
             submitWish={submitWish}
             approvedWishes={approvedWishes}
-            
-            // AŞAĞIDAKİ SATIRI EKLEMELİSİN:
             scrollToNext={scrollToNext} 
           />
         </Suspense>

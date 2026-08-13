@@ -1,119 +1,339 @@
 /* =================================================================
-   MOBİL TARAYICI VE ÇAPRAZ PLATFORM (iOS & Android) UYUMLULUK YAMASI
+   1. MASAÜSTÜ (WEB) KESİN SCROLL KİLİDİ AÇICI
    ================================================================= */
+@media (min-width: 651px) {
+  html, body, #root, .app, .invitation-page {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: auto !important;
+  }
+}
 
-/* 1. Temel Sayfa Ayarları */
+/* =================================================================
+   MOBİL TARAYICI VE ÇAPRAZ PLATFORM UYUMLULUK YAMASI
+   ================================================================= */
 html, body {
-  min-height: 100vh !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important; 
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none;
-  overscroll-behavior-y: auto !important; 
 }
 
-#root, .app, .invitation-page {
-  height: auto !important;
-  min-height: 100vh !important;
-  overflow-y: visible !important;
-}
-
-/* 2. Standart Tam Ekran Yüksekliği (Tüm Tarayıcılar İçin) */
-.app, 
-.intro-page, 
-.hero-section, 
-.app-modal-backdrop {
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
-}
-
-/* 3. SADECE iOS Safari İçin Tam Ekran Desteği */
 @supports (-webkit-touch-callout: none) {
-  .app, 
-  .intro-page, 
-  .hero-section, 
-  .app-modal-backdrop {
+  .app, .intro-page, .hero-section, .app-modal-backdrop {
     min-height: -webkit-fill-available !important;
   }
 }
 
-/* 4. Tüm Mobil Platformlarda Buton/Input Varsayılan Görünümlerini Sıfırlama */
-button, 
-input, 
-select, 
-textarea, 
-.option-button {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  outline: none;
+button, input, select, textarea, .option-button {
+  appearance: none; -webkit-appearance: none; outline: none;
 }
 
-/* 5. iOS Safari Form Yakınlaştırma (Zoom) Koruması */
 @media screen and (max-width: 768px) {
-  input, 
-  select, 
-  textarea, 
-  .admin-field input, 
-  .admin-field textarea, 
-  .rsvp-form input, 
-  .rsvp-form textarea, 
-  .wish-form input, 
-  .wish-form textarea,
-  .app-modal-input,
-  .app-modal-textarea {
+  input, select, textarea, .admin-field input, .admin-field textarea, 
+  .rsvp-form input, .rsvp-form textarea, .wish-form input, 
+  .wish-form textarea, .app-modal-input, .app-modal-textarea {
     font-size: 16px !important;
   }
 }
 
-/* 6. Yeni Nesil Çentik (Notch) ve Alt Çizgi (Safe Area) Desteği */
-.floating-actions, 
-.glass-dock {
+.floating-actions {
   padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
-  padding-left: max(10px, env(safe-area-inset-left)) !important;
-  padding-right: max(10px, env(safe-area-inset-right)) !important;
 }
 
-.invitation-page, 
-.admin-page {
+.invitation-page, .admin-page {
   padding-bottom: max(76px, calc(60px + env(safe-area-inset-bottom))) !important;
 }
 
-.app-modal-card {
-  margin-bottom: env(safe-area-inset-bottom) !important;
+/* =================================================================
+   2. BÜTÜN SAYFALARDAKİ KÖŞE YUVARLAMALARINI SIFIRLAMA
+   ================================================================= */
+html body .app .card,
+html body .app .countdown-section,
+html body .app .intro-card,
+html body .app .hero-section,
+html body .app .info-list,
+html body .app .mini-map,
+html body .app .qr-public-card,
+html body .app .guest-stats div,
+html body .app .guest-item,
+html body .app .wish-item,
+html body .app .schedule-item,
+html body .app .ceremony-item,
+html body .app .timeline-item p,
+html body .app .app-modal-card {
+  border-radius: 0 !important;
 }
 
-/* BUTON ÇAKIŞMASI DÜZELTMESİ: Mobil ekranlar için dock ve scroll yönlendirmeleri yukarı çekildi */
+html body .app .app-modal-card::before {
+  border-radius: 0 !important;
+}
+
+/* =================================================================
+   3. FAZLALIK BUTONLARI (TR VE PAYLAŞ) TÜM EKRANLARDA GİZLEME
+   ================================================================= */
+html body .app .glass-dock .lang-btn,
+html body .app .glass-dock .wa-btn,
+html body .app .floating-actions .lang-btn,
+html body .app .floating-actions .wa-btn {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* =================================================================
+   4. MOBİL İÇİN %100 GARANTİLİ DÜZEN (SIKIŞMA/BİNME ÇÖZÜMÜ)
+   ================================================================= */
 @media (max-width: 650px) {
-  .glass-dock {
-    top: auto !important;
-    bottom: calc(45px + env(safe-area-inset-bottom)) !important; 
-    right: 50% !important;
-    transform: translateX(50%) !important;
-    flex-direction: row !important;
-    padding: 8px 14px !important;
-    gap: 14px !important;
+  /* ANA EKRAN KİLİDİ */
+  body, html {
+    overflow: hidden !important; 
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 100vw !important;
+    position: fixed !important; 
+    overscroll-behavior-y: none !important;
+  }
+
+  .invitation-page {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft)) !important;
+    z-index: 1 !important;
+  }
+
+  .invitation-page > section,
+  .invitation-page > footer {
+    display: none !important;
+    opacity: 0;
+    z-index: 10 !important;
+  }
+
+  /* SLAYTLAR (FLEX YERİNE BLOCK: İÇERİK SIKIŞMASINI KESİN OLARAK ÖNLER) */
+  .invitation-page > section.active-slide,
+  .invitation-page > footer.active-slide {
+    display: block !important; 
+    opacity: 1 !important;
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important; 
+    
+    /* Ekranın üstünden hafif boşluk, alttan ise butonların gizlememesi için 140px boşluk */
+    padding: 4vh 16px calc(140px + env(safe-area-inset-bottom)) 16px !important; 
+    box-sizing: border-box !important;
+  }
+
+  /* KARTLARIN BOYUTU VE MERKEZE HİZALAMASI */
+  .card, .countdown-section, .footer {
+    width: 100% !important; 
+    max-width: 480px !important;
+    height: auto !important;
+    min-height: min-content !important; /* İçeriğin ihtiyacı kadar uzar */
+    max-height: none !important; 
+    
+    margin: 0 auto !important; 
+    padding: 36px 20px !important; 
+    
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: center !important; 
+    box-sizing: border-box !important;
+  }
+
+  /* GİRİŞ EKRANI (HERO) İÇİN ÖZEL MERKEZLEME */
+  .invitation-page > section.hero-section.active-slide {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 20px 16px calc(120px + env(safe-area-inset-bottom)) 16px !important;
+  }
+
+  /* ÇİÇEK İKONU HİZALAMASI */
+  html body .app .card::after, 
+  html body .app .countdown-section::after {
+    top: 24px !important;
+    left: 24px !important;
+  }
+
+  /* ============================================================== */
+  /* EN ÖNEMLİ KURAL: İÇERİKLERİN ASLA SIKIŞMAMASINI SAĞLAR        */
+  /* ============================================================== */
+  .card > *, .countdown-section > * {
+    flex-shrink: 0 !important; /* Sıkışmayı/Üst üste binmeyi tamamen iptal eder */
+    margin: 0 0 16px 0 !important; 
+    text-align: center !important;
+    width: 100% !important; 
   }
   
-  .scroll-indicator {
-    bottom: calc(45px + env(safe-area-inset-bottom)) !important;
+  .card > *:last-child, .countdown-section > *:last-child {
+    margin-bottom: 0 !important; 
+  }
+
+  /* GALERİ RESİMLERİNİ YUVARLAK YAP */
+  .gallery-grid img { 
+    border-radius: 16px !important; 
+    height: 220px !important; 
+    object-fit: cover !important; 
+  }
+
+  /* Yazı ve Başlık Boyutları */
+  .card h2, .countdown-section h2 { font-size: max(22px, 3vh) !important; line-height: 1.2 !important; }
+  .card h2::after, .countdown-section h2::after { margin: 12px auto 0 !important; }
+  
+  .card > p:not(.private-note-text), .card > .section-label, .countdown-section > .section-label { 
+    font-size: max(13px, 1.8vh) !important; 
+    line-height: 1.4 !important; 
+  }
+
+  /* BÖLÜM İÇİ LİSTELER (SIKIŞMA KORUMALI) */
+  .schedule-list, .gallery-grid, .family-grid, .ceremony-grid, .info-list, .rsvp-form, .wish-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 4px !important; 
+    width: 100% !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .schedule-item, .ceremony-item { padding: 16px !important; gap: 6px !important; flex-shrink: 0 !important;}
+  .schedule-item strong, .ceremony-item strong { font-size: 18px !important; margin: 0 !important; }
+  .schedule-item span, .ceremony-item span { font-size: 15px !important; margin: 0 !important; }
+  .schedule-item p, .ceremony-item p { font-size: 13px !important; line-height: 1.4 !important; padding: 6px 12px !important; margin: 0 !important; }
+  
+  .family-grid div { padding: 20px !important; gap: 8px !important; flex-shrink: 0 !important;}
+  .family-grid strong { font-size: 32px !important; margin: 0 !important;}
+  .family-grid span { font-size: 14px !important; margin: 0 !important;}
+
+  /* HARİTA VE BUTONLAR */
+  .info-row { padding: 12px 16px !important; flex-shrink: 0 !important;}
+  .info-row strong { font-size: 16px !important; margin: 0 !important; }
+  .info-row span { font-size: 13px !important; margin: 0 !important; }
+  .mini-map { height: 200px !important; margin-top: 4px !important; flex-shrink: 0 !important;}
+  .button-group { flex-direction: column !important; gap: 12px !important; flex-shrink: 0 !important;}
+  .button-group .main-button, .button-group .secondary-button { padding: 12px 20px !important; width: 100% !important; min-height: 48px !important; font-size: 16px !important; margin: 0 !important;}
+
+  .qr-public-card { padding: 20px !important; gap: 12px !important; margin: 0 auto !important; flex-shrink: 0 !important;}
+  .qr-public-card img { width: 140px !important; height: 140px !important; }
+
+  /* FORMLAR */
+  .rsvp-form input, .wish-form input, .rsvp-form textarea, .wish-form textarea { padding: 14px 16px !important; font-size: 16px !important; flex-shrink: 0 !important;}
+  .rsvp-form textarea, .wish-form textarea { height: 90px !important; }
+  .form-button, .rsvp-whatsapp-button { padding: 14px 20px !important; margin-top: 0 !important; min-height: 48px !important; font-size: 16px !important; flex-shrink: 0 !important;}
+  .option-button { padding: 12px !important; font-size: 15px !important;}
+
+  /* MİSAFİR LİSTESİ */
+  .guest-stats { 
+    display: flex !important;
+    flex-direction: row !important; 
+    gap: 12px !important; 
+    margin: 0 auto !important; 
+    width: 100% !important;
+    flex-shrink: 0 !important;
+  }
+  .guest-stats div { padding: 16px 8px !important; width: 100% !important; height: auto !important; flex-shrink: 0 !important;}
+  .guest-stats strong { font-size: 24px !important; margin: 0 !important; }
+  .guest-stats span { font-size: 12px !important; margin: 0 !important;}
+  .private-note-text { font-size: 13px !important; line-height: 1.4 !important; margin: 0 !important; flex-shrink: 0 !important;}
+  .guest-list, .wish-list { overflow: visible !important; flex-shrink: 0 !important;}
+  .wish-item { padding: 16px !important; flex-shrink: 0 !important;}
+
+  /* ------------------------------------------------------------- */
+  /* MOBİL DOCK VE BUTON DÜZELTMELERİ */
+  /* ------------------------------------------------------------- */
+
+  .admin-quick-access { display: none !important; }
+
+  .floating-actions, .glass-dock, html[data-theme] .floating-actions, html[data-theme] .glass-dock {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    pointer-events: none !important;
+    top: auto !important;
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    right: 50% !important;
+    left: auto !important;
+    transform: translateX(50%) !important;
+    flex-direction: row !important;
+    padding: 0 !important;
+    gap: 16px !important;
+    width: max-content !important;
+    z-index: 9999 !important;
+  }
+
+  .glass-dock .dock-btn, .floating-actions .dock-btn, html[data-theme] .glass-dock .dock-btn, html[data-theme] .floating-actions .dock-btn {
+    pointer-events: auto !important;
+    animation: floatButtons 3s ease-in-out infinite !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    opacity: 1 !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(217, 140, 161, 0.25) !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    border-radius: 50% !important;
+    color: var(--rose-dark, #9f4f68) !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .glass-dock .music-btn { animation-delay: 0s !important; }
+  .glass-dock .scroll-down-btn { animation-delay: 0.2s !important; }
+  .glass-dock .scroll-up-btn { animation-delay: 0.4s !important; }
+  
+  /* KAYDIR OKU */
+  html body .app .invitation-page .scroll-indicator, html body .app .scroll-indicator {
+    bottom: calc(105px + env(safe-area-inset-bottom)) !important; 
+    z-index: 10 !important;
+  }
+
+  /* KLAVYE AÇILDIĞINDA MOBİL ARAYÜZ BOZULMALARINI ENGELLEME */
+  body:has(input:focus) .glass-dock, body:has(textarea:focus) .glass-dock,
+  body:has(input:focus) .scroll-indicator, body:has(textarea:focus) .scroll-indicator {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 }
 
-/* 7. Safari ve Eski Cihazlar İçin Cam Efekti (Glassmorphism) Desteği */
-.glass-dock, 
-.app-modal-backdrop, 
-.intro-card,
-.admin-sidebar,
-.admin-actions-sticky,
-.lightbox-control-btn {
-  -webkit-backdrop-filter: blur(12px) !important;
-  backdrop-filter: blur(12px) !important;
+/* Yukarı Aşağı Hareket Animasyonu */
+@keyframes floatButtons {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
 }
 
-/* 8. Mobil Cihazlarda Yumuşak Kaydırma Desteği */
+/* Sadece Masaüstü için Cam Efekti */
+@media (min-width: 651px) {
+  .glass-dock, .app-modal-backdrop, .intro-card, .admin-sidebar, 
+  .admin-actions-sticky, .lightbox-control-btn {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+}
+
 html, body, .admin-sidebar-menu, .admin-custom-select-menu {
   -webkit-overflow-scrolling: touch;
 }
@@ -131,9 +351,7 @@ html, body, .admin-sidebar-menu, .admin-custom-select-menu {
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(170, 59, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -164,51 +382,15 @@ html, body, .admin-sidebar-menu, .admin-custom-select-menu {
     --accent-bg: rgba(192, 132, 252, 0.15);
     --accent-border: rgba(192, 132, 252, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
 }
 
-h1, h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-
-p {
-  margin: 0;
-}
-
-code, .counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
+h1, h2 { font-family: var(--heading); font-weight: 500; color: var(--text-h); }
+h1 { font-size: 56px; letter-spacing: -1.68px; margin: 32px 0; }
+@media (max-width: 1024px) { h1 { font-size: 36px; margin: 20px 0; } }
+h2 { font-size: 24px; line-height: 118%; letter-spacing: -0.24px; margin: 0 0 8px; }
+@media (max-width: 1024px) { h2 { font-size: 20px; } }
+p { margin: 0; }
+code, .counter { font-family: var(--mono); display: inline-flex; border-radius: 4px; color: var(--text-h); }
+code { font-size: 15px; line-height: 135%; padding: 4px 8px; background: var(--code-bg); }

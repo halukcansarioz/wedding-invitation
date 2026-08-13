@@ -39,7 +39,6 @@ body .app .invitation-page .hero-section {
   justify-content: center !important;
   align-items: center !important;
   text-align: center !important;
-  /* MASAÜSTÜNDE MİLİMETRİK ORTALAMA: Fazla padding-bottom silindi */
   padding: clamp(30px, 5vh, 60px) clamp(20px, 4vw, 40px) !important;
   border-radius: clamp(20px, 3vw, 40px) !important;
   box-shadow: none !important; 
@@ -88,7 +87,8 @@ body .app .invitation-page .hero-section::after {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover !important;
+  object-position: center !important;
   transform: scale(1.02);
   z-index: 0;
   pointer-events: none;
@@ -225,7 +225,6 @@ body .app .invitation-page .hero-section::after {
   background: var(--paper) !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
-  /* SENKRONİZASYON: Tüm hareketli parçalarla aynı süre (2.2s) */
   transition: transform 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s !important;
   -webkit-transition: -webkit-transform 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s !important;
   display: flex;
@@ -264,7 +263,6 @@ body .app .invitation-page .hero-section::after {
   -webkit-transform: translateY(0);
   filter: drop-shadow(0 -6px 16px rgba(0,0,0,0.2));
   -webkit-filter: drop-shadow(0 -6px 16px rgba(0,0,0,0.2));
-  /* SENKRONİZASYON: Üst kapakla aynı süre (2.2s) */
   transition: transform 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
   -webkit-transition: -webkit-transform 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
 }
@@ -291,7 +289,6 @@ body .app .invitation-page .hero-section::after {
   -webkit-transform: rotateX(0deg);
   filter: drop-shadow(0 10px 18px rgba(0,0,0,0.25));
   -webkit-filter: drop-shadow(0 10px 18px rgba(0,0,0,0.25));
-  /* ÜST KAPACIN HIZI: 2.2 saniye (Diğerleriyle aynı süre) */
   transition: transform 2.2s cubic-bezier(0.25, 1, 0.35, 1) 0.1s, z-index 0s 1.1s;
   -webkit-transition: -webkit-transform 2.2s cubic-bezier(0.25, 1, 0.35, 1) 0.1s, z-index 0s 1.1s;
 }
@@ -338,8 +335,6 @@ body .app .invitation-page .hero-section::after {
 }
 
 /* 5. KATMAN: Mühür */
-
-
 .envelope-container .envelope-seal::before {
   content: "";
   position: absolute;
@@ -386,14 +381,6 @@ body .app .invitation-page .hero-section::after {
   }
 }
 
-.envelope-front::after,
-.envelope-flap::after,
-.intro-page.opening .envelope-flap::after {
-  display: none !important;
-  opacity: 0 !important;
-  content: none !important;
-}
-
 /* Mühür (Seal) */
 .envelope-container .envelope-seal {
   position: absolute !important;
@@ -407,16 +394,13 @@ body .app .invitation-page .hero-section::after {
   background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 55%),
               linear-gradient(135deg, color-mix(in srgb, var(--amp-color, #8f7fb8) 85%, white) 0%, var(--amp-color, #8f7fb8) 60%, color-mix(in srgb, var(--amp-color, #8f7fb8) 70%, black) 100%);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), inset 0 -4px 8px rgba(0, 0, 0, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.5);
-  
-  /* --- YAZIYI ZORLA BEYAZ YAPAN KISIM --- */
   color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important; /* Başka yerdeki renk ezilmelerini önler */
+  -webkit-text-fill-color: #ffffff !important;
   font-family: "Playfair Display", Georgia, serif !important;
   font-size: clamp(16px, 5vw, 20px) !important; 
   font-weight: 900 !important; 
   letter-spacing: 0.8px !important; 
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important; /* Beyazı öne çıkaran hafif gölge */
-  
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -425,7 +409,6 @@ body .app .invitation-page .hero-section::after {
   transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
 }
 
-/* --- İÇİNDEKİ SPAN'İ GARANTİ ALTINA ALAN KISIM --- */
 .envelope-container .envelope-seal span {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
@@ -454,29 +437,6 @@ body .app .invitation-page .hero-section::after {
   -webkit-transform: translate(-50%, -50%) scale(1.3) translateZ(20px) !important;
   opacity: 0;
   pointer-events: none;
-}
-
-/* Davetli Etiketi (Sağ Alt Köşe) */
-.envelope-guest-badge {
-  position: absolute !important;
-  bottom: 40px !important;
-  right: 40px !important;
-  z-index: 20 !important;
-  font-size: 18px !important;
-  transition: opacity 0.4s ease 0.6s !important;
-  -webkit-transition: opacity 0.4s ease 0.6s !important;
-}
-
-.intro-page.opening .envelope-guest-badge {
-  opacity: 0 !important;
-}
-
-@media (max-width: 650px) {
-  .envelope-guest-badge {
-    bottom: 24px !important;
-    right: 24px !important;
-    font-size: 16px !important;
-  }
 }
 
 /* =================================================================
@@ -604,7 +564,6 @@ body .app .invitation-page .ceremony-item em {
   margin-top: 4px !important;
 }
 
-/* Schedule Listesi (Masaüstü Kutu Tasarımı) */
 body .app .invitation-page .schedule-list {
   display: flex;
   flex-direction: column;
@@ -641,7 +600,6 @@ body .app .invitation-page .schedule-item p {
   margin: 0 !important;
 }
 
-/* QR Kod Kartı (Masaüstünde taşmayı engelleyen kutu tasarımı) */
 body .app .invitation-page .qr-public-card {
   position: relative !important;
   display: flex !important;
@@ -813,7 +771,6 @@ body .app .invitation-page .option-group.disabled .option-button.active {
     display: none !important;
   }
 
-  /* SADECE Whatsapp Butonunu Masaüstünde Gizle (Yön Okları Görünür Kaldı) */
   html body .app .glass-dock .dock-btn:nth-child(2):not(:last-child) {
     display: none !important;
   }
@@ -861,7 +818,7 @@ body .app .floating-actions button.music-toggle-button:hover {
   color: #ffffff !important;
   border-color: var(--amp-color, #8f7fb8) !important;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
-  transform: scale(1.05) !important; /* translateY kaldırıldı */
+  transform: scale(1.05) !important; 
 }
 
 body .app .floating-actions button.music-toggle-button:hover svg,
@@ -949,7 +906,7 @@ body .app .glass-dock .dock-btn.music-on {
 }
 
 .admin-quick-access .admin-btn:hover {
-  transform: scale(1.08) !important; /* translateY kaldırıldı */
+  transform: scale(1.08) !important;
   background: #ffffff !important;
   color: var(--rose-dark, #9f4f68) !important;
   border-color: #ffffff !important;
@@ -1007,7 +964,6 @@ body .app .glass-dock .dock-btn.music-on {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important; 
   border-radius: 12px;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important; 
 }
 
 .scroll-indicator .wheel {
@@ -1038,394 +994,21 @@ body .app .glass-dock .dock-btn.music-on {
 }
 
 /* =================================================================
-   TEMA BAZLI SVG ÇİÇEK/YAPRAK SİLÜETLERİ (KÖK DEĞİŞKENLER)
+   MOBİL 
    ================================================================= */
-:root {
-  /* Varsayılan: Lavanta dalları */
-  --theme-flower-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='currentColor'%3E%3Cpath d='M32,64 C32,64 28,40 32,20 C34,10 40,2 40,2 C40,2 36,15 32,20 C28,25 32,64 32,64 Z'/%3E%3Cellipse cx='26' cy='45' rx='5' ry='2.5' transform='rotate(-30 26 45)'/%3E%3Cellipse cx='24' cy='35' rx='4.5' ry='2' transform='rotate(-30 24 35)'/%3E%3Cellipse cx='25' cy='25' rx='4' ry='2' transform='rotate(-30 25 25)'/%3E%3Cellipse cx='27' cy='15' rx='3.5' ry='1.5' transform='rotate(-30 27 15)'/%3E%3Cellipse cx='30' cy='6' rx='3' ry='1.5' transform='rotate(-30 30 6)'/%3E%3Cellipse cx='38' cy='42' rx='5' ry='2.5' transform='rotate(30 38 42)'/%3E%3Cellipse cx='39' cy='32' rx='4.5' ry='2' transform='rotate(30 39 32)'/%3E%3Cellipse cx='38' cy='22' rx='4' ry='2' transform='rotate(30 38 22)'/%3E%3Cellipse cx='36' cy='13' rx='3.5' ry='1.5' transform='rotate(30 36 13)'/%3E%3Cellipse cx='34' cy='4' rx='3' ry='1.5' transform='rotate(30 34 4)'/%3E%3C/svg%3E");
-}
 
-/* Gül ve Bordo Temaları (Gül Dalı) */
-html[data-theme="rose"], html[data-theme="burgundy"] {
-  --theme-flower-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='currentColor'%3E%3Cpath d='M32,64 C32,64 30,40 32,30 C30,30 20,25 25,15 C30,5 35,5 39,15 C44,25 34,30 32,30 C34,40 32,64 32,64 Z'/%3E%3Cpath d='M32,45 C25,45 20,40 25,35' stroke='currentColor' fill='none' stroke-width='2'/%3E%3Cpath d='M32,50 C40,48 45,40 38,35' stroke='currentColor' fill='none' stroke-width='2'/%3E%3C/svg%3E");
-}
-
-/* Zeytin / Okaliptüs Yaprağı (Yeşil Tema) */
-html[data-theme="sage"] {
-  --theme-flower-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='currentColor'%3E%3Cpath d='M32,64 C32,50 32,40 32,10' stroke='currentColor' stroke-width='2' fill='none'/%3E%3Cpath d='M32,50 C20,45 20,35 32,35 Z'/%3E%3Cpath d='M32,40 C44,35 44,25 32,25 Z'/%3E%3Cpath d='M32,30 C20,25 20,15 32,15 Z'/%3E%3Cpath d='M32,20 C44,15 44,5 32,5 Z'/%3E%3Cpath d='M32,10 C26,5 28,0 32,0 C36,0 38,5 32,10 Z'/%3E%3C/svg%3E");
-}
-
-/* Ginkgo / Altın Yaprak */
-html[data-theme="gold"] {
-  --theme-flower-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='currentColor'%3E%3Cpath d='M32,64 C32,64 32,40 32,30' stroke='currentColor' stroke-width='2' fill='none'/%3E%3Cpath d='M32,30 C10,30 5,10 15,5 C25,0 32,15 32,15 C32,15 39,0 49,5 C59,10 54,30 32,30 Z'/%3E%3C/svg%3E");
-}
-
-/* İnce Minimal Yaprak Dalı */
-html[data-theme="minimal"], html[data-theme="dark"] {
-  --theme-flower-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='currentColor'%3E%3Cpath d='M32,64 C32,64 34,40 32,20 C15,20 15,5 32,0 C49,5 49,20 32,20'/%3E%3C/svg%3E");
-}
-
-/* =================================================================
-   TEMA RENKLERİ (THEMES)
-   ================================================================= */
-html[data-theme="sage"] {
-  --paper: #fbfff7;
-  --paper-soft: #f4faec;
-  --rose-light: #dce8c8;
-  --rose: #9cad75;
-  --rose-dark: #607244;
-  --rose-deep: #40502e;
-  --gold: #c5a461;
-  --dark-gold: #8b6b32;
-  --text: #34402c;
-  --text-soft: #58674c;
-  --shadow: 0 20px 48px rgba(76, 94, 57, 0.13);
-}
-
-html[data-theme="gold"] {
-  --paper: #fffdf4;
-  --paper-soft: #fff8df;
-  --rose-light: #f4dfad;
-  --rose: #c9a45d;
-  --rose-dark: #9b7433;
-  --rose-deep: #6e4b1e;
-  --gold: #c59a45;
-  --dark-gold: #7e5520;
-  --text: #4b3620;
-  --text-soft: #725b3c;
-  --shadow: 0 20px 48px rgba(126, 85, 32, 0.13);
-}
-
-html[data-theme="burgundy"] {
-  --paper: #fff8fa;
-  --paper-soft: #fbeaf0;
-  --rose-light: #e2b6c4;
-  --rose: #b55b79;
-  --rose-dark: #7f2747;
-  --rose-deep: #53182e;
-  --gold: #d0aa68;
-  --dark-gold: #936c34;
-  --text: #3f1d2b;
-  --text-soft: #6b3a4d;
-  --shadow: 0 20px 48px rgba(83, 24, 46, 0.14);
-}
-
-html[data-theme="minimal"] {
-  --paper: #ffffff;
-  --paper-soft: #f8f8f8;
-  --rose-light: #e8e1dc;
-  --rose: #b69f91;
-  --rose-dark: #775e50;
-  --rose-deep: #45362e;
-  --gold: #b99d72;
-  --dark-gold: #796247;
-  --text: #2f2926;
-  --text-soft: #665d58;
-  --shadow: 0 20px 48px rgba(47, 41, 38, 0.10);
-}
-
-html[data-theme="sage"] body,
-html[data-theme="gold"] body,
-html[data-theme="burgundy"] body,
-html[data-theme="minimal"] body {
-  background:
-    radial-gradient(circle at top left, color-mix(in srgb, var(--rose-light) 35%, transparent), transparent 34%),
-    radial-gradient(circle at bottom right, color-mix(in srgb, var(--rose) 22%, transparent), transparent 36%),
-    linear-gradient(180deg, var(--paper), var(--paper-soft));
-}
-
-/* =================================================================
-   ADMİN PANELİ STİLLERİ
-   ================================================================= */
-.admin-page {
-  width: 100%;
-  min-height: 100vh;
-  padding: 34px 42px 76px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.admin-page-card {
-  width: min(100%, 1180px);
-  margin-top: 0;
-  overflow: visible;
-}
-
-.admin-back-button {
-  position: relative;
-  z-index: 2;
-  width: fit-content;
-  margin: 0 auto 24px;
-}
-
-.admin-page .admin-stats { grid-template-columns: repeat(5, 1fr); }
-.admin-page .admin-login .main-button { width: fit-content; min-width: 160px; margin: 0 auto; }
-
-.admin-stats {
-  grid-template-columns: repeat(4, 1fr);
-  max-width: 1000px;
-  position: relative;
-  display: grid;
-  gap: 18px;
-  margin: 30px auto 0;
-}
-
-.admin-stats div {
-  padding: 22px 14px;
-  border-radius: 22px;
-  border: 1px solid rgba(217, 140, 161, 0.3);
-  background: var(--paper-soft);
-  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.08);
-}
-
-.admin-stats strong {
-  display: block;
-  color: var(--rose-dark);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 36px;
-  font-weight: 800;
-}
-
-.admin-stats span {
-  display: block;
-  margin-top: 8px;
-  color: #7a4a58;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.admin-login {
-  position: relative;
-  max-width: 520px;
-  margin: 28px auto 0;
-  display: grid;
-  gap: 12px;
-}
-
-.admin-login input {
-  width: 100%;
-  padding: 17px 18px;
-  border: 1.5px solid rgba(217, 140, 161, 0.48);
-  border-radius: 20px;
-  outline: none;
-  background: #fff8fa;
-  color: var(--text);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.admin-login span {
-  color: #a0445f;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-weight: 800;
-}
-
-.admin-content { position: relative; margin-top: 30px; }
-
-.admin-columns {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-  margin-top: 24px;
-}
-
-.admin-list {
-  padding: 22px;
-  border: 1px solid rgba(217, 140, 161, 0.3);
-  border-radius: 26px;
-  background: var(--paper-soft);
-  text-align: left;
-}
-
-.admin-list h3 {
-  margin: 0 0 16px;
-  font-size: 20px;
-  text-align: center;
-  color: var(--rose-dark);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.admin-row {
-  display: grid;
-  gap: 4px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(217, 140, 161, 0.2);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-}
-
-.admin-row:last-of-type { border-bottom: none; }
-
-.admin-row strong {
-  color: var(--rose-deep);
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.admin-row span,
-.admin-row em {
-  color: var(--text-soft);
-  font-size: 15px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 1.45;
-}
-
-/* =================================================================
-   GALLERY LIGHTBOX & DİĞER EKLENTİLER
-   ================================================================= */
-.invitation-page .lightbox-close-btn:hover, 
-div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
-  border-color: rgba(255, 255, 255, 0.6) !important;
-  transform: scale(1.08) !important;
-}
-
-.gallery-lightbox-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(6, 6, 8, 0.9);
-  z-index: 10000;
-  padding: 18px;
-}
-
-.gallery-lightbox-content {
-  position: relative;
-  max-width: min(1200px, 96vw);
-  max-height: 92vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gallery-lightbox-image {
-  max-width: 100%;
-  max-height: 86vh;
-  object-fit: contain;
-  border-radius: 10px;
-  box-shadow: 0 18px 48px rgba(0,0,0,0.6);
-}
-
-.gallery-lightbox-caption {
-  position: absolute;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #fff;
-  background: rgba(0,0,0,0.32);
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.gallery-lightbox-overlay .lightbox-control-btn { z-index: 10001 !important; }
-.lightbox-prev { left: 18px; top: 50%; transform: translateY(-50%); }
-.lightbox-next { right: 18px; top: 50%; transform: translateY(-50%); }
-.lightbox-close { position: absolute; right: 18px; top: 18px; }
-
-/* =================================================================
-   MEDIA QUERIES - MASAÜSTÜ ZARF (INTRO) DÜZELTMELERİ
-   ================================================================= */
-@media (max-width: 400px) {
-  .intro-page .envelope-container .intro-card { padding: 8px 10px !important; }
-  .intro-page .envelope-container .intro-card .couple-title { font-size: 22px !important; }
-  .intro-page .envelope-container .intro-card .couple-title em { font-size: 15px !important; }
-  .intro-page .envelope-container .intro-card .intro-text { font-size: 11px !important; margin-top: 4px !important; }
-}
-
-/* =================================================================
-   MEDIA QUERIES - TABLET
-   ================================================================= */
-@media (max-width: 900px) {
-  .admin-page { padding: 24px 16px 60px; }
-  .admin-page .admin-stats { grid-template-columns: repeat(2, 1fr); }
-  .family-grid, .ceremony-grid, .admin-columns { grid-template-columns: 1fr; }
-  .admin-stats { grid-template-columns: repeat(2, 1fr); }
-  .admin-toolbar, .admin-qr-panel { grid-template-columns: 1fr; }
-  .admin-toolbar .secondary-button { width: 100%; }
-  .qr-public-card img { width: 128px; height: 128px; }
-}
-
-/* =================================================================
-   FORM HATA DURUMLARI (CUSTOM VALIDATION)
-   ================================================================= */
-.rsvp-form input:invalid:not(:focus):not(:placeholder-shown),
-.wish-form input:invalid:not(:focus):not(:placeholder-shown),
-.rsvp-form textarea:invalid:not(:focus):not(:placeholder-shown),
-.wish-form textarea:invalid:not(:focus):not(:placeholder-shown),
-.input-error {
-  border-color: #d93838 !important;
-  background: #fff0f0 !important;
-  color: #a02525 !important;
-  box-shadow: 0 0 0 4px rgba(217, 56, 56, 0.15) !important;
-  animation: errorShake 0.4s ease-in-out;
-}
-
-.rsvp-form input.input-error::placeholder,
-.wish-form input.input-error::placeholder {
-  color: #d93838 !important;
-  opacity: 0.8 !important;
-}
-
-/* =================================================================
-   MEDIA QUERIES - MOBİL (TÜM TASARIM SABİTLEMELERİ BURADA)
+   /* =================================================================
+   MOBİL (TÜM TASARIM SABİTLEMELERİ VE SCROLL İPTALİ BURADA)
    ================================================================= */
 @media (max-width: 650px) {
 
-  html body .app .invitation-page .scroll-indicator {
-    display: flex !important;
-    bottom: 95px !important; /* Yüzen menünün (oklar ve müzik butonu) üstüne çıkması için yukarı alındı */
-  }
-
-  .app-modal-card {
-    position: relative !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    transform: none !important; 
-    width: 100% !important;
-    max-width: 380px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important; 
-    overflow-y: visible !important; 
-    background: var(--paper, #fff) !important;
-    border-radius: 28px !important; 
-    padding: 36px 24px !important; 
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
-    box-sizing: border-box !important;
-    overflow: visible !important; 
-  }
-
-  .app-modal-card::before {
-    border-radius: 30px 30px 0 0 !important;
-  }
-  
-  
-  /* 1. Ekran Kilidi */
+  /* 1. Ekran Kilidi Sabit (Scroll Yok) */
   body, html {
-    overflow: hidden !important;
+    overflow: hidden !important; 
     height: 100dvh !important;
     width: 100vw !important;
-    overscroll-behavior: none !important;
-    position: fixed !important;
-    inset: 0 !important;
+    position: fixed !important; 
+    overscroll-behavior-y: none !important;
   }
 
   /* 2. Tüm Davetiye Ekranı (Slide Kapsayıcısı) */
@@ -1441,12 +1024,12 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     z-index: 1 !important;
   }
 
-  /* 3. Kartları Gizle / Göster */
+  /* 3. Kartları Gizle / Göster (İç Scroll İptal) */
   .invitation-page > section,
   .invitation-page > footer {
     display: none !important;
     opacity: 0;
-    z-index: 10 !important; /* Kartları animasyonların üstüne çıkart */
+    z-index: 10 !important;
   }
 
   .invitation-page > section.active-slide,
@@ -1454,390 +1037,106 @@ div[style*="position: fixed"][style*="background: rgba(0, 0, 0, 0.9)"] button:ho
     display: flex !important;
     opacity: 1 !important;
     position: absolute !important;
-    z-index: 10 !important;
-  }
-
-  /* 4. Ana Görsel (Hero) Slaytı Ayarı */
-  .invitation-page > .hero-section.active-slide {
-    inset: 0 !important;
-    width: 100vw !important;
+    top: 0; left: 0; right: 0; bottom: 0;
     height: 100dvh !important;
-    border-radius: 0 !important;
-    margin: 0 !important;
-    padding: 40px 20px 100px !important; 
+    overflow: hidden !important; /* İÇ SCROLL TAMAMEN İPTAL */
     flex-direction: column !important;
-    justify-content: center !important;
+    justify-content: center !important; 
     align-items: center !important;
-    text-align: center !important;
-    animation: premiumFadeInHero 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-    background:
-      radial-gradient(
-        circle at center,
-        rgba(70, 24, 40, 0.24) 0%,
-        rgba(70, 24, 40, 0.42) 46%,
-        rgba(35, 14, 22, 0.66) 100%
-      ),
-      var(--hero-image) center/cover no-repeat !important;
+    padding: 12px !important; 
   }
 
-  /* 5. Kart Slaytları Ayarı */
-  html body .app .invitation-page > section.card.active-slide,
-  html body .app .invitation-page > section.countdown-section.active-slide,
-  html body .app .invitation-page > footer.active-slide {
-    top: 46% !important; 
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    width: 92vw !important;
-    max-height: 87dvh !important; 
-    margin: 0 !important;
-    padding: 30px 16px 16px 16px !important; 
+  /* ========================================= */
+  /* KARTLARIN EKRANA SIĞMASI İÇİN DİNAMİK ORANLAR */
+  /* ========================================= */
+  .card, .countdown-section {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    padding: clamp(10px, 3vh, 36px) clamp(10px, 4vw, 20px) !important;
     border-radius: 28px !important;
-    background: var(--paper) !important;
-    box-shadow: 0 25px 65px rgba(0,0,0,0.55) !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
-    overflow: hidden !important; 
-    justify-content: flex-start !important;
-    animation: premiumFadeInCard 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  }
-
-  html body .app .invitation-page > section.card.active-slide > *,
-  html body .app .invitation-page > section.countdown-section.active-slide > *,
-  html body .app .invitation-page > footer.active-slide > * {
-    flex-shrink: 0 !important; 
-    width: 100% !important;
-    min-height: 0 !important;
-  }
-
-  /* Çiçek İkonu Yeniden Konumlandırma */
-  html body .app .invitation-page > section.card::after,
-  html body .app .invitation-page > section.countdown-section::after {
-    top: 14px !important;
-    left: 16px !important; 
-    width: 18px !important; 
-    height: 18px !important;
-    opacity: 0.6 !important;
-  }
-
-  /* 6. Büyütülmüş ve Dengelenmiş Tipografi */
-  body .app .invitation-page .card h2,
-  body .app .invitation-page .countdown-section h2 {
-    margin-top: 0 !important;
-    margin-bottom: 6px !important;
-    font-size: 26px !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.5px !important;
-    flex-shrink: 0 !important;
-    text-align: center !important;
-  }
-
-  body .app .invitation-page .card p.section-label,
-  body .app .invitation-page .countdown-section p.section-label {
-    flex-shrink: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 4px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    text-align: center !important;
-  }
-
-  body .app .invitation-page .card p,
-  body .app .invitation-page .gift-description {
-    font-size: 18.5px !important;
-    line-height: 1.5 !important;
-    text-align: center !important;
-    flex-shrink: 0 !important;
-  }
-
-  /* 7. Butonlar */
-  html body .app .invitation-page .button-group {
-    flex-shrink: 0 !important; 
-    display: flex !important;
-    flex-direction: row !important; 
-    width: 100% !important;
-    gap: 10px !important; 
-    margin-top: 14px !important; 
-    margin-bottom: 0 !important; 
-    padding-bottom: 0 !important;
-    box-sizing: border-box !important;
-  }
-
-  html body .app .invitation-page .button-group > a,
-  html body .app .invitation-page .button-group > button,
-  html body .app .invitation-page .button-group .main-button,
-  html body .app .invitation-page .button-group .secondary-button {
-    flex: 1 !important;
-    width: 100% !important; 
-    min-height: 42px !important;
-    padding: 8px 6px !important;
-    font-size: 13.5px !important;
-    text-align: center !important;
-    display: flex !important;
-    align-items: center !important;
     justify-content: center !important;
-    white-space: nowrap !important;
     margin: 0 !important;
-    border-radius: 12px !important;
-  }
-
-  /* 8. Harita */
-  html body .app .invitation-page .mini-map {
-    flex: 0 0 auto !important; 
-    height: 190px !important; 
-    min-height: 190px !important; 
-    margin-top: 8px !important;
-    border-radius: 16px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    width: 100% !important;
-  }
-
-  /* 9. Havada Süzülen İnci Menü (Glass Dock) */
-  html body .app .glass-dock {
-    top: auto !important;
-    bottom: 24px !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    flex-direction: row !important;
-    z-index: 99999 !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    gap: 16px !important;
-    padding: 0 !important;
-  }
-
-  html body .app .glass-dock .dock-btn:nth-child(1),
-  html body .app .glass-dock .dock-btn:nth-child(2) {
-    display: none !important;
-  }
-
-  html body .app .glass-dock .dock-btn {
-    width: 48px !important;
-    height: 48px !important;
-    min-width: 48px !important;
-    background: linear-gradient(135deg, #ffffff 0%, #f4ecef 100%) !important;
-    border: none !important;
-    box-shadow: 
-      0 10px 20px rgba(0, 0, 0, 0.15), 
-      inset 0 -3px 5px rgba(0, 0, 0, 0.05),
-      inset 0 2px 4px rgba(255, 255, 255, 1) !important;
-    color: var(--rose-dark, #8a4055) !important; 
-    border-radius: 50% !important;
-    animation: magicFloat 3.5s ease-in-out infinite !important;
-  }
-
-  html body .app .glass-dock .dock-btn:nth-child(3),
-  html body .app .glass-dock .dock-btn:nth-child(3):focus,
-  html body .app .glass-dock .dock-btn:nth-child(3):hover { animation-delay: 0s !important; animation-name: magicFloat !important; }
-  
-  html body .app .glass-dock .dock-btn:nth-child(4),
-  html body .app .glass-dock .dock-btn:nth-child(4):focus,
-  html body .app .glass-dock .dock-btn:nth-child(4):hover { animation-delay: -0.8s !important; animation-name: magicFloat !important; }
-  
-  html body .app .glass-dock .dock-btn:nth-child(5),
-  html body .app .glass-dock .dock-btn:nth-child(5):focus,
-  html body .app .glass-dock .dock-btn:nth-child(5):hover { animation-delay: -1.6s !important; animation-name: magicFloat !important; }
-
-  html body .app .glass-dock .dock-btn svg {
-    width: 20px !important;
-    height: 20px !important;
-    stroke-width: 2.2px !important;
-  }
-
-  html body .app .glass-dock .dock-btn:active {
-    box-shadow: inset 0 3px 6px rgba(0,0,0,0.1) !important;
-  }
-
-  .admin-quick-access { display: none !important; }
-
-  /* 10. Form Alanları */
-  body .app .invitation-page .rsvp-form input, 
-  body .app .invitation-page .wish-form input,
-  body .app .invitation-page .option-button {
-    padding: 14px 14px !important; 
-    font-size: 17px !important;
-  }
-
-  body .app .invitation-page .rsvp-form textarea, 
-  body .app .invitation-page .wish-form textarea {
-    min-height: 80px !important; 
-    height: 80px !important;
-    padding-bottom: 20px !important;
-  }
-
-  /* 11. Diğer Kart İçi Düzenlemeler */
-  body .app .invitation-page .info-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-    margin-top: 6px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    flex-shrink: 0 !important; 
-    width: 100% !important;
-  }
-
-  body .app .invitation-page .info-row {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    padding: 8px 12px !important; 
-    gap: 2px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-    min-height: auto !important;
-    height: auto !important;
-  }
-
-  body .app .invitation-page .info-row strong { 
-    font-size: 16px !important; 
-    margin-top: 2px !important; 
-    display: block !important;
-    width: 100% !important;
-    text-align: center !important;
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    line-height: 1.3 !important;
-  }
-
-  body .app .invitation-page .info-row span { 
-    font-size: 14px !important; 
-    display: block !important;
-    width: 100% !important;
-    text-align: center !important;
-  }
-
-  body .app .invitation-page .family-grid, 
-  body .app .invitation-page .ceremony-grid, 
-  body .app .invitation-page .schedule-list {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    width: 100% !important;
-    margin-top: 10px !important;
-    flex-shrink: 0 !important;
-  }
-
-  body .app .invitation-page .family-grid div,
-  body .app .invitation-page .ceremony-item,
-  body .app .invitation-page .schedule-item {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    gap: 2px !important;
-    padding: 10px 8px !important;
-    width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  body .app .invitation-page .gallery-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important; 
-    gap: 10px !important;
-  }
-  
-  body .app .invitation-page .gallery-grid img {
-    width: 100% !important;
-    height: 16vh !important; 
-    min-height: 100px !important;
-    object-fit: cover !important;
+  .card h2, .countdown-section h2 {
+    font-size: clamp(20px, 3.5vh, 32px) !important;
+    margin: 0 0 clamp(6px, 1.5vh, 20px) !important;
   }
 
-  body .app .invitation-page .qr-public-card {
-    flex: 0 0 auto !important; 
+  .card h2::after, .countdown-section h2::after {
+    margin: clamp(4px, 1vh, 18px) auto 0 !important;
+  }
+
+  .card > p, .section-label {
+    font-size: clamp(12px, 1.8vh, 19px) !important;
+    margin: 0 0 clamp(4px, 1vh, 14px) !important;
+    line-height: 1.2 !important;
+  }
+
+  /* TAKVİM (SCHEDULE) KÜÇÜLTME VE SIĞDIRMA */
+  .schedule-list {
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
     justify-content: center !important;
-    width: 100% !important;
-    max-width: 250px !important;
-    padding: 14px !important;
-    margin: 10px auto !important;
-    box-sizing: border-box !important;
+    gap: clamp(4px, 1vh, 16px) !important;
+    margin-top: clamp(6px, 1vh, 30px) !important;
+    flex: 1;
+    min-height: 0; 
+  }
+  .schedule-item {
+    padding: clamp(6px, 1.2vh, 24px) 15px !important;
+    gap: clamp(2px, 0.5vh, 8px) !important;
+  }
+  .schedule-item strong {
+    font-size: clamp(15px, 2.2vh, 22px) !important;
+  }
+  .schedule-item span {
+    font-size: clamp(13px, 1.8vh, 19px) !important;
+  }
+  .schedule-item p {
+    font-size: clamp(11px, 1.5vh, 16px) !important;
+    line-height: 1.2 !important;
+    padding: clamp(4px, 1vh, 18px) clamp(8px, 2vw, 22px) !important;
   }
 
-  body .app .invitation-page .qr-public-card img {
-    display: block !important;
-    width: auto !important;
-    max-width: 140px !important;
-    max-height: 18vh !important;
-    margin: 0 auto !important;
+  /* DİĞER KARTLAR İÇİN DİNAMİK ORANLAR */
+  .family-grid { margin-top: 1vh !important; gap: 1vh !important; }
+  .family-grid div { padding: clamp(12px, 2vh, 28px) !important; gap: 1vh !important; }
+  .family-grid strong { font-size: clamp(28px, 5vh, 42px) !important; }
+
+  .info-list { margin-top: 1vh !important; }
+  .info-row { padding: clamp(8px, 1.2vh, 20px) 15px !important; }
+  .info-row strong { font-size: clamp(14px, 2.2vh, 22px) !important; }
+  .mini-map { height: clamp(100px, 20vh, 300px) !important; margin-top: 1vh !important; }
+  .button-group { margin-top: clamp(10px, 1.5vh, 28px) !important; }
+
+  .qr-public-card { padding: clamp(12px, 2vh, 24px) !important; gap: 1vh !important; margin: 1vh auto !important; }
+  .qr-public-card img { width: clamp(100px, 18vh, 170px) !important; height: clamp(100px, 18vh, 170px) !important; }
+
+  .rsvp-form, .wish-form { margin-top: 1vh !important; gap: clamp(6px, 1vh, 16px) !important; }
+  .rsvp-form input, .wish-form input { padding: clamp(10px, 1.5vh, 17px) 15px !important; }
+  .rsvp-form textarea, .wish-form textarea { min-height: 0 !important; height: clamp(50px, 12vh, 135px) !important; padding: clamp(10px, 1.5vh, 17px) 15px !important; }
+  .form-button, .rsvp-whatsapp-button { padding: clamp(10px, 1.5vh, 16px) 20px !important; margin-top: 0 !important; }
+  .option-button { padding: clamp(8px, 1.2vh, 15px) !important; }
+
+  .gallery-grid { margin-top: 1vh !important; gap: 1vh !important; }
+  .gallery-grid img { height: clamp(80px, 18vh, 260px) !important; }
+
+  /* GUEST & WISH LIST */
+  .guest-list, .wish-list {
+    margin-top: 1vh !important;
+    gap: 1vh !important;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto !important;
+    padding-right: 4px;
   }
-
-  body .app .invitation-page .qr-public-card span {
-    display: block !important;
-    width: 100% !important;
-    margin-top: 6px !important;
-    text-align: center !important;
-  }
-
-  /* 12. Düzeltilmiş IBAN & Hediye Kartı Aralığı */
-  body .app .invitation-page .gift-copy-button {
-    margin: 32px auto 0 !important; 
-  }
-
-  .gift-copy-button {
-    margin-top: 0 !important;
-    transform: translateY(0) !important; /* Butonu yukarı çeken görünmez kuvveti sıfırlar */
-    position: relative !important;
-    z-index: 10 !important;
-  }
-
-  body .app .invitation-page .gift-card {
-    margin-bottom: 24px !important; 
-  }
-
-  /* 13. Intro (Zarf) Ekranı Düzeltmeleri */
-  .intro-page { padding: 0 !important; }
-  .intro-card { padding: 46px 24px; border-radius: 32px; }
-  .intro-page .couple-title { font-size: 58px; }
-  .intro-page .couple-title em { display: block; margin: 4px 0; }
-  .intro-text { font-size: 19px; }
-  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
-  .timeline::before { display: none; }
-  .timeline-item { grid-template-columns: 1fr; gap: 8px; text-align: center; }
-}
-
-/* =================================================================
-   MEDIA QUERIES - ÇOK KÜÇÜK VE KISA TELEFONLAR İÇİN ZARF DÜZELTMESİ
-   ================================================================= */
-@media (max-width: 400px), (max-height: 650px) {
-  .intro-page .envelope-container .intro-card { padding: 8px 10px !important; }
-  .intro-page .envelope-container .intro-card .couple-title { font-size: 22px !important; }
-  .intro-page .envelope-container .intro-card .couple-title em { font-size: 15px !important; }
-  .intro-page .envelope-container .intro-card .intro-text { font-size: 11px !important; margin-top: 4px !important; }
-}
-
-/* =================================================================
-   ANİMASYONLAR (TÜM CİHAZLAR İÇİN)
-   ================================================================= */
-@keyframes premiumFadeInHero {
-  0% { opacity: 0; transform: scale(1.1); filter: blur(15px); }
-  100% { opacity: 1; transform: scale(1); filter: blur(0); }
-}
-
-@keyframes premiumFadeInCard {
-  0% { opacity: 0; transform: translate(-50%, -35%) scale(0.90); filter: blur(12px); box-shadow: 0 0 0 rgba(0,0,0,0); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); box-shadow: 0 25px 65px rgba(0,0,0,0.55); }
-}
-
-@keyframes magicFloat {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-5px); } 
-  100% { transform: translateY(0px); }
-}
-
-@keyframes errorShake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
+  .wish-item { padding: clamp(12px, 1.5vh, 24px) 15px !important; }
+  .guest-stats { gap: 1vh !important; margin: 1vh auto !important; }
+  .guest-stats div { padding: clamp(10px, 1.5vh, 24px) 10px !important; }
+  .guest-stats strong { font-size: clamp(20px, 3vh, 36px) !important; }
 }
