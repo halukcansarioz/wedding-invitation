@@ -1037,13 +1037,17 @@ body .app .glass-dock .dock-btn.music-on {
     display: flex !important;
     opacity: 1 !important;
     position: absolute !important;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0 !important;
     height: 100dvh !important;
-    overflow: hidden !important; /* İÇ SCROLL TAMAMEN İPTAL */
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
     flex-direction: column !important;
-    justify-content: center !important; 
+    justify-content: flex-start !important; 
     align-items: center !important;
-    padding: 12px !important; 
+    /* Üst/alt padding sıfırlandı, hizalamayı yaylar yapacak */
+    padding: 0 16px !important; 
+    box-sizing: border-box !important;
   }
 
   /* ========================================= */
@@ -1081,22 +1085,26 @@ body .app .glass-dock .dock-btn.music-on {
   .schedule-list {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
-    gap: clamp(4px, 1vh, 16px) !important;
-    margin-top: clamp(6px, 1vh, 30px) !important;
-    flex: 1;
-    min-height: 0; 
+    justify-content: flex-start !important; /* DÜZELTME: center yerine flex-start */
+    gap: clamp(8px, 1.5vh, 16px) !important;
+    margin-top: clamp(12px, 2vh, 30px) !important;
+    flex: 0 0 auto !important; /* DÜZELTME: flex: 1 iptali, liste daralmasın */
+    min-height: min-content !important; /* DÜZELTME: İçerik kadar boyutu olsun */
   }
+
   .schedule-item {
     padding: clamp(6px, 1.2vh, 24px) 15px !important;
     gap: clamp(2px, 0.5vh, 8px) !important;
   }
+
   .schedule-item strong {
     font-size: clamp(15px, 2.2vh, 22px) !important;
   }
+
   .schedule-item span {
     font-size: clamp(13px, 1.8vh, 19px) !important;
   }
+
   .schedule-item p {
     font-size: clamp(11px, 1.5vh, 16px) !important;
     line-height: 1.2 !important;

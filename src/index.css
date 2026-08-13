@@ -25,13 +25,14 @@ html, body {
   }
 }
 
-button, input, select, textarea, .option-button {
-  appearance: none; -webkit-appearance: none; outline: none;
+button, input, select, textarea, .option-button, a {
+  appearance: none; -webkit-appearance: none; outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 @media screen and (max-width: 768px) {
-  input, select, textarea, .admin-field input, .admin-field textarea, 
-  .rsvp-form input, .rsvp-form textarea, .wish-form input, 
+  input, select, textarea, .admin-field input, .admin-field textarea,
+  .rsvp-form input, .rsvp-form textarea, .wish-form input,
   .wish-form textarea, .app-modal-input, .app-modal-textarea {
     font-size: 16px !important;
   }
@@ -89,16 +90,16 @@ html body .app .floating-actions .wa-btn {
 }
 
 /* =================================================================
-   4. MOBİL İÇİN %100 GARANTİLİ DÜZEN (SIKIŞMA/BİNME ÇÖZÜMÜ)
+   4. MOBİL İÇİN %100 GARANTİLİ DÜZEN (SIKIŞMA/BİNME/TAŞMA ÇÖZÜMÜ)
    ================================================================= */
 @media (max-width: 650px) {
+  
   /* ANA EKRAN KİLİDİ */
   body, html {
-    overflow: hidden !important; 
-    height: 100vh !important;
+    overflow: hidden !important;
     height: 100dvh !important;
     width: 100vw !important;
-    position: fixed !important; 
+    position: relative !important; 
     overscroll-behavior-y: none !important;
   }
 
@@ -106,8 +107,8 @@ html body .app .floating-actions .wa-btn {
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
     height: 100dvh !important;
+    min-height: -webkit-fill-available !important; 
     padding: 0 !important;
     margin: 0 !important;
     overflow: hidden !important;
@@ -122,95 +123,98 @@ html body .app .floating-actions .wa-btn {
     z-index: 10 !important;
   }
 
-  /* SLAYTLAR (FLEX YERİNE BLOCK: İÇERİK SIKIŞMASINI KESİN OLARAK ÖNLER) */
-  .invitation-page > section.active-slide,
+  /* SLAYTLAR (KART KAPSAYICISI) */
   .invitation-page > footer.active-slide {
-    display: block !important; 
+    display: flex !important;
     opacity: 1 !important;
     position: absolute !important;
     inset: 0 !important;
-    height: 100vh !important;
     height: 100dvh !important;
     overflow-y: auto !important; 
     overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important; 
+    -webkit-overflow-scrolling: touch !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important; 
+    align-items: center !important;
     
-    /* Ekranın üstünden hafif boşluk, alttan ise butonların gizlememesi için 140px boşluk */
-    padding: 4vh 16px calc(140px + env(safe-area-inset-bottom)) 16px !important; 
+    /* DÜZELTME 1: Sayfanın en altına inildiğinde menü butonlarının kartı örtmemesi için 130px ekstra güvenli kaydırma alanı eklendi */
+    padding: 30px 16px calc(130px + env(safe-area-inset-bottom)) 16px !important;
     box-sizing: border-box !important;
   }
 
-  /* KARTLARIN BOYUTU VE MERKEZE HİZALAMASI */
+  /* KARTLARIN BOYUTU VE HİZALAMASI */
   .card, .countdown-section, .footer {
-    width: 100% !important; 
+    width: 100% !important;
     max-width: 480px !important;
-    height: auto !important;
-    min-height: min-content !important; /* İçeriğin ihtiyacı kadar uzar */
-    max-height: none !important; 
+    height: auto !important; 
+    min-height: min-content !important;
+    max-height: none !important;
     
-    margin: 0 auto !important; 
-    padding: 36px 20px !important; 
+    /* İŞTE ÇÖZÜM: 'margin: auto'
+       Bu kod kısa kartları ekranda dikey ve yatay olarak merkeze çeker. 
+       Uzun kartların ise taşmasını engeller. Tüm telefonlarda kusursuz çalışır. */
+    margin: auto !important;
+    padding: 36px 20px !important;
     
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: center !important; 
+    justify-content: center !important;
+    align-items: center !important;
     box-sizing: border-box !important;
   }
 
   /* GİRİŞ EKRANI (HERO) İÇİN ÖZEL MERKEZLEME */
   .invitation-page > section.hero-section.active-slide {
-    display: flex !important;
-    flex-direction: column !important;
     justify-content: center !important;
     padding: 20px 16px calc(120px + env(safe-area-inset-bottom)) 16px !important;
   }
-
+  
+  
   /* ÇİÇEK İKONU HİZALAMASI */
-  html body .app .card::after, 
+  html body .app .card::after,
   html body .app .countdown-section::after {
     top: 24px !important;
     left: 24px !important;
   }
 
   /* ============================================================== */
-  /* EN ÖNEMLİ KURAL: İÇERİKLERİN ASLA SIKIŞMAMASINI SAĞLAR        */
+  /* İÇERİKLERİN ASLA SIKIŞMAMASINI/EZİLMEMESİNİ SAĞLAYAN KURAL   */
   /* ============================================================== */
-  .card > *, .countdown-section > * {
-    flex-shrink: 0 !important; /* Sıkışmayı/Üst üste binmeyi tamamen iptal eder */
-    margin: 0 0 16px 0 !important; 
+  .card > *, .countdown-section > *, .footer > * {
+    flex-shrink: 0 !important; 
+    margin: 0 0 16px 0 !important;
     text-align: center !important;
-    width: 100% !important; 
+    width: 100% !important;
   }
   
   .card > *:last-child, .countdown-section > *:last-child {
-    margin-bottom: 0 !important; 
+    margin-bottom: 0 !important;
   }
 
-  /* GALERİ RESİMLERİNİ YUVARLAK YAP */
-  .gallery-grid img { 
-    border-radius: 16px !important; 
-    height: 220px !important; 
-    object-fit: cover !important; 
+  .gallery-grid img {
+    border-radius: 16px !important;
+    height: 220px !important;
+    object-fit: cover !important;
   }
 
-  /* Yazı ve Başlık Boyutları */
   .card h2, .countdown-section h2 { font-size: max(22px, 3vh) !important; line-height: 1.2 !important; }
   .card h2::after, .countdown-section h2::after { margin: 12px auto 0 !important; }
   
-  .card > p:not(.private-note-text), .card > .section-label, .countdown-section > .section-label { 
-    font-size: max(13px, 1.8vh) !important; 
-    line-height: 1.4 !important; 
+  .card > p:not(.private-note-text), .card > .section-label, .countdown-section > .section-label {
+    font-size: max(13px, 1.8vh) !important;
+    line-height: 1.4 !important;
   }
 
-  /* BÖLÜM İÇİ LİSTELER (SIKIŞMA KORUMALI) */
+  /* BÖLÜM İÇİ LİSTELER VE FORMLAR */
   .schedule-list, .gallery-grid, .family-grid, .ceremony-grid, .info-list, .rsvp-form, .wish-form {
     display: flex !important;
     flex-direction: column !important;
+    justify-content: flex-start !important; 
     gap: 12px !important;
-    margin-top: 4px !important; 
+    margin-top: 4px !important;
     width: 100% !important;
     height: auto !important;
+    flex: 0 0 auto !important; /* Listenin küçülmesi/sıkışması önlendi */
     flex-shrink: 0 !important;
   }
 
@@ -223,7 +227,6 @@ html body .app .floating-actions .wa-btn {
   .family-grid strong { font-size: 32px !important; margin: 0 !important;}
   .family-grid span { font-size: 14px !important; margin: 0 !important;}
 
-  /* HARİTA VE BUTONLAR */
   .info-row { padding: 12px 16px !important; flex-shrink: 0 !important;}
   .info-row strong { font-size: 16px !important; margin: 0 !important; }
   .info-row span { font-size: 13px !important; margin: 0 !important; }
@@ -234,21 +237,28 @@ html body .app .floating-actions .wa-btn {
   .qr-public-card { padding: 20px !important; gap: 12px !important; margin: 0 auto !important; flex-shrink: 0 !important;}
   .qr-public-card img { width: 140px !important; height: 140px !important; }
 
-  /* FORMLAR */
-  .rsvp-form input, .wish-form input, .rsvp-form textarea, .wish-form textarea { padding: 14px 16px !important; font-size: 16px !important; flex-shrink: 0 !important;}
+  /* RESİM 3 DÜZELTMESİ (ORTALAMA): Form içindeki yazılar merkeze (center) hizalandı */
+  .rsvp-form input, .wish-form input, .rsvp-form textarea, .wish-form textarea { 
+    padding: 14px 16px !important; 
+    font-size: 16px !important; 
+    flex-shrink: 0 !important;
+    text-align: center !important; 
+  }
+  
   .rsvp-form textarea, .wish-form textarea { height: 90px !important; }
   .form-button, .rsvp-whatsapp-button { padding: 14px 20px !important; margin-top: 0 !important; min-height: 48px !important; font-size: 16px !important; flex-shrink: 0 !important;}
   .option-button { padding: 12px !important; font-size: 15px !important;}
 
-  /* MİSAFİR LİSTESİ */
-  .guest-stats { 
+  /* RESİM 2 DÜZELTMESİ (KESİLME): İstatistik kutuları dikey (column) olarak alt alta dizildi */
+  .guest-stats {
     display: flex !important;
-    flex-direction: row !important; 
-    gap: 12px !important; 
-    margin: 0 auto !important; 
+    flex-direction: column !important; 
+    gap: 12px !important;
+    margin: 0 auto !important;
     width: 100% !important;
     flex-shrink: 0 !important;
   }
+  
   .guest-stats div { padding: 16px 8px !important; width: 100% !important; height: auto !important; flex-shrink: 0 !important;}
   .guest-stats strong { font-size: 24px !important; margin: 0 !important; }
   .guest-stats span { font-size: 12px !important; margin: 0 !important;}
@@ -263,11 +273,10 @@ html body .app .floating-actions .wa-btn {
   .admin-quick-access { display: none !important; }
 
   .floating-actions, .glass-dock, html[data-theme] .floating-actions, html[data-theme] .glass-dock {
-    background: transparent !important;
-    background-color: transparent !important;
+    background: transparent !important; /* DÜZELTME: Arkaplan tamamen silindi */
     border: none !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
+    box-shadow: none !important; /* DÜZELTME: Kutunun gölgesi silindi */
+    backdrop-filter: none !important; /* DÜZELTME: Cam efekti iptal edildi */
     -webkit-backdrop-filter: none !important;
     pointer-events: none !important;
     top: auto !important;
@@ -276,10 +285,10 @@ html body .app .floating-actions .wa-btn {
     left: auto !important;
     transform: translateX(50%) !important;
     flex-direction: row !important;
-    padding: 0 !important;
+    padding: 0 !important; /* DÜZELTME: Kutu boş olacağı için iç boşluklar sıfırlandı */
     gap: 16px !important;
     width: max-content !important;
-    z-index: 9999 !important;
+    z-index: 99999 !important;
   }
 
   .glass-dock .dock-btn, .floating-actions .dock-btn, html[data-theme] .glass-dock .dock-btn, html[data-theme] .floating-actions .dock-btn {
@@ -289,7 +298,10 @@ html body .app .floating-actions .wa-btn {
     background-color: #ffffff !important;
     opacity: 1 !important;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid rgba(217, 140, 161, 0.25) !important;
+    
+    /* DÜZELTME: İstemediğin çerçeve kodu silindi ve none yapıldı */
+    border: none !important; 
+    
     width: 48px !important;
     height: 48px !important;
     min-width: 48px !important;
@@ -303,13 +315,11 @@ html body .app .floating-actions .wa-btn {
   .glass-dock .scroll-down-btn { animation-delay: 0.2s !important; }
   .glass-dock .scroll-up-btn { animation-delay: 0.4s !important; }
   
-  /* KAYDIR OKU */
   html body .app .invitation-page .scroll-indicator, html body .app .scroll-indicator {
-    bottom: calc(105px + env(safe-area-inset-bottom)) !important; 
+    bottom: calc(105px + env(safe-area-inset-bottom)) !important;
     z-index: 10 !important;
   }
 
-  /* KLAVYE AÇILDIĞINDA MOBİL ARAYÜZ BOZULMALARINI ENGELLEME */
   body:has(input:focus) .glass-dock, body:has(textarea:focus) .glass-dock,
   body:has(input:focus) .scroll-indicator, body:has(textarea:focus) .scroll-indicator {
     display: none !important;
@@ -318,16 +328,14 @@ html body .app .floating-actions .wa-btn {
   }
 }
 
-/* Yukarı Aşağı Hareket Animasyonu */
 @keyframes floatButtons {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
   100% { transform: translateY(0px); }
 }
 
-/* Sadece Masaüstü için Cam Efekti */
 @media (min-width: 651px) {
-  .glass-dock, .app-modal-backdrop, .intro-card, .admin-sidebar, 
+  .glass-dock, .app-modal-backdrop, .intro-card, .admin-sidebar,
   .admin-actions-sticky, .lightbox-control-btn {
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
