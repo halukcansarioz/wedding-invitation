@@ -92,242 +92,6 @@ html body .app .floating-actions .wa-btn {
 /* =================================================================
    4. MOBİL İÇİN %100 GARANTİLİ DÜZEN (SIKIŞMA/BİNME/TAŞMA ÇÖZÜMÜ)
    ================================================================= */
-@media (max-width: 650px) {
-  
-  /* ANA EKRAN KİLİDİ */
-  body, html {
-    overflow: hidden !important;
-    height: 100dvh !important;
-    width: 100vw !important;
-    position: relative !important; 
-    overscroll-behavior-y: none !important;
-  }
-
-  .invitation-page {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    min-height: -webkit-fill-available !important; 
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-    background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft)) !important;
-    z-index: 1 !important;
-  }
-
-  .invitation-page > section,
-  .invitation-page > footer {
-    display: none !important;
-    opacity: 0;
-    z-index: 10 !important;
-  }
-
-  /* SLAYTLAR (KART KAPSAYICISI) */
-  .invitation-page > footer.active-slide {
-    display: flex !important;
-    opacity: 1 !important;
-    position: absolute !important;
-    inset: 0 !important;
-    height: 100dvh !important;
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important; 
-    align-items: center !important;
-    
-    /* DÜZELTME 1: Sayfanın en altına inildiğinde menü butonlarının kartı örtmemesi için 130px ekstra güvenli kaydırma alanı eklendi */
-    padding: 30px 16px calc(130px + env(safe-area-inset-bottom)) 16px !important;
-    box-sizing: border-box !important;
-  }
-
-  /* KARTLARIN BOYUTU VE HİZALAMASI */
-  .card, .countdown-section, .footer {
-    width: 100% !important;
-    max-width: 480px !important;
-    height: auto !important; 
-    min-height: min-content !important;
-    max-height: none !important;
-    
-    /* İŞTE ÇÖZÜM: 'margin: auto'
-       Bu kod kısa kartları ekranda dikey ve yatay olarak merkeze çeker. 
-       Uzun kartların ise taşmasını engeller. Tüm telefonlarda kusursuz çalışır. */
-    margin: auto !important;
-    padding: 36px 20px !important;
-    
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    box-sizing: border-box !important;
-  }
-
-  /* GİRİŞ EKRANI (HERO) İÇİN ÖZEL MERKEZLEME */
-  .invitation-page > section.hero-section.active-slide {
-    justify-content: center !important;
-    padding: 20px 16px calc(120px + env(safe-area-inset-bottom)) 16px !important;
-  }
-  
-  
-  /* ÇİÇEK İKONU HİZALAMASI */
-  html body .app .card::after,
-  html body .app .countdown-section::after {
-    top: 24px !important;
-    left: 24px !important;
-  }
-
-  /* ============================================================== */
-  /* İÇERİKLERİN ASLA SIKIŞMAMASINI/EZİLMEMESİNİ SAĞLAYAN KURAL   */
-  /* ============================================================== */
-  .card > *, .countdown-section > *, .footer > * {
-    flex-shrink: 0 !important; 
-    margin: 0 0 16px 0 !important;
-    text-align: center !important;
-    width: 100% !important;
-  }
-  
-  .card > *:last-child, .countdown-section > *:last-child {
-    margin-bottom: 0 !important;
-  }
-
-  .gallery-grid img {
-    border-radius: 16px !important;
-    height: 220px !important;
-    object-fit: cover !important;
-  }
-
-  .card h2, .countdown-section h2 { font-size: max(22px, 3vh) !important; line-height: 1.2 !important; }
-  .card h2::after, .countdown-section h2::after { margin: 12px auto 0 !important; }
-  
-  .card > p:not(.private-note-text), .card > .section-label, .countdown-section > .section-label {
-    font-size: max(13px, 1.8vh) !important;
-    line-height: 1.4 !important;
-  }
-
-  /* BÖLÜM İÇİ LİSTELER VE FORMLAR */
-  .schedule-list, .gallery-grid, .family-grid, .ceremony-grid, .info-list, .rsvp-form, .wish-form {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important; 
-    gap: 12px !important;
-    margin-top: 4px !important;
-    width: 100% !important;
-    height: auto !important;
-    flex: 0 0 auto !important; /* Listenin küçülmesi/sıkışması önlendi */
-    flex-shrink: 0 !important;
-  }
-
-  .schedule-item, .ceremony-item { padding: 16px !important; gap: 6px !important; flex-shrink: 0 !important;}
-  .schedule-item strong, .ceremony-item strong { font-size: 18px !important; margin: 0 !important; }
-  .schedule-item span, .ceremony-item span { font-size: 15px !important; margin: 0 !important; }
-  .schedule-item p, .ceremony-item p { font-size: 13px !important; line-height: 1.4 !important; padding: 6px 12px !important; margin: 0 !important; }
-  
-  .family-grid div { padding: 20px !important; gap: 8px !important; flex-shrink: 0 !important;}
-  .family-grid strong { font-size: 32px !important; margin: 0 !important;}
-  .family-grid span { font-size: 14px !important; margin: 0 !important;}
-
-  .info-row { padding: 12px 16px !important; flex-shrink: 0 !important;}
-  .info-row strong { font-size: 16px !important; margin: 0 !important; }
-  .info-row span { font-size: 13px !important; margin: 0 !important; }
-  .mini-map { height: 200px !important; margin-top: 4px !important; flex-shrink: 0 !important;}
-  .button-group { flex-direction: column !important; gap: 12px !important; flex-shrink: 0 !important;}
-  .button-group .main-button, .button-group .secondary-button { padding: 12px 20px !important; width: 100% !important; min-height: 48px !important; font-size: 16px !important; margin: 0 !important;}
-
-  .qr-public-card { padding: 20px !important; gap: 12px !important; margin: 0 auto !important; flex-shrink: 0 !important;}
-  .qr-public-card img { width: 140px !important; height: 140px !important; }
-
-  /* RESİM 3 DÜZELTMESİ (ORTALAMA): Form içindeki yazılar merkeze (center) hizalandı */
-  .rsvp-form input, .wish-form input, .rsvp-form textarea, .wish-form textarea { 
-    padding: 14px 16px !important; 
-    font-size: 16px !important; 
-    flex-shrink: 0 !important;
-    text-align: center !important; 
-  }
-  
-  .rsvp-form textarea, .wish-form textarea { height: 90px !important; }
-  .form-button, .rsvp-whatsapp-button { padding: 14px 20px !important; margin-top: 0 !important; min-height: 48px !important; font-size: 16px !important; flex-shrink: 0 !important;}
-  .option-button { padding: 12px !important; font-size: 15px !important;}
-
-  /* RESİM 2 DÜZELTMESİ (KESİLME): İstatistik kutuları dikey (column) olarak alt alta dizildi */
-  .guest-stats {
-    display: flex !important;
-    flex-direction: column !important; 
-    gap: 12px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-    flex-shrink: 0 !important;
-  }
-  
-  .guest-stats div { padding: 16px 8px !important; width: 100% !important; height: auto !important; flex-shrink: 0 !important;}
-  .guest-stats strong { font-size: 24px !important; margin: 0 !important; }
-  .guest-stats span { font-size: 12px !important; margin: 0 !important;}
-  .private-note-text { font-size: 13px !important; line-height: 1.4 !important; margin: 0 !important; flex-shrink: 0 !important;}
-  .guest-list, .wish-list { overflow: visible !important; flex-shrink: 0 !important;}
-  .wish-item { padding: 16px !important; flex-shrink: 0 !important;}
-
-  /* ------------------------------------------------------------- */
-  /* MOBİL DOCK VE BUTON DÜZELTMELERİ */
-  /* ------------------------------------------------------------- */
-
-  .admin-quick-access { display: none !important; }
-
-  .floating-actions, .glass-dock, html[data-theme] .floating-actions, html[data-theme] .glass-dock {
-    background: transparent !important; /* DÜZELTME: Arkaplan tamamen silindi */
-    border: none !important;
-    box-shadow: none !important; /* DÜZELTME: Kutunun gölgesi silindi */
-    backdrop-filter: none !important; /* DÜZELTME: Cam efekti iptal edildi */
-    -webkit-backdrop-filter: none !important;
-    pointer-events: none !important;
-    top: auto !important;
-    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-    right: 50% !important;
-    left: auto !important;
-    transform: translateX(50%) !important;
-    flex-direction: row !important;
-    padding: 0 !important; /* DÜZELTME: Kutu boş olacağı için iç boşluklar sıfırlandı */
-    gap: 16px !important;
-    width: max-content !important;
-    z-index: 99999 !important;
-  }
-
-  .glass-dock .dock-btn, .floating-actions .dock-btn, html[data-theme] .glass-dock .dock-btn, html[data-theme] .floating-actions .dock-btn {
-    pointer-events: auto !important;
-    animation: floatButtons 3s ease-in-out infinite !important;
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    opacity: 1 !important;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
-    
-    /* DÜZELTME: İstemediğin çerçeve kodu silindi ve none yapıldı */
-    border: none !important; 
-    
-    width: 48px !important;
-    height: 48px !important;
-    min-width: 48px !important;
-    border-radius: 50% !important;
-    color: var(--rose-dark, #9f4f68) !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .glass-dock .music-btn { animation-delay: 0s !important; }
-  .glass-dock .scroll-down-btn { animation-delay: 0.2s !important; }
-  .glass-dock .scroll-up-btn { animation-delay: 0.4s !important; }
-  
-  html body .app .invitation-page .scroll-indicator, html body .app .scroll-indicator {
-    bottom: calc(105px + env(safe-area-inset-bottom)) !important;
-    z-index: 10 !important;
-  }
-
-  body:has(input:focus) .glass-dock, body:has(textarea:focus) .glass-dock,
-  body:has(input:focus) .scroll-indicator, body:has(textarea:focus) .scroll-indicator {
-    display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-}
-
 @keyframes floatButtons {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
@@ -402,3 +166,393 @@ h2 { font-size: 24px; line-height: 118%; letter-spacing: -0.24px; margin: 0 0 8p
 p { margin: 0; }
 code, .counter { font-family: var(--mono); display: inline-flex; border-radius: 4px; color: var(--text-h); }
 code { font-size: 15px; line-height: 135%; padding: 4px 8px; background: var(--code-bg); }
+
+/* =================================================================
+   GÖRSEL DÜZELTMELER (ARKAPLANLAR, GİZLEME VE HİZALAMA)
+   ================================================================= */
+
+/* 1. Yüzen butonların (Glass Dock) arkasındaki kapsayıcı arka planı tamamen silme */
+html body .app .glass-dock,
+html body .app .floating-actions,
+html[data-theme] body .app .glass-dock,
+html[data-theme] body .app .floating-actions {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+html body .app .glass-dock .dock-btn,
+html body .app .floating-actions .dock-btn {
+    background: rgba(255, 255, 255, 0.95) !important; /* Net beyaz arka plan */
+    color: var(--amp-color, #9f4f68) !important; /* İkonların rengi (Seçili Tema Rengi) */
+    border: 1px solid rgba(230, 230, 230, 1) !important; /* Hafif bir çerçeve */
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important; /* Butonların havada durduğunu belli eden gölge */
+    opacity: 1 !important;
+    animation: subtleBounce 2.5s ease-in-out infinite !important;
+}
+
+html body .app .glass-dock .music-btn,
+html body .app .floating-actions .music-btn {
+    animation-delay: 0s !important;
+}
+
+html body .app .glass-dock .scroll-down-btn,
+html body .app .floating-actions .scroll-down-btn {
+    animation-delay: 0.2s !important;
+}
+
+html body .app .glass-dock .scroll-up-btn,
+html body .app .floating-actions .scroll-up-btn {
+    animation-delay: 0.4s !important;
+}
+
+/* Karanlık (Dark) Tema seçilirse butonların rengi */
+html[data-theme="dark"] body .app .glass-dock .dock-btn,
+html[data-theme="dark"] body .app .floating-actions .dock-btn {
+    background: rgba(40, 40, 40, 0.95) !important;
+    color: var(--amp-color, #e3b6c7) !important;
+    border: 1px solid rgba(70, 70, 70, 1) !important;
+}
+
+@media (max-width: 650px) {
+  /* -----------------------------------------------------------
+     1. GENEL SAYFA KİLİDİ VE KAYDIRMA ALANI
+     ----------------------------------------------------------- */
+  body, html {
+    overflow: hidden !important; 
+    height: 100dvh !important;
+    width: 100vw !important;
+    position: fixed !important; 
+    overscroll-behavior-y: none !important;
+  }
+
+  .invitation-page {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft)) !important;
+    z-index: 1 !important;
+  }
+
+  .invitation-page > section,
+  .invitation-page > footer {
+    display: none !important;
+    opacity: 0;
+    z-index: 10 !important;
+  }
+
+  /* SLAYTLAR (KAYDIRILABİLİR KART KAPSAYICISI) */
+  html body .app .invitation-page > section.active-slide,
+  html body .app .invitation-page > footer.active-slide {
+    display: flex !important;
+    opacity: 1 !important;
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100dvh !important;
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* DİKEYDE OTOMATİK ORTALAMA (Kısa içeriklerin tepede kalmaması için) */
+  html body .app .invitation-page > section.active-slide:not(.hero-section),
+  html body .app .invitation-page > footer.active-slide {
+    justify-content: flex-start !important; 
+    padding-top: clamp(20px, 4vh, 30px) !important;
+    padding-bottom: calc(clamp(140px, 22vh, 180px) + env(safe-area-inset-bottom)) !important;
+  }
+
+  html body .app .invitation-page > section.active-slide:not(.hero-section) > *:first-child,
+  html body .app .invitation-page > footer.active-slide > *:first-child { margin-top: auto !important; }
+  
+  html body .app .invitation-page > section.active-slide:not(.hero-section) > *:last-child,
+  html body .app .invitation-page > footer.active-slide > *:last-child { margin-bottom: auto !important; }
+
+  /* -----------------------------------------------------------
+     2. GİRİŞ EKRANI (HERO) VE KAYDIR İKONU
+     ----------------------------------------------------------- */
+  html body .app .invitation-page > section.hero-section.active-slide {
+    justify-content: center !important;
+    padding-bottom: calc(clamp(140px, 22vh, 190px) + env(safe-area-inset-bottom)) !important;
+  }
+
+  html body .app .invitation-page .scroll-indicator,
+  html body .app .scroll-indicator {
+    bottom: calc(clamp(125px, 18vh, 145px) + env(safe-area-inset-bottom)) !important;
+    z-index: 10 !important;
+  }
+
+  /* -----------------------------------------------------------
+     3. BEYAZ KARTLARIN BOYUTLANDIRILMASI VE ÇİÇEK İKONU
+     ----------------------------------------------------------- */
+  html body .app .card, 
+  html body .app .countdown-section, 
+  html body .app .footer {
+    width: 100% !important;
+    max-width: 480px !important;
+    height: auto !important;
+    min-height: min-content !important;
+    max-height: none !important;
+    margin: auto !important;
+    border-radius: clamp(24px, 6vw, 32px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-content: center !important;
+    box-sizing: border-box !important;
+    /* Yazıların çiçek ikonuna çarpmaması ve alt butonların örtüşmemesi için kritik boşluklar */
+    padding-top: clamp(65px, 10vh, 85px) !important; 
+    padding-bottom: calc(clamp(140px, 22vh, 180px) + env(safe-area-inset-bottom)) !important;
+  }
+
+  /* Kart içi elementlerin (yazılar vb.) yatay ortalanması ve ezilmesinin (shrink) önlenmesi */
+  html body .app .card > *, 
+  html body .app .countdown-section > *,
+  html body .app .countdown-grid,
+  html body .app .footer > * {
+    flex-shrink: 0 !important; 
+    text-align: center !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-bottom: clamp(12px, 2.5vh, 16px) !important;
+  }
+
+  html body .app .card > *:last-child, 
+  html body .app .countdown-section > *:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  /* Çiçek ikonu ortalama */
+  html body .app .card::after,
+  html body .app .countdown-section::after {
+    top: clamp(18px, 3vh, 24px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  /* Kart Typography */
+  html body .app .card h2, html body .app .countdown-section h2 { font-size: clamp(24px, 5.5vw, 32px) !important; }
+  html body .app .card > p:not(.private-note-text), 
+  html body .app .card > .section-label, 
+  html body .app .countdown-section > .section-label { font-size: clamp(14px, 3.5vw, 17px) !important; line-height: 1.4 !important; }
+
+
+  /* -----------------------------------------------------------
+     4. FORM ELEMANLARI (KUSURSUZ ORTALAMA VE CLAMP)
+     ----------------------------------------------------------- */
+  html body .app .rsvp-form,
+  html body .app .wish-form,
+  html body .app .option-group,
+  html body .app .button-group {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: clamp(12px, 2.5vh, 18px) !important;
+  }
+
+  html body .app .wish-form { margin-bottom: 12px !important; }
+  html body .app .wish-list { margin-top: 0 !important; flex: 0 0 auto !important; width: 100% !important; }
+
+  /* Input & Textarea */
+  html body .app .rsvp-form input,
+  html body .app .wish-form input {
+    padding: clamp(14px, 3vh, 18px) clamp(16px, 4vw, 22px) !important;
+    font-size: clamp(15px, 4vw, 17px) !important;
+    border-radius: clamp(16px, 5vw, 22px) !important; 
+    min-height: clamp(50px, 8vh, 60px) !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  html body .app .rsvp-form textarea,
+  html body .app .wish-form textarea {
+    padding: clamp(14px, 3vh, 18px) clamp(16px, 4vw, 22px) !important;
+    font-size: clamp(15px, 4vw, 17px) !important;
+    border-radius: clamp(16px, 5vw, 22px) !important;
+    min-height: clamp(90px, 15vh, 120px) !important; 
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  /* Seçenek Butonları (Katılacağım vb.) */
+  html body .app .option-button {
+    padding: clamp(14px, 3vh, 18px) clamp(16px, 4vw, 20px) !important;
+    font-size: clamp(15px, 4vw, 17px) !important;
+    font-weight: 800 !important;
+    min-height: clamp(50px, 8vh, 60px) !important;
+    border-radius: clamp(16px, 5vw, 22px) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Ana İşlem Butonları (Gönder, WhatsApp vb.) */
+  html body .app .form-button,
+  html body .app .rsvp-whatsapp-button,
+  html body .app .button-group .main-button,
+  html body .app .button-group .secondary-button {
+    padding: clamp(16px, 3vh, 20px) clamp(20px, 5vw, 24px) !important;
+    font-size: clamp(16px, 4.5vw, 18px) !important;
+    font-weight: 900 !important;
+    min-height: clamp(54px, 9vh, 64px) !important;
+    border-radius: 999px !important; 
+    letter-spacing: 0.5px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    text-align: center !important;
+    margin-top: 0 !important;
+  }
+
+
+  /* -----------------------------------------------------------
+     5. LİSTELER (TAKVİM, AİLE, NİKAH, MİSAFİR)
+     ----------------------------------------------------------- */
+  /* Takvim (Schedule) */
+  html body .app .invitation-page .schedule-list {
+    align-items: stretch !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  html body .app .invitation-page .schedule-item {
+    width: 100% !important;
+    min-height: clamp(110px, 18vh, 140px) !important; 
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: clamp(12px, 3vw, 24px) 15px !important;
+  }
+
+  /* Aile ve Nikah (Tek Sütun) */
+  html body .app .invitation-page .family-grid,
+  html body .app .invitation-page .ceremony-grid {
+    grid-template-columns: 1fr !important; 
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  html body .app .invitation-page .family-grid > div,
+  html body .app .invitation-page .ceremony-grid > div {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Misafir İstatistikleri */
+  html body .app .guest-stats {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: clamp(12px, 3vw, 16px) !important;
+    width: 100% !important;
+    margin: clamp(16px, 4vw, 24px) 0 !important;
+  }
+  html body .app .guest-stats div {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+    border-radius: clamp(16px, 5vw, 24px) !important;
+    padding: clamp(16px, 4vw, 22px) clamp(12px, 3vw, 16px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+    transition: transform 0.2s ease !important;
+  }
+  html body .app .private-note-card {
+    background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+    border-radius: clamp(12px, 4vw, 18px) !important;
+    padding: clamp(12px, 3vw, 16px) !important;
+    border: 1px dashed color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
+  }
+
+
+  /* -----------------------------------------------------------
+     6. YÜZEN MENÜ (DOCK), ANİMASYON VE GİZLEMELER
+     ----------------------------------------------------------- */
+  /* Kalkan ikonunu (Admin) gizle */
+  html body .app .admin-quick-access {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Yüzen Menü (Dock) Arkaplan Şeffaflığı ve Konumu */
+  html body .app .glass-dock,
+  html body .app .floating-actions,
+  html[data-theme] body .app .glass-dock,
+  html[data-theme] body .app .floating-actions {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    right: 50% !important;
+    left: auto !important;
+    transform: translateX(50%) !important;
+    flex-direction: row !important;
+    padding: 0 !important;
+    gap: 16px !important;
+    width: max-content !important;
+    z-index: 99999 !important;
+  }
+
+  /* Dock Butonları Tasarımı ve Clamp Boyutları */
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    background: rgba(255, 255, 255, 0.95) !important; 
+    color: var(--amp-color, #9f4f68) !important; 
+    border: 1px solid rgba(230, 230, 230, 1) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+    opacity: 1 !important;
+    width: clamp(40px, 11vw, 48px) !important;
+    height: clamp(40px, 11vw, 48px) !important;
+    min-width: auto !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    animation: subtleBounce 2.5s ease-in-out infinite !important;
+  }
+
+  html body .app .glass-dock .dock-btn svg,
+  html body .app .floating-actions .dock-btn svg {
+    width: clamp(18px, 5vw, 22px) !important;
+    height: clamp(18px, 5vw, 22px) !important;
+  }
+
+  /* Dock Butonları (Karanlık Tema) */
+  html[data-theme="dark"] body .app .glass-dock .dock-btn,
+  html[data-theme="dark"] body .app .floating-actions .dock-btn {
+    background: rgba(40, 40, 40, 0.95) !important;
+    color: var(--amp-color, #e3b6c7) !important;
+    border: 1px solid rgba(70, 70, 70, 1) !important;
+  }
+
+  /* Zıplama Gecikmeleri (Sırayla zıplamaları için) */
+  html body .app .glass-dock .music-btn,
+  html body .app .floating-actions .music-btn { animation-delay: 0s !important; }
+  html body .app .glass-dock .scroll-down-btn,
+  html body .app .floating-actions .scroll-down-btn { animation-delay: 0.2s !important; }
+  html body .app .glass-dock .scroll-up-btn,
+  html body .app .floating-actions .scroll-up-btn { animation-delay: 0.4s !important; }
+
+}
+
+@keyframes subtleBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}

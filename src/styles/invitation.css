@@ -373,13 +373,6 @@ body .app .invitation-page .hero-section::after {
   opacity: 0 !important;
 }
 
-@media (max-width: 650px) {
-  .envelope-guest-badge {
-    bottom: 24px !important;
-    right: 24px !important;
-    font-size: 16px !important;
-  }
-}
 
 /* Mühür (Seal) */
 .envelope-container .envelope-seal {
@@ -1001,6 +994,12 @@ body .app .glass-dock .dock-btn.music-on {
    MOBİL (TÜM TASARIM SABİTLEMELERİ VE SCROLL İPTALİ BURADA)
    ================================================================= */
 @media (max-width: 650px) {
+
+  .envelope-guest-badge {
+    bottom: 24px !important;
+    right: 24px !important;
+    font-size: 16px !important;
+  }
 
   /* 1. Ekran Kilidi Sabit (Scroll Yok) */
   body, html {

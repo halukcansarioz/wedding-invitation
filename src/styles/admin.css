@@ -224,38 +224,7 @@
   }
 }
 
-@media (max-width: 650px) {
-  .admin-shell-card {
-    padding: 24px 16px;
-  }
 
-  .admin-sidebar {
-    padding: 14px;
-    border-radius: 22px;
-  }
-
-  .admin-sidebar-menu {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-nav-button {
-    min-height: auto;
-    padding: 12px 14px;
-  }
-
-  .admin-main-panel .admin-actions-sticky {
-    position: relative;
-    top: auto;
-  }
-
-  .admin-current-section {
-    width: 100%;
-  }
-
-  .admin-stats-inside {
-    grid-template-columns: 1fr;
-  }
-}
 
 .admin-page,
 .admin-page p,
@@ -742,36 +711,6 @@
 
   .admin-gallery-row {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 650px) {
-  .admin-editor-section {
-    padding: 18px;
-    border-radius: 22px;
-  }
-
-  .admin-repeat-title {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .small-admin-button,
-  .admin-add-button,
-  .admin-actions-sticky .main-button,
-  .admin-actions-sticky .secondary-button {
-    width: 100% !important;
-  }
-
-  .hero-section {
-    background:
-      radial-gradient(
-        circle at center,
-        rgba(120, 52, 78, 0.1) 0%,
-        rgba(120, 52, 78, 0.2) 48%,
-        rgba(60, 24, 38, 0.3) 100%
-      ),
-      var(--hero-image) center/cover no-repeat;
   }
 }
 
@@ -1495,20 +1434,7 @@
   }
 }
 
-@media (max-width: 650px) {
-  .admin-image-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
 
-  .admin-upload-button {
-    width: 100%;
-  }
-
-  .admin-image-preview {
-    max-height: 220px;
-  }
-}
 
 .theme-option-card {
   position: relative;
@@ -2037,22 +1963,6 @@ html[data-theme] .intro-page .couple-title {
     0 0 22px rgba(var(--theme-rgb), 0.18) !important;
 }
 
-@media (max-width: 650px) {
-  .admin-custom-select-button {
-    min-height: 52px;
-    font-size: 15px;
-  }
-
-  .admin-custom-select-menu {
-    max-height: 220px;
-  }
-
-  .admin-custom-select-option {
-    min-height: 40px;
-    font-size: 14px;
-  }
-}
-
 html[data-theme] .admin-help-text {
   width: 100% !important;
   max-width: 100% !important; 
@@ -2273,22 +2183,6 @@ html[data-theme] .admin-export-card span,
 html[data-theme] .admin-import-box small {
   color: var(--theme-text-muted) !important;
   font-weight: 850 !important;
-}
-
-@media (max-width: 650px) {
-  html[data-theme] .admin-toolbar .admin-custom-select {
-    min-width: 100% !important;
-  }
-
-  .admin-password-actions .main-button {
-    width: 100%;
-  }
-
-  .admin-password-message {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
 }
 
 .admin-link-button {
@@ -2981,6 +2875,106 @@ html[data-theme="dark"] .app-modal-cancel {
 }
 
 @media (max-width: 650px) {
+  html[data-theme] .admin-toolbar .admin-custom-select {
+    min-width: 100% !important;
+  }
+
+  .admin-password-actions .main-button {
+    width: 100%;
+  }
+
+  .admin-password-message {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .admin-custom-select-button {
+    min-height: 52px;
+    font-size: 15px;
+  }
+
+  .admin-custom-select-menu {
+    max-height: 220px;
+  }
+
+  .admin-custom-select-option {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .admin-image-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-upload-button {
+    width: 100%;
+  }
+
+  .admin-image-preview {
+    max-height: 220px;
+  }
+
+  .admin-editor-section {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .admin-repeat-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .small-admin-button,
+  .admin-add-button,
+  .admin-actions-sticky .main-button,
+  .admin-actions-sticky .secondary-button {
+    width: 100% !important;
+  }
+
+  .hero-section {
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(120, 52, 78, 0.1) 0%,
+        rgba(120, 52, 78, 0.2) 48%,
+        rgba(60, 24, 38, 0.3) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+
+  .admin-shell-card {
+    padding: 24px 16px;
+  }
+
+  .admin-sidebar {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .admin-sidebar-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav-button {
+    min-height: auto;
+    padding: 12px 14px;
+  }
+
+  .admin-main-panel .admin-actions-sticky {
+    position: relative;
+    top: auto;
+  }
+
+  .admin-current-section {
+    width: 100%;
+  }
+
+  .admin-stats-inside {
+    grid-template-columns: 1fr;
+  }
+
   .app-modal-card {
     width: min(94vw, 420px);
     padding: 24px 20px 20px;

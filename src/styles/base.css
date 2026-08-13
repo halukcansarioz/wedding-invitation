@@ -1007,165 +1007,6 @@ button {
   }
 }
 
-@media (max-width: 650px) {
-  .intro-page {
-    padding: 18px;
-  }
-
-  .intro-card {
-    padding: 46px 24px;
-    border-radius: 32px;
-  }
-
-  .couple-title {
-    font-size: 58px;
-  }
-
-  .couple-title em {
-    display: block;
-    margin: 4px 0;
-  }
-
-  .intro-text {
-    font-size: 19px;
-  }
-
-  .hero-section {
-    min-height: 560px;
-    padding: 64px 18px;
-    background:
-      radial-gradient(
-        circle at center,
-        rgba(70, 24, 40, 0.24) 0%,
-        rgba(70, 24, 40, 0.42) 46%,
-        rgba(35, 14, 22, 0.66) 100%
-      ),
-      var(--hero-image) center/cover no-repeat;
-  }
-
-  .hero-section .couple-title {
-    color: #fff;
-    font-size: clamp(68px, 8vw, 118px);
-    line-height: 1.04;
-    text-shadow:
-      0 3px 5px rgba(0, 0, 0, 0.75),
-      0 8px 22px rgba(0, 0, 0, 0.42),
-      0 0 24px rgba(255, 220, 230, 0.22);
-  }
-
-  .hero-section .couple-title em {
-    margin: -4px 0 -6px;
-    font-size: 0.45em;
-  }
-
-  .hero-date {
-    padding: 10px 20px;
-    font-size: 21px;
-  }
-
-  .hero-time {
-    font-size: 20px;
-  }
-
-  .card,
-  .countdown-section {
-    padding: 36px 20px;
-    border-radius: 30px;
-  }
-
-  .rsvp-card h2 {
-    font-size: 32px;
-  }
-
-  .rsvp-card > p {
-    font-size: 19px;
-  }
-
-  .countdown-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .info-row,
-  .guest-item {
-    flex-direction: column;
-    gap: 6px;
-    text-align: center;
-  }
-
-  .mini-map {
-    height: 300px;
-    border-radius: 22px;
-  }
-
-  .timeline::before {
-    display: none;
-  }
-
-  .timeline-item {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .gallery-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .gallery-grid img {
-    height: 300px;
-  }
-
-  .option-group {
-    flex-direction: column;
-  }
-
-  .option-button {
-    width: 100%;
-    min-width: unset;
-    font-size: 16px;
-  }
-
-  .rsvp-form input,
-  .rsvp-form textarea,
-  .wish-form input,
-  .wish-form textarea {
-    font-size: 16px;
-  }
-
-  .main-button,
-  .secondary-button {
-    width: 100%;
-  }
-
-  .floating-actions {
-    top: auto;
-    right: 14px;
-    bottom: 16px;
-    left: auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .floating-actions .share-button {
-    width: 132px;
-    height: 58px;
-    font-size: 17px;
-  }
-
-  .floating-actions .music-toggle-button {
-    width: 52px !important;
-    height: 52px !important;
-    min-width: 52px !important;
-    align-self: flex-end;
-  }
-
-  .floating-actions .music-toggle-button svg {
-    width: 28px;
-    height: 28px;
-  }
-}
-
 .glass-dock {
   position: fixed !important;
   top: 50% !important;
@@ -1242,18 +1083,6 @@ button {
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-@media (max-width: 650px) {
-  .glass-dock {
-    top: auto !important;
-    bottom: 24px !important;
-    right: 50% !important;
-    transform: translateX(50%) !important; 
-    flex-direction: row !important;
-    padding: 8px 14px !important;
-    gap: 14px !important;
-  }
-}
-
 .hero-content > * {
   animation: heroFadeUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -1316,12 +1145,6 @@ button {
 @keyframes scrollWheel {
   0% { top: 6px; opacity: 1; }
   100% { top: 18px; opacity: 0; }
-}
-
-@media (max-width: 650px) {
-  .scroll-indicator {
-    bottom: 25px; 
-  }
 }
 
 .admin-shell-card {
@@ -1704,6 +1527,176 @@ button,
 }
 
 @media (max-width: 650px) {
+
+  .glass-dock {
+    top: auto !important;
+    bottom: 24px !important;
+    right: 50% !important;
+    transform: translateX(50%) !important; 
+    flex-direction: row !important;
+    padding: 8px 14px !important;
+    gap: 14px !important;
+  }
+  .scroll-indicator {
+    bottom: 25px; 
+  }
+  .intro-page {
+    padding: 18px;
+  }
+
+  .intro-card {
+    padding: 46px 24px;
+    border-radius: 32px;
+  }
+
+  .couple-title {
+    font-size: 58px;
+  }
+
+  .couple-title em {
+    display: block;
+    margin: 4px 0;
+  }
+
+  .intro-text {
+    font-size: 19px;
+  }
+
+  .hero-section {
+    min-height: 560px;
+    padding: 64px 18px;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(70, 24, 40, 0.24) 0%,
+        rgba(70, 24, 40, 0.42) 46%,
+        rgba(35, 14, 22, 0.66) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+
+  .hero-section .couple-title {
+    color: #fff;
+    font-size: clamp(68px, 8vw, 118px);
+    line-height: 1.04;
+    text-shadow:
+      0 3px 5px rgba(0, 0, 0, 0.75),
+      0 8px 22px rgba(0, 0, 0, 0.42),
+      0 0 24px rgba(255, 220, 230, 0.22);
+  }
+
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+
+  .hero-date {
+    padding: 10px 20px;
+    font-size: 21px;
+  }
+
+  .hero-time {
+    font-size: 20px;
+  }
+
+  .card,
+  .countdown-section {
+    padding: 36px 20px;
+    border-radius: 30px;
+  }
+
+  .rsvp-card h2 {
+    font-size: 32px;
+  }
+
+  .rsvp-card > p {
+    font-size: 19px;
+  }
+
+  .countdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .info-row,
+  .guest-item {
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .mini-map {
+    height: 300px;
+    border-radius: 22px;
+  }
+
+  .timeline::before {
+    display: none;
+  }
+
+  .timeline-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-grid img {
+    height: 300px;
+  }
+
+  .option-group {
+    flex-direction: column;
+  }
+
+  .option-button {
+    width: 100%;
+    min-width: unset;
+    font-size: 16px;
+  }
+
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea {
+    font-size: 16px;
+  }
+
+  .main-button,
+  .secondary-button {
+    width: 100%;
+  }
+
+  .floating-actions {
+    top: auto;
+    right: 14px;
+    bottom: 16px;
+    left: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .floating-actions .share-button {
+    width: 132px;
+    height: 58px;
+    font-size: 17px;
+  }
+
+  .floating-actions .music-toggle-button {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    align-self: flex-end;
+  }
+
+  .floating-actions .music-toggle-button svg {
+    width: 28px;
+    height: 28px;
+  }
+
   .app-modal-backdrop {
     position: fixed !important;
     inset: 0 !important;
