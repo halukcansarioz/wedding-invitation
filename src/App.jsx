@@ -1,3 +1,4 @@
+// src/App.jsx
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./styles/index.css";
@@ -9,6 +10,7 @@ import { useDatabaseManager } from "./hooks/useDatabaseManager";
 import IntroPage from "./components/invitation/IntroPage";
 import { GlobalModals } from "./components/common/GlobalModals";
 import FloatingMenu from "./components/common/FloatingMenu";
+import { useAppContext } from "./context/AppContext"; 
 
 const InvitationView = lazy(() => import("./pages/InvitationView"));
 const AdminView = lazy(() => import("./pages/AdminView"));
@@ -18,14 +20,11 @@ import {
   DEFAULT_WEDDING_MUSIC_NAME,
   SITE_DATA_KEY,
   THEME_DEFAULT_IMAGES,
-  MAX_AUDIO_FILE_SIZE,
-  INITIAL_GUEST_FORM,
-  INITIAL_WISH_FORM
+  MAX_AUDIO_FILE_SIZE
 } from "./config/constants";
 import {
   getFaviconUrl,
   getCurrentShareLink,
-  loadStoredSiteData,
   createGoogleCalendarLink,
   readImageFileAsDataUrl,
   formatMessageTemplate,
@@ -39,14 +38,11 @@ import {
   isAdminRouteActive,
   clearAdminSessionTimestamp,
   uiGuestToDb,
-  dbGuestToUi,
   uiWishToDb,
-  dbWishToUi,
   normalizeSiteData,
   mergeSiteData
 } from "./utils/helpers";
 import {
-  getSupabaseSetupMessage,
   isSupabaseReady,
   loadSettingsFromDatabase,
   saveSettingsToDatabase,
@@ -64,14 +60,25 @@ function App() {
     i18n.changeLanguage(isEn ? 'tr' : 'en');
   };
 
-  const [siteData, setSiteData] = useState(() => loadStoredSiteData());
-  const [adminDraft, setAdminDraft] = useState(() => loadStoredSiteData());
-  const [opened, setOpened] = useState(false);
-  const [isOpening, setIsOpening] = useState(false);
-  const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
-  const [wishForm, setWishForm] = useState(INITIAL_WISH_FORM);
-  const [guests, setGuests] = useState([]);
-  const [wishes, setWishes] = useState([]);
+  // CONTEXT API'DEN GELEN TEMİZ STATE'LER
+  const {
+    siteData, setSiteData,
+    adminDraft, setAdminDraft,
+    opened, setOpened,
+    isOpening, setIsOpening,
+    guestForm, setGuestForm,
+    wishForm, setWishForm,
+    guests, setGuests,
+    wishes, setWishes,
+    activeAdminTab, setActiveAdminTab,
+    personalLinkName, setPersonalLinkName,
+    dataImportText, setDataImportText,
+    customAlert, setCustomAlert,
+    customConfirm, setCustomConfirm,
+    customPrompt, setCustomPrompt
+  } = useAppContext();
+
+  // ADMIN AUTH STATE'LERİ (Lokalde bırakıldı)
   const [isAdminPage, setIsAdminPage] = useState(() => isAdminRouteActive());
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
@@ -94,19 +101,12 @@ function App() {
   const [adminNewPasswordAgain, setAdminNewPasswordAgain] = useState("");
   const [adminPasswordMessage, setAdminPasswordMessage] = useState("");
   const [adminSaveMessage, setAdminSaveMessage] = useState("");
-  const [activeAdminTab, setActiveAdminTab] = useState("general");
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
   const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
   const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
   const [adminGuestChildFilter, setAdminGuestChildFilter] = useState("all");
   const [adminWishSearch, setAdminWishSearch] = useState("");
   const [adminWishStatusFilter, setAdminWishStatusFilter] = useState("all");
-  const [personalLinkName, setPersonalLinkName] = useState("");
-  const [dataImportText, setDataImportText] = useState("");
-  
-  const [customAlert, setCustomAlert] = useState(null);
-  const [customConfirm, setCustomConfirm] = useState(null);
-  const [customPrompt, setCustomPrompt] = useState(null);
 
   const invitation = useMemo(() => siteData.invitation, [siteData.invitation]);
   const familyInfo = useMemo(() => siteData.familyInfo, [siteData.familyInfo]);
@@ -281,19 +281,19 @@ function App() {
     return new Promise((resolve) => {
       setCustomAlert({ message, title: options.title || (isEn ? "Information ℹ️" : "Bilgi ℹ️"), resolve });
     });
-  }, [isEn]);
+  }, [isEn, setCustomAlert]);
 
   const showAppConfirm = useCallback((message, options = {}) => {
     return new Promise((resolve) => {
       setCustomConfirm({ message, title: options.title || (isEn ? "Confirmation 🤔" : "Onay 🤔"), resolve });
     });
-  }, [isEn]);
+  }, [isEn, setCustomConfirm]);
 
   const showAppPrompt = useCallback((label, defaultValue = "", options = {}) => {
     return new Promise((resolve) => {
       setCustomPrompt({ label, value: defaultValue, title: options.title || (isEn ? "Edit ✏️" : "Düzenle ✏️"), resolve, multiline: options.multiline });
     });
-  }, [isEn]);
+  }, [isEn, setCustomPrompt]);
 
   const {
     submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery,
@@ -408,7 +408,7 @@ function App() {
     }
 
     initDatabaseData();
-  }, []);
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
 
   useEffect(() => {
     if (isAdminPage) return;
@@ -422,17 +422,17 @@ function App() {
     setIsOpening(true);
     startMusic().catch((err) => console.log("Müzik başlatılamadı:", err));
     setTimeout(() => { setOpened(true); }, 4000);
-  }, [startMusic]);
+  }, [startMusic, setIsOpening, setOpened]);
 
   const handleGuestChange = useCallback((e) => {
     const { name, value } = e.target;
     setGuestForm((prev) => ({ ...prev, [name]: value }));
-  }, []);
+  }, [setGuestForm]);
 
   const handleWishChange = useCallback((e) => {
     const { name, value } = e.target;
     setWishForm((prev) => ({ ...prev, [name]: value }));
-  }, []);
+  }, [setWishForm]);
 
   const updateAttendance = useCallback((attendance) => {
     setGuestForm((prev) => ({
@@ -442,7 +442,7 @@ function App() {
       side: attendance === "Katılacağım" ? (prev.side === "-" ? "Gelin Tarafı" : prev.side) : "-",
       hasChild: attendance === "Katılacağım" ? (prev.hasChild === "-" ? "Hayır" : prev.hasChild) : "-",
     }));
-  }, []);
+  }, [setGuestForm]);
   
   const copyInvitationLink = useCallback(async () => {
     try {
@@ -459,7 +459,7 @@ function App() {
 
   const updateDraftObject = useCallback((group, key, value) => {
     setAdminDraft((prev) => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
-  }, []);
+  }, [setAdminDraft]);
 
   const updateDraftImage = useCallback(async (group, key, file) => {
     try {
@@ -495,28 +495,28 @@ function App() {
       console.error("Müzik yüklenemedi:", error);
       setAdminSaveMessage(error.message || (isEn ? "Failed to upload music." : "Müzik yüklenemedi."));
     }
-  }, [isEn]);
+  }, [isEn, setAdminDraft]);
 
   const clearDraftMusic = useCallback(() => {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } }));
     setAdminSaveMessage(isEn ? "Custom music removed. Save changes to apply." : "Özel müzik kaldırıldı. Canlı sayfaya yansıtmak için kaydet.");
-  }, [isEn]);
+  }, [isEn, setAdminDraft]);
 
   const updateDraftArrayItem = useCallback((arrayKey, index, key, value) => {
     setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].map((item, itemIdx) => itemIdx === index ? { ...item, [key]: value } : item) }));
-  }, []);
+  }, [setAdminDraft]);
 
   const addDraftArrayItem = useCallback((arrayKey, item) => {
     setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], item] }));
-  }, []);
+  }, [setAdminDraft]);
 
   const removeDraftArrayItem = useCallback((arrayKey, index) => {
     setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].filter((_, itemIdx) => itemIdx !== index) }));
-  }, []);
+  }, [setAdminDraft]);
 
   const updateGalleryItem = useCallback((index, value) => {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.map((img, idx) => idx === index ? value : img) } }));
-  }, []);
+  }, [setAdminDraft]);
 
   const updateGalleryImageFile = useCallback(async (index, file) => {
     try {
@@ -535,11 +535,11 @@ function App() {
 
   const addGalleryItem = useCallback(() => {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: [...prev.invitation.gallery, ""] } }));
-  }, []);
+  }, [setAdminDraft]);
 
   const removeGalleryItem = useCallback((index) => {
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
-  }, []);
+  }, [setAdminDraft]);
 
   const saveSiteContent = useCallback(async () => {
     const cleanedData = normalizeSiteData({ ...adminDraft, invitation: { ...adminDraft.invitation, gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) } });
@@ -553,7 +553,7 @@ function App() {
       console.error("Ayarlar kaydedilemedi:", error);
       setAdminSaveMessage(isEn ? `Could not save changes. Detail: ${error?.message || "Supabase error"}` : `Değişiklikler kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
     }
-  }, [adminDraft, isEn]);
+  }, [adminDraft, isEn, setSiteData, setAdminDraft]);
 
   const handleThemeChange = useCallback(async (themeValue) => {
     updateDraftObject("settings", "theme", themeValue);
@@ -571,7 +571,7 @@ function App() {
         setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, introImage: themeImages.introImage, heroImage: themeImages.heroImage, heroVideo: themeImages.heroVideo || "", gallery: themeImages.gallery } }));
       }
     }
-  }, [updateDraftObject, showAppConfirm, isEn]);
+  }, [updateDraftObject, showAppConfirm, isEn, setAdminDraft]);
 
   const resetSiteContent = useCallback(async () => {
     const confirmed = await showAppConfirm(
@@ -599,7 +599,7 @@ function App() {
       console.error("Varsayılan ayarlar kaydedilemedi:", error);
       setAdminSaveMessage(isEn ? `Could not save default settings. Detail: ${error?.message || "Supabase error"}` : `Varsayılan ayarlar kaydedilemedi. Detay: ${error?.message || "Supabase hatası"}`);
     }
-  }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn]);
+  }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn, setSiteData, setAdminDraft]);
 
   const getGuestExportData = useCallback(() => {
     const headers = ["Ad Soyad", "Telefon", "Katılım Durumu", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
@@ -653,7 +653,7 @@ function App() {
       console.error("İçe aktarılamadı:", error);
       setAdminSaveMessage(isEn ? `Import failed. Detail: ${error?.message || "Error"}` : `İçe aktarılamadı. Detay: ${error?.message || "Hata"}`);
     }
-  }, [dataImportText, showAppConfirm, isEn]);
+  }, [dataImportText, showAppConfirm, isEn, setSiteData, setAdminDraft, setDataImportText, setGuests, setWishes]);
 
   const downloadQrCode = useCallback(async () => {
     try {
@@ -686,11 +686,11 @@ function App() {
       url.searchParams.delete("admin"); url.searchParams.delete("reset"); url.searchParams.delete("type");
       window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
     }
-  }, [performAdminSignOut]);
+  }, [performAdminSignOut, setOpened]);
 
   const openAdminTab = useCallback((tabId) => {
     setActiveAdminTab(tabId);
-  }, []);
+  }, [setActiveAdminTab]);
 
   const filteredGuests = useMemo(() =>
     guests.filter((guest) => {

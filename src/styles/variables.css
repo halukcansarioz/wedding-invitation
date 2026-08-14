@@ -6,6 +6,32 @@
   --amp-glow: color-mix(in srgb, var(--rose-dark) 36%, transparent);
   --sakura-flower: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   --sakura-pattern: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black' opacity='0.03'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round' opacity='0.03'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --paper: #fffafb;
+  --paper-soft: #fff7f9;
+  --text-main: #55303b;
+  --text-soft: #6f4451;
+  
+  /* ADMIN PANEL DEĞİŞKENLERİ */
+  --admin-bg: rgba(255, 250, 251, 0.96);
+  --admin-border: rgba(159, 79, 104, 0.34);
+  --admin-text: #3f1f2c;
+  --admin-input-bg: #fff9fb;
+  --admin-nav-bg: rgba(255, 250, 251, 0.9);
+  --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 8%, var(--paper));
+  
+  /* Admin Panel Tema Değişkenleri - !important kullanımını bitirmek için */
+  --admin-bg-primary: rgba(255, 250, 251, 0.96);
+  --admin-bg-secondary: rgba(255, 250, 251, 0.9);
+  --admin-border-color: rgba(159, 79, 104, 0.34);
+  --admin-input-bg: #fff9fb;
+  --admin-text-main: #3f1f2c;
+  --admin-text-muted: #5c2f3f;
+
+  /* BUTON DEĞİŞKENLERİ */
+  --btn-primary-color: #ffffff;
+  --btn-primary-bg: linear-gradient(135deg, #e69aae, #9f4f68);
+  --btn-danger-bg: linear-gradient(135deg, #9f3f58, #6d2639);
+  --btn-danger-color: #ffffff;
 }
 
 [data-theme="rose"] { --amp-color: #c36f8b; --amp-glow: rgba(195, 111, 139, 0.38); }
@@ -14,7 +40,32 @@
 [data-theme="burgundy"] { --amp-color: #9f354f; --amp-glow: rgba(159, 53, 79, 0.42); }
 [data-theme="minimal"] { --amp-color: #7c6f64; --amp-glow: rgba(124, 111, 100, 0.38); }
 [data-theme="lavanta"] { --amp-color: #8f7fb8; --amp-glow: rgba(143, 127, 184, 0.42); }
-[data-theme="dark"] { --amp-color: #e3b6c7; --amp-glow: rgba(227, 182, 199, 0.46); }
+[data-theme="dark"] {
+  --amp-color: #e3b6c7; 
+  --amp-glow: rgba(227, 182, 199, 0.46);
+  --paper: #1c141a;
+  --paper-soft: #241a21;
+  --text-main: #fff4f8;
+  --text-soft: #ead0da;
+
+  --admin-bg: rgba(36, 26, 33, 0.92);
+  --admin-border: rgba(255, 255, 255, 0.14);
+  --admin-text: #fff4f8;
+  --admin-input-bg: rgba(18, 13, 17, 0.92);
+  --admin-nav-bg: rgba(255, 255, 255, 0.06);
+  --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 10%, transparent);
+  
+  --admin-bg-primary: rgba(36, 26, 33, 0.92);
+  --admin-bg-secondary: rgba(255, 255, 255, 0.06);
+  --admin-border-color: rgba(255, 255, 255, 0.14);
+  --admin-input-bg: rgba(18, 13, 17, 0.92);
+  --admin-text-main: #fff4f8;
+  --admin-text-muted: #ead0da;
+  
+  --btn-primary-bg: linear-gradient(135deg, #d36a86, #7a203b);
+  --btn-danger-bg: linear-gradient(135deg, #d36a86, #7a203b);
+  --btn-danger-color: #fff7f9;
+}
 
 .app-modal-card {
   border-top: 0 !important;

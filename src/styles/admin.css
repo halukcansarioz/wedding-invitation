@@ -1,15 +1,18 @@
-/* =============================
-   ADMIN PANEL - SOL MENÜLÜ BÖLÜM SEÇİMİ
-   ============================= */
-
 .admin-shell-card {
   width: min(100%, 1480px);
   padding: 34px;
+  margin: 0 auto !important;
+  display: flex;
+  flex-direction: column;
+  background: var(--admin-bg-primary); 
 }
 
 .admin-page-header {
   position: relative;
   text-align: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 24px auto; 
 }
 
 .admin-layout {
@@ -29,66 +32,18 @@
   max-height: calc(100vh - 36px);
   overflow: auto;
   padding: 18px;
-  border: 1px solid rgba(217, 140, 161, 0.28);
   border-radius: 28px;
-  background:
-    radial-gradient(circle at top right, rgba(248, 199, 211, 0.34), transparent 28%),
-    rgba(255, 250, 251, 0.9);
   box-shadow: 0 18px 42px rgba(111, 47, 67, 0.1);
   backdrop-filter: blur(14px);
 }
 
-.admin-sidebar-title {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(217, 140, 161, 0.2);
-}
+.admin-sidebar-title { display: grid; gap: 6px; margin-bottom: 16px; padding-bottom: 14px; }
+.admin-sidebar-title span { font-family: "Playfair Display", serif; font-size: 20px; font-weight: 800; }
+.admin-sidebar-title small, .admin-nav-button small, .admin-current-section span { font-family: "Playfair Display", serif; font-size: 13px; font-weight: 700; line-height: 1.4; }
 
-.admin-sidebar-title span {
-  color: var(--rose-deep);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.admin-sidebar-title small,
-.admin-nav-button small,
-.admin-current-section span {
-  color: #9a6d78;
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-}
-
-.admin-sidebar-menu {
-  display: grid;
-  gap: 10px;
-}
-
-.admin-nav-button {
-  width: 100%;
-  min-height: 72px;
-  padding: 13px 14px;
-  display: grid;
-  gap: 5px;
-  border: 1px solid rgba(217, 140, 161, 0.26);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.58);
-  color: var(--text);
-  text-align: left;
-  box-shadow: none;
-  transition: 0.2s ease;
-}
-
-.admin-nav-button span {
-  color: var(--rose-deep);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 16px;
-  font-weight: 800;
-}
+.admin-sidebar-menu { display: grid; gap: 10px; }
+.admin-nav-button { width: 100%; min-height: 72px; padding: 13px 14px; display: grid; gap: 5px; border-radius: 18px; text-align: left; transition: 0.2s ease; }
+.admin-nav-button span { font-family: "Playfair Display", serif; font-size: 16px; font-weight: 800; }
 
 .admin-nav-button:hover {
   transform: translateX(3px);
@@ -119,45 +74,11 @@
   pointer-events: none;
 }
 
-.admin-main-panel {
-  min-width: 0;
-}
-
-.admin-main-panel .admin-actions-sticky {
-  display: flex !important;
-  flex-wrap: wrap !important; /* nowrap mesaj kutusunu bozar, wrap yapmalıyız */
-  align-items: center !important;
-  justify-content: flex-end !important; 
-  gap: 8px !important; 
-  padding: 16px 20px !important;
-}
-
-.admin-actions-sticky .admin-save-message {
-  flex: 1 1 100% !important;
-  width: 100% !important;
-  order: 99 !important;
-  margin: 4px 0 0 0 !important;
-  padding: 12px 16px !important;
-  background: rgba(var(--theme-soft-rgb, 248, 215, 223), 0.6) !important;
-  border-radius: 12px !important;
-  text-align: center !important;
-  color: var(--rose-deep) !important;
-  font-weight: 800 !important;
-}
-
-.admin-current-section {
-  min-width: min(100%, 160px); /* Butonlara yer açmak için minimum genişlik daraltıldı */
-  display: grid;
-  gap: 4px;
-  margin-right: auto;
-}
-
-.admin-current-section strong {
-  color: var(--rose-deep);
-  font-family: "Playfair Display", "Noto Serif", Georgia, serif;
-  font-size: 19px;
-  font-weight: 800;
-}
+.admin-main-panel { min-width: 0; }
+.admin-main-panel .admin-actions-sticky { display: flex !important; flex-wrap: wrap !important; align-items: center !important; justify-content: flex-end !important; gap: 8px !important; padding: 16px 20px !important; }
+.admin-actions-sticky .admin-save-message { flex: 1 1 100% !important; width: 100% !important; order: 99 !important; margin: 4px 0 0 0 !important; padding: 12px 16px !important; border-radius: 12px !important; text-align: center !important; font-weight: 800 !important; }
+.admin-current-section { min-width: min(100%, 160px); display: grid; gap: 4px; margin-right: auto; }
+.admin-current-section strong { font-family: "Playfair Display", serif; font-size: 19px; font-weight: 800; }
 
 .admin-save-message {
   width: 100%;
@@ -352,13 +273,11 @@
 .admin-row strong,
 .admin-stats strong {
   color: #651f3a !important;
-  font-weight: 900 !important;
   opacity: 1 !important;
 }
 
 .admin-page .section-label {
   color: #8e3455 !important;
-  font-weight: 900 !important;
   opacity: 1 !important;
 }
 
@@ -424,38 +343,12 @@
   line-height: 1.55;
 }
 
-.admin-actions-sticky {
-  background: rgba(255, 250, 251, 0.94) !important;
-  border: 1px solid rgba(159, 79, 104, 0.28);
-  border-radius: 22px;
-  padding: 14px;
-  box-shadow: 0 12px 28px rgba(111, 47, 67, 0.10);
-}
-
 .admin-upload-button {
   color: #ffffff !important;
   background: linear-gradient(135deg, #c96f89, #8f3657) !important;
   border-color: rgba(122, 47, 73, 0.4) !important;
-  font-weight: 900 !important;
 }
 
-.admin-actions-sticky {
-  position: sticky;
-  top: 16px;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 28px auto 30px;
-  padding: 16px;
-  border: 1px solid rgba(217, 140, 161, 0.28);
-  border-radius: 24px;
-  background: rgba(255, 250, 251, 0.86);
-  box-shadow: 0 16px 36px rgba(111, 47, 67, 0.1);
-  backdrop-filter: blur(12px);
-}
 
 .admin-actions-sticky .admin-current-section {
   flex: 1 1 auto !important;
@@ -625,11 +518,6 @@
     var(--hero-image) center/cover no-repeat;
 }
 
-/* =================================================================
-   BUTON KALINLIĞI, EMOJİ HİZALAMASI VE ÜST MENÜ DÜZELTMELERİ
-   ================================================================= */
-
-/* 1. Diğer tüm genel butonların stilleri */
 .admin-page button,
 .admin-login .main-button,
 .small-admin-button,
@@ -649,7 +537,6 @@
   border-radius: 999px !important; 
 }
 
-/* 2. SADECE Yapışkan Menüdeki (.admin-actions-sticky) butonlara özel hizalama */
 .admin-actions-sticky .main-button,
 .admin-actions-sticky .secondary-button {
   display: inline-flex !important;
@@ -657,7 +544,7 @@
   justify-content: center !important;
   text-align: center !important;
   gap: 6px !important;
-  padding: 10px 16px !important; /* TR dilde daha rahat sığması için optimize edildi */
+  padding: 10px 16px !important; 
   height: auto !important;
   min-height: 44px !important; 
   font-size: 13.5px !important;
@@ -687,8 +574,8 @@
 
 @media (max-width: 950px) {
   .admin-main-panel .admin-actions-sticky {
-    justify-content: center !important; /* Mobilde butonları ortala */
-    flex-wrap: wrap !important; /* Mobilde alt satıra geçmesine izin ver */
+    justify-content: center !important; 
+    flex-wrap: wrap !important;
   }
 
   .admin-actions-sticky .admin-current-section {
@@ -1008,7 +895,6 @@
   right: 20px !important;
   width: 28px !important;
   height: 28px !important;
-  min-width: 28px !important;
   border-radius: 50% !important;
   border: 2px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent) !important;
   background-color: var(--paper, #ffffff) !important;
@@ -1435,7 +1321,6 @@
 }
 
 
-
 .theme-option-card {
   position: relative;
   overflow: hidden;
@@ -1479,9 +1364,7 @@
 .theme-option-card.active small {
   background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
   color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
   opacity: 1 !important;
-  font-weight: 900 !important;
   border: none !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -1640,7 +1523,6 @@ body .app select option:hover,
 body .app select option:focus,
 body .app select option:active {
   background: linear-gradient(0deg, var(--amp-color, #8f7fb8) 0%, var(--amp-color, #8f7fb8) 100%) !important;
-  background-color: var(--amp-color, #8f7fb8) !important;
   color: #ffffff !important;
 }
 
@@ -1692,7 +1574,6 @@ body .app .admin-custom-select-button {
   color: var(--rose-dark) !important;
   font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
   font-size: 15px !important;
-  font-weight: 900 !important;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--rose-dark) 7%, transparent) !important;
   cursor: pointer !important;
   transition: 0.22s ease !important;
@@ -1754,7 +1635,6 @@ body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
   background: color-mix(in srgb, var(--amp-color, #8f7fb8) 18%, var(--paper, #ffffff)) !important;
   color: var(--amp-color, #8f7fb8) !important;
   border: 1px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 30%, transparent) !important;
-  font-weight: 900 !important;
 }
 
 [data-theme="dark"] body .app .admin-custom-select-button {
@@ -1830,7 +1710,6 @@ body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
 .admin-custom-select-arrow {
   width: 26px;
   height: 26px;
-  min-width: 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1978,7 +1857,6 @@ html[data-theme] .admin-help-text {
   color: var(--theme-text-main) !important;
   font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
   font-size: 17px !important;
-  font-weight: 900 !important;
   line-height: 1.75 !important;
   text-align: left !important;
   box-shadow: 0 12px 28px rgba(var(--theme-strong-rgb), 0.07) !important; 
@@ -2121,7 +1999,6 @@ html[data-theme] .admin-custom-select-option {
   border-radius: 15px !important;
   color: var(--theme-text-main) !important;
   font-size: 15px !important;
-  font-weight: 900 !important;
 }
 
 html[data-theme] .admin-custom-select-option:hover,
@@ -2203,20 +2080,9 @@ html[data-theme] .admin-import-box small {
   transform: translateY(-1px);
 }
 
-.admin-login-note {
-  display: block;
-  width: 100%;
-  color: var(--text-muted, #6f3c4d);
-  font-size: 0.92rem;
-  font-weight: 700;
-  line-height: 1.5;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.68);
-  border: 1px solid rgba(185, 111, 135, 0.26);
-  border-radius: 18px;
-  padding: 12px 14px;
-  margin: 4px 0 8px;
-}
+.admin-page .admin-login input, .admin-page .admin-login .admin-login-message, .admin-page .admin-login .admin-login-note { width: 100%; margin: 0; }
+.admin-page .admin-login .main-button, .admin-page .admin-login .admin-link-button { flex: 0 1 auto; margin: 0; padding: 12px 24px; }
+.admin-login-note { display: block; width: 100%; font-size: 0.92rem; font-weight: 700; line-height: 1.5; text-align: center; border-radius: 18px; padding: 12px 14px; margin: 4px 0 8px; }
 
 .admin-forgot-form,
 .admin-recovery-form {
@@ -2250,13 +2116,25 @@ html[data-theme="dark"] .admin-login span {
 
 .admin-page .admin-login {
   width: min(100%, 560px);
-  padding: 26px;
+  padding: 36px 28px;
+  margin: 32px auto !important;
   border-radius: 28px;
-  border: 1px solid rgba(var(--theme-rgb, 143, 54, 87), 0.24);
-  background:
-    radial-gradient(circle at top left, rgba(var(--theme-soft-rgb, 243, 215, 223), 0.34), transparent 38%),
-    linear-gradient(145deg, rgba(255, 252, 253, 0.98), rgba(255, 246, 249, 0.95));
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px;
   box-shadow: 0 22px 55px rgba(83, 39, 55, 0.16);
+}
+
+.admin-page .admin-login input,
+.admin-page .admin-login .admin-login-message,
+.admin-page .admin-login .admin-login-note {
+  width: 100%;
+  margin: 0; 
+}
+
+.admin-page .admin-login .main-button,
+.admin-page .admin-login .admin-link-button {
+  flex: 0 1 auto;
+  margin: 0;
+  padding: 12px 24px;
 }
 
 .admin-page .admin-login input {
@@ -2384,7 +2262,6 @@ html[data-theme="dark"] .admin-login span.admin-login-message.success {
   border-color: rgba(126, 37, 53, 0.42) !important;
   background: linear-gradient(135deg, #9f3f58, #6d2639) !important;
   box-shadow: 0 12px 24px rgba(109, 38, 57, 0.18) !important;
-  font-weight: 900 !important;
 }
 
 .admin-logout-button:hover {
@@ -2875,141 +2752,146 @@ html[data-theme="dark"] .app-modal-cancel {
 }
 
 @media (max-width: 650px) {
-  html[data-theme] .admin-toolbar .admin-custom-select {
-    min-width: 100% !important;
-  }
-
-  .admin-password-actions .main-button {
-    width: 100%;
-  }
-
-  .admin-password-message {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-  }
   
-  .admin-custom-select-button {
-    min-height: 52px;
-    font-size: 15px;
-  }
-
-  .admin-custom-select-menu {
-    max-height: 220px;
-  }
-
-  .admin-custom-select-option {
-    min-height: 40px;
-    font-size: 14px;
-  }
-
-  .admin-image-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .admin-upload-button {
-    width: 100%;
-  }
-
-  .admin-image-preview {
-    max-height: 220px;
-  }
-
-  .admin-editor-section {
-    padding: 18px;
-    border-radius: 22px;
-  }
-
-  .admin-repeat-title {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .small-admin-button,
-  .admin-add-button,
-  .admin-actions-sticky .main-button,
-  .admin-actions-sticky .secondary-button {
-    width: 100% !important;
-  }
-
-  .hero-section {
-    background:
-      radial-gradient(
-        circle at center,
-        rgba(120, 52, 78, 0.1) 0%,
-        rgba(120, 52, 78, 0.2) 48%,
-        rgba(60, 24, 38, 0.3) 100%
-      ),
-      var(--hero-image) center/cover no-repeat;
+  .admin-layout {
+    grid-template-columns: 1fr !important;
+    gap: 4vh !important;
+    margin-top: 4vh !important;
   }
 
   .admin-shell-card {
-    padding: 24px 16px;
-  }
-
-  .admin-sidebar {
-    padding: 14px;
-    border-radius: 22px;
-  }
-
-  .admin-sidebar-menu {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-nav-button {
-    min-height: auto;
-    padding: 12px 14px;
-  }
-
-  .admin-main-panel .admin-actions-sticky {
-    position: relative;
-    top: auto;
-  }
-
-  .admin-current-section {
-    width: 100%;
-  }
-
-  .admin-stats-inside {
-    grid-template-columns: 1fr;
-  }
-
-  .app-modal-card {
-    width: min(94vw, 420px);
-    padding: 24px 20px 20px;
-    border-radius: 24px;
-    background: var(--paper, #fff) !important;
-    min-height: 0 !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    padding: 4vh 4vw !important;
+    width: 100% !important;
     box-sizing: border-box !important;
   }
 
-  .admin-shell-card {
-    padding: 18px 12px;
-  }
-
-  .admin-layout {
-    gap: 18px;
+  .admin-page-header {
+    margin: 0 auto 3vh auto !important; 
   }
 
   .admin-sidebar {
-    padding: 14px;
-    border-radius: 22px;
+    position: relative !important;
+    top: auto !important;
+    max-height: none !important;
+    padding: 5vw !important;
+    border-radius: 6vw !important;
   }
 
   .admin-sidebar-menu {
-    grid-template-columns: 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr !important;
+    gap: 3vh !important;
   }
 
   .admin-nav-button {
-    min-height: auto;
-    padding: 12px 14px;
+    min-height: unset !important;
+    padding: 3vh 4vw !important;
+    border-radius: 4vw !important;
   }
 
   .admin-nav-button span {
-    font-size: 15px;
+    font-size: max(1rem, 4vw) !important;
+  }
+
+  .admin-page .admin-login {
+    width: 92vw !important;
+    padding: 6vh 6vw !important;
+    border-radius: 6vw !important;
+    gap: 4vh !important;
+    margin: 4vh auto !important;
+  }
+
+  .admin-page .admin-login input {
+    min-height: 8vh !important;
+    border-radius: 4vw !important;
+    font-size: max(1rem, 4vw) !important;
+    padding: 2vh 4vw !important;
+  }
+
+  .admin-editor-section {
+    padding: 6vw !important;
+    border-radius: 6vw !important;
+  }
+
+  .admin-image-preview {
+    max-height: 30vh !important;
+    border-radius: 4vw !important;
+  }
+
+  .admin-music-preview {
+    min-height: 15vh !important;
+    border-radius: 4vw !important;
+    padding: 4vw !important;
+  }
+
+  .admin-actions-sticky {
+    padding: 4vw !important;
+    border-radius: 5vw !important;
+    gap: 3vw !important;
+    justify-content: center !important;
+  }
+  
+  .admin-actions-sticky .admin-current-section {
+    width: 100% !important;
+    text-align: center !important;
+    margin-right: 0 !important;
+    margin-bottom: 2vh !important;
+  }
+
+  .admin-stats {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 3vh !important;
+    margin-bottom: 4vh !important;
+  }
+
+  .admin-stats div {
+    border-radius: 5vw !important;
+    padding: 4vh 4vw !important;
+  }
+
+  .admin-edit-grid {
+    grid-template-columns: 1fr !important;
+    gap: 4vh !important;
+  }
+
+  .admin-gallery-upload-row,
+  .admin-repeat-item {
+    grid-template-columns: 1fr !important;
+    gap: 3vh !important;
+    padding: 5vw !important;
+    border-radius: 5vw !important;
+  }
+
+  .admin-custom-select-button {
+    min-height: 8vh !important;
+    font-size: max(1rem, 4vw) !important;
+    padding: 0 5vw !important;
+    border-radius: 50vw !important;
+  }
+
+  .app-modal-card {
+    width: 92vw !important;
+    padding: 6vh 6vw 4vh !important;
+    border-radius: 6vw !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+  }
+
+  .app-modal-input {
+    min-height: 8vh !important;
+    border-radius: 4vw !important;
+    font-size: max(1rem, 4vw) !important;
+    padding: 2vh 4vw !important;
+  }
+
+  /* BÜTÜN BUTONLAR MOBİLDE SIVI HALE GELDİ */
+  button, .main-button, .secondary-button, .admin-upload-button, .small-admin-button, .admin-add-button {
+    border-radius: 50vw !important;
+    padding: 2.5vh 5vw !important;
+    min-height: 8vh !important;
+    height: auto !important;
+    font-size: max(0.95rem, 3.8vw) !important;
+    width: 100% !important;
   }
 }
 
@@ -3053,4 +2935,672 @@ html[data-theme="dark"] .app-modal-cancel {
   box-shadow: none !important;
   transform: none !important;
   cursor: not-allowed !important;
+}
+
+/* ========================================================
+   HATA DÜZELTMELERİ (1. VE 2. RESİM İÇİN)
+   ======================================================== */
+
+/* 1. RESİM: İSTATİSTİK KARTLARI (Toplam Yanıt vb.) DÜZELTMESİ */
+.admin-stats {
+  display: grid !important;
+  gap: 16px !important;
+  margin-bottom: 24px !important;
+}
+
+.admin-stats-inside {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.admin-stats div {
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(159, 79, 104, 0.2) !important;
+  border-radius: 16px !important;
+  padding: 16px 20px !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-stats div strong {
+  font-size: 28px !important;
+  color: var(--rose-deep, #7a2f49) !important;
+  margin-bottom: 4px !important;
+  line-height: 1 !important;
+}
+
+.admin-stats div span {
+  font-size: 13px !important;
+  color: #9a6d78 !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px !important;
+}
+
+@media (max-width: 650px) {
+  .admin-stats-inside {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 2. RESİM: GEREKSİZ BEYAZ ARKA PLANLARI KALDIRMA VE YUMUŞATMA */
+
+/* Bilgi kutucukları (Sadece isim yazarak...) */
+.admin-help-text {
+  background: rgba(255, 255, 255, 0.35) !important; /* Katı beyaz yerine şeffaf */
+  border: 1px solid rgba(159, 79, 104, 0.15) !important;
+  border-left: 4px solid rgba(159, 79, 104, 0.5) !important;
+  box-shadow: none !important;
+}
+
+/* Inputlar (Ad Soyad, Üretilen Link vb.) */
+.admin-field input,
+.admin-field textarea,
+.admin-page input:not([type="checkbox"]):not([type="radio"]),
+.admin-personal-link-box input[readOnly] {
+  background: rgba(255, 255, 255, 0.45) !important; /* Katı beyaz yerine şeffaf */
+  border: 1.5px solid rgba(159, 79, 104, 0.25) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* İkincil Butonlar (Linki Kopyala, WhatsApp ile Gönder vb.) */
+.admin-page .secondary-button:not(.danger-button) {
+  background: rgba(255, 255, 255, 0.3) !important; /* Katı beyazı kaldır */
+  border: 1.5px solid rgba(159, 79, 104, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.admin-page .secondary-button:not(.danger-button):hover {
+  background: rgba(159, 79, 104, 0.08) !important;
+}
+
+/* ========================================================
+   TEMA RENK UYUMU VE ŞEFFAFLIK DÜZENLEMELERİ
+   ======================================================== */
+
+.admin-sidebar .admin-nav-button,
+.admin-sidebar-menu .admin-nav-button,
+.admin-layout .admin-sidebar-menu .admin-nav-button {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 5%, var(--paper, #ffffff)) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 18%, transparent) !important;
+  color: var(--text) !important;
+}
+
+.admin-sidebar .admin-nav-button:hover,
+.admin-sidebar-menu .admin-nav-button:hover,
+.admin-layout .admin-sidebar-menu .admin-nav-button:hover:not(.active) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
+}
+
+.admin-sidebar .admin-nav-button.active,
+.admin-sidebar-menu .admin-nav-button.active,
+.admin-layout .admin-sidebar-menu .admin-nav-button.active {
+  background: var(--amp-color, #9f4f68) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+}
+
+.admin-layout .admin-sidebar-menu .admin-nav-button span,
+.admin-layout .admin-sidebar-menu .admin-nav-button small { color: inherit !important; }
+
+/* Bilgi Kutucukları */
+.admin-help-text, html[data-theme] .admin-help-text {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, var(--paper, #ffffff)) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  border-left: 4px solid var(--amp-color, #9f4f68) !important;
+  color: var(--text) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Tüm Kartların Arka Planları */
+.admin-sidebar, .admin-editor-section, .admin-repeat-item, .admin-gallery-row, .admin-gallery-upload-row,
+.admin-music-field, .admin-image-field, .admin-row, .admin-stats div, .admin-link-preview-box, .gift-card, .modal-gift-card {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 3%, var(--paper, #ffffff)) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 18%, transparent) !important;
+}
+
+/* Input Alanları Şeffaflık Mix'i */
+.admin-page input:not([type="checkbox"]):not([type="radio"]),
+.admin-field input, .admin-field textarea, .admin-personal-link-box input, .admin-content input, html[data-theme] .app-modal-input {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, var(--paper, #ffffff)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  color: var(--text) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important;
+}
+
+.admin-field input:focus, .admin-field textarea:focus, .admin-page input:not([type="checkbox"]):not([type="radio"]):focus {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+}
+
+/* Metin ve Başlık Renkleri */
+.admin-sidebar-title span, .admin-current-section strong, .admin-editor-section h3, .admin-page p.section-label,
+.admin-stats div strong, .admin-row strong, .admin-link-preview-box span, .gift-card .gift-card-receiver, .modal-gift-card .modal-gift-receiver {
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+/* İkincil Butonlar */
+.admin-page .secondary-button:not(.danger-button), .app-modal-actions .secondary-button {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 5%, var(--paper, #ffffff)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 30%, transparent) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+}
+
+.admin-page .secondary-button:not(.danger-button):hover, .app-modal-actions .secondary-button:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+}
+
+/* Karanlık Tema (Dark Mode) Adaptasyonu */
+[data-theme="dark"] .admin-sidebar .admin-nav-button:not(.active),
+[data-theme="dark"] .admin-layout .admin-sidebar-menu .admin-nav-button:not(.active),
+[data-theme="dark"] .admin-help-text, [data-theme="dark"] .admin-sidebar, [data-theme="dark"] .admin-editor-section,
+[data-theme="dark"] .admin-repeat-item, [data-theme="dark"] .admin-gallery-row, [data-theme="dark"] .admin-gallery-upload-row,
+[data-theme="dark"] .admin-music-field, [data-theme="dark"] .admin-image-field, [data-theme="dark"] .admin-row, [data-theme="dark"] .admin-stats div {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-field input, [data-theme="dark"] .admin-field textarea,
+[data-theme="dark"] .admin-page input:not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] .admin-personal-link-box input, [data-theme="dark"] .admin-page .secondary-button:not(.danger-button) {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  color: #fff4f8 !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+/* ========================================================
+   KARTLARIN İÇİNDEKİ BEYAZLIĞI TAMAMEN KALDIRMA
+   ======================================================== */
+
+.admin-editor-section,
+.admin-repeat-item,
+.admin-gallery-row,
+.admin-gallery-upload-row,
+.admin-music-field,
+.admin-image-field,
+.admin-row,
+.admin-stats div,
+.admin-link-preview-box,
+.gift-card,
+.modal-gift-card,
+html[data-theme] .admin-editor-section {
+  /* İçerideki beyazlığı (paper) tamamen silip, şeffaf bir bütünlük sağlıyoruz */
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 30%, transparent) !important;
+  box-shadow: none !important;
+}
+
+/* Karanlık tema (Dark Mode) için uyarlama */
+[data-theme="dark"] .admin-editor-section,
+[data-theme="dark"] .admin-repeat-item,
+[data-theme="dark"] .admin-gallery-row,
+[data-theme="dark"] .admin-gallery-upload-row,
+[data-theme="dark"] .admin-music-field,
+[data-theme="dark"] .admin-image-field,
+[data-theme="dark"] .admin-row,
+[data-theme="dark"] .admin-stats div,
+[data-theme="dark"] .admin-link-preview-box {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+/* ========================================================
+   KARTLAR, INPUTLAR VE KUTULAR İÇİN %100 ŞEFFAF BLEND (IMAGE 1 STİLİ)
+   ======================================================== */
+
+/* 1. Admin Editor Section (Ana Kapsayıcı) */
+.admin-editor-section,
+html[data-theme] .admin-editor-section,
+body .app .admin-editor-section {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+  box-shadow: none !important;
+  /* Geçen sefer sıfırladığımız boşluğu, Resim 1'deki gibi şık durması için geri getirdik */
+  padding: 28px !important; 
+  border-radius: 28px !important;
+}
+
+/* 2. Checkbox Alanları (Resim 2'deki dışa taşan köşelerin %100 çözümü) */
+.admin-check-field,
+html[data-theme] .admin-check-field,
+body .app .admin-check-field,
+.admin-check-field:has(input[type="checkbox"]:checked),
+html[data-theme] .admin-check-field:has(input[type="checkbox"]:checked),
+body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  box-shadow: none !important; /* Dışa taşan gölgeleri iptal eder */
+  border-radius: 16px !important;
+  overflow: hidden !important; /* Dışa taşan beyaz sivri köşeleri tamamen traşlar */
+}
+
+.admin-check-field:has(input[type="checkbox"]:checked),
+html[data-theme] .admin-check-field:has(input[type="checkbox"]:checked) {
+  border: 2px solid var(--amp-color, #9f4f68) !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+}
+
+/* 3. Bilgi Kutucuğu (Resim 3'teki beyaz köşelerin çözümü) */
+.admin-help-text,
+html[data-theme] .admin-help-text,
+body .app .admin-help-text {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  border-left: 4px solid var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+  border-radius: 14px !important;
+  overflow: hidden !important; /* Dışa taşan beyazlıkları traşlar */
+}
+
+/* 4. Input ve Textarea (Resim 1'deki gibi tamamen şeffaf ve pürüzsüz) */
+.admin-page input:not([type="checkbox"]):not([type="radio"]),
+.admin-field input,
+.admin-field textarea,
+.admin-personal-link-box input,
+.admin-content input,
+html[data-theme] .admin-field input,
+html[data-theme] .admin-field textarea,
+body .app .admin-custom-select-button {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  box-shadow: none !important; /* İçeri sızan beyaz parlamaları engeller */
+  color: var(--text) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
+.admin-page input:not([type="checkbox"]):not([type="radio"]):focus,
+.admin-field input:focus,
+.admin-field textarea:focus,
+html[data-theme] .admin-field input:focus,
+html[data-theme] .admin-field textarea:focus {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 10%, transparent) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+}
+
+/* 5. Diğer Liste ve Tekrar Eden Öğelerin İçinin Boşaltılması */
+.admin-repeat-item,
+.admin-gallery-row,
+.admin-gallery-upload-row,
+.admin-music-field,
+.admin-image-field,
+.admin-row,
+.admin-stats div,
+.admin-link-preview-box,
+.gift-card,
+.modal-gift-card,
+html[data-theme] .admin-repeat-item,
+html[data-theme] .admin-music-field,
+html[data-theme] .admin-gallery-upload-row {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 20%, transparent) !important;
+  box-shadow: none !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+}
+
+/* 6. İkincil Butonlar (Link Kopyala vb.) */
+.admin-page .secondary-button:not(.danger-button),
+html[data-theme] .admin-page .secondary-button:not(.danger-button) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+}
+
+.admin-page .secondary-button:not(.danger-button):hover,
+html[data-theme] .admin-page .secondary-button:not(.danger-button):hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+}
+
+/* Karanlık Tema (Dark Mode) İçin Adaptasyon */
+[data-theme="dark"] .admin-editor-section,
+[data-theme="dark"] .admin-check-field,
+[data-theme="dark"] .admin-help-text,
+[data-theme="dark"] .admin-field input,
+[data-theme="dark"] .admin-field textarea,
+[data-theme="dark"] .admin-repeat-item,
+[data-theme="dark"] .admin-music-field {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+  color: #fff4f8 !important;
+}
+
+.admin-personal-link-box {
+  background: transparent !important;
+  border: none !important; /* Kesik çizgileri (dashed border) kaldırır */
+  box-shadow: none !important;
+  padding: 0 !important; /* İç boşluğu sıfırlayarak dış çerçeveyle hizalar */
+  margin: 0 !important;
+}
+
+html body .app .admin-editor-section .admin-personal-link-box,
+html body .app .admin-editor-section .personal-link-standalone {
+  background: transparent !important;
+  border: none !important; 
+  box-shadow: none !important; 
+  padding: 0 !important; 
+  margin: 0 !important;
+}
+
+
+html body .app .admin-personal-link-box button,
+html body .app .admin-export-grid button {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--amp-color, #9f4f68) 30%, transparent) !important;
+  opacity: 1 !important;
+  font-weight: 800 !important;
+}
+
+html body .app .admin-personal-link-box button:hover,
+html body .app .admin-export-grid button:hover {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 80%, black) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-theme="dark"] html body .app .admin-personal-link-box button,
+[data-theme="dark"] html body .app .admin-export-grid button {
+  color: #1a1a1a !important;
+}
+
+html body .app .admin-editor-section .admin-export-card,
+html body .app .admin-editor-section .admin-import-box {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important; 
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+html body .app .admin-editor-section .admin-export-grid {
+  gap: 36px !important;
+  margin-top: 12px !important;
+}
+
+
+.admin-page .empty-text {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  border: 1px dashed color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
+  padding: 24px !important;
+  border-radius: 16px !important;
+  text-align: center !important;
+  color: var(--amp-color, #9f4f68) !important;
+  font-weight: 800 !important;
+  margin: 10px 0 !important;
+}
+
+.admin-check-field,
+.admin-repeat-item,
+.admin-row,
+.admin-help-text,
+.admin-editor-section {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+}
+
+.admin-page ::-webkit-scrollbar,
+.admin-list ::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+.admin-page ::-webkit-scrollbar-track,
+.admin-list ::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 5%, transparent) !important;
+  border-radius: 10px !important;
+}
+.admin-page ::-webkit-scrollbar-thumb,
+.admin-list ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 40%, transparent) !important;
+  border-radius: 10px !important;
+}
+.admin-page ::-webkit-scrollbar-thumb:hover,
+.admin-list ::-webkit-scrollbar-thumb:hover {
+  background: var(--amp-color, #9f4f68) !important;
+}
+
+html body .app .admin-editor-section .admin-export-card,
+html body .app .admin-editor-section .admin-import-box {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  padding: 24px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  margin: 0 !important;
+}
+
+html body .app .admin-editor-section .admin-export-card > span {
+  margin-bottom: 24px !important;
+  display: block !important;
+}
+
+[data-theme="dark"] .admin-page .empty-text {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 10%, transparent) !important;
+  color: #fff4f8 !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-page ::-webkit-scrollbar-track,
+[data-theme="dark"] .admin-list ::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 10%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-page ::-webkit-scrollbar-thumb,
+[data-theme="dark"] .admin-list ::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .admin-editor-section .admin-export-card,
+[data-theme="dark"] html body .app .admin-editor-section .admin-import-box {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+html body .app .secondary-button:not(.danger-button),
+html body .app .admin-page .secondary-button:not(.danger-button) {
+  color: var(--amp-color, #9f4f68) !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  background-color: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+}
+
+html body .app .secondary-button:not(.danger-button):hover,
+html body .app .admin-page .secondary-button:not(.danger-button):hover {
+  color: #ffffff !important;
+  background: var(--amp-color, #9f4f68) !important;
+}
+
+html body .app .empty-text,
+html body .app .admin-row {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 20%, transparent) !important;
+  box-shadow: none !important;
+}
+
+html body .app .empty-text {
+  padding: 24px !important;
+  text-align: center !important;
+  font-weight: 800 !important;
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+.admin-check-field,
+.admin-repeat-item,
+.admin-row,
+.admin-help-text,
+.admin-editor-section,
+.admin-export-card,
+.admin-import-box,
+.admin-personal-link-box,
+.empty-text,
+.admin-music-field,
+.admin-gallery-upload-row,
+.admin-image-field {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  mask-image: radial-gradient(white, black) !important;
+  backface-visibility: hidden !important;
+  transform: translateZ(0) !important;
+  background-clip: padding-box !important;
+}
+
+html body .app .admin-check-field {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+}
+
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .secondary-button:not(.danger-button),
+[data-theme="dark"] html body .app .empty-text {
+  color: var(--amp-color, #e3b6c7) !important;
+}
+
+[data-theme="dark"] html body .app .empty-text,
+[data-theme="dark"] html body .app .admin-row,
+[data-theme="dark"] html body .app .admin-check-field {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .admin-row strong,
+[data-theme="dark"] html body .app .admin-row span {
+  color: #fff4f8 !important;
+}
+
+html body .app .admin-check-field,
+html body .app .admin-repeat-item,
+html body .app .admin-row,
+html body .app .admin-help-text,
+html body .app .admin-editor-section,
+html body .app .admin-export-card,
+html body .app .admin-import-box,
+html body .app .admin-personal-link-box,
+html body .app .empty-text,
+html body .app .admin-music-field,
+html body .app .admin-gallery-upload-row,
+html body .app .admin-image-field {
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background-clip: padding-box !important;
+}
+
+html body .app .admin-repeat-item,
+html body .app .admin-row {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, var(--paper, #ffffff)) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 18%, transparent) !important;
+}
+
+html body .app .admin-personal-link-box .secondary-button,
+html body .app .admin-personal-link-box button.secondary-button {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, var(--paper, #ffffff)) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  border: 1.5px solid var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+}
+
+html body .app .admin-personal-link-box .secondary-button:hover,
+html body .app .admin-personal-link-box button.secondary-button:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] html body .app .admin-repeat-item,
+[data-theme="dark"] html body .app .admin-row {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .admin-personal-link-box .secondary-button {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 12%, var(--paper, #1c141a)) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+
+[data-theme="dark"] html body .app .admin-personal-link-box .secondary-button:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+}
+
+html body .app .admin-check-field,
+html body .app .admin-repeat-item,
+html body .app .admin-row,
+html body .app .admin-help-text,
+html body .app .admin-editor-section,
+html body .app .admin-export-card,
+html body .app .admin-import-box,
+html body .app .admin-personal-link-box,
+html body .app .empty-text,
+html body .app .admin-music-field,
+html body .app .admin-gallery-upload-row,
+html body .app .admin-image-field,
+html body .app .secondary-button,
+html body .app .main-button {
+  background-clip: border-box !important;
+  -webkit-background-clip: border-box !important;
+  transform: translateZ(0) !important; /* Köşe tıraşlamayı donanımsal olarak zorlar */
+  border-radius: 16px !important;
+}
+
+html body .app .secondary-button,
+html body .app .main-button {
+  border-radius: 999px !important;
+}
+
+html body .app .admin-repeat-item {
+  background: var(--paper, #ffffff) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+}
+
+html body .app .admin-row,
+html body .app .admin-check-field {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, var(--paper, #ffffff)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 20%, transparent) !important;
+}
+
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+  border: 1.5px solid var(--amp-color, #9f4f68) !important;
+}
+
+html body .app .secondary-button:not(.danger-button),
+html body .app .admin-personal-link-box .secondary-button {
+  background: var(--paper, #ffffff) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  border: 1.5px solid var(--amp-color, #9f4f68) !important;
+}
+
+html body .app .secondary-button:not(.danger-button):hover,
+html body .app .admin-personal-link-box .secondary-button:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] html body .app .admin-repeat-item,
+[data-theme="dark"] html body .app .admin-row,
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .secondary-button:not(.danger-button) {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+  color: #fff4f8 !important;
+}
+
+[data-theme="dark"] html body .app .secondary-button:not(.danger-button):hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
 }
