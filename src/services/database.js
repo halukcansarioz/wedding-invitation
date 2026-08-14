@@ -13,14 +13,24 @@ export const getSupabaseSetupMessage = () => {
 };
 
 export const getReadableAuthError = (error) => {
+  if (!error) return "Bilinmeyen bir hata oluştu.";
+
+  const status = error?.status || error?.code;
   const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
-  const code = String(error?.code || error?.status || "").toLocaleLowerCase("tr-TR");
-  if (message.includes("failed to fetch") || message.includes("network") || message.includes("load failed") || error?.name === "AuthRetryableFetchError") return getSupabaseSetupMessage();
-  if (message.includes("invalid login") || message.includes("invalid credentials")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğun admin e-posta/şifresiyle giriş yapmalısın.";
-  if (message.includes("email not confirmed") || message.includes("not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication > Users bölümünden kullanıcıyı Confirm et.";
-  if (message.includes("rate limit") || code === "429") return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar dene.";
-  if (message.includes("redirect") || message.includes("url")) return "Şifre sıfırlama yönlendirme adresi kabul edilmedi. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisin.";
-  return error?.message || "İşlem tamamlanamadı. Supabase ayarlarını kontrol et.";
+
+  // HTTP ve Supabase özel durum kodlarına göre kesin yakalama
+  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğunuz admin e-posta/şifresiyle giriş yapmalısınız.";
+  if (status === 429) return "Çok fazla deneme yapıldı. Güvenlik nedeniyle birkaç dakika bekleyip tekrar deneyin.";
+  if (status === 401 && message.includes("email not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication kısmından hesabınızı doğrulayın.";
+  if (status === 404 || message.includes("not found")) return "Kayıt bulunamadı. Silinmiş veya taşınmış olabilir.";
+  if (error?.name === "AuthApiError" && message.includes("url")) return "Yönlendirme hatası. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisiniz.";
+  
+  // Ağ (Network) Hataları
+  if (message.includes("failed to fetch") || message.includes("network") || error?.name === "AuthRetryableFetchError") {
+     return getSupabaseSetupMessage();
+  }
+
+  return error?.message || "İşlem tamamlanamadı. Lütfen internet bağlantınızı ve Supabase ayarlarını kontrol edin.";
 };
 
 export const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());

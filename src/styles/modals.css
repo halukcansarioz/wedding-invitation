@@ -1,0 +1,79 @@
+.global-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background-color: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.global-modal-container {
+  background-color: var(--bg, #ffffff);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  padding: 34px 24px;
+  border: 2px solid var(--rose-dark, #b56c83);
+}
+
+.prompt-modal {
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.global-modal-title {
+  color: var(--rose-dark, #9f4f68);
+  margin: 0 0 12px;
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.global-modal-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text, #55303b);
+  margin-bottom: 24px;
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+}
+
+.global-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.global-modal-btn {
+  margin: 0;
+  min-width: 120px;
+}
+
+.global-modal-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--rose, #d98ca1);
+  outline: none;
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  background-color: var(--paper, #ffffff);
+  color: var(--text);
+}
+
+.global-modal-input.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.global-modal-input:focus {
+  border-color: var(--rose-dark);
+}
