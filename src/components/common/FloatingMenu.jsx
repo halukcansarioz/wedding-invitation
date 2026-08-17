@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export default function FloatingMenu({
   isEn,
@@ -14,8 +15,9 @@ export default function FloatingMenu({
   return (
     <>
       <div className="admin-quick-access">
-        <a 
-          href="#admin" 
+        {/* HATA ÇÖZÜMÜ: <a> etiketi yerine <Link> kullanıyoruz */}
+        <Link 
+          to="/admin" 
           target="_blank" 
           rel="noreferrer"
           className="admin-btn" 
@@ -26,7 +28,7 @@ export default function FloatingMenu({
             <path d="M12 8v4" />
             <path d="M12 16h.01" />
           </svg>
-        </a>
+        </Link>
       </div>
       
       <div className="floating-actions glass-dock">
@@ -44,7 +46,7 @@ export default function FloatingMenu({
           href={`https://wa.me/?text=${shareText}`} 
           target="_blank" 
           rel="noreferrer"
-          title={isEn ? 'Share via WhatsApp' : 'WhatsApp ile Paylaş'}
+          title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}
         >
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3"></circle>

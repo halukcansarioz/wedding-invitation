@@ -10,6 +10,7 @@ export default function AdminView(props) {
     { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım, katılım ve özel davetli metinleri" },
     { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
     { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
+    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
     { id: "schedule", label: "Düğün Takvimi", description: "Saat saat akış" },
     { id: "gallery", label: "Görsel / Müzik", description: "Ana ekran görselleri, galeri ve müzik" },

@@ -10,7 +10,8 @@ import {
   GallerySection,
   ShareSection,
   FooterSection,
-  GiftSection
+  GiftSection,
+  StorySection
 } from "../components/invitation/PublicSections";
 import {
   RsvpSection,
@@ -75,6 +76,10 @@ export default function InvitationView({
 
       {settings.visibility?.family !== false && (
         <FamilySection copy={copy} familyInfo={familyInfo} />
+      )}
+
+      {settings.visibility?.story !== false && (
+        <StorySection copy={copy} storyTimeline={siteData.storyTimeline} />
       )}
 
       {settings.visibility?.ceremony !== false && (

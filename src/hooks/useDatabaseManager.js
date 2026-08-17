@@ -4,74 +4,48 @@ import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
 import { uiGuestToDb, dbGuestToUi, uiWishToDb, dbWishToUi } from "../utils/helpers";
 import { INITIAL_GUEST_FORM, INITIAL_WISH_FORM } from "../config/constants";
 
-export function useDatabaseManager({
-  guests,
-  setGuests,
-  wishes,
-  setWishes,
-  guestForm,
-  setGuestForm,
-  wishForm,
-  setWishForm,
-  settings,
-  showAppAlert,
-  showAppConfirm,
-  showAppPrompt,
-  setAdminSaveMessage,
-  t,
-  isEn
-}) {
-  const submitGuest = useCallback(async (e) => {
-    if (e) e.preventDefault();
-    if (!guestForm.name.trim()) {
-      await showAppAlert(t('form.missingNameMessage'), { title: t('form.missingInfo') });
-      return;
-    }
-    if (!isSupabaseReady()) {
-      await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    try {
-      const { data, error } = await supabase.from("guests").insert(uiGuestToDb(guestForm)).select("*").single();
-      if (error) throw error;
-      setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...guestForm }, ...prev]);
-      setGuestForm(INITIAL_GUEST_FORM);
-
-      if (guestForm.attendance === "Katılacağım") {
-        await showAppAlert(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
+export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
+  const submitGuest = useCallback(async (formData) => {
+      if (!isSupabaseReady()) {
+        await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
+        return;
       }
-    } catch (error) {
-      console.error("Katılım kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [guestForm, setGuestForm, setGuests, showAppAlert, t, isEn]);
+      try {
+        const dbData = uiGuestToDb(formData);
+        const { data, error } = await supabase.from("guests").insert(dbData).select("*").single();
+        if (error) throw error;
+        
+        setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...formData }, ...prev]);
 
-  const submitWish = useCallback(async (e) => {
-    e.preventDefault();
-    if (!wishForm.name.trim() || !wishForm.message.trim()) {
-      await showAppAlert(t('form.missingWishMessage'), { title: t('form.missingInfo') });
-      return;
-    }
+        if (formData.attendance === "Katılacağım") {
+          await showAppAlert(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
+        }
+      } catch (error) {
+        console.error("Katılım kaydedilemedi:", error);
+        const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
+        await showAppAlert(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
+      }
+    }, [setGuests, showAppAlert, t, isEn]);
+
+  const submitWish = useCallback(async (formData) => {
     if (!isSupabaseReady()) {
       await showAppAlert(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
       return;
     }
     const shouldPublishNow = !settings.requireWishApproval;
     try {
-      const { data, error } = await supabase.from("wishes").insert({ name: wishForm.name.trim(), message: wishForm.message.trim(), approved: shouldPublishNow }).select("*").single();
+      const { data, error } = await supabase.from("wishes").insert({ name: formData.name.trim(), message: formData.message.trim(), approved: shouldPublishNow }).select("*").single();
       if (error) throw error;
       if (shouldPublishNow) {
-        setWishes((prev) => [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...wishForm, approved: true }, ...prev]);
+        setWishes((prev) => [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...formData, approved: true }, ...prev]);
       }
-      setWishForm(INITIAL_WISH_FORM);
       await showAppAlert(settings.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: settings.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : t('alerts.saveTitle') });
     } catch (error) {
       console.error("Mesaj kaydedilemedi:", error);
       const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
       await showAppAlert(t('alerts.wishError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
     }
-  }, [wishForm, setWishForm, setWishes, settings.requireWishApproval, showAppAlert, t, isEn]);
+  }, [setWishes, settings.requireWishApproval, showAppAlert, t, isEn]);
 
   const clearGuests = useCallback(async () => {
     const confirmed = await showAppConfirm(

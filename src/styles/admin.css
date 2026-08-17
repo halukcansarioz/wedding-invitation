@@ -3494,9 +3494,119 @@ html body .app .admin-gallery-upload-row,
 html body .app .admin-image-field {
   -webkit-mask-image: none !important;
   mask-image: none !important;
-  border-radius: 16px !important;
-  overflow: hidden !important;
-  background-clip: padding-box !important;
+  background-clip: border-box !important;
+  transform: none !important;
+}
+
+html body .app .admin-editor-section,
+html body .app .admin-content,
+html body .app .admin-edit-grid,
+html body .app .admin-field,
+html body .app .admin-custom-select {
+  overflow: visible !important;
+}
+
+html body .app .admin-custom-select.open,
+html body .app .admin-custom-select-menu {
+  z-index: 99999 !important;
+}
+
+html body .app .admin-custom-select-menu {
+  position: absolute !important;
+  /* Buton ile menü arasındaki boşluğu sıfırlamak için top değerini ayarladık */
+  top: calc(100% - 10px) !important; 
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 999999 !important;
+  
+  /* Arkaplan rengini admin panelinin kendi kartlarıyla birebir aynı yapıyoruz */
+  background: var(--paper-soft) !important;
+  
+  /* Çerçeve rengini butonun kenarlığı ile aynı yapıyoruz ki bütünleşik dursun */
+  border: 1.5px solid rgba(159, 79, 104, 0.46) !important;
+  /* Butonun alt kısmı yuvarlak olduğu için menünün üst köşelerini düz, alt köşelerini yuvarlak yapıyoruz */
+  border-radius: 0 0 16px 16px !important;
+  /* Butonun alt çizgisiyle çakışmayı önlemek için üst kenarlığı siliyoruz */
+  border-top: none !important;
+  
+  padding: 8px !important;
+  box-shadow: 0 16px 32px rgba(111, 47, 67, 0.12) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  
+  max-height: 240px !important; 
+  overflow-y: auto !important;   
+  overflow-x: hidden !important;
+}
+
+html body .app .admin-custom-select.open .admin-custom-select-button {
+  border-radius: 16px 16px 0 0 !important;
+  border-bottom-color: transparent !important; /* Alt çizgiyi silerek menü ile birleştiriyoruz */
+  box-shadow: none !important; /* Buton gölgesini kaldırıp bütünlüğü sağlıyoruz */
+  background: var(--paper-soft) !important; /* Buton rengini de menü ile eşitliyoruz */
+}
+
+html body .app .admin-custom-select-menu::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+html body .app .admin-custom-select-menu::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+html body .app .admin-custom-select-menu::-webkit-scrollbar-thumb {
+  background: rgba(159, 79, 104, 0.25) !important;
+  border-radius: 10px !important;
+}
+
+html body .app .admin-custom-select-menu button.admin-custom-select-option {
+  width: 100% !important;
+  padding: 12px 16px !important;
+  min-height: auto !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  color: var(--text) !important; /* Admin paneli varsayılan metin rengi */
+  border: none !important;
+  text-align: left !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+html body .app .admin-custom-select-menu button.admin-custom-select-option:hover {
+  background: rgba(159, 79, 104, 0.08) !important;
+  color: var(--rose-dark) !important; /* Tema vurgu rengi */
+  transform: translateX(4px) !important;
+}
+
+html body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
+  background: rgba(159, 79, 104, 0.12) !important;
+  color: var(--rose-dark) !important;
+  font-weight: 900 !important;
+  border: 1px solid rgba(159, 79, 104, 0.08) !important;
+}
+
+[data-theme="dark"] html body .app .admin-custom-select-menu,
+[data-theme="dark"] html body .app .admin-custom-select.open .admin-custom-select-button {
+  background: #241a21 !important; /* Dark mode kart arkaplanı */
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+[data-theme="dark"] html body .app .admin-custom-select.open .admin-custom-select-button {
+  border-bottom-color: transparent !important;
+}
+[data-theme="dark"] html body .app .admin-custom-select-menu button.admin-custom-select-option {
+  color: #fff4f8 !important;
+}
+[data-theme="dark"] html body .app .admin-custom-select-menu button.admin-custom-select-option:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffd8e4 !important;
+}
+[data-theme="dark"] html body .app .admin-custom-select-menu button.admin-custom-select-option.selected {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffd8e4 !important;
 }
 
 html body .app .admin-repeat-item,
@@ -3603,4 +3713,237 @@ html body .app .admin-personal-link-box .secondary-button:hover {
 [data-theme="dark"] html body .app .secondary-button:not(.danger-button):hover {
   background: var(--amp-color, #e3b6c7) !important;
   color: #1a1a1a !important;
+}
+
+CSS
+/* ========================================================
+   AÇILIR MENÜNÜN BEYAZ KARTTAN TAŞMASINI ENGELLEME
+   ======================================================== */
+
+html body .app .admin-shell-card {
+  padding-bottom: 500px !important;
+}
+
+html body .app .admin-page {
+  padding-bottom: 180px !important;
+  margin-bottom: 60px !important;
+  min-height: 100vh !important;
+}
+
+@media (max-width: 650px) {
+  html body .app .admin-shell-card {
+    padding-bottom: 300px !important;
+  }
+}
+
+html body .app .admin-check-field,
+html body .app .admin-row,
+html body .app .admin-repeat-item,
+html body .app .admin-export-card,
+html body .app .admin-import-box,
+html body .app .admin-personal-link-box {
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  mask-image: radial-gradient(white, black) !important;
+  transform: translateZ(0) !important; /* Tarayıcıyı GPU ile render etmeye zorlar */
+  background-clip: padding-box !important;
+}
+
+/* 2. Menünün sayfadan taşabilmesi için sadece kapsayıcı büyük kartlarda maskelemeyi kapalı tutuyoruz. */
+html body .app .admin-editor-section,
+html body .app .admin-content,
+html body .app .admin-edit-grid,
+html body .app .admin-field,
+html body .app .admin-custom-select {
+  overflow: visible !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  transform: none !important;
+}
+
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  box-shadow: inset 0 0 0 2px var(--amp-color, #9f4f68) !important;
+}
+
+/* Koyu tema (Dark mode) için çerçeve rengi ayarı */
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .admin-row,
+[data-theme="dark"] html body .app .admin-repeat-item,
+[data-theme="dark"] html body .app .admin-help-text {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-color, #e3b6c7) 35%, transparent) !important;
+}
+
+html body .app .admin-check-field,
+html body .app .admin-row,
+html body .app .admin-repeat-item,
+html body .app .admin-help-text,
+html body .app .admin-export-card,
+html body .app .admin-import-box,
+html body .app .admin-personal-link-box,
+html body .app .empty-text,
+html body .app .admin-music-field,
+html body .app .admin-gallery-upload-row,
+html body .app .admin-image-field {
+-webkit-mask-image: none !important;
+  mask-image: none !important;
+  
+  border: none !important;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-color, #9f4f68) 65%, transparent) !important;
+  
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  transform: translateZ(0) !important; 
+  background-clip: border-box !important;
+}
+
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  box-shadow: inset 0 0 0 2px var(--amp-color, #9f4f68) !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .admin-row,
+[data-theme="dark"] html body .app .admin-repeat-item,
+[data-theme="dark"] html body .app .admin-help-text {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-color, #e3b6c7) 65%, transparent) !important;
+}
+
+html[data-theme] body .app .admin-check-field,
+html body .app .admin-editor-section .admin-check-field,
+html body .app .admin-check-field {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  border: none !important;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-color, #9f4f68) 65%, transparent) !important;
+  background-clip: padding-box !important;
+  transform: translateZ(0) !important; /* Tarayıcıyı köşeleri yuvarlamaya zorlar */
+}
+
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-editor-section .admin-check-field:has(input[type="checkbox"]:checked) {
+  box-shadow: inset 0 0 0 2px var(--amp-color, #9f4f68) !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .admin-editor-section .admin-check-field {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-color, #e3b6c7) 65%, transparent) !important;
+}
+
+html[data-theme] body .app .admin-actions-sticky,
+html body .app .admin-actions-sticky {
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  transform: translateZ(0) !important;
+}
+
+html[data-theme] body .app .admin-check-field,
+html body .app .admin-editor-section .admin-check-field,
+html body .app .admin-check-field {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  border: none !important;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--amp-color, #9f4f68) 65%, transparent) !important;
+  background-clip: padding-box !important;
+  transform: translateZ(0) !important;
+}
+
+/* Seçili durumdaki net çerçeve */
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-editor-section .admin-check-field:has(input[type="checkbox"]:checked) {
+  box-shadow: inset 0 0 0 2px var(--amp-color, #9f4f68) !important;
+}
+
+html[data-theme] body .app .admin-check-field,
+html body .app .admin-editor-section .admin-check-field,
+html body .app .admin-check-field {
+  clip-path: inset(0 round 18px) !important;
+  
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, var(--paper, #ffffff)) !important;
+  
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 65%, transparent) !important;
+  box-shadow: none !important;
+  
+  transform: translateZ(0) !important;
+}
+
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-editor-section .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 15%, var(--paper, #ffffff)) !important;
+  border: 2px solid var(--amp-color, #9f4f68) !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .admin-editor-section .admin-check-field {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 65%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 18%, var(--paper, #1c141a)) !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+
+/* ========================================================
+   ONAY KUTUSU (ADMIN CHECK FIELD) MİKRO PİKSEL DÜZELTMESİ
+   ======================================================== */
+
+html[data-theme] body .app .admin-check-field,
+html body .app .admin-editor-section .admin-check-field,
+html body .app .admin-check-field {
+  /* Tarayıcının köşelerde beyaz piksel kaçırmasını önleyen donanımsal maskeleme */
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  mask-image: radial-gradient(white, black) !important;
+  
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  
+  /* Arkaplanı netleştiriyoruz */
+  background-color: var(--paper-soft, #fffafb) !important;
+  background-image: none !important;
+  
+  /* Standart ve net çerçeve (inset gölge yerine gerçek border) */
+  border: 1.5px solid var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+  
+  transform: translateZ(0) !important;
+  background-clip: padding-box !important;
+}
+
+/* Checkbox seçili olduğundaki durum */
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-editor-section .admin-check-field:has(input[type="checkbox"]:checked) {
+  background-color: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+  border: 2px solid var(--amp-color, #9f4f68) !important;
+}
+
+/* Koyu tema (Dark mode) uyumluluğu */
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .admin-editor-section .admin-check-field {
+  background-color: #241a21 !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, #241a21) !important;
+}
+
+html body .app .admin-theme-check-row,
+html body .app .admin-check-field {
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  transform: translateZ(0) !important;
+  background-clip: padding-box !important;
+}
+
+html body .app .admin-theme-check-row {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }

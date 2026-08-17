@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { OptionGroup } from "../common/UIComponents";
 import {
   NOTE_MAX_LENGTH,
@@ -19,11 +22,7 @@ function DeadlineBanner({ isEn, title, text }) {
 }
 
 function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) {
-  
-  const handleClose = () => {
-    resetAndCloseModal();
-  };
-
+  const handleClose = () => resetAndCloseModal();
   if (!showDeclineModal) return null;
 
   return createPortal(
@@ -38,21 +37,11 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
 
         {!showDeclineGift ? (
           <div className="app-modal-actions">
-            {/* Normal Buton (Tamam 👍) */}
-            <button 
-              type="button" 
-              className="secondary-button app-modal-cancel" 
-              onClick={handleClose}
-            >
+            <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
               {t('ui.close')}
             </button>
-            
             {showIban && giftData && (
-              <button 
-                type="button" 
-                className="main-button" 
-                onClick={() => setShowDeclineGift(true)}
-              >
+              <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}>
                 <span>{t('ui.sendGift')}</span>
               </button>
             )}
@@ -68,13 +57,7 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
               <button type="button" className="main-button" onClick={copyIban}>
                 {copied ? t('ui.copied') : t('ui.copyIban')}
               </button>
-              
-              {/* Normal Buton (Kapat ❌) */}
-              <button 
-                type="button" 
-                className="secondary-button app-modal-cancel" 
-                onClick={handleClose}
-              >
+              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
                 {t('ui.closeBtn')}
               </button>
             </div>
@@ -86,15 +69,27 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
   );
 }
 
-export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendance, setGuestForm, submitGuest, invitation, rsvpWhatsappText, showIban, giftData }) {
+export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showDeclineGift, setShowDeclineGift] = useState(false);
   const [copied, setCopied] = useState(false);
-  
   const [urlGuestName, setUrlGuestName] = useState("");
+
+  const rsvpSchema = z.object({
+    name: z.string().min(3, { message: t('form.missingNameMessage') }),
+    attendance: z.string(),
+    note: z.string().max(NOTE_MAX_LENGTH).optional()
+  });
+
+  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(rsvpSchema),
+    defaultValues: { name: "", attendance: "Katılacağım", note: "" }
+  });
+
+  const currentNote = watch("note") || "";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -103,9 +98,9 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
 
     if (guestName) {
       setUrlGuestName(guestName);
-      setGuestForm((prev) => ({ ...prev, name: prev.name || guestName }));
+      setValue("name", guestName);
     }
-  }, [setGuestForm]);
+  }, [setValue]);
 
   const deadline = invitation?.rsvpDeadline ? new Date(invitation.rsvpDeadline) : null;
   if (deadline && !Number.isNaN(deadline.getTime())) {
@@ -113,14 +108,12 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
   }
   const isDeadlinePassed = deadline && !Number.isNaN(deadline.getTime()) && new Date() > deadline;
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    const isDeclining = guestForm.attendance === "Katılamayacağım";
-    const currentName = guestForm.name?.trim();
-
-    await submitGuest(e);
+  const onSubmit = async (data) => {
+    const isDeclining = data.attendance === "Katılamayacağım";
+    await submitGuest(data);
+    reset();
     
-    if (isDeclining && currentName && currentName.length > 0) {
+    if (isDeclining) {
       setShowDeclineModal(true);
     }
   };
@@ -152,22 +145,40 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
       {isDeadlinePassed ? (
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
-          <form className="rsvp-form" onSubmit={handleFormSubmit} noValidate>
+          <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
             {urlGuestName && (
             <div className="guest-badge-banner">
               {t('ui.prefilled', { name: urlGuestName })}
             </div>
           )}
 
-          <input name="name" value={guestForm.name || ""} onChange={handleGuestChange} placeholder={t('form.namePlaceholder')} required />
+          <div style={{ width: '100%' }}>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />}
+            />
+            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+          </div>
 
-          <OptionGroup onChange={updateAttendance} options={translatedAttendance} value={guestForm.attendance} />
+          <Controller
+            name="attendance"
+            control={control}
+            render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />}
+          />
 
           <div className="field-with-counter">
-            <textarea name="note" value={guestForm.note || ""} onChange={handleGuestChange} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>
-            <span>{(guestForm.note || "").length}/{NOTE_MAX_LENGTH}</span>
+            <Controller
+              name="note"
+              control={control}
+              render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>}
+            />
+            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
-          <button type="submit" className="main-button form-button">{t('form.submitRsvp')}</button>
+
+          <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+            {isSubmitting ? "..." : t('form.submitRsvp')}
+          </button>
         </form>
       )}
 
@@ -177,7 +188,8 @@ export function RsvpSection({ copy, guestForm, handleGuestChange, updateAttendan
         </a>
       </div>
       <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
-    </section>);
+    </section>
+  );
 }
 
 export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
@@ -186,7 +198,6 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
   const guestList = Array.isArray(guests) ? guests : [];
   
   const totalResponses = guestList.length;
-  // Fallback sağlanarak direkt kişi sayısı prop olarak gelmiyorsa formu dolduranların sayısı hesaplanır
   const attending = totalPersonCount !== undefined ? totalPersonCount : guestList.filter(g => g.attendance === "Katılacağım").length;
   const notAttending = notAttendingCount !== undefined ? notAttendingCount : guestList.filter(g => g.attendance === "Katılamayacağım").length;
 
@@ -210,23 +221,50 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
   );
 }
 
-export function WishesSection({ copy, wishForm, handleWishChange, submitWish, approvedWishes }) {
+export function WishesSection({ copy, submitWish, approvedWishes }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
+
+  const wishSchema = z.object({
+    name: z.string().min(2, { message: t('form.missingNameMessage') }),
+    message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH)
+  });
+
+  const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(wishSchema),
+    defaultValues: { name: "", message: "" }
+  });
+
+  const currentMessage = watch("message") || "";
+
+  const onSubmit = async (data) => {
+    await submitWish(data);
+    reset();
+  };
 
   return (
     <section className="card">
       <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
-      <form className="wish-form" onSubmit={submitWish} noValidate>
-        <input name="name" value={wishForm.name} onChange={handleWishChange} placeholder={t('form.namePlaceholder')} />
-        <div className="field-with-counter">
-          <textarea name="message" value={wishForm.message} onChange={handleWishChange} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>
-          <span>{wishForm.message.length}/{WISH_MAX_LENGTH}</span>
+      
+      <form className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <div style={{ width: '100%' }}>
+          <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
+          {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
         </div>
-        <button type="submit" className="main-button form-button">{t('form.submitWish')}</button>
+        
+        <div className="field-with-counter">
+          <Controller name="message" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>} />
+          <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
+          {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
+        </div>
+        
+        <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+          {isSubmitting ? "..." : t('form.submitWish')}
+        </button>
       </form>
+      
       <div className="wish-list">
         {wishes.length === 0 ? (
           <p className="empty-text">{t('ui.noWishes')}</p>

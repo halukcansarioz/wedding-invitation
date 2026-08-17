@@ -2,6 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { handleAddToCalendar } from "../../utils/helpers";
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
 
 export function HeroSection({ invitation, copy, guestGreeting }) {
   const { t, i18n } = useTranslation();
@@ -28,7 +34,8 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
   };
   
   return (
-    <section 
+    <motion.section 
+      initial="hidden" animate="visible" variants={fadeUp}
       className="hero-section" 
       onClick={window.innerWidth <= 650 ? handleScrollNext : undefined}
     >
@@ -52,7 +59,7 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
         </div>
         <span>{t('ui.scroll')}</span>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -60,7 +67,7 @@ export function CountdownSection({ copy, timeLeft }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   return (
-    <section className="countdown-section">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
       <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
       <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
       <div className="countdown-grid">
@@ -69,7 +76,7 @@ export function CountdownSection({ copy, timeLeft }) {
         <div className="count-box countdown-animated"><strong>{timeLeft?.minutes || 0}</strong><span>{t('ui.mins')}</span></div>
         <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -77,11 +84,11 @@ export function InvitationMessageSection({ copy, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   return (
-    <section className="card invitation-card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card invitation-card">
       <p className="section-label">{isEn ? t('invitation.invitationLabel') : copy?.invitationLabel}</p>
       <h2>{isEn ? t('invitation.invitationTitle') : copy?.invitationTitle}</h2>
       <p>{invitation?.message}</p>
-    </section>
+    </motion.section>
   );
 }
 
@@ -89,7 +96,7 @@ export function FamilySection({ copy, familyInfo }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   return (
-    <section className="card family-card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card family-card">
       <p className="section-label">{isEn ? t('invitation.familyLabel') : copy?.familyLabel}</p>
       <h2>{isEn ? t('invitation.familyTitle') : copy?.familyTitle}</h2>
       <p>{familyInfo?.text}</p>
@@ -97,7 +104,46 @@ export function FamilySection({ copy, familyInfo }) {
         <div><span>{familyInfo?.brideFamilyTitle}</span><strong>{familyInfo?.brideFamilyName}</strong></div>
         <div><span>{familyInfo?.groomFamilyTitle}</span><strong>{familyInfo?.groomFamilyName}</strong></div>
       </div>
-    </section>
+    </motion.section>
+  );
+}
+
+export function StorySection({ copy, storyTimeline }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const stories = Array.isArray(storyTimeline) ? storyTimeline : [];
+
+  if (stories.length === 0) return null;
+
+  return (
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
+      <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
+      <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
+      
+      <div className="story-timeline-container">
+        <div className="story-line"></div>
+        {stories.map((story, index) => (
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, delay: index * 0.2 }} 
+            viewport={{ once: true, amount: 0.3 }}
+            className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
+            key={index}
+          >
+            <div className="story-dot"></div>
+            <div className="story-content-box">
+              <span className="story-date">{story.date}</span>
+              <h3 className="story-heading">{story.title}</h3>
+              <p className="story-desc">{story.description}</p>
+              {story.image && (
+                <img src={story.image} alt={story.title} className="story-image" loading="lazy" />
+              )}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.section>
   );
 }
 
@@ -106,7 +152,7 @@ export function CeremonySection({ copy, eventDetails }) {
   const isEn = i18n.language.startsWith('en');
   const events = Array.isArray(eventDetails) ? eventDetails : [];
   return (
-    <section className="card ceremony-card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
       <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
       <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
       <div className="ceremony-grid">
@@ -116,7 +162,7 @@ export function CeremonySection({ copy, eventDetails }) {
           </div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -125,7 +171,7 @@ export function ScheduleSection({ copy, invitation, scheduleItems }) {
   const isEn = i18n.language.startsWith('en');
   const items = Array.isArray(scheduleItems) ? scheduleItems : [];
   return (
-    <section className="card schedule-card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card schedule-card">
       <p className="section-label">{isEn ? t('invitation.scheduleLabel') : copy?.scheduleLabel}</p>
       <h2>{invitation?.dateText}</h2>
       <div className="schedule-list">
@@ -135,7 +181,7 @@ export function ScheduleSection({ copy, invitation, scheduleItems }) {
           </div>
         ))}
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -143,7 +189,7 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   return (
-    <section className="card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.locationLabel') : copy?.locationLabel}</p>
       <h2>{isEn ? t('invitation.locationTitle') : copy?.locationTitle}</h2>
       <div className="info-list">
@@ -161,7 +207,7 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
           {t('ui.addToCalendar')}
         </button>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -232,7 +278,7 @@ export function GallerySection({ copy, invitation }) {
   }, [lightboxIndex, closeLightbox, prevImage, nextImage]);
 
   return (
-    <section className="card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
       <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
       <div className="gallery-grid">
@@ -242,14 +288,18 @@ export function GallerySection({ copy, invitation }) {
             src={image} 
             alt={`Galeri ${index + 1}`} 
             loading="lazy" 
-            onClick={() => openLightbox(index)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation(); // Tıklamanın sayfayı kaydırmasını engeller
+              openLightbox(index);
+            }}
             className="gallery-image"
+            style={{ cursor: "zoom-in" }}
           />
         ))}
       </div>
-
       <LightboxModal gallery={gallery} lightboxIndex={lightboxIndex} closeLightbox={closeLightbox} prevImage={prevImage} nextImage={nextImage} isEn={isEn} />
-    </section>
+    </motion.section>
   );
 }
 
@@ -257,7 +307,7 @@ export function ShareSection({ copy, qrImageUrl, shareText, copyInvitationLink }
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   return (
-    <section className="card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.shareLabel') : copy?.shareLabel}</p>
       <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
       <p>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
@@ -269,7 +319,7 @@ export function ShareSection({ copy, qrImageUrl, shareText, copyInvitationLink }
         <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">{t('ui.shareWhatsapp')}</a>
         <button className="secondary-button" onClick={copyInvitationLink}>{t('ui.copyLink')}</button>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
@@ -287,7 +337,7 @@ export function GiftSection({ giftData }) {
   if (!giftData) return null;
 
   return (
-    <section className="card">
+    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{t('ui.giftTitle')}</p>
       <h2>{isEn ? t('ui.giftTitle') : giftData.title}</h2>
       <p className="gift-description">
@@ -303,7 +353,7 @@ export function GiftSection({ giftData }) {
       <button type="button" className="main-button gift-copy-button" onClick={copyIban}>
         {copied ? t('ui.copied') : t('ui.copyIban')}
       </button>
-    </section>
+    </motion.section>
   );
 }
 
@@ -311,11 +361,11 @@ export function FooterSection({ coupleName, invitation, copy }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   return (
-    <footer className="footer">
+    <motion.footer initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="footer">
       <p>{coupleName}</p>
       <span>{invitation?.dateText}</span>
       <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
       <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
-    </footer>
+    </motion.footer>
   );
 }
