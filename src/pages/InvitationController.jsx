@@ -56,6 +56,7 @@ export default function InvitationController() {
   const scrollToNext = useCallback(() => {
     const isMobile = window.innerWidth <= 650;
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+    
     if (isMobile) {
       if (currentSlideIndex < sections.length - 1) setCurrentSlideIndex((prev) => prev + 1);
     } else {
@@ -64,8 +65,22 @@ export default function InvitationController() {
         const rect = sec.getBoundingClientRect();
         return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
       });
-      if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      else if (sections.length > 0) sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      const targetSec = nextSection || (sections.length > 0 ? sections[sections.length - 1] : null);
+      if (targetSec) {
+        const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
+        const sectionHeight = targetSec.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        
+        let scrollToY;
+        // Eğer kart ekrandan büyükse (uzunsa) üstten başlat, değilse tam ortaya hizala
+        if (sectionHeight > viewportHeight * 0.85) {
+          scrollToY = targetY - 60; // Başlık görünmesi için üstte 60px boşluk
+        } else {
+          scrollToY = targetY - (viewportHeight - sectionHeight) / 2; // Kısa kartlar için tam ekran ortası
+        }
+        window.scrollTo({ top: scrollToY, behavior: 'smooth' });
+      }
     }
   }, [currentSlideIndex]);
 
@@ -80,7 +95,8 @@ export default function InvitationController() {
         const rect = sec.getBoundingClientRect();
         return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
       });
-      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // BURADAKİ 'center' DEĞERİ 'start' YAPILDI
+      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       else window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentSlideIndex]);

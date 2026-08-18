@@ -203,9 +203,9 @@ button {
 .hero-section {
   position: relative;
   min-height: 760px;
-  padding: 70px 38px 74px;
+  padding: 70px 38px 160px; 
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end; 
   justify-content: center;
   overflow: hidden;
   border-radius: 46px;
@@ -1520,9 +1520,48 @@ button,
     bottom: auto !important;
   }
   
-  /* SADECE Whatsapp Butonunu Masaüstünde Gizle (Yön Okları Görünür Kaldı) */
   html body .app .glass-dock .wa-btn {
     display: none !important;
+  }
+
+  html body .app .hero-section {
+    display: flex !important;
+    flex-direction: column !important; /* Öğeleri yan yana değil, alt alta dizer */
+    align-items: center !important;    /* Yatayda tam ortalar */
+    justify-content: flex-end !important;
+  }
+
+  html body .app .hero-content {
+    /* Yazıları ekranın dikey merkezine iter */
+    margin-top: auto !important;
+    margin-bottom: auto !important; 
+    /* İkonla arasında ASLA kapanmayacak 60px'lik bir beton duvar (boşluk) örer */
+    padding-bottom: 60px !important; 
+  }
+
+  html body .app .scroll-indicator {
+    position: absolute !important;
+    bottom: 40px !important; 
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+  }
+
+  html body .app .invitation-page .scroll-indicator,
+  html body .app .scroll-indicator {
+    position: relative !important; 
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin-top: 0 !important;
+    margin-bottom: 40px !important; 
+    z-index: 10 !important;
+  }
+
+  html body .app .invitation-page > section,
+  html body .app .invitation-page > footer,
+  html body .app .card {
+    scroll-margin-top: 40px !important;
   }
 }
 

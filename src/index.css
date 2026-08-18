@@ -584,3 +584,9 @@ html body .app .admin-image-field .admin-image-preview {
   }
 }
 
+/* Butonlarla kaydırma yapıldığında başlıkların üstünde estetik bir boşluk bırakır */
+html body .app .invitation-page > section,
+html body .app .invitation-page > footer,
+html body .app .card {
+  scroll-margin-top: 80px !important;
+}

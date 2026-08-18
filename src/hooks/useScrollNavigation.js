@@ -20,9 +20,8 @@ export function useScrollNavigation(isAdminPage, opened) {
         const rect = sec.getBoundingClientRect();
         return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
       });
-      if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      else if (sections.length > 0) sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+      if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (sections.length > 0) sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });    }
   }, []);
 
   const scrollToPrev = useCallback(() => {
@@ -38,7 +37,7 @@ export function useScrollNavigation(isAdminPage, opened) {
         return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
       });
 
-      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       else window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, []);
