@@ -98,12 +98,24 @@ export default function AdminController() {
 
   const handleThemeChange = useCallback(async (themeValue) => {
     updateDraftObject("settings", "theme", themeValue);
-    const confirmed = await showAppConfirm(isEn ? "Load theme images?" : "Tema resimleri yüklensin mi?");
+    const confirmed = await showAppConfirm(isEn ? "Load theme images and apply changes?" : "Tema değiştirilsin ve otomatik kaydedilsin mi?");
     if (confirmed) {
       const themeImages = THEME_DEFAULT_IMAGES[themeValue];
-      if (themeImages) setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, introImage: themeImages.introImage, heroImage: themeImages.heroImage, heroVideo: themeImages.heroVideo || "", gallery: themeImages.gallery } }));
+      if (themeImages) {
+        setAdminDraft((prev) => {
+          const newState = { ...prev, settings: { ...prev.settings, theme: themeValue }, invitation: { ...prev.invitation, introImage: themeImages.introImage, heroImage: themeImages.heroImage, heroVideo: themeImages.heroVideo || "", gallery: themeImages.gallery } };
+          // Otomatik Kaydet
+          saveSettingsToDatabase(newState).then(() => {
+             localStorage.setItem(SITE_DATA_KEY, JSON.stringify(newState));
+             setSiteData(newState);
+             setAdminSaveMessage(isEn ? "Theme applied and saved." : "Tema uygulandı ve kaydedildi.");
+             setTimeout(() => setAdminSaveMessage(""), 3000);
+          });
+          return newState;
+        });
+      }
     }
-  }, [updateDraftObject, showAppConfirm, isEn, setAdminDraft]);
+  }, [updateDraftObject, showAppConfirm, isEn, setSiteData, setAdminDraft]);
 
   const resetSiteContent = useCallback(async () => {
     const confirmed = await showAppConfirm(isEn ? "Reset to default?" : "Varsayılana dönsün mü?");
@@ -129,15 +141,33 @@ export default function AdminController() {
     updateDraftObject(group, key, url); 
   };
 
-  const clearDraftImage = (group, key) => updateDraftObject(group, key, "");
-  
+  const updateDraftVideo = async (group, key, file) => { 
+    if (!file) return; 
+    const url = await uploadMediaFile(file, "media"); 
+    updateDraftObject(group, key, url); 
+  };
+
+  const clearDraftImage = async (group, key) => { 
+    await deleteMediaFile(adminDraft[group][key]);
+    updateDraftObject(group, key, ""); 
+  };  
+
+  const clearDraftVideo = async (group, key) => { 
+    await deleteMediaFile(adminDraft[group][key]);
+    updateDraftObject(group, key, ""); 
+  };
+
+  const clearDraftMusic = async () => {
+    await deleteMediaFile(adminDraft.invitation?.musicFile);
+    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } }));
+  };
+
   const updateDraftMusic = async (file) => { 
     if (!file) return; 
     const url = await uploadMediaFile(file, "music"); 
     setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: url, musicName: file.name } })); 
   };
   
-  const clearDraftMusic = () => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } }));
   const updateDraftArrayItem = (arrayKey, index, key, value) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item) }));
   const addDraftArrayItem = (arrayKey, item) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], item] }));
   const removeDraftArrayItem = (arrayKey, index) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].filter((_, i) => i !== index) }));
@@ -163,7 +193,22 @@ export default function AdminController() {
   };
   
   const addGalleryItem = () => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: [...prev.invitation.gallery, ""] } }));
-  const removeGalleryItem = (index) => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
+  const removeGalleryItem = async (index) => {
+    await deleteMediaFile(adminDraft.invitation.gallery[index]);
+    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
+  };
+
+  const moveDraftArrayItem = useCallback((arrayKey, index, direction) => {
+    setAdminDraft((prev) => {
+      const arr = [...prev[arrayKey]];
+      if (direction === -1 && index > 0) {
+        [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+      } else if (direction === 1 && index < arr.length - 1) {
+        [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+      }
+      return { ...prev, [arrayKey]: arr };
+    });
+  }, [setAdminDraft]);
 
   // Filtrelemeler
   const filteredGuests = useMemo(() => guests.filter((guest) => {
@@ -214,26 +259,31 @@ export default function AdminController() {
       }
       const parsed = JSON.parse(dataImportText);
       const confirmed = await showAppConfirm(
-        isEn ? "Are you sure you want to overwrite settings with this backup?" : "Mevcut ayarların üzerine bu yedeği yazmak istediğine emin misin?"
+        isEn ? "Are you sure you want to overwrite all settings, guests, and messages with this backup?" : "Tüm ayarlar, misafirler ve mesajlar silinip bu yedek üzerine yazılacak. Emin misin?"
       );
       
       if (!confirmed) return;
 
+      setAdminSaveMessage(isEn ? "Restoring backup..." : "Yedek yükleniyor...");
+      
+      await restoreBackupToDatabase(parsed);
+      
+      // State'leri güncelle
       if (parsed.siteData) {
         const cleanedData = normalizeSiteData(parsed.siteData);
-        await saveSettingsToDatabase(cleanedData);
         localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));
         setSiteData(cleanedData);
         setAdminDraft(cleanedData);
-        setDataImportText("");
-        setAdminSaveMessage(isEn ? "Backup imported successfully." : "Yedek başarıyla yüklendi.");
-        setTimeout(() => setAdminSaveMessage(""), 3000);
-      } else {
-        setAdminSaveMessage(isEn ? "Invalid backup format." : "Geçersiz yedek formatı (siteData eksik).");
       }
+      if (parsed.guests) setGuests(parsed.guests);
+      if (parsed.wishes) setWishes(parsed.wishes);
+      
+      setDataImportText("");
+      setAdminSaveMessage(isEn ? "Backup imported successfully." : "Yedek başarıyla yüklendi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
     } catch (error) {
       console.error("Yedek yükleme hatası:", error);
-      setAdminSaveMessage(isEn ? "Invalid JSON file." : "Geçersiz JSON formatı.");
+      setAdminSaveMessage(isEn ? "Invalid JSON file or backup error." : "Geçersiz JSON formatı veya yükleme hatası.");
     }
   };
 
@@ -268,9 +318,12 @@ export default function AdminController() {
         qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
         personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
         exportAllDataJson={exportAllDataJson} dataImportText={dataImportText} setDataImportText={setDataImportText} importAllDataJson={importAllDataJson}
-        exportGuestsExcel={exportGuestsExcel} exportGuestsCsv={exportGuestsCsv} /* EKLENDİ */
-        exportWishesExcel={exportWishesExcel} exportWishesCsv={exportWishesCsv} /* EKLENDİ */
+        exportGuestsExcel={exportGuestsExcel} exportGuestsCsv={exportGuestsCsv} 
+        exportWishesExcel={exportWishesExcel} exportWishesCsv={exportWishesCsv} 
         updateStoryImageFile={updateStoryImageFile}
+        moveDraftArrayItem={moveDraftArrayItem}
+        updateDraftVideo={updateDraftVideo}
+        clearDraftVideo={clearDraftVideo}
       />
     </Suspense>
   );

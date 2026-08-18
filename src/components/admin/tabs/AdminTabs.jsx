@@ -1,11 +1,16 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminMusicField, AdminActionButtons } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
+import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminMusicField, AdminActionButtons, AdminVideoField } from "../../AdminUI";import { Dropdown } from "../../common/UIComponents";
 import { THEMES } from "../../../config/constants";
 import { buildPersonalLink, getCurrentShareLink } from "../../../utils/helpers";
 
-export function GuestsAdminPanel({ guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, filteredGuests, editGuest, deleteGuest, clearGuests, adminDraft, updateDraftObject }) {
+export function GuestsAdminPanel({ 
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+  filteredGuests, editGuest, deleteGuest, clearGuests, adminDraft, updateDraftObject,
+  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
+  adminGuestSideFilter, setAdminGuestSideFilter,
+  adminGuestChildFilter, setAdminGuestChildFilter
+}) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
 
@@ -21,7 +26,44 @@ export function GuestsAdminPanel({ guests, adminGuestSearch, setAdminGuestSearch
         <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
       </div>
       <div className="admin-toolbar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
-        <input style={{ flex: "1", minWidth: "200px", margin: 0 }} value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search..." : "Kayıtlarda ara"} />
+        <input style={{ flex: "1", minWidth: "160px", margin: 0 }} value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search..." : "İsim veya tel ara"} />
+        
+        {/* EKLENEN FİLTRELER */}
+        <div style={{ minWidth: "140px", margin: 0 }}>
+          <Dropdown
+            value={adminGuestAttendanceFilter}
+            onChange={setAdminGuestAttendanceFilter}
+            options={[
+              { value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" },
+              { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" },
+              { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }
+            ]}
+          />
+        </div>
+        <div style={{ minWidth: "140px", margin: 0 }}>
+          <Dropdown
+            value={adminGuestSideFilter}
+            onChange={setAdminGuestSideFilter}
+            options={[
+              { value: "all", label: isEn ? "All Sides" : "Tüm Taraflar" },
+              { value: "Gelin Tarafı", label: isEn ? "Bride Side" : "Gelin Tarafı" },
+              { value: "Damat Tarafı", label: isEn ? "Groom Side" : "Damat Tarafı" },
+              { value: "Ortak", label: isEn ? "Both" : "Ortak" }
+            ]}
+          />
+        </div>
+        <div style={{ minWidth: "140px", margin: 0 }}>
+          <Dropdown
+            value={adminGuestChildFilter}
+            onChange={setAdminGuestChildFilter}
+            options={[
+              { value: "all", label: isEn ? "All Guests" : "Çocuk Durumu" },
+              { value: "Evet", label: isEn ? "With Children" : "Çocuklu" },
+              { value: "Hayır", label: isEn ? "No Children" : "Çocuksuz" }
+            ]}
+          />
+        </div>
+        
         <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
         <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
         <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
@@ -194,14 +236,18 @@ export function ThemeTab({ adminDraft, updateDraftObject, handleThemeChange, sav
   );
 }
 
-export function GalleryTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftImage, clearDraftImage, updateDraftMusic, clearDraftMusic, updateGalleryImageFile, removeGalleryItem, addGalleryItem, isEn }) {
+export function GalleryTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftImage, clearDraftImage, updateDraftVideo, clearDraftVideo, updateDraftMusic, clearDraftMusic, updateGalleryImageFile, removeGalleryItem, addGalleryItem, moveDraftArrayItem, isEn }) {
   return (
     <AdminSection title={isEn ? "Visuals and Music" : "Görsel ve Müzik"} onSave={saveSiteContent}>
       <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? true} label={isEn ? "Show Gallery Section on Invitation" : "Fotoğraf Galerisi bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
       </div>
       <div className="admin-edit-grid">
-        <AdminImageField label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli"} value={adminDraft.invitation?.heroImage} onFileSelect={(e) => updateDraftImage("invitation", "heroImage", e.target.files[0])} onClear={() => clearDraftImage("invitation", "heroImage")} />
+        <AdminImageField label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli (Mobil & Video Yüklenene Kadar)"} value={adminDraft.invitation?.heroImage} onFileSelect={(e) => updateDraftImage("invitation", "heroImage", e.target.files[0])} onClear={() => clearDraftImage("invitation", "heroImage")} />
+        
+        {/* EKLENEN VİDEO YÖNETİM ALANI */}
+        <AdminVideoField label={isEn ? "Hero Background Video" : "Karşılama Arka Plan Videosu"} value={adminDraft.invitation?.heroVideo} onFileSelect={(e) => updateDraftVideo("invitation", "heroVideo", e.target.files[0])} onClear={() => clearDraftVideo("invitation", "heroVideo")} />
+        
         <AdminMusicField label={isEn ? "Music File" : "Müzik dosyası"} value={adminDraft.invitation?.musicFile} fileName={adminDraft.invitation?.musicName} onFileSelect={(e) => updateDraftMusic(e.target.files[0])} onClear={clearDraftMusic} />
       </div>
       <div style={{ marginTop: "32px" }}>
@@ -210,7 +256,13 @@ export function GalleryTab({ adminDraft, updateDraftObject, saveSiteContent, upd
           {(adminDraft.invitation?.gallery || []).map((imgUrl, index) => (
             <div key={index} className="admin-gallery-upload-row">
               <AdminImageField label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} value={imgUrl} onFileSelect={(e) => updateGalleryImageFile(index, e.target.files[0])} onClear={() => removeGalleryItem(index)} />
-              <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeGalleryItem(index)} isEn={isEn} />
+              
+              {/* EKLENEN YUKARI / AŞAĞI TAŞIMA BUTONLARI */}
+              <AdminActionButtons 
+                onMoveUp={index > 0 ? () => moveDraftArrayItem("invitation", index, -1) : null}
+                onMoveDown={index < adminDraft.invitation.gallery.length - 1 ? () => moveDraftArrayItem("invitation", index, 1) : null}
+                onSave={saveSiteContent} onDelete={() => removeGalleryItem(index)} isEn={isEn} 
+              />
             </div>
           ))}
           <button type="button" className="admin-add-button" onClick={addGalleryItem}>{isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
@@ -320,7 +372,7 @@ export function FamilyTab({ adminDraft, updateDraftObject, saveSiteContent, isEn
   );
 }
 
-export function CeremonyTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, isEn }) {
+export function CeremonyTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, moveDraftArrayItem, isEn }) {
   return (
     <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"} onSave={saveSiteContent}>
       <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
@@ -332,7 +384,13 @@ export function CeremonyTab({ adminDraft, updateDraftObject, saveSiteContent, up
           <div key={index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
-              <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeDraftArrayItem("eventDetails", index)} isEn={isEn} />
+              <AdminActionButtons 
+                onMoveUp={index > 0 ? () => moveDraftArrayItem("eventDetails", index, -1) : null}
+                onMoveDown={index < (adminDraft.eventDetails?.length || 0) - 1 ? () => moveDraftArrayItem("eventDetails", index, 1) : null}
+                onSave={saveSiteContent} 
+                onDelete={() => removeDraftArrayItem("eventDetails", index)} 
+                isEn={isEn} 
+              />
             </div>
             <div className="admin-edit-grid">
               <AdminField label={isEn ? "Title" : "Başlık"} value={event.label} onChange={(v) => updateDraftArrayItem("eventDetails", index, "label", v)} placeholder="Örn: Nikah Töreni" />
@@ -348,7 +406,7 @@ export function CeremonyTab({ adminDraft, updateDraftObject, saveSiteContent, up
   );
 }
 
-export function ScheduleTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, isEn }) {
+export function ScheduleTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, moveDraftArrayItem, isEn }) {
   return (
     <AdminSection title={isEn ? "Wedding Schedule (Timeline)" : "Düğün Programı (Akış)"} onSave={saveSiteContent}>
       <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
@@ -360,7 +418,13 @@ export function ScheduleTab({ adminDraft, updateDraftObject, saveSiteContent, up
           <div key={index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Program ${index + 1}` : `Program ${index + 1}`}</strong>
-              <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeDraftArrayItem("scheduleItems", index)} isEn={isEn} />
+              <AdminActionButtons 
+                onMoveUp={index > 0 ? () => moveDraftArrayItem("scheduleItems", index, -1) : null}
+                onMoveDown={index < (adminDraft.scheduleItems?.length || 0) - 1 ? () => moveDraftArrayItem("scheduleItems", index, 1) : null}
+                onSave={saveSiteContent} 
+                onDelete={() => removeDraftArrayItem("scheduleItems", index)} 
+                isEn={isEn} 
+              />
             </div>
             <div className="admin-edit-grid">
               <AdminField label={isEn ? "Time" : "Saat"} value={item.time} onChange={(v) => updateDraftArrayItem("scheduleItems", index, "time", v)} placeholder="Örn: 18:30" />
@@ -435,7 +499,7 @@ export function GiftTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }
   );
 }
 
-export function StoryTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, updateStoryImageFile, isEn }) {
+export function StoryTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, updateStoryImageFile, moveDraftArrayItem, isEn }) {
   return (
     <AdminSection title={isEn ? "Our Story (Timeline)" : "Bizim Hikayemiz (Zaman Çizelgesi)"} onSave={saveSiteContent}>
       <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
@@ -447,7 +511,13 @@ export function StoryTab({ adminDraft, updateDraftObject, saveSiteContent, updat
           <div key={index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Memory ${index + 1}` : `Anı ${index + 1}`}</strong>
-              <AdminActionButtons onSave={saveSiteContent} onDelete={() => removeDraftArrayItem("storyTimeline", index)} isEn={isEn} />
+              <AdminActionButtons 
+                onMoveUp={index > 0 ? () => moveDraftArrayItem("storyTimeline", index, -1) : null}
+                onMoveDown={index < (adminDraft.storyTimeline?.length || 0) - 1 ? () => moveDraftArrayItem("storyTimeline", index, 1) : null}
+                onSave={saveSiteContent} 
+                onDelete={() => removeDraftArrayItem("storyTimeline", index)} 
+                isEn={isEn} 
+              />
             </div>
             <div className="admin-edit-grid">
               <AdminField label={isEn ? "Date/Year" : "Tarih / Yıl"} value={item.date} onChange={(v) => updateDraftArrayItem("storyTimeline", index, "date", v)} placeholder="Örn: 22 Ağustos 2026" />

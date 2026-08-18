@@ -85,3 +85,40 @@ export const uploadMediaFile = async (file, folder = "media") => {
   const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
   return data.publicUrl;
 };
+
+export const deleteMediaFile = async (fileUrl) => {
+  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
+  try {
+    const urlObj = new URL(fileUrl);
+    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
+    if (pathSegments.length < 2) return;
+    const filePath = decodeURIComponent(pathSegments[1]);
+
+    // Temaların varsayılan medyalarını yanlışlıkla silmemek için koruma
+    if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
+
+    await supabase.storage.from("wedding-media").remove([filePath]);
+  } catch (error) {
+    console.error("Dosya silinirken hata:", error);
+  }
+};
+
+export const restoreBackupToDatabase = async (parsedData) => {
+  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
+  
+  if (parsedData.siteData) {
+     await saveSettingsToDatabase(parsedData.siteData);
+  }
+  
+  if (parsedData.guests && parsedData.guests.length > 0) {
+     await supabase.from("guests").delete().not("id", "is", null);
+     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }) => rest);
+     await supabase.from("guests").insert(guestsToInsert);
+  }
+  
+  if (parsedData.wishes && parsedData.wishes.length > 0) {
+     await supabase.from("wishes").delete().not("id", "is", null);
+     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }) => rest);
+     await supabase.from("wishes").insert(wishesToInsert);
+  }
+};

@@ -4,14 +4,17 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import './i18n/config'
-import { Providers } from './context/Providers' // <-- Hatanın çözümü burası
+import { Providers } from './context/Providers' 
+import { ErrorBoundary } from './components/common/ErrorBoundary' // DÜZELTME: Eklendi
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Providers>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Providers>
+    <ErrorBoundary>
+      <Providers>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Providers>
+    </ErrorBoundary>
   </StrictMode>,
 )

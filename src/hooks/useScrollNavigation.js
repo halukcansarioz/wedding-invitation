@@ -13,48 +13,35 @@ export function useScrollNavigation(isAdminPage, opened) {
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
     
     if (isMobile) {
-      if (currentSlideIndex < sections.length - 1) {
-        setCurrentSlideIndex((prev) => prev + 1);
-      }
+      setCurrentSlideIndex((prev) => (prev < sections.length - 1 ? prev + 1 : prev));
     } else {
       const currentScroll = window.scrollY;
       const nextSection = sections.find(sec => {
         const rect = sec.getBoundingClientRect();
-        const absoluteTop = rect.top + window.scrollY;
-        return absoluteTop > currentScroll + (window.innerHeight * 0.5);
+        return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
       });
-
-      if (nextSection) {
-        nextSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else if (sections.length > 0) {
-        sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      else if (sections.length > 0) sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [currentSlideIndex]);
+  }, []);
 
   const scrollToPrev = useCallback(() => {
     const isMobile = window.innerWidth <= 650;
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
     
     if (isMobile) {
-      if (currentSlideIndex > 0) {
-        setCurrentSlideIndex((prev) => prev - 1);
-      }
+      setCurrentSlideIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else {
       const currentScroll = window.scrollY;
       const prevSection = [...sections].reverse().find(sec => {
         const rect = sec.getBoundingClientRect();
-        const absoluteTop = rect.top + window.scrollY;
-        return absoluteTop < currentScroll - (window.innerHeight * 0.1); 
+        return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
       });
 
-      if (prevSection) {
-        prevSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [currentSlideIndex]);
+  }, []);
 
   const handleWheel = useCallback((e) => {
     if (isAdminPage || !opened || isScrollingRef.current) return;

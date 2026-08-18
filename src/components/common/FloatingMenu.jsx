@@ -15,11 +15,10 @@ export default function FloatingMenu({
   return (
     <>
       <div className="admin-quick-access">
-        {/* HATA ÇÖZÜMÜ: <a> etiketi yerine <Link> kullanıyoruz */}
-        <Link 
-          to="/admin" 
+       <a 
+          href="/admin" 
           target="_blank" 
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="admin-btn" 
           title={isEn ? "Admin Panel" : "Yönetici Paneli"}
         >
@@ -28,7 +27,7 @@ export default function FloatingMenu({
             <path d="M12 8v4" />
             <path d="M12 16h.01" />
           </svg>
-        </Link>
+        </a>
       </div>
       
       <div className="floating-actions glass-dock">

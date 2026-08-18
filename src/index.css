@@ -535,13 +535,10 @@ html body .app .admin-btn:hover {
 html body .app .info-list,
 html body .app .mini-map {
   border-radius: 24px !important;
-  
   overflow: hidden !important;
-  
   -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
   mask-image: radial-gradient(white, black) !important;
   transform: translateZ(0) !important; 
-  
   border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
 }
 

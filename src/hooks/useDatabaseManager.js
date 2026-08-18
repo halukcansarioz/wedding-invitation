@@ -88,7 +88,17 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", guest.name || "", { title }); if (name === null) return;
     const phone = await showAppPrompt(isEn ? "Phone" : "Telefon", guest.phone || "", { title }); if (phone === null) return;
     const attendance = await showAppPrompt(isEn ? "Attendance (Katılacağım/Katılamayacağım)" : "Katılım durumu", guest.attendance || "Katılacağım", { title }); if (attendance === null) return;
-    const personCount = await showAppPrompt(isEn ? "Person Count" : "Kişi sayısı", guest.personCount || "1", { title }); if (personCount === null) return;
+    
+    // DÜZELTME: Girilen kişi sayısının sayı olup olmadığını kontrol ediyoruz
+    let personCountInput = await showAppPrompt(isEn ? "Person Count" : "Kişi sayısı", guest.personCount || "1", { title }); 
+    if (personCountInput === null) return;
+    
+    let parsedCount = parseInt(personCountInput, 10);
+    if (isNaN(parsedCount) || parsedCount < 0) {
+      parsedCount = 1; // Eğer metin girildiyse varsayılan olarak 1 al
+    }
+    const personCount = String(parsedCount);
+
     const side = await showAppPrompt(isEn ? "Side" : "Taraf", guest.side || "Gelin Tarafı", { title }); if (side === null) return;
     const hasChild = await showAppPrompt(isEn ? "Has children? (Evet/Hayır)" : "Çocuk var mı? Evet/Hayır", guest.hasChild || "Hayır", { title }); if (hasChild === null) return;
     const songRequest = await showAppPrompt(isEn ? "Song Request" : "Müzik isteği", guest.songRequest || "", { title }); if (songRequest === null) return;

@@ -102,11 +102,8 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
     }
   }, [setValue]);
 
-  const deadline = invitation?.rsvpDeadline ? new Date(invitation.rsvpDeadline) : null;
-  if (deadline && !Number.isNaN(deadline.getTime())) {
-    deadline.setHours(23, 59, 59, 999);
-  }
-  const isDeadlinePassed = deadline && !Number.isNaN(deadline.getTime()) && new Date() > deadline;
+  const todayStr = new Date().toLocaleDateString('en-CA'); 
+  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
 
   const onSubmit = async (data) => {
     const isDeclining = data.attendance === "Katılamayacağım";

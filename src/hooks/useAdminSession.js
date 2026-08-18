@@ -122,6 +122,24 @@ export function useAdminSession({
     };
 
     loadSessionForAdmin();
+
+const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        clearAdminSessionTimestamp();
+        setAdminUser(null);
+        setIsAdminUnlocked(false);
+      } else if (event === 'SIGNED_IN' && session) {
+        touchAdminSession();
+        setAdminUser(session.user);
+        setIsAdminUnlocked(true);
+      }
+    });
+
+    return () => {
+      if (authListener && authListener.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, [isAdminPage, setAdminDraft, setAdminError, setAdminLoginNotice, setAdminPassword, setAdminUser, setGuests, setIsAdminUnlocked, setSiteData, setWishes, isEn]);
 
   useEffect(() => {

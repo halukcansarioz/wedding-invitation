@@ -145,15 +145,55 @@ export function AdminSection({ title, children, onSave }) {
   );
 }
 
-export function AdminActionButtons({ onSave, onDelete, isEn }) {
+export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isEn }) {
   return (
     <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
-      <button type="button" className="secondary-button small-admin-button" onClick={onSave}>
-        {isEn ? "Save 💾" : "Kaydet 💾"}
-      </button>
-      <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>
-        {isEn ? "Delete 🗑️" : "Sil 🗑️"}
-      </button>
+      {onMoveUp && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onMoveUp} title={isEn ? "Move Up" : "Yukarı Taşı"}>↑</button>
+      )}
+      {onMoveDown && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onMoveDown} title={isEn ? "Move Down" : "Aşağı Taşı"}>↓</button>
+      )}
+      {onSave && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onSave}>{isEn ? "Save 💾" : "Kaydet 💾"}</button>
+      )}
+      {onDelete && (
+        <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
+      )}
+    </div>
+  );
+}
+
+export function AdminVideoField({ label, value, onFileSelect, onClear }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
+  return (
+    <div className="admin-image-field admin-field-wide">
+      <div className="admin-image-header">
+        <span>{label}</span>
+        {value && (
+          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
+            {isEn ? "Remove Video 🗑️" : "Videoyu Kaldır 🗑️"}
+          </button>
+        )}
+      </div>
+
+      {value ? (
+        <video className="admin-image-preview" src={value} controls playsInline style={{ maxHeight: '280px', width: '100%', borderRadius: '14px', marginTop: '10px' }} />
+      ) : (
+        <div className="admin-image-empty">{isEn ? "No video selected." : "Henüz video seçilmedi."}</div>
+      )}
+
+      <label className="admin-upload-button">
+        {isEn ? "Select Video from PC 🎥" : "Bilgisayardan Video Seç 🎥"}
+        <input type="file" accept="video/mp4,video/webm" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
+      </label>
+      <small>
+        {isEn
+          ? "Select an MP4/WEBM file. It will play silently in the background of the hero section."
+          : "MP4/WEBM dosyası seç. Ana giriş ekranının arkasında sessiz ve otomatik olarak oynatılacaktır."}
+      </small>
     </div>
   );
 }
