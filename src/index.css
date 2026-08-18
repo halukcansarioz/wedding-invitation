@@ -561,3 +561,29 @@ html body .app .guest-item {
   overflow: hidden !important;
   transform: translateZ(0) !important;
 }
+
+/* =================================================================
+   GÖRSEL VE MÜZİK YÜKLEME KUTULARI İÇ BOŞLUK (PADDING) DÜZELTMESİ
+   ================================================================= */
+
+html body .app .admin-image-field,
+html body .app .admin-music-field {
+  padding: 26px !important;
+  gap: 16px !important;
+  box-sizing: border-box !important;
+}
+
+html body .app .admin-image-field .admin-image-preview {
+  border-radius: 14px !important;
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 650px) {
+  html body .app .admin-image-field,
+  html body .app .admin-music-field {
+    padding: 18px !important;
+  }
+}
+

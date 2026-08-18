@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useSiteContext, useUIContext, useAdminContext } from '../context/Providers';
 import useAdminSession from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
-import { normalizeText, downloadTextFile, createCsv, createExcelTable, buildPersonalLink, getQrImageUrl, readImageFileAsDataUrl, normalizeSiteData, mergeSiteData, uiGuestToDb, uiWishToDb, getCurrentShareLink } from '../utils/helpers';
-import { saveSettingsToDatabase, uploadMediaFile, loadGuestsFromDatabase, loadAllWishesFromDatabase } from '../services/database';
-import { SITE_DATA_KEY, MAX_AUDIO_FILE_SIZE, DEFAULT_WEDDING_MUSIC_FILE, DEFAULT_WEDDING_MUSIC_NAME, THEME_DEFAULT_IMAGES } from '../config/constants';
-import { supabase } from '../supabaseClient';
+import { normalizeText, downloadTextFile, createCsv, createExcelTable, buildPersonalLink, getQrImageUrl, normalizeSiteData, getCurrentShareLink } from '../utils/helpers';
+import { saveSettingsToDatabase, uploadMediaFile } from '../services/database';
+import { optimizeImage } from '../utils/imageOptimizer'; // HATA 1 ÇÖZÜMÜ: Eksik import eklendi
+import { SITE_DATA_KEY, DEFAULT_WEDDING_MUSIC_FILE, DEFAULT_WEDDING_MUSIC_NAME, THEME_DEFAULT_IMAGES } from '../config/constants';
 
 const AdminView = lazy(() => import('./AdminView'));
 
@@ -76,7 +76,7 @@ export default function AdminController() {
   });
 
   const closeAdminPage = useCallback(() => {
-    navigate("/"); // Anasayfaya yönlendiriyoruz
+    navigate("/"); 
   }, [navigate]);
 
   const openAdminTab = useCallback((tabId) => setActiveAdminTab(tabId), [setActiveAdminTab]);
@@ -121,38 +121,47 @@ export default function AdminController() {
     }
   }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn, setSiteData, setAdminDraft]);
 
-  // Medya ve Liste Güncelleme yardımcıları...
+  // Medya Yüklemeleri
   const updateDraftImage = async (group, key, file) => { 
-  if (!file) return; 
-    const compressed = await optimizeImage(file);
+    if (!file) return; 
+    const compressed = optimizeImage ? await optimizeImage(file) : file;
     const url = await uploadMediaFile(compressed, "images"); 
     updateDraftObject(group, key, url); 
   };
 
   const clearDraftImage = (group, key) => updateDraftObject(group, key, "");
-  const updateDraftMusic = async (file) => { if (!file) return; const url = await uploadMediaFile(file, "music"); setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: url, musicName: file.name } })); };
+  
+  const updateDraftMusic = async (file) => { 
+    if (!file) return; 
+    const url = await uploadMediaFile(file, "music"); 
+    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: url, musicName: file.name } })); 
+  };
+  
   const clearDraftMusic = () => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } }));
   const updateDraftArrayItem = (arrayKey, index, key, value) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item) }));
   const addDraftArrayItem = (arrayKey, item) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], item] }));
   const removeDraftArrayItem = (arrayKey, index) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].filter((_, i) => i !== index) }));
+  
   const updateGalleryImageFile = async (index, file) => { 
     if (!file) return; 
-        const compressed = await optimizeImage(file);
-        const url = await uploadMediaFile(compressed, "gallery"); 
-        setAdminDraft((prev) => ({ 
-        ...prev, 
-        invitation: { 
-            ...prev.invitation, 
+    const compressed = optimizeImage ? await optimizeImage(file) : file;
+    const url = await uploadMediaFile(compressed, "gallery"); 
+    setAdminDraft((prev) => ({ 
+      ...prev, 
+      invitation: { 
+        ...prev.invitation, 
         gallery: prev.invitation.gallery.map((img, i) => i === index ? url : img) 
-        } 
+      } 
     })); 
   };  
+  
   const updateStoryImageFile = async (index, file) => {
     if (!file) return;
-    const compressed = await optimizeImage(file);
+    const compressed = optimizeImage ? await optimizeImage(file) : file;
     const url = await uploadMediaFile(compressed, "story");
     updateDraftArrayItem("storyTimeline", index, "image", url);
   };
+  
   const addGalleryItem = () => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: [...prev.invitation.gallery, ""] } }));
   const removeGalleryItem = (index) => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
 
@@ -170,12 +179,63 @@ export default function AdminController() {
     return searchMatch && statusMatch;
   }), [wishes, adminWishSearch, adminWishStatusFilter]);
 
+  // HATA 2 ve 3 ÇÖZÜMÜ: Excel ve CSV İndirme Fonksiyonları Eklendi
+  const exportGuestsExcel = useCallback(() => {
+    const html = createExcelTable(filteredGuests, "guests", isEn);
+    downloadTextFile("misafirler.xls", html, "application/vnd.ms-excel");
+  }, [filteredGuests, isEn]);
+
+  const exportGuestsCsv = useCallback(() => {
+    const csv = createCsv(filteredGuests, "guests", isEn);
+    downloadTextFile("misafirler.csv", csv, "text/csv;charset=utf-8;");
+  }, [filteredGuests, isEn]);
+
+  const exportWishesExcel = useCallback(() => {
+    const html = createExcelTable(filteredWishes, "wishes", isEn);
+    downloadTextFile("mesajlar.xls", html, "application/vnd.ms-excel");
+  }, [filteredWishes, isEn]);
+
+  const exportWishesCsv = useCallback(() => {
+    const csv = createCsv(filteredWishes, "wishes", isEn);
+    downloadTextFile("mesajlar.csv", csv, "text/csv;charset=utf-8;");
+  }, [filteredWishes, isEn]);
+
   const copyAdminLink = useCallback(async (linkToCopy, msg) => { try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(msg); } catch {} }, []);
   const downloadQrCode = () => { window.open(qrImageUrl, "_blank"); };
   
-  // Import/Export fonksiyonları (Basitleştirildi)
+  // HATA 4 ÇÖZÜMÜ: Import/Export fonksiyonları çalışır hale getirildi
   const exportAllDataJson = () => downloadTextFile("yedek.json", JSON.stringify({ siteData, guests, wishes }), "application/json");
-  const importAllDataJson = async () => { /* Mevcut import logic */ };
+  
+  const importAllDataJson = async () => {
+    try {
+      if (!dataImportText.trim()) {
+        setAdminSaveMessage(isEn ? "Please paste JSON data." : "Lütfen JSON verisini yapıştırın.");
+        return;
+      }
+      const parsed = JSON.parse(dataImportText);
+      const confirmed = await showAppConfirm(
+        isEn ? "Are you sure you want to overwrite settings with this backup?" : "Mevcut ayarların üzerine bu yedeği yazmak istediğine emin misin?"
+      );
+      
+      if (!confirmed) return;
+
+      if (parsed.siteData) {
+        const cleanedData = normalizeSiteData(parsed.siteData);
+        await saveSettingsToDatabase(cleanedData);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));
+        setSiteData(cleanedData);
+        setAdminDraft(cleanedData);
+        setDataImportText("");
+        setAdminSaveMessage(isEn ? "Backup imported successfully." : "Yedek başarıyla yüklendi.");
+        setTimeout(() => setAdminSaveMessage(""), 3000);
+      } else {
+        setAdminSaveMessage(isEn ? "Invalid backup format." : "Geçersiz yedek formatı (siteData eksik).");
+      }
+    } catch (error) {
+      console.error("Yedek yükleme hatası:", error);
+      setAdminSaveMessage(isEn ? "Invalid JSON file." : "Geçersiz JSON formatı.");
+    }
+  };
 
   return (
     <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
@@ -208,6 +268,8 @@ export default function AdminController() {
         qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
         personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
         exportAllDataJson={exportAllDataJson} dataImportText={dataImportText} setDataImportText={setDataImportText} importAllDataJson={importAllDataJson}
+        exportGuestsExcel={exportGuestsExcel} exportGuestsCsv={exportGuestsCsv} /* EKLENDİ */
+        exportWishesExcel={exportWishesExcel} exportWishesCsv={exportWishesCsv} /* EKLENDİ */
         updateStoryImageFile={updateStoryImageFile}
       />
     </Suspense>
