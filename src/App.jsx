@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useUIContext, useSiteContext, useAdminContext } from "./context/Providers";
 import { GlobalModals } from "./components/common/GlobalModals";
@@ -18,23 +18,12 @@ function App() {
   const { siteData, setSiteData, setWishes, setGuests } = useSiteContext();
   const { setAdminDraft } = useAdminContext();
   const location = useLocation();
-
+  
   const activeTheme = siteData.settings?.theme || "lavanta";
   const invitation = siteData.invitation;
 
-  // HATA ÇÖZÜMÜ: Sadece path değil; Supabase token'ları ve eski #admin hash'lerini de yakalıyoruz
-  const isAdminRoute = useMemo(() => {
-    const path = location.pathname.toLowerCase();
-    const hash = location.hash.toLowerCase();
-    const search = location.search.toLowerCase();
-    
-    return path.startsWith("/admin") || 
-           hash.includes("admin") || 
-           search.includes("admin") || 
-           hash.includes("access_token=") || 
-           hash.includes("type=recovery") || 
-           search.includes("reset=1");
-  }, [location]);
+  // Supabase şifre sıfırlama token'larını yakalamak için güvenli kontrol
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
 
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
@@ -76,6 +65,7 @@ function App() {
       data-theme={activeTheme}
       style={{
         "--intro-image": `url(${invitation.introImage})`,
+        "--hero-image": `url(${invitation.heroImage})`,
         "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
       }}
     >
@@ -85,8 +75,10 @@ function App() {
         customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
       />
       
-      {/* Şartlı render ile Supabase güvenlik akışını bozmuyoruz */}
-      {isAdminRoute ? <AdminController /> : <InvitationController />}
+      <Routes>
+        <Route path="/" element={isAuthRecovery ? <AdminController /> : <InvitationController />} />
+        <Route path="/admin/*" element={<AdminController />} />
+      </Routes>
     </div>
   );
 }

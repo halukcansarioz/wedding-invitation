@@ -102,7 +102,6 @@ html, body, .admin-sidebar-menu, .admin-custom-select-menu {
   -webkit-overflow-scrolling: touch;
 }
 
-/* VARSAYILAN VITE DEĞİŞKENLERİ */
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -153,7 +152,6 @@ h1 { font-size: 3.5rem; margin: 2rem 0; }
 h2 { font-size: 1.5rem; line-height: 118%; margin: 0 0 0.5rem; }
 p { margin: 0; }
 
-/* GÖRSEL DÜZELTMELER */
 html body .app .glass-dock,
 html body .app .floating-actions,
 html[data-theme] body .app .glass-dock,
@@ -262,7 +260,6 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     z-index: 10 !important;
   }
 
-  /* KARTLARIN SIVI (FLUID) BOYUTLANDIRILMASI */
   html body .app .card, 
   html body .app .countdown-section, 
   html body .app .footer {
@@ -311,7 +308,6 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
   html body .app .card > .section-label, 
   html body .app .countdown-section > .section-label { font-size: max(0.9rem, 3.8vw) !important; line-height: 1.5 !important; }
 
-  /* FORM ELEMANLARI (iOS Safari Zumlama Hatasını Önlemek İçin Font max(1rem) yapıldı) */
   html body .app .rsvp-form,
   html body .app .wish-form,
   html body .app .option-group,
@@ -373,7 +369,6 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     margin-top: 0 !important;
   }
 
-  /* LİSTELER (TAKVİM, AİLE, NİKAH, MİSAFİR) */
   html body .app .invitation-page .schedule-list {
     align-items: stretch !important;
     width: 100% !important;
@@ -426,7 +421,6 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     border: 1px dashed color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
   }
 
-  /* YÜZEN MENÜ (DOCK) SIVI (FLUID) DÜZENİ */
   html body .app .admin-quick-access {
     display: none !important;
   }
@@ -477,4 +471,93 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
 @keyframes subtleBounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-1vh); }
+}
+
+/* =================================================================
+   ADMIN (KALKAN) BUTONU HALKALARINI KALDIRMA VE YUKARI-AŞAĞI ANİMASYON
+   ================================================================= */
+html body .app .admin-quick-access,
+html body .app .admin-quick-access::before,
+html body .app .admin-quick-access::after,
+html body .app .admin-btn::before,
+html body .app .admin-btn::after {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+html body .app .admin-quick-access {
+  padding: 0 !important;
+}
+
+html body .app .admin-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--rose-dark, #9f4f68) !important;
+  border: 1.5px solid rgba(159, 79, 104, 0.25) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+  position: relative !important;
+  z-index: 50 !important;
+}
+
+html body .app .admin-btn:hover {
+  background: var(--rose-dark, #9f4f68) !important;
+  color: #ffffff !important;
+  transform: scale(1.08) !important;
+}
+
+@keyframes adminFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+[data-theme="dark"] html body .app .admin-btn {
+  background: rgba(40, 40, 40, 0.9) !important;
+  color: var(--rose-light, #f8d7df) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+[data-theme="dark"] html body .app .admin-btn:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* =================================================================
+   LOKASYON BÖLÜMÜ (BİLGİ TABLOSU VE HARİTA) KÖŞE YUVARLAMA
+   ================================================================= */
+
+html body .app .info-list,
+html body .app .mini-map {
+  border-radius: 24px !important;
+  
+  overflow: hidden !important;
+  
+  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+  mask-image: radial-gradient(white, black) !important;
+  transform: translateZ(0) !important; 
+  
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .info-list,
+[data-theme="dark"] html body .app .mini-map {
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+/* =================================================================
+   İSTATİSTİK VE MESAJ KUTULARI (GUEST & WISH) KÖŞE YUVARLAMA
+   ================================================================= */
+
+html body .app .guest-stats div,
+html body .app .wish-item,
+html body .app .guest-item {
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  transform: translateZ(0) !important;
 }

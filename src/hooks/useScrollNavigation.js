@@ -99,26 +99,6 @@ export function useScrollNavigation(isAdminPage, opened) {
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
-    const checkAndApplyClasses = () => {
-      const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
-      if (!sections.length) {
-        setTimeout(checkAndApplyClasses, 50);
-        return;
-      }
-
-      if (window.innerWidth <= 650) {
-        sections.forEach((sec, idx) => {
-          if (idx === currentSlideIndex) sec.classList.add('active-slide');
-          else sec.classList.remove('active-slide');
-        });
-
-        setShowScrollTop(currentSlideIndex > 0);
-        setShowScrollDown(currentSlideIndex < sections.length - 1);
-      }
-    };
-
-    checkAndApplyClasses();
-    
     const handleScroll = () => {
       if (window.innerWidth > 650) {
         setShowScrollTop(window.scrollY > 100);
@@ -136,9 +116,10 @@ export function useScrollNavigation(isAdminPage, opened) {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [currentSlideIndex, isAdminPage, opened]);
+  }, [isAdminPage, opened]);
 
   return {
+    currentSlideIndex,  
     showScrollTop,
     showScrollDown,
     scrollToNext,
