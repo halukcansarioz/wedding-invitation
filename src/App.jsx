@@ -43,14 +43,20 @@ function App() {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
       try {
-        let databaseSettings = await loadSettingsFromDatabase();
-        databaseSettings = databaseSettings ? normalizeSiteData(databaseSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(databaseSettings));
+        // PERFORMANS OPTİMİZASYONU: Ağ istekleri sırayla değil, Promise.all ile paralel yapılıyor
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
         
-        setSiteData(databaseSettings);
-        setAdminDraft(databaseSettings);
-        setWishes(await loadPublishedWishesFromDatabase() || []);
-        setGuests(await loadGuestsFromDatabase() || []);
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
       } catch (error) {
         console.error("Veritabanından veriler okunamadı:", error);
       }

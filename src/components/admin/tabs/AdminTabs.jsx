@@ -344,6 +344,8 @@ export function CopyTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }
         <AdminField label={isEn ? "Gallery Title" : "Galeri Başlığı"} onChange={(v) => updateDraftObject("copy", "galleryTitle", v)} value={adminDraft.copy?.galleryTitle} />
         <AdminField label={isEn ? "RSVP Title" : "LCV (Katılım) Başlığı"} onChange={(v) => updateDraftObject("copy", "rsvpTitle", v)} value={adminDraft.copy?.rsvpTitle} />
         <AdminField label={isEn ? "Guestbook Title" : "Anı Defteri Başlığı"} onChange={(v) => updateDraftObject("copy", "wishesTitle", v)} value={adminDraft.copy?.wishesTitle} />
+        <AdminField label={isEn ? "Story Section Tag" : "Hikayemiz Küçük Etiket"} onChange={(v) => updateDraftObject("copy", "storyLabel", v)} value={adminDraft.copy?.storyLabel} />
+        <AdminField label={isEn ? "Story Title" : "Hikayemiz Ana Başlığı"} onChange={(v) => updateDraftObject("copy", "storyTitle", v)} value={adminDraft.copy?.storyTitle} />
       </div>
       <h4 style={{ color: 'var(--rose-dark)', marginBottom: '12px' }}>{isEn ? "Closing and Warnings" : "Kapanış ve Uyarılar"}</h4>
       <div className="admin-edit-grid">

@@ -85,7 +85,9 @@ export const DEFAULT_SITE_DATA = {
     declineTitle: "Çok Üzüldük!",
     declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
     deadlineTitle: "LCV Bildirim Süresi Doldu",
-    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
+    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.",
+    storyLabel: "Bizim Hikayemiz",
+    storyTitle: "Nasıl Tanıştık?"
   },
   eventDetails: [
     {
@@ -100,6 +102,20 @@ export const DEFAULT_SITE_DATA = {
       location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
       description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
     },
+  ],
+  storyTimeline: [
+    {
+      date: "İlkbahar 2024",
+      title: "İlk Karşılaşma",
+      description: "Hikayemizin başladığı o güzel tesadüf ve sihirli an...",
+      image: ""
+    },
+    {
+      date: "22 Ağustos 2026",
+      title: "Büyük Teklif",
+      description: "Fenerbahçe Parkı'nın yeşillikleri arasında başlayan günümüz, Boğaz vapuru keyfi ve köprü manzaralı harika bir akşam yemeği eşliğinde 'Evet!' ile taçlandı.",
+      image: ""
+    }
   ],
   scheduleItems: [
     { time: "18:30", title: "Misafir Karşılama", description: "Davetlilerimizin alana gelişi ve karşılama." },

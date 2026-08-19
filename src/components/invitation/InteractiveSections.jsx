@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -78,11 +78,12 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const [copied, setCopied] = useState(false);
   const [urlGuestName, setUrlGuestName] = useState("");
 
-  const rsvpSchema = z.object({
+  // RENDER OPTİMİZASYONU: Şemanın her render'da baştan oluşturulmasını engeller
+  const rsvpSchema = useMemo(() => z.object({
     name: z.string().min(3, { message: t('form.missingNameMessage') }),
     attendance: z.string(),
     note: z.string().max(NOTE_MAX_LENGTH).optional()
-  });
+  }), [t]);
 
   const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(rsvpSchema),
@@ -131,7 +132,10 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
     }
   };
 
-  const translatedAttendance = ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label }));
+  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
+    ...opt, 
+    label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
+  })), [isEn, t]);
 
   return (
     <section className="card rsvp-card">
@@ -223,10 +227,11 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
   const isEn = i18n.language.startsWith('en');
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
 
-  const wishSchema = z.object({
+  // RENDER OPTİMİZASYONU: Şemanın her render'da baştan oluşturulmasını engeller
+  const wishSchema = useMemo(() => z.object({
     name: z.string().min(2, { message: t('form.missingNameMessage') }),
     message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH)
-  });
+  }), [t]);
 
   const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(wishSchema),

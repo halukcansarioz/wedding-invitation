@@ -48,7 +48,48 @@ export const mergeSiteData = (storedData) => {
   };
 };
 
-export const normalizeSiteData = (data) => applyDefaultWeddingMusic(fixShareLink(mergeSiteData(data)));
+export const normalizeSiteData = (data) => {
+  // Eğer veri yoksa doğrudan default (varsayılan) verileri döndür
+  if (!data) return DEFAULT_SITE_DATA;
+
+  // Veritabanından gelen veri ile varsayılan veriyi harmanla
+  return {
+    ...DEFAULT_SITE_DATA,
+    ...data,
+    invitation: {
+      ...DEFAULT_SITE_DATA.invitation,
+      ...(data.invitation || {}),
+    },
+    familyInfo: {
+      ...DEFAULT_SITE_DATA.familyInfo,
+      ...(data.familyInfo || {}),
+    },
+    giftRegistry: {
+      ...DEFAULT_SITE_DATA.giftRegistry,
+      ...(data.giftRegistry || {}),
+    },
+    copy: {
+      ...DEFAULT_SITE_DATA.copy,
+      ...(data.copy || {}),
+    },
+    settings: {
+      ...DEFAULT_SITE_DATA.settings,
+      ...(data.settings || {}),
+      visibility: {
+        ...DEFAULT_SITE_DATA.settings.visibility,
+        ...(data.settings?.visibility || {}),
+      },
+    },
+    messages: {
+      ...DEFAULT_SITE_DATA.messages,
+      ...(data.messages || {}),
+    },
+    eventDetails: data.eventDetails || DEFAULT_SITE_DATA.eventDetails || [],
+    scheduleItems: data.scheduleItems || DEFAULT_SITE_DATA.scheduleItems || [],
+    // AŞAĞIDAKİ SATIR BİZİM HİKAYEMİZ BÖLÜMÜNÜN ÇALIŞMASINI SAĞLAR
+    storyTimeline: data.storyTimeline || DEFAULT_SITE_DATA.storyTimeline || [], 
+  };
+};
 
 export const loadStoredSiteData = () => {
   try { return normalizeSiteData(JSON.parse(localStorage.getItem(SITE_DATA_KEY))); } catch { return normalizeSiteData(null); }

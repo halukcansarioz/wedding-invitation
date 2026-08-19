@@ -1,14 +1,35 @@
 /* =================================================================
-   1. MASAÜSTÜ (WEB) KESİN SCROLL KİLİDİ AÇICI
+   1. MASAÜSTÜ (WEB) KESİN SCROLL KİLİDİ AÇICI VE KART DÜZELTMELERİ
    ================================================================= */
 @media (min-width: 651px) {
   html, body, #root, .app, .invitation-page {
-    position: relative !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    overscroll-behavior-y: auto !important;
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: auto;
+  }
+
+  /* Kartların altındaki butonların kesilmesini engeller */
+  html body .app .card,
+  html body .app .countdown-section {
+    padding-bottom: 72px; 
+    height: auto;
+    max-height: none;
+  }
+  
+  html body .app .card .button-group,
+  html body .app .card .rsvp-actions {
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    position: relative;
+    z-index: 10;
+  }
+
+  html body .app .mini-map,
+  html body .app .qr-public-card {
+    margin-bottom: 36px;
   }
 }
 
@@ -21,21 +42,21 @@ html, body {
 
 @supports (-webkit-touch-callout: none) {
   .app, .intro-page, .hero-section, .app-modal-backdrop {
-    min-height: -webkit-fill-available !important;
+    min-height: -webkit-fill-available;
   }
 }
 
 button, input, select, textarea, .option-button, a {
-  appearance: none; -webkit-appearance: none; outline: none !important;
-  -webkit-tap-highlight-color: transparent !important;
+  appearance: none; -webkit-appearance: none; outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .floating-actions {
-  padding-bottom: max(1vh, env(safe-area-inset-bottom)) !important;
+  padding-bottom: max(1vh, env(safe-area-inset-bottom));
 }
 
 .invitation-page, .admin-page {
-  padding-bottom: max(10vh, calc(8vh + env(safe-area-inset-bottom))) !important;
+  padding-bottom: max(10vh, calc(8vh + env(safe-area-inset-bottom)));
 }
 
 /* =================================================================
@@ -55,30 +76,28 @@ html body .app .schedule-item,
 html body .app .ceremony-item,
 html body .app .timeline-item p,
 html body .app .app-modal-card {
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 html body .app .app-modal-card::before {
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 /* =================================================================
-   3. FAZLALIK BUTONLARI (TR VE PAYLAŞ) TÜM EKRANLARDA GİZLEME
+   3. FAZLALIK BUTONLARI (PAYLAŞ) TÜM EKRANLARDA GİZLEME
    ================================================================= */
-html body .app .glass-dock .lang-btn,
 html body .app .glass-dock .wa-btn,
-html body .app .floating-actions .lang-btn,
 html body .app .floating-actions .wa-btn {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  position: absolute !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 /* =================================================================
@@ -91,7 +110,7 @@ html body .app .floating-actions .wa-btn {
 }
 
 @media (min-width: 651px) {
-  .glass-dock, .app-modal-backdrop, .intro-card, .admin-sidebar,
+  .app-modal-backdrop, .intro-card, .admin-sidebar,
   .admin-actions-sticky, .lightbox-control-btn {
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
@@ -165,26 +184,26 @@ html[data-theme] body .app .floating-actions {
 
 html body .app .glass-dock .dock-btn,
 html body .app .floating-actions .dock-btn {
-    background: rgba(255, 255, 255, 0.95) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    border: 1px solid rgba(230, 230, 230, 1) !important;
-    box-shadow: 0 0.5vh 2vh rgba(0, 0, 0, 0.15) !important;
-    opacity: 1 !important;
-    animation: subtleBounce 2.5s ease-in-out infinite !important;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--amp-color, #9f4f68);
+    border: 1px solid rgba(230, 230, 230, 1);
+    box-shadow: 0 0.5vh 2vh rgba(0, 0, 0, 0.15);
+    opacity: 1;
+    animation: subtleBounce 2.5s ease-in-out infinite;
 }
 
 html body .app .glass-dock .music-btn,
-html body .app .floating-actions .music-btn { animation-delay: 0s !important; }
+html body .app .floating-actions .music-btn { animation-delay: 0s; }
 html body .app .glass-dock .scroll-down-btn,
-html body .app .floating-actions .scroll-down-btn { animation-delay: 0.2s !important; }
+html body .app .floating-actions .scroll-down-btn { animation-delay: 0.2s; }
 html body .app .glass-dock .scroll-up-btn,
-html body .app .floating-actions .scroll-up-btn { animation-delay: 0.4s !important; }
+html body .app .floating-actions .scroll-up-btn { animation-delay: 0.4s; }
 
 html[data-theme="dark"] body .app .glass-dock .dock-btn,
 html[data-theme="dark"] body .app .floating-actions .dock-btn {
-    background: rgba(40, 40, 40, 0.95) !important;
-    color: var(--amp-color, #e3b6c7) !important;
-    border: 1px solid rgba(70, 70, 70, 1) !important;
+    background: rgba(40, 40, 40, 0.95);
+    color: var(--amp-color, #e3b6c7);
+    border: 1px solid rgba(70, 70, 70, 1);
 }
 
 /* =================================================================
@@ -193,236 +212,236 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
 @media (max-width: 650px) {
   
   body, html {
-    overflow: hidden !important; 
-    height: 100dvh !important;
-    width: 100vw !important;
-    position: fixed !important; 
-    overscroll-behavior-y: none !important;
+    overflow: hidden; 
+    height: 100dvh;
+    width: 100vw;
+    position: fixed; 
+    overscroll-behavior-y: none;
   }
 
   .invitation-page {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-    background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft)) !important;
-    z-index: 1 !important;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft));
+    z-index: 1;
   }
 
   .invitation-page > section,
   .invitation-page > footer {
-    display: none !important;
+    display: none;
     opacity: 0;
-    z-index: 10 !important;
+    z-index: 10;
   }
 
   html body .app .invitation-page > section.active-slide,
   html body .app .invitation-page > footer.active-slide {
-    display: flex !important;
-    opacity: 1 !important;
-    position: absolute !important;
-    inset: 0 !important;
-    height: 100dvh !important;
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    box-sizing: border-box !important;
-    padding-left: 4vw !important;
-    padding-right: 4vw !important;
+    display: flex;
+    opacity: 1;
+    position: absolute;
+    inset: 0;
+    height: 100dvh;
+    overflow-y: auto; 
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    padding-left: 4vw;
+    padding-right: 4vw;
   }
 
   html body .app .invitation-page > section.active-slide:not(.hero-section),
   html body .app .invitation-page > footer.active-slide {
-    justify-content: flex-start !important; 
-    padding-top: max(4vh, env(safe-area-inset-top)) !important;
-    padding-bottom: max(22vh, calc(15vh + env(safe-area-inset-bottom))) !important;
+    justify-content: flex-start; 
+    padding-top: max(4vh, env(safe-area-inset-top));
+    padding-bottom: max(22vh, calc(15vh + env(safe-area-inset-bottom)));
   }
 
   html body .app .invitation-page > section.active-slide:not(.hero-section) > *:first-child,
-  html body .app .invitation-page > footer.active-slide > *:first-child { margin-top: auto !important; }
+  html body .app .invitation-page > footer.active-slide > *:first-child { margin-top: auto; }
   
   html body .app .invitation-page > section.active-slide:not(.hero-section) > *:last-child,
-  html body .app .invitation-page > footer.active-slide > *:last-child { margin-bottom: auto !important; }
+  html body .app .invitation-page > footer.active-slide > *:last-child { margin-bottom: auto; }
 
   html body .app .invitation-page > section.hero-section.active-slide {
-    justify-content: center !important;
-    padding-bottom: max(22vh, calc(18vh + env(safe-area-inset-bottom))) !important;
+    justify-content: center;
+    padding-bottom: max(22vh, calc(18vh + env(safe-area-inset-bottom)));
   }
 
   html body .app .invitation-page .scroll-indicator,
   html body .app .scroll-indicator {
-    bottom: max(18vh, calc(14vh + env(safe-area-inset-bottom))) !important;
-    z-index: 10 !important;
+    bottom: max(18vh, calc(14vh + env(safe-area-inset-bottom)));
+    z-index: 10;
   }
 
   html body .app .card, 
   html body .app .countdown-section, 
   html body .app .footer {
-    width: 92vw !important;
-    max-width: 100% !important;
-    height: auto !important;
-    min-height: min-content !important;
-    max-height: none !important;
-    margin: auto !important;
-    border-radius: 8vw !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    box-sizing: border-box !important;
-    padding-top: 10vh !important; 
-    padding-bottom: 20vh !important;
+    width: 92vw;
+    max-width: 100%;
+    height: auto;
+    min-height: min-content;
+    max-height: none;
+    margin: auto;
+    border-radius: 8vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    padding-top: 10vh; 
+    padding-bottom: 20vh;
   }
 
   html body .app .card > *, 
   html body .app .countdown-section > *,
   html body .app .countdown-grid,
   html body .app .footer > * {
-    flex-shrink: 0 !important; 
-    text-align: center !important;
-    justify-content: center !important;
-    align-items: center !important;
-    width: 100% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    margin-bottom: 3vh !important;
+    flex-shrink: 0; 
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 3vh;
   }
 
   html body .app .card > *:last-child, 
-  html body .app .countdown-section > *:last-child { margin-bottom: 0 !important; }
+  html body .app .countdown-section > *:last-child { margin-bottom: 0; }
 
   html body .app .card::after,
   html body .app .countdown-section::after {
-    top: 3vh !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    top: 3vh;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
-  html body .app .card h2, html body .app .countdown-section h2 { font-size: max(1.5rem, 6.5vw) !important; }
+  html body .app .card h2, html body .app .countdown-section h2 { font-size: max(1.5rem, 6.5vw); }
   html body .app .card > p:not(.private-note-text), 
   html body .app .card > .section-label, 
-  html body .app .countdown-section > .section-label { font-size: max(0.9rem, 3.8vw) !important; line-height: 1.5 !important; }
+  html body .app .countdown-section > .section-label { font-size: max(0.9rem, 3.8vw); line-height: 1.5; }
 
   html body .app .rsvp-form,
   html body .app .wish-form,
   html body .app .option-group,
   html body .app .button-group {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 3vh !important;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3vh;
   }
 
-  html body .app .wish-form { margin-bottom: 2vh !important; }
-  html body .app .wish-list { margin-top: 0 !important; flex: 0 0 auto !important; width: 100% !important; }
+  html body .app .wish-form { margin-bottom: 2vh; }
+  html body .app .wish-list { margin-top: 0; flex: 0 0 auto; width: 100%; }
 
   html body .app .rsvp-form input,
   html body .app .wish-form input {
-    padding: 2.5vh 4vw !important;
-    font-size: max(1rem, 4vw) !important;
-    border-radius: 5vw !important; 
-    min-height: 8vh !important;
-    text-align: center !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    padding: 2.5vh 4vw;
+    font-size: max(1rem, 4vw);
+    border-radius: 5vw; 
+    min-height: 8vh;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   html body .app .rsvp-form textarea,
   html body .app .wish-form textarea {
-    padding: 2.5vh 4vw !important;
-    font-size: max(1rem, 4vw) !important;
-    border-radius: 5vw !important;
-    min-height: 15vh !important; 
-    text-align: center !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    padding: 2.5vh 4vw;
+    font-size: max(1rem, 4vw);
+    border-radius: 5vw;
+    min-height: 15vh; 
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   html body .app .option-button {
-    padding: 2.5vh 4vw !important;
-    font-size: max(1rem, 4vw) !important;
-    font-weight: 800 !important;
-    min-height: 8vh !important;
-    border-radius: 5vw !important;
-    width: 100% !important;
-    text-align: center !important;
+    padding: 2.5vh 4vw;
+    font-size: max(1rem, 4vw);
+    font-weight: 800;
+    min-height: 8vh;
+    border-radius: 5vw;
+    width: 100%;
+    text-align: center;
   }
 
   html body .app .form-button,
   html body .app .rsvp-whatsapp-button,
   html body .app .button-group .main-button,
   html body .app .button-group .secondary-button {
-    padding: 2.5vh 6vw !important;
-    font-size: max(1rem, 4.5vw) !important;
-    font-weight: 900 !important;
-    min-height: 9vh !important;
-    border-radius: 50vw !important; 
-    width: 100% !important;
-    text-align: center !important;
-    margin-top: 0 !important;
+    padding: 2.5vh 6vw;
+    font-size: max(1rem, 4.5vw);
+    font-weight: 900;
+    min-height: 9vh;
+    border-radius: 50vw; 
+    width: 100%;
+    text-align: center;
+    margin-top: 0;
   }
 
   html body .app .invitation-page .schedule-list {
-    align-items: stretch !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    align-items: stretch;
+    width: 100%;
+    box-sizing: border-box;
   }
   html body .app .invitation-page .schedule-item {
-    width: 100% !important;
-    min-height: 18vh !important; 
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    padding: 3vh 4vw !important;
+    width: 100%;
+    min-height: 18vh; 
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3vh 4vw;
   }
 
   html body .app .invitation-page .family-grid,
   html body .app .invitation-page .ceremony-grid {
-    grid-template-columns: 1fr !important; 
-    width: 100% !important;
-    box-sizing: border-box !important;
+    grid-template-columns: 1fr; 
+    width: 100%;
+    box-sizing: border-box;
   }
   
   html body .app .invitation-page .family-grid > div,
   html body .app .invitation-page .ceremony-grid > div {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 4vh 4vw !important;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4vh 4vw;
   }
 
   html body .app .guest-stats {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 3vh !important;
-    width: 100% !important;
-    margin: 4vh 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 3vh;
+    width: 100%;
+    margin: 4vh 0;
   }
   
   html body .app .guest-stats div {
-    background: rgba(255, 255, 255, 0.85) !important;
-    border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
-    border-radius: 6vw !important;
-    padding: 4vh 4vw !important;
-    box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.05) !important;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent);
+    border-radius: 6vw;
+    padding: 4vh 4vw;
+    box-shadow: 0 1vh 3vh rgba(0, 0, 0, 0.05);
   }
   
   html body .app .private-note-card {
-    background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
-    border-radius: 4vw !important;
-    padding: 3vh 4vw !important;
-    border: 1px dashed color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
+    background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent);
+    border-radius: 4vw;
+    padding: 3vh 4vw;
+    border: 1px dashed color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent);
   }
 
   html body .app .admin-quick-access {
-    display: none !important;
+    display: none;
   }
 
   html body .app .glass-dock,
@@ -432,39 +451,39 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    bottom: max(3vh, env(safe-area-inset-bottom)) !important;
-    right: 50% !important;
-    left: auto !important;
-    transform: translateX(50%) !important;
-    flex-direction: row !important;
-    padding: 0 !important;
-    gap: 3vw !important;
-    width: max-content !important;
-    z-index: 99999 !important;
+    bottom: max(3vh, env(safe-area-inset-bottom));
+    right: 50%;
+    left: auto;
+    transform: translateX(50%);
+    flex-direction: row;
+    padding: 0;
+    gap: 3vw;
+    width: max-content;
+    z-index: 99999;
   }
 
   html body .app .glass-dock .dock-btn,
   html body .app .floating-actions .dock-btn {
-    width: max(3rem, 12vw) !important;
-    height: max(3rem, 12vw) !important;
-    min-width: unset !important;
-    border-radius: 50vw !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    width: max(3rem, 12vw);
+    height: max(3rem, 12vw);
+    min-width: unset;
+    border-radius: 50vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   html body .app .glass-dock .dock-btn svg,
   html body .app .floating-actions .dock-btn svg {
-    width: max(1.2rem, 5vw) !important;
-    height: max(1.2rem, 5vw) !important;
+    width: max(1.2rem, 5vw);
+    height: max(1.2rem, 5vw);
   }
 
   html[data-theme="dark"] body .app .glass-dock .dock-btn,
   html[data-theme="dark"] body .app .floating-actions .dock-btn {
-    background: rgba(40, 40, 40, 0.95) !important;
-    color: var(--amp-color, #e3b6c7) !important;
-    border: 1px solid rgba(70, 70, 70, 1) !important;
+    background: rgba(40, 40, 40, 0.95);
+    color: var(--amp-color, #e3b6c7);
+    border: 1px solid rgba(70, 70, 70, 1);
   }
 }
 
@@ -488,28 +507,28 @@ html body .app .admin-btn::after {
 }
 
 html body .app .admin-quick-access {
-  padding: 0 !important;
+  padding: 0;
 }
 
 html body .app .admin-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 52px !important;
-  height: 52px !important;
-  border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: var(--rose-dark, #9f4f68) !important;
-  border: 1.5px solid rgba(159, 79, 104, 0.25) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
-  position: relative !important;
-  z-index: 50 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--rose-dark, #9f4f68);
+  border: 1.5px solid rgba(159, 79, 104, 0.25);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 50;
 }
 
 html body .app .admin-btn:hover {
-  background: var(--rose-dark, #9f4f68) !important;
-  color: #ffffff !important;
-  transform: scale(1.08) !important;
+  background: var(--rose-dark, #9f4f68);
+  color: #ffffff;
+  transform: scale(1.08);
 }
 
 @keyframes adminFloat {
@@ -519,13 +538,13 @@ html body .app .admin-btn:hover {
 }
 
 [data-theme="dark"] html body .app .admin-btn {
-  background: rgba(40, 40, 40, 0.9) !important;
-  color: var(--rose-light, #f8d7df) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(40, 40, 40, 0.9);
+  color: var(--rose-light, #f8d7df);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 [data-theme="dark"] html body .app .admin-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
 
 /* =================================================================
@@ -534,17 +553,17 @@ html body .app .admin-btn:hover {
 
 html body .app .info-list,
 html body .app .mini-map {
-  border-radius: 24px !important;
-  overflow: hidden !important;
-  -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
-  mask-image: radial-gradient(white, black) !important;
-  transform: translateZ(0) !important; 
-  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  border-radius: 24px;
+  overflow: hidden;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  transform: translateZ(0); 
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent);
 }
 
 [data-theme="dark"] html body .app .info-list,
 [data-theme="dark"] html body .app .mini-map {
-  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent);
 }
 
 /* =================================================================
@@ -554,9 +573,9 @@ html body .app .mini-map {
 html body .app .guest-stats div,
 html body .app .wish-item,
 html body .app .guest-item {
-  border-radius: 24px !important;
-  overflow: hidden !important;
-  transform: translateZ(0) !important;
+  border-radius: 24px;
+  overflow: hidden;
+  transform: translateZ(0);
 }
 
 /* =================================================================
@@ -565,22 +584,22 @@ html body .app .guest-item {
 
 html body .app .admin-image-field,
 html body .app .admin-music-field {
-  padding: 26px !important;
-  gap: 16px !important;
-  box-sizing: border-box !important;
+  padding: 26px;
+  gap: 16px;
+  box-sizing: border-box;
 }
 
 html body .app .admin-image-field .admin-image-preview {
-  border-radius: 14px !important;
-  margin-top: 10px !important;
-  margin-bottom: 10px !important;
-  width: 100% !important;
+  border-radius: 14px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 100%;
 }
 
 @media (max-width: 650px) {
   html body .app .admin-image-field,
   html body .app .admin-music-field {
-    padding: 18px !important;
+    padding: 18px;
   }
 }
 
@@ -588,5 +607,106 @@ html body .app .admin-image-field .admin-image-preview {
 html body .app .invitation-page > section,
 html body .app .invitation-page > footer,
 html body .app .card {
-  scroll-margin-top: 80px !important;
+  scroll-margin-top: 80px;
 }
+
+/* =================================================================
+   BİZİM HİKAYEMİZ - KESİN OTOMATİK SOL/SAĞ HİZALAMA
+   ================================================================= */
+html body .app .card .story-timeline-container {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 900px !important;
+  margin: 40px auto 0 !important;
+  padding: 20px 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+}
+
+html body .app .card .story-line {
+  position: absolute !important;
+  left: 50% !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 2px !important;
+  background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.3), var(--rose-dark), rgba(159, 79, 104, 0.3), transparent) !important;
+  transform: translateX(-50%) !important;
+  z-index: 1 !important;
+}
+
+html body .app .card .story-node {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  margin-bottom: 40px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  
+  /* 1. KUTU (İLK KARŞILAŞMA) İÇİN VARSAYILAN KURAL: KESİN SOLA YASLA */
+  justify-content: flex-start !important; 
+}
+
+/* 2. KUTU (BÜYÜK TEKLİF) İÇİN KURAL: İLK KUTUDAN SONRA GELENLERİ KESİN SAĞA YASLA */
+html body .app .card .story-node ~ .story-node {
+  justify-content: flex-end !important;
+}
+
+html body .app .card .story-node:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* NOKTA SABİTLEME (Her koşulda zaman çizgisinin tam kalbinde) */
+html body .app .card .story-dot {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background: var(--paper) !important;
+  border: 4px solid var(--rose-dark) !important;
+  z-index: 20 !important;
+  margin: 0 !important;
+}
+
+/* KUTU GENİŞLİĞİ (%45 Kilitli - Taşmaları önler) */
+html body .app .card .story-content-box {
+  width: 45% !important;
+  flex: 0 0 45% !important;
+  padding: 32px !important;
+  background: var(--paper-soft) !important;
+  border: 1px solid rgba(217, 140, 161, 0.4) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 14px 30px rgba(111, 47, 67, 0.06) !important;
+  text-align: center !important;
+  position: relative !important;
+  z-index: 10 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+/* SİSTEMİ BOZAN GÖRÜNMEZ BOŞLUK (SPACER) DİV'LERİNİ TAMAMEN KALDIR */
+html body .app .card .story-node > div:not(.story-content-box):not(.story-dot) {
+  display: none !important;
+}
+
+/* MOBİL GÖRÜNÜM: TELEFONLARDA HER ŞEYİ ALT ALTA VE ORTAYA AL */
+@media (max-width: 650px) {
+  html body .app .card .story-node,
+  html body .app .card .story-node ~ .story-node {
+    justify-content: center !important;
+    margin-bottom: 24px !important;
+  }
+  html body .app .card .story-content-box {
+    width: 100% !important;
+    flex: 0 0 100% !important;
+    padding: 24px 20px !important;
+  }
+  html body .app .card .story-line, 
+  html body .app .card .story-dot {
+    display: none !important;
+  }
+}
+
