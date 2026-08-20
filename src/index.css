@@ -790,3 +790,224 @@ html body .app .card .story-node > div:not(.story-content-box):not(.story-dot) {
     font-size: clamp(13px, 2vh, 16px) !important;
   }
 }
+
+@media (max-width: 650px) {
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+    padding: 0 !important; /* Genel butonlardan gelen padding'i ezer */
+    border-radius: 50% !important; /* Tam yuvarlak yapar */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important; /* Diğer esnek kuralların butonu bozmasını engeller */
+    font-size: 16px !important;
+  }
+
+  html body .app .glass-dock .dock-btn svg,
+  html body .app .floating-actions .dock-btn svg {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 !important;
+  }
+}
+
+/* ========================================================
+   KART VE BÖLÜMLERDEKİ YUVARLAK KÖŞELERİ İPTAL ETME (KÖŞELİ TASARIM)
+   ======================================================== */
+html body .app .hero-section,
+html body .app .intro-card,
+html body .app .card,
+html body .app .countdown-section,
+html body .app .footer,
+html body .app .mini-map,
+html body .app .guest-stats div,
+html body .app .wish-item,
+html body .app .guest-item,
+html body .app .app-modal-card {
+  border-radius: 0 !important;
+}
+
+/* Ana karşılama ekranının içindeki kavisli iç çerçeveyi de köşeli yapar */
+html body .app .hero-section::before {
+  border-radius: 0 !important;
+}
+
+/* Mobilde kartların köşeli olmasını zorlar */
+@media (max-width: 650px) {
+  html body .app .card, 
+  html body .app .countdown-section, 
+  html body .app .footer {
+    border-radius: 0 !important;
+  }
+}
+
+html body .app .hero-section .scroll-indicator,
+html body .app .invitation-page .scroll-indicator,
+html body .app .scroll-indicator {
+  bottom: clamp(130px, 20vh, 180px) !important;
+  z-index: 10 !important;
+}
+
+/* ========================================================
+   MOBİLDE KARTLARI VE İÇERİKLERİ KUSURSUZ ORTALAMA (V3 - KESİN ÇÖZÜM)
+   ======================================================== */
+@media (max-width: 650px) {
+  /* 1. SADECE aktif olan slaytı göster ve ekranın tam merkezine hizala */
+  html body .app .invitation-page > section.active-slide:not(.hero-section),
+  html body .app .invitation-page > footer.active-slide {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding-top: 8vh !important;
+    padding-bottom: 8vh !important;
+    margin: 0 auto !important;
+    min-height: unset !important;
+  }
+
+  /* 2. KAYDIRMAYI BOZAN HATA ÇÖZÜMÜ: Aktif olmayan slaytları KESİN OLARAK GİZLE */
+  html body .app .invitation-page > section:not(.active-slide),
+  html body .app .invitation-page > footer:not(.active-slide) {
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  /* 3. Eski kodu bozan "auto margin" hatalarını sıfırlar */
+  html body .app .invitation-page > section.active-slide > *:first-child { 
+    margin-top: 0 !important; 
+  }
+  html body .app .invitation-page > section.active-slide > *:last-child { 
+    margin-bottom: 0 !important; 
+  }
+  
+  /* 4. Geri Sayım kutularındaki rakamları ve yazıları tam merkeze alır */
+  html body .app .count-box {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  
+  html body .app .count-box strong,
+  html body .app .count-box span {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* ========================================================
+   MOBİLDE SLAYT MANTIĞINI İPTAL ETME (TEK PARÇA SAYFA)
+   ======================================================== */
+@media (max-width: 650px) {
+  /* Ekran kilidini tamamen aç, normal scroll'a izin ver */
+  body, html {
+    overflow: visible !important;
+    height: auto !important;
+    position: relative !important;
+    overscroll-behavior-y: auto !important;
+  }
+  
+  .invitation-page {
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 24px 16px 120px 16px !important; /* Alt butonlar için temiz boşluk */
+    display: block !important;
+  }
+
+  /* Tüm bölümleri GÖRÜNÜR yapıyoruz (Eski gizleme mantığı iptal) */
+  .invitation-page > section,
+  .invitation-page > footer {
+    display: block !important;
+    opacity: 1 !important;
+    position: relative !important;
+    height: auto !important;
+    min-height: auto !important;
+    margin-bottom: 40px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Kartların boyutları içeriğe göre esneyecek ve KÖŞELİ olacak */
+  html body .app .card, 
+  html body .app .countdown-section {
+    margin: 0 auto !important;
+    padding: 40px 24px !important;
+    border-radius: 0 !important; /* İstenildiği gibi köşeli */
+    height: auto !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  html body .app .card::before,
+  html body .app .countdown-section::before {
+    border-radius: 0 !important;
+  }
+
+  /* Harita mobilde çok sıkışmasın diye rahat bir yükseklik */
+  html body .app .mini-map {
+    height: 350px !important;
+    margin: 24px auto !important;
+    border-radius: 0 !important;
+  }
+
+  /* Formlar normal blok akışında kalsın */
+  html body .app .rsvp-form,
+  html body .app .wish-form,
+  html body .app .option-group,
+  html body .app .button-group {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 16px !important;
+  }
+  
+  /* Geri Sayım kutularındaki rakamları ortalar */
+  html body .app .count-box {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    border-radius: 0 !important;
+  }
+  
+  html body .app .count-box strong,
+  html body .app .count-box span {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* YÜZEN BUTONLARI EKRANIN ALTINA ORTALA (Tam Yuvarlak Olarak) */
+  html body .app .glass-dock,
+  html body .app .floating-actions {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 50% !important;
+    left: auto !important;
+    transform: translateX(50%) !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    z-index: 99999 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    min-height: 56px !important;
+    padding: 0 !important;
+    border-radius: 50% !important; /* Yüzen butonlar özellikle tam YUVARLAK kalır */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important;
+    font-size: 16px !important;
+  }
+}
