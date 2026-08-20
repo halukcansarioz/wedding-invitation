@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminMusicField, AdminActionButtons, AdminVideoField } from "../../AdminUI";import { Dropdown } from "../../common/UIComponents";
+import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminMusicField, AdminActionButtons, AdminVideoField } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
 import { THEMES } from "../../../config/constants";
 import { buildPersonalLink, getCurrentShareLink } from "../../../utils/helpers";
 
@@ -28,7 +29,6 @@ export function GuestsAdminPanel({
       <div className="admin-toolbar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
         <input style={{ flex: "1", minWidth: "160px", margin: 0 }} value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search..." : "İsim veya tel ara"} />
         
-        {/* EKLENEN FİLTRELER */}
         <div style={{ minWidth: "140px", margin: 0 }}>
           <Dropdown
             value={adminGuestAttendanceFilter}
@@ -150,6 +150,7 @@ export function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLin
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
   const generatedLink = buildPersonalLink(currentShareLink, personalLinkName);
+  
   const openWhatsAppShare = () => {
     if (!personalLinkName.trim()) return;
     const text = isEn
@@ -157,6 +158,7 @@ export function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLin
       : `Sevgili ${personalLinkName}, düğün davetiyemiz sana özel olarak hazırlandı! 💍\n\nDavetiyemizi aşağıdaki linkten inceleyebilirsin:\n${generatedLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   };
+
   return (
     <AdminSection title={isEn ? "Personal Link Generator" : "Kişiye Özel Akıllı Link Üretici"}>
       <div className="admin-personal-link-box personal-link-standalone" style={{ display: "grid", gap: "18px" }}>
@@ -244,10 +246,7 @@ export function GalleryTab({ adminDraft, updateDraftObject, saveSiteContent, upd
       </div>
       <div className="admin-edit-grid">
         <AdminImageField label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli (Mobil & Video Yüklenene Kadar)"} value={adminDraft.invitation?.heroImage} onFileSelect={(e) => updateDraftImage("invitation", "heroImage", e.target.files[0])} onClear={() => clearDraftImage("invitation", "heroImage")} />
-        
-        {/* EKLENEN VİDEO YÖNETİM ALANI */}
         <AdminVideoField label={isEn ? "Hero Background Video" : "Karşılama Arka Plan Videosu"} value={adminDraft.invitation?.heroVideo} onFileSelect={(e) => updateDraftVideo("invitation", "heroVideo", e.target.files[0])} onClear={() => clearDraftVideo("invitation", "heroVideo")} />
-        
         <AdminMusicField label={isEn ? "Music File" : "Müzik dosyası"} value={adminDraft.invitation?.musicFile} fileName={adminDraft.invitation?.musicName} onFileSelect={(e) => updateDraftMusic(e.target.files[0])} onClear={clearDraftMusic} />
       </div>
       <div style={{ marginTop: "32px" }}>
@@ -256,8 +255,6 @@ export function GalleryTab({ adminDraft, updateDraftObject, saveSiteContent, upd
           {(adminDraft.invitation?.gallery || []).map((imgUrl, index) => (
             <div key={index} className="admin-gallery-upload-row">
               <AdminImageField label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} value={imgUrl} onFileSelect={(e) => updateGalleryImageFile(index, e.target.files[0])} onClear={() => removeGalleryItem(index)} />
-              
-              {/* EKLENEN YUKARI / AŞAĞI TAŞIMA BUTONLARI */}
               <AdminActionButtons 
                 onMoveUp={index > 0 ? () => moveDraftArrayItem("invitation", index, -1) : null}
                 onMoveDown={index < adminDraft.invitation.gallery.length - 1 ? () => moveDraftArrayItem("invitation", index, 1) : null}

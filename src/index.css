@@ -611,71 +611,63 @@ html body .app .card {
 }
 
 /* =================================================================
-   BİZİM HİKAYEMİZ - KESİN OTOMATİK SOL/SAĞ HİZALAMA
+   BİZİM HİKAYEMİZ - KESİN OTOMATİK SOL/SAĞ HİZALAMA (V4 - KUSURSUZ)
    ================================================================= */
+/* Kapsayıcıyı normal bir blok yapıyoruz, esnek kutu (flex) iptal */
 html body .app .card .story-timeline-container {
   position: relative !important;
   width: 100% !important;
-  max-width: 900px !important;
+  max-width: 860px !important;
   margin: 40px auto 0 !important;
-  padding: 20px 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
+  padding: 0 !important;
+  display: block !important;
   box-sizing: border-box !important;
 }
 
+/* Merkez Çizgisi */
 html body .app .card .story-line {
   position: absolute !important;
   left: 50% !important;
   top: 0 !important;
   bottom: 0 !important;
   width: 2px !important;
-  background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.3), var(--rose-dark), rgba(159, 79, 104, 0.3), transparent) !important;
+  background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.4), var(--rose-dark), rgba(159, 79, 104, 0.4), transparent) !important;
   transform: translateX(-50%) !important;
   z-index: 1 !important;
+  display: block !important;
 }
 
+/* Her bir anı kutusu tam olarak alanın YARISI (%50) kadar genişliğe sahip olacak */
 html body .app .card .story-node {
   position: relative !important;
-  display: flex !important;
-  align-items: center !important;
-  margin-bottom: 40px !important;
-  width: 100% !important;
+  width: 50% !important;
+  display: block !important;
   box-sizing: border-box !important;
-  
-  /* 1. KUTU (İLK KARŞILAŞMA) İÇİN VARSAYILAN KURAL: KESİN SOLA YASLA */
-  justify-content: flex-start !important; 
+  margin: 0 0 40px 0 !important;
 }
 
-/* 2. KUTU (BÜYÜK TEKLİF) İÇİN KURAL: İLK KUTUDAN SONRA GELENLERİ KESİN SAĞA YASLA */
-html body .app .card .story-node ~ .story-node {
-  justify-content: flex-end !important;
-}
-
+/* En son anının alt boşluğunu sıfırla */
 html body .app .card .story-node:last-child {
   margin-bottom: 0 !important;
 }
 
-/* NOKTA SABİTLEME (Her koşulda zaman çizgisinin tam kalbinde) */
-html body .app .card .story-dot {
-  position: absolute !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: 20px !important;
-  height: 20px !important;
-  border-radius: 50% !important;
-  background: var(--paper) !important;
-  border: 4px solid var(--rose-dark) !important;
-  z-index: 20 !important;
-  margin: 0 !important;
+/* SOLDAKİ KUTULAR (Sola hizalanır, sağdan çizgiye 40px mesafe bırakır) */
+html body .app .card .story-node.left {
+  left: 0 !important;
+  padding: 0 40px 0 0 !important; 
 }
 
-/* KUTU GENİŞLİĞİ (%45 Kilitli - Taşmaları önler) */
+/* SAĞDAKİ KUTULAR (Sağa hizalanır, soldan çizgiye 40px mesafe bırakır) */
+html body .app .card .story-node.right {
+  left: 50% !important;
+  padding: 0 0 0 40px !important; 
+}
+
+/* İçerik Kutusu Tasarımı */
 html body .app .card .story-content-box {
-  width: 45% !important;
-  flex: 0 0 45% !important;
-  padding: 32px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 32px 24px !important;
   background: var(--paper-soft) !important;
   border: 1px solid rgba(217, 140, 161, 0.4) !important;
   border-radius: 24px !important;
@@ -687,26 +679,114 @@ html body .app .card .story-content-box {
   margin: 0 !important;
 }
 
-/* SİSTEMİ BOZAN GÖRÜNMEZ BOŞLUK (SPACER) DİV'LERİNİ TAMAMEN KALDIR */
+/* NOKTALAR (Ortak Özellik) */
+html body .app .card .story-node .story-dot {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  background: var(--paper) !important;
+  border: 4px solid var(--rose-dark) !important;
+  z-index: 20 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Sol kutunun noktası: Kendi genişliğinin tam en sağına (-10px) çivilenir */
+html body .app .card .story-node.left .story-dot {
+  right: -10px !important;
+  left: auto !important;
+}
+
+/* Sağ kutunun noktası: Kendi genişliğinin tam en soluna (-10px) çivilenir */
+html body .app .card .story-node.right .story-dot {
+  left: -10px !important;
+  right: auto !important;
+}
+
+/* Koyu Tema Ayarı */
+[data-theme="dark"] html body .app .card .story-content-box {
+  background: rgba(36, 26, 33, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Framer-Motion'un bıraktığı görünmez Spacer'ları temizle */
 html body .app .card .story-node > div:not(.story-content-box):not(.story-dot) {
   display: none !important;
 }
 
-/* MOBİL GÖRÜNÜM: TELEFONLARDA HER ŞEYİ ALT ALTA VE ORTAYA AL */
+/* MOBİL GÖRÜNÜM (650px altı ekranlar) */
 @media (max-width: 650px) {
   html body .app .card .story-node,
-  html body .app .card .story-node ~ .story-node {
-    justify-content: center !important;
+  html body .app .card .story-node.left,
+  html body .app .card .story-node.right {
+    width: 100% !important;
+    left: 0 !important;
+    padding: 0 !important;
     margin-bottom: 24px !important;
   }
   html body .app .card .story-content-box {
-    width: 100% !important;
-    flex: 0 0 100% !important;
     padding: 24px 20px !important;
   }
   html body .app .card .story-line, 
-  html body .app .card .story-dot {
+  html body .app .card .story-node .story-dot {
     display: none !important;
   }
 }
 
+@media (min-width: 651px) {
+  /* Kartın genel iç boşluğu ekran yüksekliğine (vh) göre daralır */
+  html body .app .card {
+    padding: clamp(20px, 3vh, 48px) clamp(20px, 3vw, 40px) !important;
+  }
+  
+  /* Başlıklar ve alt çizgileri */
+  html body .app .card h2, 
+  html body .app .countdown-section h2 {
+    font-size: clamp(26px, 4.5vh, 46px) !important;
+    margin-bottom: clamp(10px, 2vh, 20px) !important;
+  }
+  html body .app .card h2::after, 
+  html body .app .countdown-section h2::after {
+    margin-top: clamp(8px, 1.5vh, 18px) !important;
+  }
+  html body .app .card p.section-label, 
+  html body .app .countdown-section p.section-label {
+    font-size: clamp(12px, 1.8vh, 14px) !important;
+    margin-bottom: clamp(8px, 1.5vh, 14px) !important;
+  }
+  
+  /* Lokasyon Bilgi Tablosu */
+  html body .app .info-list {
+    margin-top: clamp(12px, 2vh, 28px) !important;
+    margin-bottom: clamp(10px, 1.5vh, 8px) !important;
+  }
+  html body .app .info-row {
+    padding: clamp(10px, 1.5vh, 20px) clamp(16px, 2vw, 26px) !important;
+  }
+  html body .app .info-row span {
+    font-size: clamp(12px, 1.8vh, 15px) !important;
+  }
+  html body .app .info-row strong {
+    font-size: clamp(16px, 2.5vh, 22px) !important;
+  }
+  
+  /* HARİTA: Alttaki boşluğu dolduracak şekilde yüksekliği artırıldı */
+  html body .app .mini-map {
+    height: clamp(260px, 36vh, 440px) !important;
+    margin-top: clamp(16px, 2.5vh, 30px) !important;
+    margin-bottom: clamp(16px, 2.5vh, 36px) !important;
+  }
+  
+  /* Butonlar */
+  html body .app .button-group {
+    margin-top: clamp(12px, 2vh, 28px) !important;
+  }
+  html body .app .main-button, 
+  html body .app .secondary-button {
+    padding: clamp(12px, 1.8vh, 16px) clamp(20px, 3vw, 36px) !important;
+    font-size: clamp(13px, 2vh, 16px) !important;
+  }
+}

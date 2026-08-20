@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 export default function IntroPage({ isOpening, copy, invitation, personalGuestName, openInvitation }) {
@@ -9,6 +9,24 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
   const openText = isEn 
     ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
     : copy.openButton;
+
+  // Space ve Enter tuşları ile zarfı açma işlemi
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Eğer zarf zaten açılıyorsa işlemi tekrar tetikleme
+      if (isOpening) return;
+      
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault(); // Boşluk tuşunun sayfayı aşağı kaydırmasını engeller
+        openInvitation();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpening, openInvitation]);
 
   return (
     <section className={`intro-page ${isOpening ? "opening" : ""}`}>
@@ -43,7 +61,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
           </div>
         )}
 
-        {/* --- DEĞİŞTİRİLECEK BUTON KISMI --- */}
+        {/* --- BUTON KISMI --- */}
         <button className="envelope-seal" onClick={openInvitation}>
           <span 
             style={{ 
@@ -51,8 +69,8 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
               textAlign: 'center', 
               lineHeight: '1.2',
               color: '#ffffff', 
-              WebkitTextFillColor: '#ffffff', /* Arka plandaki mor rengin yazıya sızmasını kesin olarak engeller */
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', /* Beyazın parlaması için arkasına net bir gölge ekler */
+              WebkitTextFillColor: '#ffffff', /* Arka plandaki rengin sızmasını engeller */
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
               fontWeight: '900',
               fontSize: '18px',
               letterSpacing: '0.5px'

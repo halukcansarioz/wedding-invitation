@@ -54,50 +54,61 @@ export default function InvitationController() {
   const touchStartYRef = useRef(0);
 
   const scrollToNext = useCallback(() => {
+    if (isScrollingRef.current) return;
+    
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 700);
+
     const isMobile = window.innerWidth <= 650;
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
     
     if (isMobile) {
-      if (currentSlideIndex < sections.length - 1) setCurrentSlideIndex((prev) => prev + 1);
+      setCurrentSlideIndex((prev) => (prev < sections.length - 1 ? prev + 1 : prev));
     } else {
-      const currentScroll = window.scrollY;
-      const nextSection = sections.find(sec => {
-        const rect = sec.getBoundingClientRect();
-        return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
-      });
+      const nextIndex = currentSlideIndex < sections.length - 1 ? currentSlideIndex + 1 : currentSlideIndex;
+      const targetSec = sections[nextIndex];
       
-      const targetSec = nextSection || (sections.length > 0 ? sections[sections.length - 1] : null);
       if (targetSec) {
         const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
         const sectionHeight = targetSec.offsetHeight;
         const viewportHeight = window.innerHeight;
         
-        let scrollToY;
-        // Eğer kart ekrandan büyükse (uzunsa) üstten başlat, değilse tam ortaya hizala
-        if (sectionHeight > viewportHeight * 0.85) {
-          scrollToY = targetY - 60; // Başlık görünmesi için üstte 60px boşluk
-        } else {
-          scrollToY = targetY - (viewportHeight - sectionHeight) / 2; // Kısa kartlar için tam ekran ortası
-        }
+        // CSS ile kartlar ekrana sığdırıldığı için her zaman TAM ORTALA yapıyoruz
+        const scrollToY = targetY - (viewportHeight - sectionHeight) / 2;
         window.scrollTo({ top: scrollToY, behavior: 'smooth' });
+        setCurrentSlideIndex(nextIndex);
       }
     }
   }, [currentSlideIndex]);
 
   const scrollToPrev = useCallback(() => {
+    if (isScrollingRef.current) return;
+    
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 700);
+
     const isMobile = window.innerWidth <= 650;
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+    
     if (isMobile) {
-      if (currentSlideIndex > 0) setCurrentSlideIndex((prev) => prev - 1);
+      setCurrentSlideIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else {
-      const currentScroll = window.scrollY;
-      const prevSection = [...sections].reverse().find(sec => {
-        const rect = sec.getBoundingClientRect();
-        return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
-      });
-      // BURADAKİ 'center' DEĞERİ 'start' YAPILDI
-      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else window.scrollTo({ top: 0, behavior: 'smooth' });
+      const prevIndex = currentSlideIndex > 0 ? currentSlideIndex - 1 : 0;
+      const targetSec = sections[prevIndex];
+
+      if (targetSec) {
+        const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
+        const sectionHeight = targetSec.offsetHeight;
+        const viewportHeight = window.innerHeight;
+        
+        // Aynı şekilde tam ortala
+        const scrollToY = targetY - (viewportHeight - sectionHeight) / 2;
+        window.scrollTo({ top: scrollToY, behavior: 'smooth' });
+        setCurrentSlideIndex(prevIndex);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setCurrentSlideIndex(0);
+      }
     }
   }, [currentSlideIndex]);
 
@@ -106,8 +117,6 @@ export default function InvitationController() {
     if (window.innerWidth <= 650) {
       if (e.deltaY > 0) scrollToNext();
       else scrollToPrev();
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 600);
     }
   }, [opened, scrollToNext, scrollToPrev]);
 
@@ -127,8 +136,6 @@ export default function InvitationController() {
       if (Math.abs(diff) > 60) {
         if (diff > 0) scrollToNext(); 
         else scrollToPrev(); 
-        isScrollingRef.current = true;
-        setTimeout(() => { isScrollingRef.current = false; }, 600);
       }
     }
   }, [opened, scrollToNext, scrollToPrev]);
@@ -154,6 +161,24 @@ export default function InvitationController() {
         setShowScrollTop(window.scrollY > 100);
         const isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 100;
         setShowScrollDown(!isAtBottom);
+
+        if (!isScrollingRef.current) {
+          const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+          let minDistance = Infinity;
+          let newIndex = currentSlideIndex;
+          
+          sections.forEach((sec, idx) => {
+            const rect = sec.getBoundingClientRect();
+            const secCenter = rect.top + rect.height / 2;
+            const viewCenter = window.innerHeight / 2;
+            const distance = Math.abs(secCenter - viewCenter);
+            if (distance < minDistance) {
+              minDistance = distance;
+              newIndex = idx;
+            }
+          });
+          setCurrentSlideIndex(newIndex);
+        }
       }
     };
 

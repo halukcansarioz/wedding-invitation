@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -10,6 +10,18 @@ import {
   WISH_MAX_LENGTH,
   ATTENDANCE_OPTIONS
 } from "../../config/constants";
+
+// OPTİMİZASYON: Zod şemaları her render'da baştan yaratılmasın diye bileşen dışına alındı.
+const getRsvpSchema = (t) => z.object({
+  name: z.string().min(3, { message: t('form.missingNameMessage') }),
+  attendance: z.string(),
+  note: z.string().max(NOTE_MAX_LENGTH).optional()
+});
+
+const getWishSchema = (t) => z.object({
+  name: z.string().min(2, { message: t('form.missingNameMessage') }),
+  message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH)
+});
 
 function DeadlineBanner({ isEn, title, text }) {
   return (
@@ -78,12 +90,8 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const [copied, setCopied] = useState(false);
   const [urlGuestName, setUrlGuestName] = useState("");
 
-  // RENDER OPTİMİZASYONU: Şemanın her render'da baştan oluşturulmasını engeller
-  const rsvpSchema = useMemo(() => z.object({
-    name: z.string().min(3, { message: t('form.missingNameMessage') }),
-    attendance: z.string(),
-    note: z.string().max(NOTE_MAX_LENGTH).optional()
-  }), [t]);
+  // OPTİMİZASYON: Şema dışarıdan üretiliyor, performans kaybı önlendi.
+  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
   const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(rsvpSchema),
@@ -116,21 +124,21 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
     }
   };
 
-  const resetAndCloseModal = () => {
+  const resetAndCloseModal = useCallback(() => {
     setShowDeclineModal(false);
     setTimeout(() => {
       setShowDeclineGift(false);
       setCopied(false);
     }, 300);
-  };
+  }, []);
 
-  const copyIban = () => {
+  const copyIban = useCallback(() => {
     if (giftData?.iban) {
       navigator.clipboard.writeText(giftData.iban);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
-  };
+  }, [giftData?.iban]);
 
   const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
     ...opt, 
@@ -227,11 +235,8 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
   const isEn = i18n.language.startsWith('en');
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
 
-  // RENDER OPTİMİZASYONU: Şemanın her render'da baştan oluşturulmasını engeller
-  const wishSchema = useMemo(() => z.object({
-    name: z.string().min(2, { message: t('form.missingNameMessage') }),
-    message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH)
-  }), [t]);
+  // OPTİMİZASYON: Zod şeması dışarıdan bağlandı.
+  const wishSchema = useMemo(() => getWishSchema(t), [t]);
 
   const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(wishSchema),
