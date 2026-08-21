@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 export default function FloatingMenu({
   isEn,
@@ -81,31 +80,33 @@ export default function FloatingMenu({
           </svg>
         </button>
 
-        {showScrollDown && (
-          <button
-            type="button"
-            className="dock-btn scroll-down-btn"
-            onClick={scrollToNext}
-            title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </button>
-        )}
+        {/* 1. YUKARI OKU (Görseldeki gibi üstte ve ince düz ok tasarımı) */}
+        <button
+          type="button"
+          className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`}
+          onClick={scrollToPrev}
+          title={isEn ? "Scroll Up" : "Yukarı Kaydır"}
+          tabIndex={!showScrollTop ? -1 : 0}
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
 
-        {showScrollTop && (
-          <button
-            type="button"
-            className="dock-btn scroll-up-btn"
-            onClick={scrollToPrev}
-            title={isEn ? "Scroll Up" : "Yukarı Kaydır"}
-          >
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="18 15 12 9 6 15"></polyline>
-            </svg>
-          </button>
-        )}
+        {/* 2. AŞAĞI OKU (Görseldeki gibi altta ve ince düz ok tasarımı) */}
+        <button
+          type="button"
+          className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`}
+          onClick={scrollToNext}
+          title={isEn ? "Scroll Down" : "Aşağı Kaydır"}
+          tabIndex={!showScrollDown ? -1 : 0}
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
       </div>
     </>
   );

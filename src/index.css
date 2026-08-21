@@ -180,12 +180,15 @@ html[data-theme] body .app .floating-actions {
 
 html body .app .glass-dock .dock-btn,
 html body .app .floating-actions .dock-btn {
-    background: rgba(255, 255, 255, 0.95) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    border: 1px solid rgba(230, 230, 230, 1) !important;
-    box-shadow: 0 0.5vh 2vh rgba(0, 0, 0, 0.15) !important;
-    opacity: 1 !important;
-    animation: none !important; /* BUTONLARIN ASENKRON ANİMASYONU BURADA KESİN OLARAK SİLİNDİ */
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.3s ease, 
+              opacity 0.7s ease-in-out, 
+              width 0.7s ease-in-out,
+              min-width 0.7s ease-in-out,
+              height 0.7s ease-in-out,
+              min-height 0.7s ease-in-out,
+              margin 0.7s ease-in-out,
+              padding 0.7s ease-in-out !important;
 }
 
 html[data-theme="dark"] body .app .glass-dock .dock-btn,
@@ -196,19 +199,21 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
 }
 
 /* =================================================================
-   6. YÜZEN BUTONLARI BİR BÜTÜN HALİNDE HAREKET ETTİRME (PREMIUM ANİMASYON)
+   6. KUSURSUZ SENKRONİZASYON (ZARİF VE ROMANTİK SÜZÜLME EFEKTİ)
    ================================================================= */
-/* Daha organik, ağırlıksız (zero-gravity) bir süzülme efekti */
-@keyframes premiumFloat {
+/* Nefes alan, organik ve etrafına hafif bir ışıltı yayan süzülme */
+@keyframes elegantFloatContainer {
   0%, 100% { 
     translate: 0 0px; 
+    filter: drop-shadow(0 2px 4px rgba(159, 79, 104, 0.05));
   }
   50% { 
-    translate: 0 -14px; /* vh yerine px kullanmak titreşimi kökünden çözer */
+    translate: 0 -12px; 
+    filter: drop-shadow(0 12px 24px rgba(159, 79, 104, 0.25)); /* Yükseldiğinde zarifçe parlar */
   }
 }
 
-/* MASAÜSTÜ */
+/* MASAÜSTÜ KAPSAYICI */
 @media (min-width: 651px) {
   html body .app .glass-dock,
   html body .app .floating-actions {
@@ -216,12 +221,12 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     top: 50% !important;
     right: 20px !important;
     transform: translateY(-50%) !important; 
-    /* 3.5 saniye ve özel bir easing eğrisi ile daha zarif akış */
-    animation: premiumFloat 3.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important; 
+    /* 4 saniyelik çok daha yumuşak ve ağırbaşlı bir geçiş */
+    animation: elegantFloatContainer 4s ease-in-out infinite !important; 
   }
 }
 
-/* MOBİL */
+/* MOBİL KAPSAYICI */
 @media (max-width: 650px) {
   html body .app .glass-dock,
   html body .app .floating-actions {
@@ -232,15 +237,15 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     transform: translateX(50%) !important; 
     flex-direction: row !important;
     padding: 0 !important;
-    gap: 3.5vw !important; /* Daha ferah durması için buton aralığı hafif açıldı */
+    gap: 3.5vw !important;
     width: max-content !important;
     z-index: 99999 !important;
-    animation: premiumFloat 3.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+    animation: elegantFloatContainer 4s ease-in-out infinite !important;
   }
 
   html body .app .glass-dock .dock-btn,
   html body .app .floating-actions .dock-btn {
-    width: 58px !important; /* Daha estetik ve dolgun boyut */
+    width: 58px !important; 
     height: 58px !important;
     min-width: 58px !important;
     min-height: 58px !important;
@@ -251,11 +256,8 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
     justify-content: center !important;
     flex: 0 0 auto !important;
     font-size: 16px !important;
-    /* Dokunma animasyonunun akıcı olması için yumuşak geçiş */
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease !important; 
   }
 
-  /* İkon boyutunu da orantılı büyüttük */
   html body .app .glass-dock .dock-btn svg,
   html body .app .floating-actions .dock-btn svg {
     width: 26px !important;
@@ -264,57 +266,67 @@ html[data-theme="dark"] body .app .floating-actions .dock-btn {
   }
 }
 
-/* DOKUNMA VE HOVER EFEKTİ (Etkileşimi premium hissettirir) */
-html body .app .glass-dock .dock-btn:hover,
-html body .app .floating-actions .dock-btn:hover,
-html body .app .glass-dock .dock-btn:active,
-html body .app .floating-actions .dock-btn:active {
-  transform: scale(1.12) !important; /* Dokunulduğunda tatlı bir şekilde esneyip büyür */
-  box-shadow: 0 8px 24px rgba(159, 79, 104, 0.3) !important; /* Tema renginize uygun parlama */
-}
 
 /* =================================================================
-   7. MOBİL (650px ALTI) - TEK PARÇA SAYFA (SCROLL) MANTIĞI
+   7. MOBİL (650px ALTI) - HER EKRANDA KESİN OLARAK TEK BÖLÜM 
    ================================================================= */
 @media (max-width: 650px) {
   body, html {
-    overflow: visible !important;
-    height: auto !important;
-    position: relative !important;
-    overscroll-behavior-y: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: none !important;
+    scroll-snap-type: y mandatory !important; 
   }
   
   .invitation-page {
     position: relative !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding: 24px 16px 120px 16px !important; 
     display: block !important;
+    padding: 0 !important;
     background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft));
   }
 
   .invitation-page > section,
   .invitation-page > footer {
-    display: block !important;
-    opacity: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
     position: relative !important;
-    height: auto !important;
-    min-height: auto !important;
-    margin-bottom: 40px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    height: 100dvh !important; 
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    scroll-snap-align: start !important; 
+    scroll-snap-stop: always !important; 
+  }
+
+  html body .app .hero-section {
+    border-radius: 0 !important;
+  }
+  html body .app .hero-section::before,
+  html body .app .hero-section::after {
+    border-radius: 0 !important;
+    margin: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
   }
 
   html body .app .card, 
   html body .app .countdown-section {
     margin: 0 auto !important;
-    padding: 40px 24px !important;
-    height: auto !important;
-    width: 100% !important;
+    width: 90vw !important; 
+    max-height: 85dvh !important; 
+    padding: 6vh 6vw 12vh 6vw !important; 
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
+    border-radius: 28px !important;
+    overflow-y: auto !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
   }
 
   html body .app .card > *, 
@@ -322,60 +334,32 @@ html body .app .floating-actions .dock-btn:active {
     width: 100% !important;
     margin-bottom: 3vh !important;
   }
-
   html body .app .card > *:last-child, 
   html body .app .countdown-section > *:last-child { 
     margin-bottom: 0 !important; 
   }
 
   html body .app .mini-map {
-    height: 350px !important;
-    margin: 24px auto !important;
+    height: 35vh !important;
+    margin: 2vh auto !important;
+    width: 100% !important;
   }
 
-  html body .app .rsvp-form,
-  html body .app .wish-form,
-  html body .app .option-group,
-  html body .app .button-group {
+  html body .app .rsvp-form, html body .app .wish-form,
+  html body .app .option-group, html body .app .button-group {
     display: flex !important;
     flex-direction: column !important;
     width: 100% !important;
     gap: 16px !important;
   }
-  
+
   html body .app .count-box {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
+    display: flex !important; flex-direction: column !important;
+    justify-content: center !important; align-items: center !important;
   }
   
-  html body .app .count-box strong,
-  html body .app .count-box span {
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-
-  html body .app .rsvp-form input,
-  html body .app .wish-form input {
-    padding: 2.5vh 4vw;
-    font-size: max(1rem, 4vw);
-    border-radius: 5vw; 
-    min-height: 8vh;
-    text-align: center;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  html body .app .rsvp-form textarea,
-  html body .app .wish-form textarea {
-    padding: 2.5vh 4vw;
-    font-size: max(1rem, 4vw);
-    border-radius: 5vw;
-    min-height: 15vh; 
-    text-align: center;
-    width: 100%;
-    box-sizing: border-box;
+  html body .app .count-box strong, html body .app .count-box span {
+    margin-left: auto !important; margin-right: auto !important;
   }
 }
 
@@ -610,76 +594,20 @@ html body .app .scroll-indicator {
 }
 
 /* =================================================================
-   KAYDIRMA BUTONLARINA TIKLAMA EFEKTİ VE ANİMASYON DONDURMA
+   GİZLİ BUTONLAR (ZARF EKRANINDA OKLARI KUSURSUZ SAKLAMAK İÇİN)
    ================================================================= */
-
-/* 1. Menüye dokunulduğunda, fareyle üzerine gelindiğinde veya tıklandığında süzülme animasyonunu DONDUR */
-html body .app .glass-dock:active,
-html body .app .floating-actions:active,
-html body .app .glass-dock:focus-within,
-html body .app .floating-actions:focus-within,
-html body .app .glass-dock:hover,
-html body .app .floating-actions:hover {
-  animation-play-state: paused !important;
-}
-
-html body .app .glass-dock .scroll-down-btn:focus,
-html body .app .floating-actions .scroll-down-btn:focus,
-html body .app .glass-dock .scroll-up-btn:focus,
-html body .app .floating-actions .scroll-up-btn:focus,
-html body .app .glass-dock .scroll-down-btn:active,
-html body .app .floating-actions .scroll-down-btn:active,
-html body .app .glass-dock .scroll-up-btn:active,
-html body .app .floating-actions .scroll-up-btn:active {
-  transform: scale(1.18) !important; /* Normalden biraz daha büyük */
-  box-shadow: 0 10px 28px rgba(159, 79, 104, 0.4) !important;
-  border-color: var(--amp-color, #9f4f68) !important; /* Aktif olduğunu belli eder */
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease !important;
-}
-
-/* =================================================================
-   TÜM BUTONLAR SÜZÜLÜR, SADECE YÖN BUTONLARI TIKLANINCA KİLİTLENİR
-   ================================================================= */
-@keyframes premiumFloatIndividual {
-  0%, 100% { translate: 0 0px; }
-  50% { translate: 0 -14px; }
-}
-
-/* 1. TÜM BUTONLARA SÜZÜLME ANİMASYONU EKLE (Hepsi aynı anda inip çıkar) */
-html body .app .glass-dock .dock-btn,
-html body .app .floating-actions .dock-btn {
-  animation: premiumFloatIndividual 3.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, opacity 0.3s ease, width 0.3s ease !important;
-}
-
-/* 2. SADECE YÖN BUTONLARINA TIKLAMA/KİLİT EFEKTİ EKLE 
-   (Dil ve Müzik butonları tıklandığında kilitlenmez, ahengi bozmaz) */
-
-/* Üzerine gelince sadece yön butonları tepki verir */
-html body .app .glass-dock .scroll-down-btn:hover,
-html body .app .floating-actions .scroll-down-btn:hover,
-html body .app .glass-dock .scroll-up-btn:hover,
-html body .app .floating-actions .scroll-up-btn:hover {
-  transform: scale(1.03) !important;
-  box-shadow: 0 4px 12px rgba(159, 79, 104, 0.15) !important;
-}
-
-/* En son tıklanan yön butonu havada KİLİTLENİR (Animasyonu görsel olarak ezeriz) */
-html body .app .glass-dock .scroll-down-btn:focus,
-html body .app .floating-actions .scroll-down-btn:focus,
-html body .app .glass-dock .scroll-up-btn:focus,
-html body .app .floating-actions .scroll-up-btn:focus {
-  translate: 0 -8px !important; 
-  transform: scale(1.05) !important; 
-  border-color: var(--amp-color, #9f4f68) !important; 
-}
-
-/* Tam tıklama (Basılı tutma) anında sadece yön butonları tepki verir */
-html body .app .glass-dock .scroll-down-btn:active,
-html body .app .floating-actions .scroll-down-btn:active,
-html body .app .glass-dock .scroll-up-btn:active,
-html body .app .floating-actions .scroll-up-btn:active {
-  translate: 0 -4px !important; 
-  transform: scale(1.08) !important;
-  box-shadow: 0 6px 16px rgba(159, 79, 104, 0.25) !important;
+html body .app .glass-dock .hidden-btn,
+html body .app .floating-actions .hidden-btn {
+  display: flex !important; /* Animasyonun çalışması için elementi var ediyoruz */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-width: 0 !important;
+  transform: scale(0) !important; /* Tatlı bir şekilde küçülerek kaybolur/büyüyerek gelir */
 }
