@@ -6,7 +6,14 @@ import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import IntroPage from "../components/invitation/IntroPage";
 import FloatingMenu from "../components/common/FloatingMenu";
-import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getQrImageUrl } from "../utils/helpers";
+import { 
+  formatMessageTemplate, 
+  getCurrentShareLink, 
+  createGoogleCalendarLink, 
+  getGuestNameFromUrl, 
+  getTableFromUrl,
+  getQrImageUrl 
+} from "../utils/helpers";
 
 const InvitationView = lazy(() => import("./InvitationView"));
 
@@ -15,7 +22,7 @@ export default function InvitationController() {
   const isEn = i18n.language.startsWith('en');
 
   const { siteData, guests, setGuests, wishes, setWishes } = useSiteContext();
-  const { opened, setOpened, isOpening, setIsOpening, guestForm, setGuestForm, wishForm, setWishForm, showAppAlert, showAppConfirm } = useUIContext();
+  const { opened, setOpened, isOpening, setIsOpening, showAppAlert, showAppConfirm } = useUIContext();
 
   const toggleLanguage = () => i18n.changeLanguage(isEn ? 'tr' : 'en');
 
@@ -27,8 +34,8 @@ export default function InvitationController() {
   
   const coupleName = useMemo(() => `${invitation.bride} & ${invitation.groom}`, [invitation.bride, invitation.groom]);
   const personalGuestName = useMemo(() => getGuestNameFromUrl(), []);
+  const personalTableNumber = useMemo(() => getTableFromUrl(), []);
   
-  const isAttending = useMemo(() => guestForm.attendance === "Katılacağım", [guestForm.attendance]);
   const attendingGuests = useMemo(() => guests.filter((g) => g.attendance === "Katılacağım"), [guests]);
   const totalPersonCount = useMemo(() => attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0), [attendingGuests]);
   const notAttendingCount = useMemo(() => guests.filter((g) => g.attendance === "Katılamayacağım").length, [guests]);
@@ -47,13 +54,8 @@ export default function InvitationController() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
 
-  /* =========================================================
-     KARTLARI EKRANIN TAM ORTASINA HİZALAYAN KAYDIRMA MANTIĞI
-     ========================================================= */
   const scrollToNext = useCallback(() => {
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    
-    // Şu an ekranda GÖZÜKEN (merkeze en yakın) kartı tespit et
     let minDistance = Infinity;
     let currentIndex = 0;
     const viewCenter = window.innerHeight / 2;
@@ -68,7 +70,6 @@ export default function InvitationController() {
       }
     });
 
-    // Eğer son kartta değilsek, bir sonraki (index + 1) karta git
     if (currentIndex < sections.length - 1) {
       const targetSec = sections[currentIndex + 1];
       const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
@@ -76,22 +77,18 @@ export default function InvitationController() {
       const viewportHeight = window.innerHeight;
       
       let scrollToY = targetY - (viewportHeight - sectionHeight) / 2;
-      
       if (sectionHeight > viewportHeight * 0.95) {
         scrollToY = targetY - 40;
       }
       
       window.scrollTo({ top: scrollToY, behavior: 'smooth' });
     } else {
-      // Zaten sondaysak sayfanın en dibine kaydır
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
   }, []);
 
   const scrollToPrev = useCallback(() => {
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    
-    // Şu an ekranda GÖZÜKEN (merkeze en yakın) kartı tespit et
     let minDistance = Infinity;
     let currentIndex = 0;
     const viewCenter = window.innerHeight / 2;
@@ -106,7 +103,6 @@ export default function InvitationController() {
       }
     });
 
-    // Eğer ilk kartta değilsek, bir önceki (index - 1) karta git
     if (currentIndex > 0) {
       const targetSec = sections[currentIndex - 1];
       const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
@@ -114,14 +110,12 @@ export default function InvitationController() {
       const viewportHeight = window.innerHeight;
       
       let scrollToY = targetY - (viewportHeight - sectionHeight) / 2;
-      
       if (sectionHeight > viewportHeight * 0.95) {
         scrollToY = targetY - 40;
       }
 
       window.scrollTo({ top: scrollToY, behavior: 'smooth' });
     } else {
-      // Zaten en üstteysek sayfanın en tepesine kaydır
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, []);
@@ -144,13 +138,12 @@ export default function InvitationController() {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Zarf açılmadıysa veya kullanıcı bir form dolduruyorsa (input/textarea) tuşlara müdahale etme
       if (!opened) return;
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
       if (e.key === 'ArrowDown') {
-        e.preventDefault(); // Tarayıcının varsayılan küçük kaydırmasını engeller
-        scrollToNext();     // Bizim merkeze hizalayan fonksiyonumuzu çalıştırır
+        e.preventDefault();
+        scrollToNext();
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         scrollToPrev();
@@ -167,18 +160,6 @@ export default function InvitationController() {
     setTimeout(() => { setOpened(true); }, 4000);
   }, [startMusic, setIsOpening, setOpened]);
 
-  const handleGuestChange = useCallback((e) => setGuestForm(prev => ({ ...prev, [e.target.name]: e.target.value })), [setGuestForm]);
-  const handleWishChange = useCallback((e) => setWishForm(prev => ({ ...prev, [e.target.name]: e.target.value })), [setWishForm]);
-
-  const updateAttendance = useCallback((attendance) => {
-    setGuestForm(prev => ({
-      ...prev, attendance,
-      personCount: attendance === "Katılacağım" ? (prev.personCount === "0" ? "1" : prev.personCount) : "0",
-      side: attendance === "Katılacağım" ? (prev.side === "-" ? "Gelin Tarafı" : prev.side) : "-",
-      hasChild: attendance === "Katılacağım" ? (prev.hasChild === "-" ? "Hayır" : prev.hasChild) : "-",
-    }));
-  }, [setGuestForm]);
-
   const copyInvitationLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
@@ -189,7 +170,7 @@ export default function InvitationController() {
   }, [currentShareLink, showAppAlert, t, isEn]);
 
   const { submitGuest, submitWish } = useDatabaseManager({
-    guests, setGuests, wishes, setWishes, guestForm, setGuestForm, wishForm, setWishForm, settings, 
+    guests, setGuests, wishes, setWishes, settings, 
     showAppAlert, showAppConfirm, t, isEn
   });
 
@@ -197,7 +178,14 @@ export default function InvitationController() {
     return (
       <div style={{height: "100%"}}>
         <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
-        <IntroPage isOpening={isOpening} copy={copy} invitation={invitation} personalGuestName={personalGuestName} openInvitation={openInvitation} />
+        <IntroPage 
+          isOpening={isOpening} 
+          copy={copy} 
+          invitation={invitation} 
+          personalGuestName={personalGuestName} 
+          personalTableNumber={personalTableNumber}
+          openInvitation={openInvitation} 
+        />
         <FloatingMenu 
           isEn={isEn} 
           toggleLanguage={toggleLanguage} 
@@ -220,12 +208,27 @@ export default function InvitationController() {
       
       <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
         <InvitationView
-          siteData={siteData} settings={settings} invitation={invitation} copy={copy} familyInfo={familyInfo} coupleName={coupleName}
-          guestGreeting={guestGreeting} timeLeft={timeLeft} googleCalendarLink={googleCalendarLink} qrImageUrl={qrImageUrl}
-          shareText={shareText} copyInvitationLink={copyInvitationLink} guestForm={guestForm} handleGuestChange={handleGuestChange}
-          updateAttendance={updateAttendance} setGuestForm={setGuestForm} isAttending={isAttending} submitGuest={submitGuest}
-          rsvpWhatsappText={rsvpWhatsappText} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount}
-          wishForm={wishForm} handleWishChange={handleWishChange} submitWish={submitWish} approvedWishes={approvedWishes} scrollToNext={scrollToNext}
+          siteData={siteData} 
+          settings={settings} 
+          invitation={invitation} 
+          copy={copy} 
+          familyInfo={familyInfo} 
+          coupleName={coupleName}
+          guestGreeting={guestGreeting} 
+          personalTableNumber={personalTableNumber}
+          timeLeft={timeLeft} 
+          googleCalendarLink={googleCalendarLink} 
+          qrImageUrl={qrImageUrl}
+          shareText={shareText} 
+          copyInvitationLink={copyInvitationLink} 
+          submitGuest={submitGuest}
+          rsvpWhatsappText={rsvpWhatsappText} 
+          guests={guests} 
+          totalPersonCount={totalPersonCount} 
+          notAttendingCount={notAttendingCount}
+          submitWish={submitWish} 
+          approvedWishes={approvedWishes} 
+          scrollToNext={scrollToNext}
         />
       </Suspense>
     </div>

@@ -1,285 +1,318 @@
-import {
-  THEME_FAVICON_COLORS,
-  DEFAULT_SHARE_LINK,
-  DEFAULT_WEDDING_MUSIC_FILE,
-  DEFAULT_WEDDING_MUSIC_NAME,
-  DEFAULT_SITE_DATA,
-  MAX_IMAGE_DIMENSION,
-  IMAGE_QUALITY,
-  MAX_AUDIO_FILE_SIZE,
-  SITE_DATA_KEY,
-  ADMIN_SESSION_LAST_ACTIVE_KEY,
-  ADMIN_SESSION_TIMEOUT_MS
-} from "../config/constants";
+import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
 
-export { normalizeText, downloadTextFile, csvEscape, createCsv, excelEscape, createExcelTable } from "./exportUtils";
-
-export const getFaviconUrl = (theme) => {
-  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.rose;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="17" fill="${colors.bg}"/><circle cx="32" cy="32" r="21" fill="${colors.circle}" opacity="0.72"/><g fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="2" stroke-linejoin="round"><path d="M32 31c-7-9-15-10-18-5-3 6 2 12 13 11-7 9-5 17 1 19 7 1 11-5 8-16 10 5 18 2 18-5 0-6-7-9-17-4 7-9 6-17 0-19-6-1-10 6-5 19Z"/></g><circle cx="32" cy="32" r="6" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="2"/></svg>`;
-  return `data:image/svg+xml,${encodeURIComponent(svg.trim())}`;
+export const getFaviconUrl = (theme = "lavanta") => {
+  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.lavanta;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="16" fill="${colors.bg}"/>
+    <circle cx="32" cy="32" r="22" fill="${colors.circle}"/>
+    <circle cx="32" cy="20" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="44" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="32" cy="44" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="20" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="8" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="1.5"/>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 };
 
-export const getCurrentShareLink = () => DEFAULT_SHARE_LINK;
-
-export const fixShareLink = (data) => {
-  if (!data?.invitation) return data;
-  const currentLink = String(data.invitation.shareLink || "").trim();
-  const isLocalhostLink = currentLink.includes("localhost") || currentLink.includes("127.0.0.1") || currentLink === "";
-  return { ...data, invitation: { ...data.invitation, shareLink: isLocalhostLink ? DEFAULT_SHARE_LINK : currentLink } };
-};
-
-export const applyDefaultWeddingMusic = (data) => {
-  if (!data?.invitation) return data;
-  return { ...data, invitation: { ...data.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } };
-};
-
-export const mergeSiteData = (storedData) => {
-  const stored = storedData && typeof storedData === "object" ? storedData : {};
-  return {
-    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(stored.invitation || {}), gallery: Array.isArray(stored.invitation?.gallery) ? stored.invitation.gallery : DEFAULT_SITE_DATA.invitation.gallery },
-    familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(stored.familyInfo || {}) },
-    copy: { ...DEFAULT_SITE_DATA.copy, ...(stored.copy || {}) },
-    eventDetails: Array.isArray(stored.eventDetails) && stored.eventDetails.length > 0 ? stored.eventDetails : DEFAULT_SITE_DATA.eventDetails,
-    scheduleItems: Array.isArray(stored.scheduleItems) && stored.scheduleItems.length > 0 ? stored.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
-    settings: { ...DEFAULT_SITE_DATA.settings, ...(stored.settings || {}), visibility: { ...(DEFAULT_SITE_DATA.settings.visibility || {}), ...(stored.settings?.visibility || {}) } },
-    messages: { ...DEFAULT_SITE_DATA.messages, ...(stored.messages || {}) },
-    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(stored.giftRegistry || {}) },
-  };
-};
-
-export const normalizeSiteData = (data) => {
-  // Eğer veri yoksa doğrudan default (varsayılan) verileri döndür
-  if (!data) return DEFAULT_SITE_DATA;
-
-  // Veritabanından gelen veri ile varsayılan veriyi harmanla
+export const normalizeSiteData = (raw) => {
+  if (!raw) return DEFAULT_SITE_DATA;
   return {
     ...DEFAULT_SITE_DATA,
-    ...data,
-    invitation: {
-      ...DEFAULT_SITE_DATA.invitation,
-      ...(data.invitation || {}),
-    },
-    familyInfo: {
-      ...DEFAULT_SITE_DATA.familyInfo,
-      ...(data.familyInfo || {}),
-    },
-    giftRegistry: {
-      ...DEFAULT_SITE_DATA.giftRegistry,
-      ...(data.giftRegistry || {}),
-    },
-    copy: {
-      ...DEFAULT_SITE_DATA.copy,
-      ...(data.copy || {}),
-    },
+    ...raw,
+    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) },
+    familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(raw.familyInfo || {}) },
+    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(raw.giftRegistry || {}) },
+    copy: { ...DEFAULT_SITE_DATA.copy, ...(raw.copy || {}) },
     settings: {
       ...DEFAULT_SITE_DATA.settings,
-      ...(data.settings || {}),
+      ...(raw.settings || {}),
       visibility: {
         ...DEFAULT_SITE_DATA.settings.visibility,
-        ...(data.settings?.visibility || {}),
+        ...(raw.settings?.visibility || {}),
       },
     },
-    messages: {
-      ...DEFAULT_SITE_DATA.messages,
-      ...(data.messages || {}),
-    },
-    eventDetails: data.eventDetails || DEFAULT_SITE_DATA.eventDetails || [],
-    scheduleItems: data.scheduleItems || DEFAULT_SITE_DATA.scheduleItems || [],
-    // AŞAĞIDAKİ SATIR BİZİM HİKAYEMİZ BÖLÜMÜNÜN ÇALIŞMASINI SAĞLAR
-    storyTimeline: data.storyTimeline || DEFAULT_SITE_DATA.storyTimeline || [], 
+    messages: { ...DEFAULT_SITE_DATA.messages, ...(raw.messages || {}) },
+    eventDetails: Array.isArray(raw.eventDetails) && raw.eventDetails.length > 0 ? raw.eventDetails : DEFAULT_SITE_DATA.eventDetails,
+    scheduleItems: Array.isArray(raw.scheduleItems) && raw.scheduleItems.length > 0 ? raw.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
+    storyTimeline: Array.isArray(raw.storyTimeline) && raw.storyTimeline.length > 0 ? raw.storyTimeline : DEFAULT_SITE_DATA.storyTimeline,
   };
 };
 
 export const loadStoredSiteData = () => {
-  try { return normalizeSiteData(JSON.parse(localStorage.getItem(SITE_DATA_KEY))); } catch { return normalizeSiteData(null); }
-};
-
-export const createGoogleCalendarLink = (siteData, coupleName) => {
-  const start = new Date(siteData.invitation.weddingDate);
-  if (Number.isNaN(start.getTime())) return "#";
-  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
-  const formatDate = (date) => date.toISOString().replace(/-|:|\.\d+/g, "");
-  const title = encodeURIComponent(`${coupleName} Düğünü`);
-  const details = encodeURIComponent(siteData.invitation.message);
-  const location = encodeURIComponent(`${siteData.invitation.venue}, ${siteData.invitation.address}`);
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${formatDate(start)}/${formatDate(end)}&details=${details}&location=${location}`;
-};
-
-export const downloadIcsCalendar = (invitation) => {
-  const start = new Date(invitation.weddingDate);
-  if (Number.isNaN(start.getTime())) return;
-  
-  const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
-
-  const formatDate = (date) => date.toISOString().replace(/-|:|\.\d+/g, "");
-  const now = formatDate(new Date());
-  const dtStart = formatDate(start);
-  const dtEnd = formatDate(end);
-
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const title = `${coupleName} Düğünü`;
-  const description = invitation.message || "";
-  const location = `${invitation.venue}, ${invitation.address}`;
-
-  const icsContent = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Biz Evleniyoruz//Dugun Davetiyesi//TR",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `DTSTAMP:${now}`,
-    `DTSTART:${dtStart}`,
-    `DTEND:${dtEnd}`,
-    `SUMMARY:${title}`,
-    `DESCRIPTION:${description}`,
-    `LOCATION:${location}`,
-    "STATUS:CONFIRMED",
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ].join("\r\n");
-
-  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", `${invitation.bride}_${invitation.groom}_Dugun.ics`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-};
-
-export const handleAddToCalendar = (invitation, googleCalendarLink) => {
-  const userAgent = window.navigator.userAgent || window.navigator.vendor || window.opera;
-  const isApple = /iPad|iPhone|iPod|Macintosh|Mac OS X/i.test(userAgent);
-
-  if (isApple) {
-    downloadIcsCalendar(invitation);
-  } else {
-    window.open(googleCalendarLink, "_blank", "noopener,noreferrer");
+  if (typeof window === "undefined") return DEFAULT_SITE_DATA;
+  try {
+    const local = localStorage.getItem(SITE_DATA_KEY);
+    return local ? normalizeSiteData(JSON.parse(local)) : DEFAULT_SITE_DATA;
+  } catch {
+    return DEFAULT_SITE_DATA;
   }
 };
 
-export const readImageFileAsDataUrl = (file) => {
-  return new Promise((resolve, reject) => {
-    if (!file || !file.type?.startsWith("image/")) { reject(new Error("Lütfen geçerli bir görsel dosyası seçin.")); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const originalDataUrl = reader.result;
-      if (file.type === "image/svg+xml") { resolve(originalDataUrl); return; }
-      const image = new Image();
-      image.onload = () => {
-        const ratio = Math.min(1, MAX_IMAGE_DIMENSION / image.naturalWidth, MAX_IMAGE_DIMENSION / image.naturalHeight);
-        const width = Math.max(1, Math.round(image.naturalWidth * ratio));
-        const height = Math.max(1, Math.round(image.naturalHeight * ratio));
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        canvas.width = width;
-        canvas.height = height;
-        context.fillStyle = "#fffafb";
-        context.fillRect(0, 0, width, height);
-        context.drawImage(image, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
-      };
-      image.onerror = () => resolve(originalDataUrl);
-      image.src = originalDataUrl;
-    };
-    reader.onerror = () => reject(new Error("Görsel okunamadı."));
-    reader.readAsDataURL(file);
-  });
-};
-
-export const readAudioFileAsDataUrl = (file) => {
-  return new Promise((resolve, reject) => {
-    if (!file || !file.type?.startsWith("audio/")) { reject(new Error("Lütfen geçerli bir müzik dosyası seçin.")); return; }
-    if (file.size > MAX_AUDIO_FILE_SIZE) { reject(new Error("Müzik dosyası çok büyük. Lütfen 4 MB altında bir MP3/M4A dosyası seçin.")); return; }
-    const reader = new FileReader();
-    reader.onload = () => resolve({ dataUrl: reader.result, name: file.name || "Yüklenen müzik" });
-    reader.onerror = () => reject(new Error("Müzik dosyası okunamadı."));
-    reader.readAsDataURL(file);
-  });
-};
-
-export const formatMessageTemplate = (template, values) => {
-  return String(template || "").replaceAll("{couple}", values.couple || "").replaceAll("{link}", values.link || "").replaceAll("{guest}", values.guest || "");
+export const getCurrentShareLink = () => {
+  if (typeof window === "undefined") return DEFAULT_SITE_DATA.invitation.shareLink;
+  return `${window.location.origin}${window.location.pathname}`;
 };
 
 export const getGuestNameFromUrl = () => {
   if (typeof window === "undefined") return "";
   const params = new URLSearchParams(window.location.search);
-  return params.get("guest") || params.get("davetli") || "";
+  return (params.get("guest") || params.get("davetli") || "").trim();
 };
 
-export const getQrImageUrl = (link) => `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(link)}`;
-
-export const isAdminRouteActive = () => {
-  if (typeof window === "undefined") return false;
-  const params = new URLSearchParams(window.location.search);
-  const hash = window.location.hash || "";
-  return hash === "#admin" || params.get("admin") === "1" || params.get("type") === "recovery" || hash.includes("type=recovery") || hash.includes("access_token=");
-};
-
-export const getAdminRedirectUrl = () => {
+export const getTableFromUrl = () => {
   if (typeof window === "undefined") return "";
-  return `${window.location.origin}${window.location.pathname}?admin=1&reset=1`;
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("table") || params.get("masa") || "").trim();
 };
+
+export const buildPersonalLink = (baseLink, guestName, tableNumber = "") => {
+  const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
+  const nameParam = encodeURIComponent((guestName || "").trim());
+  let url = `${cleanLink}/?guest=${nameParam}`;
+  if (tableNumber) {
+    url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
+  }
+  return url;
+};
+
+export const getQrImageUrl = (url) => {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url || "")}`;
+};
+
+export const formatMessageTemplate = (template, variables = {}) => {
+  let str = template || "";
+  Object.keys(variables).forEach((key) => {
+    str = str.replaceAll(`{${key}}`, variables[key] || "");
+  });
+  return str;
+};
+
+export const createGoogleCalendarLink = (siteData, coupleName) => {
+  const inv = siteData.invitation;
+  const start = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
+  const end = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
+  const title = encodeURIComponent(`${coupleName} | Düğün`);
+  const details = encodeURIComponent(inv.message || "");
+  const location = encodeURIComponent(`${inv.venue}, ${inv.address}`);
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+};
+
+export const handleAddToCalendar = (invitation, googleLink) => {
+  if (googleLink) {
+    window.open(googleLink, "_blank", "noopener,noreferrer");
+  }
+};
+
+export const getNavigationLinks = (invitation) => {
+  const query = encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`);
+  return {
+    google: invitation?.mapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
+    apple: `https://maps.apple.com/?q=${query}`,
+    yandex: `https://yandex.com.tr/harita/?text=${query}`,
+    waze: `https://waze.com/ul?q=${query}&navigate=yes`,
+  };
+};
+
+export const normalizeText = (text = "") => {
+  return text.toLocaleLowerCase("tr-TR").trim();
+};
+
+export const downloadTextFile = (filename, content, mimeType = "text/plain") => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const createCsv = (items, type = "guests", isEn = false) => {
+  if (!items || items.length === 0) return "";
+  let headers = [];
+  let rows = [];
+
+  if (type === "guests") {
+    headers = isEn 
+      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Song Request", "Note"]
+      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
+    rows = items.map(g => [
+      `"${g.name || ""}"`,
+      `"${g.attendance || ""}"`,
+      `"${g.phone || ""}"`,
+      `"${g.personCount || 1}"`,
+      `"${g.side || ""}"`,
+      `"${g.hasChild || ""}"`,
+      `"${g.songRequest || ""}"`,
+      `"${(g.note || "").replace(/"/g, '""')}"`
+    ]);
+  } else {
+    headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
+    rows = items.map(w => [
+      `"${w.name || ""}"`,
+      `"${(w.message || "").replace(/"/g, '""')}"`,
+      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`
+    ]);
+  }
+
+  return [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+};
+
+export const createExcelTable = (items, type = "guests", isEn = false) => {
+  const csvContent = createCsv(items, type, isEn);
+  const rows = csvContent.split("\n").map(r => r.split(","));
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1">`;
+  rows.forEach((row, i) => {
+    html += "<tr>";
+    row.forEach(cell => {
+      const clean = cell.replace(/^"|"$/g, "");
+      html += i === 0 ? `<th style="background:#f4f4f4;">${clean}</th>` : `<td>${clean}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</table></body></html>";
+  return html;
+};
+
+export const uiGuestToDb = (g) => ({
+  name: g.name,
+  attendance: g.attendance,
+  phone: g.phone || null,
+  person_count: g.personCount ? Number(g.personCount) : 1,
+  side: g.side || "Gelin Tarafı",
+  has_child: g.hasChild || "Hayır",
+  song_request: g.songRequest || null,
+  note: g.note || null,
+});
+
+export const dbGuestToUi = (g) => ({
+  id: g.id,
+  name: g.name,
+  attendance: g.attendance,
+  phone: g.phone || "",
+  personCount: String(g.person_count || 1),
+  side: g.side || "Gelin Tarafı",
+  hasChild: g.has_child || "Hayır",
+  songRequest: g.song_request || "",
+  note: g.note || "",
+  createdAt: g.created_at,
+});
+
+export const uiWishToDb = (w) => ({
+  name: w.name,
+  message: w.message,
+  approved: w.approved ?? true,
+});
+
+export const dbWishToUi = (w) => ({
+  id: w.id,
+  name: w.name,
+  message: w.message,
+  approved: w.approved,
+  createdAt: w.created_at,
+});
 
 export const touchAdminSession = () => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(ADMIN_SESSION_LAST_ACTIVE_KEY, String(Date.now()));
+  if (typeof window !== "undefined") {
+    localStorage.setItem("wedding-admin-last-active", String(Date.now()));
+  }
 };
 
 export const clearAdminSessionTimestamp = () => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem(ADMIN_SESSION_LAST_ACTIVE_KEY);
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("wedding-admin-last-active");
+  }
 };
 
 export const isAdminSessionFresh = () => {
   if (typeof window === "undefined") return false;
-  const lastActive = Number(localStorage.getItem(ADMIN_SESSION_LAST_ACTIVE_KEY) || 0);
+  const lastActive = localStorage.getItem("wedding-admin-last-active");
   if (!lastActive) return false;
-  return Date.now() - lastActive < ADMIN_SESSION_TIMEOUT_MS;
+  return Date.now() - Number(lastActive) < 30 * 60 * 1000;
 };
 
-export const buildPersonalLink = (baseLink, guestName = "") => {
-  const defaultBase = baseLink || getCurrentShareLink() || "https://siten.com/";
-  try {
-    const url = new URL(defaultBase);
-    if (guestName && guestName.trim()) {
-      url.searchParams.set("guest", guestName.trim());
+export const getAdminRedirectUrl = () => {
+  if (typeof window === "undefined") return "";
+  return `${window.location.origin}/admin`;
+};
+
+/**
+ * Harici paket gerektirmeyen saf JS / Canvas Gül Yaprağı & Konfeti Efekti
+ */
+export const triggerConfetti = () => {
+  if (typeof window === "undefined") return;
+
+  const canvas = document.createElement("canvas");
+  canvas.style.position = "fixed";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.width = "100vw";
+  canvas.style.height = "100vh";
+  canvas.style.pointerEvents = "none";
+  canvas.style.zIndex = "999999";
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const colors = ["#d98ca1", "#9f4f68", "#f8d7df", "#c69b5c", "#fff1f5", "#a3495d"];
+  const particles = Array.from({ length: 65 }).map(() => ({
+    x: canvas.width / 2 + (Math.random() - 0.5) * 80,
+    y: canvas.height / 2 + (Math.random() - 0.5) * 80,
+    vx: (Math.random() - 0.5) * 16,
+    vy: (Math.random() - 1.2) * 14 - 3,
+    size: Math.random() * 10 + 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rotation: Math.random() * 360,
+    rotationSpeed: (Math.random() - 0.5) * 10,
+    opacity: 1,
+    isPetal: Math.random() > 0.4
+  }));
+
+  let animationFrame;
+  const render = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let activeParticles = 0;
+
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.35; // Yerçekimi
+      p.vx *= 0.98;
+      p.rotation += p.rotationSpeed;
+      p.opacity -= 0.009;
+
+      if (p.opacity > 0) {
+        activeParticles++;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+
+        if (p.isPetal) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.size, p.size * 0.6, Math.PI / 4, 0, 2 * Math.PI);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        }
+        ctx.restore();
+      }
+    });
+
+    if (activeParticles > 0) {
+      animationFrame = requestAnimationFrame(render);
     } else {
-      url.searchParams.delete("guest");
+      cancelAnimationFrame(animationFrame);
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
     }
-    return url.toString();
-  } catch {
-    let result = defaultBase;
-    if (guestName && guestName.trim()) {
-      result += (result.includes("?") ? "&" : "?") + `guest=${encodeURIComponent(guestName.trim())}`;
-    }
-    return result;
-  }
+  };
+
+  render();
 };
-
-export const dbGuestToUi = (guest) => ({
-  id: guest.id, 
-  name: guest.name || "", 
-  attendance: guest.attendance || "Katılacağım", // Geri eklendi
-  note: guest.note || "", 
-  createdAt: guest.created_at || guest.createdAt || "",
-});
-
-export const uiGuestToDb = (guest) => ({
-  name: guest.name || "", 
-  attendance: guest.attendance || "Katılacağım", // Geri eklendi
-  note: guest.note || "",
-});
-
-export const dbWishToUi = (wish) => ({
-  id: wish.id, name: wish.name || "", message: wish.message || "", approved: wish.approved !== false, createdAt: wish.created_at || wish.createdAt || "",
-});
-
-export const uiWishToDb = (wish) => ({
-  name: wish.name || "", message: wish.message || "", approved: wish.approved !== false,
-});

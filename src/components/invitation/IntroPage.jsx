@@ -1,24 +1,26 @@
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { triggerConfetti } from "../../utils/helpers";
 
-export default function IntroPage({ isOpening, copy, invitation, personalGuestName, openInvitation }) {
+export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
-  // Dil seçimine göre metni ayarlar (İngilizceyse en.json'dan, Türkçeyse panelden/copy'den alır)
   const openText = isEn 
     ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
     : copy.openButton;
 
-  // Space ve Enter tuşları ile zarfı açma işlemi
+  const handleOpen = () => {
+    triggerConfetti();
+    openInvitation();
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Eğer zarf zaten açılıyorsa işlemi tekrar tetikleme
       if (isOpening) return;
-      
       if (e.key === " " || e.key === "Enter") {
-        e.preventDefault(); // Boşluk tuşunun sayfayı aşağı kaydırmasını engeller
-        openInvitation();
+        e.preventDefault();
+        handleOpen();
       }
     };
 
@@ -26,7 +28,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpening, openInvitation]);
+  }, [isOpening]);
 
   return (
     <section className={`intro-page ${isOpening ? "opening" : ""}`}>
@@ -58,18 +60,22 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
         {personalGuestName && (
           <div className="envelope-guest-badge">
             {isEn ? "Dear" : "Sevgili"} {personalGuestName}
+            {personalTableNumber && (
+              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
+                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
+              </span>
+            )}
           </div>
         )}
 
-        {/* --- BUTON KISMI --- */}
-        <button className="envelope-seal" onClick={openInvitation}>
+        <button className="envelope-seal" onClick={handleOpen}>
           <span 
             style={{ 
               display: 'block', 
               textAlign: 'center', 
               lineHeight: '1.2',
               color: '#ffffff', 
-              WebkitTextFillColor: '#ffffff', /* Arka plandaki rengin sızmasını engeller */
+              WebkitTextFillColor: '#ffffff',
               textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
               fontWeight: '900',
               fontSize: '18px',

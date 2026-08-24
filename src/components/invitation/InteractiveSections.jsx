@@ -5,22 +5,25 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { OptionGroup } from "../common/UIComponents";
+import { triggerConfetti } from "../../utils/helpers";
 import {
   NOTE_MAX_LENGTH,
   WISH_MAX_LENGTH,
   ATTENDANCE_OPTIONS
 } from "../../config/constants";
 
-// OPTİMİZASYON: Zod şemaları her render'da baştan yaratılmasın diye bileşen dışına alındı.
 const getRsvpSchema = (t) => z.object({
   name: z.string().min(3, { message: t('form.missingNameMessage') }),
   attendance: z.string(),
-  note: z.string().max(NOTE_MAX_LENGTH).optional()
+  songRequest: z.string().max(100).optional(),
+  note: z.string().max(NOTE_MAX_LENGTH).optional(),
+  honeypot: z.string().optional()
 });
 
 const getWishSchema = (t) => z.object({
   name: z.string().min(2, { message: t('form.missingNameMessage') }),
-  message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH)
+  message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH),
+  honeypot: z.string().optional()
 });
 
 function DeadlineBanner({ isEn, title, text }) {
@@ -81,7 +84,7 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
   );
 }
 
-export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData }) {
+export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
@@ -90,15 +93,15 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const [copied, setCopied] = useState(false);
   const [urlGuestName, setUrlGuestName] = useState("");
 
-  // OPTİMİZASYON: Şema dışarıdan üretiliyor, performans kaybı önlendi.
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
   const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", note: "" }
+    defaultValues: { name: "", attendance: "Katılacağım", songRequest: "", note: "", honeypot: "" }
   });
 
   const currentNote = watch("note") || "";
+  const currentAttendance = watch("attendance");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -115,8 +118,14 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
 
   const onSubmit = async (data) => {
+    if (data.honeypot) return;
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest(data);
+    
+    if (!isDeclining) {
+      triggerConfetti();
+    }
+    
     reset();
     
     if (isDeclining) {
@@ -154,10 +163,19 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
       {isDeadlinePassed ? (
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
-          <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            {urlGuestName && (
+        <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <input 
+            type="text" 
+            {...control.register("honeypot")} 
+            style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} 
+            tabIndex={-1} 
+            autoComplete="off" 
+          />
+
+          {urlGuestName && (
             <div className="guest-badge-banner">
               {t('ui.prefilled', { name: urlGuestName })}
+              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
             </div>
           )}
 
@@ -175,6 +193,18 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
             control={control}
             render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />}
           />
+
+          {currentAttendance === "Katılacağım" && (
+            <div style={{ width: '100%' }}>
+              <Controller
+                name="songRequest"
+                control={control}
+                render={({ field }) => (
+                  <input {...field} placeholder={isEn ? "Song Request for the DJ 🎵 (Optional)" : "DJ için Şarkı İsteğiniz 🎵 (İsteğe Bağlı)"} />
+                )}
+              />
+            </div>
+          )}
 
           <div className="field-with-counter">
             <Controller
@@ -235,18 +265,19 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
   const isEn = i18n.language.startsWith('en');
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
 
-  // OPTİMİZASYON: Zod şeması dışarıdan bağlandı.
   const wishSchema = useMemo(() => getWishSchema(t), [t]);
 
   const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(wishSchema),
-    defaultValues: { name: "", message: "" }
+    defaultValues: { name: "", message: "", honeypot: "" }
   });
 
   const currentMessage = watch("message") || "";
 
   const onSubmit = async (data) => {
+    if (data.honeypot) return;
     await submitWish(data);
+    triggerConfetti();
     reset();
   };
 
@@ -256,6 +287,14 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
       
       <form className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <input 
+          type="text" 
+          {...control.register("honeypot")} 
+          style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} 
+          tabIndex={-1} 
+          autoComplete="off" 
+        />
+
         <div style={{ width: '100%' }}>
           <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
           {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}

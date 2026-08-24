@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminMusicField, AdminActionButtons, AdminVideoField } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
@@ -78,8 +78,14 @@ export function GuestsAdminPanel({
             if (isEn && translatedAttendance === "Katılamayacağım") translatedAttendance = "Not Attending";
             return (
               <div className="admin-row" key={guest.id} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <strong>{guest.name}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <strong>{guest.name}</strong>
+                  <span style={{ fontSize: '13px', fontWeight: 'bold', padding: '3px 8px', borderRadius: '6px', background: 'rgba(0,0,0,0.05)' }}>
+                    {guest.side || "Gelin Tarafı"} | {guest.personCount || 1} Kişi
+                  </span>
+                </div>
                 <span>{translatedAttendance}</span>
+                {guest.songRequest && <span style={{ color: 'var(--rose-dark)' }}>🎵 DJ İsteği: {guest.songRequest}</span>}
                 {guest.note && <em>{isEn ? "Note:" : "Not:"} {guest.note}</em>}
                 <div className="admin-row-actions" style={{ display: "flex", gap: "8px", marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed var(--border)", width: "100%" }}>
                   <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>{isEn ? "Edit ✏️" : "Düzenle ✏️"}</button>
@@ -149,13 +155,16 @@ export function WishesAdminPanel({ wishes, filteredWishes, adminWishSearch, setA
 export function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLinkName, setPersonalLinkName }) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
-  const generatedLink = buildPersonalLink(currentShareLink, personalLinkName);
+  const [tableNumber, setTableNumber] = useState("");
+  
+  const generatedLink = buildPersonalLink(currentShareLink, personalLinkName, tableNumber);
   
   const openWhatsAppShare = () => {
     if (!personalLinkName.trim()) return;
+    const tableMsg = tableNumber.trim() ? (isEn ? `\n🍽️ Your Reserved Table: ${tableNumber}` : `\n🍽️ Sizin İçin Ayrılan Masa: ${tableNumber}`) : "";
     const text = isEn
-      ? `Dear ${personalLinkName}, our wedding invitation is ready! 💍\n\nYou can view it here:\n${generatedLink}`
-      : `Sevgili ${personalLinkName}, düğün davetiyemiz sana özel olarak hazırlandı! 💍\n\nDavetiyemizi aşağıdaki linkten inceleyebilirsin:\n${generatedLink}`;
+      ? `Dear ${personalLinkName}, our wedding invitation is ready! 💍${tableMsg}\n\nYou can view it here:\n${generatedLink}`
+      : `Sevgili ${personalLinkName}, düğün davetiyemiz sana özel olarak hazırlandı! 💍${tableMsg}\n\nDavetiyemizi aşağıdaki linkten inceleyebilirsin:\n${generatedLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
   };
 
@@ -163,10 +172,11 @@ export function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLin
     <AdminSection title={isEn ? "Personal Link Generator" : "Kişiye Özel Akıllı Link Üretici"}>
       <div className="admin-personal-link-box personal-link-standalone" style={{ display: "grid", gap: "18px" }}>
         <p className="admin-help-text" style={{ margin: 0 }}>
-          {isEn ? "Generate a special invitation link by typing a guest's name." : "Sadece isim yazarak davetiye linki üretebilirsiniz."}
+          {isEn ? "Generate a special invitation link by typing a guest's name and optional table number." : "Davetli adı ve isteğe bağlı masa numarası girerek özel akıllı link oluşturabilirsiniz."}
         </p>
-        <div className="admin-edit-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "14px" }}>
+        <div className="admin-edit-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
           <AdminField label={isEn ? "Guest Name" : "Davetli Adı Soyadı"} onChange={setPersonalLinkName} placeholder={isEn ? "Ex: John Doe" : "Örn: Ahmet Yılmaz"} value={personalLinkName} />
+          <AdminField label={isEn ? "Table Number (Optional)" : "Masa Numarası (İsteğe Bağlı)"} onChange={setTableNumber} placeholder={isEn ? "Ex: 12" : "Örn: 12"} value={tableNumber} />
         </div>
         <div style={{ marginTop: "4px" }}>
           <span style={{ display: "block", marginBottom: "6px", fontWeight: "700", color: "var(--rose-dark)" }}>
@@ -361,7 +371,7 @@ export function FamilyTab({ adminDraft, updateDraftObject, saveSiteContent, isEn
         <AdminCheckbox checked={adminDraft.settings.visibility?.family ?? true} label={isEn ? "Show Family Section on Invitation" : "Aile Bilgileri bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
       </div>
       <div className="admin-edit-grid">
-        <AdminField label={isEn ? "Bride Family Title" : "Gelin Ailesi Başlık (Örn: Gelin Ailesi)"} onChange={(v) => updateDraftObject("familyInfo", "brideFamilyTitle", v)} value={adminDraft.familyInfo?.brideFamilyTitle} />
+        <AdminField label={isEn ? "Bride Family Title" : "Gelin Ailesi Başlık"} onChange={(v) => updateDraftObject("familyInfo", "brideFamilyTitle", v)} value={adminDraft.familyInfo?.brideFamilyTitle} />
         <AdminField label={isEn ? "Bride Family Name" : "Gelin Ailesi Adı"} onChange={(v) => updateDraftObject("familyInfo", "brideFamilyName", v)} value={adminDraft.familyInfo?.brideFamilyName} />
         <AdminField label={isEn ? "Groom Family Title" : "Damat Ailesi Başlık"} onChange={(v) => updateDraftObject("familyInfo", "groomFamilyTitle", v)} value={adminDraft.familyInfo?.groomFamilyTitle} />
         <AdminField label={isEn ? "Groom Family Name" : "Damat Ailesi Adı"} onChange={(v) => updateDraftObject("familyInfo", "groomFamilyName", v)} value={adminDraft.familyInfo?.groomFamilyName} />

@@ -4,10 +4,29 @@ import { useNavigate } from 'react-router-dom';
 import { useSiteContext, useUIContext, useAdminContext } from '../context/Providers';
 import useAdminSession from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
-import { normalizeText, downloadTextFile, createCsv, createExcelTable, buildPersonalLink, getQrImageUrl, normalizeSiteData, getCurrentShareLink } from '../utils/helpers';
-import { saveSettingsToDatabase, uploadMediaFile } from '../services/database';
-import { optimizeImage } from '../utils/imageOptimizer'; // HATA 1 ÇÖZÜMÜ: Eksik import eklendi
-import { SITE_DATA_KEY, DEFAULT_WEDDING_MUSIC_FILE, DEFAULT_WEDDING_MUSIC_NAME, THEME_DEFAULT_IMAGES } from '../config/constants';
+import { 
+  normalizeText, 
+  downloadTextFile, 
+  createCsv, 
+  createExcelTable, 
+  buildPersonalLink, 
+  getQrImageUrl, 
+  normalizeSiteData, 
+  getCurrentShareLink 
+} from '../utils/helpers';
+import { 
+  saveSettingsToDatabase, 
+  uploadMediaFile, 
+  deleteMediaFile, 
+  restoreBackupToDatabase 
+} from '../services/database';
+import { optimizeImage } from '../utils/imageOptimizer';
+import { 
+  SITE_DATA_KEY, 
+  DEFAULT_WEDDING_MUSIC_FILE, 
+  DEFAULT_WEDDING_MUSIC_NAME, 
+  THEME_DEFAULT_IMAGES 
+} from '../config/constants';
 
 const AdminView = lazy(() => import('./AdminView'));
 
@@ -18,7 +37,16 @@ export default function AdminController() {
 
   const { siteData, setSiteData, guests, setGuests, wishes, setWishes } = useSiteContext();
   const { showAppConfirm, showAppPrompt } = useUIContext();
-  const { adminDraft, setAdminDraft, activeAdminTab, setActiveAdminTab, personalLinkName, setPersonalLinkName, dataImportText, setDataImportText } = useAdminContext();
+  const { 
+    adminDraft, 
+    setAdminDraft, 
+    activeAdminTab, 
+    setActiveAdminTab, 
+    personalLinkName, 
+    setPersonalLinkName, 
+    dataImportText, 
+    setDataImportText 
+  } = useAdminContext();
 
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
   const [adminUser, setAdminUser] = useState(null);
@@ -71,8 +99,8 @@ export default function AdminController() {
   });
 
   const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval } = useDatabaseManager({
-    guests, setGuests, wishes, setWishes, guestForm: null, setGuestForm: null, wishForm: null, setWishForm: null, 
-    settings: adminDraft.settings, showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
+    guests, setGuests, wishes, setWishes, settings: adminDraft.settings, 
+    showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
   });
 
   const closeAdminPage = useCallback(() => {
@@ -81,14 +109,23 @@ export default function AdminController() {
 
   const openAdminTab = useCallback((tabId) => setActiveAdminTab(tabId), [setActiveAdminTab]);
 
-  const updateDraftObject = useCallback((group, key, value) => setAdminDraft((prev) => ({ ...prev, [group]: { ...prev[group], [key]: value } })), [setAdminDraft]);
+  const updateDraftObject = useCallback((group, key, value) => {
+    setAdminDraft((prev) => ({ ...prev, [group]: { ...prev[group], [key]: value } }));
+  }, [setAdminDraft]);
 
   const saveSiteContent = useCallback(async () => {
-    const cleanedData = normalizeSiteData({ ...adminDraft, invitation: { ...adminDraft.invitation, gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) } });
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    });
     try {
       await saveSettingsToDatabase(cleanedData);
       localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));
-      setSiteData(cleanedData); setAdminDraft(cleanedData);
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
       setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
       setTimeout(() => setAdminSaveMessage(""), 3000);
     } catch (error) {
@@ -103,8 +140,17 @@ export default function AdminController() {
       const themeImages = THEME_DEFAULT_IMAGES[themeValue];
       if (themeImages) {
         setAdminDraft((prev) => {
-          const newState = { ...prev, settings: { ...prev.settings, theme: themeValue }, invitation: { ...prev.invitation, introImage: themeImages.introImage, heroImage: themeImages.heroImage, heroVideo: themeImages.heroVideo || "", gallery: themeImages.gallery } };
-          // Otomatik Kaydet
+          const newState = { 
+            ...prev, 
+            settings: { ...prev.settings, theme: themeValue }, 
+            invitation: { 
+              ...prev.invitation, 
+              introImage: themeImages.introImage, 
+              heroImage: themeImages.heroImage, 
+              heroVideo: themeImages.heroVideo || "", 
+              gallery: themeImages.gallery 
+            } 
+          };
           saveSettingsToDatabase(newState).then(() => {
              localStorage.setItem(SITE_DATA_KEY, JSON.stringify(newState));
              setSiteData(newState);
@@ -126,14 +172,14 @@ export default function AdminController() {
     defaultData.settings.theme = chosenDefaultTheme;
     try {
       await saveSettingsToDatabase(defaultData);
-      setSiteData(defaultData); setAdminDraft(defaultData);
+      setSiteData(defaultData); 
+      setAdminDraft(defaultData);
       setAdminSaveMessage(isEn ? "Content reset." : "Sıfırlandı.");
     } catch (error) {
       setAdminSaveMessage(isEn ? `Could not reset.` : `Sıfırlanamadı.`);
     }
   }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn, setSiteData, setAdminDraft]);
 
-  // Medya Yüklemeleri
   const updateDraftImage = async (group, key, file) => { 
     if (!file) return; 
     const compressed = optimizeImage ? await optimizeImage(file) : file;
@@ -159,18 +205,43 @@ export default function AdminController() {
 
   const clearDraftMusic = async () => {
     await deleteMediaFile(adminDraft.invitation?.musicFile);
-    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: DEFAULT_WEDDING_MUSIC_FILE, musicName: DEFAULT_WEDDING_MUSIC_NAME } }));
+    setAdminDraft((prev) => ({ 
+      ...prev, 
+      invitation: { 
+        ...prev.invitation, 
+        musicFile: DEFAULT_WEDDING_MUSIC_FILE, 
+        musicName: DEFAULT_WEDDING_MUSIC_NAME 
+      } 
+    }));
   };
 
   const updateDraftMusic = async (file) => { 
     if (!file) return; 
     const url = await uploadMediaFile(file, "music"); 
-    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, musicFile: url, musicName: file.name } })); 
+    setAdminDraft((prev) => ({ 
+      ...prev, 
+      invitation: { 
+        ...prev.invitation, 
+        musicFile: url, 
+        musicName: file.name 
+      } 
+    })); 
   };
   
-  const updateDraftArrayItem = (arrayKey, index, key, value) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item) }));
-  const addDraftArrayItem = (arrayKey, item) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], item] }));
-  const removeDraftArrayItem = (arrayKey, index) => setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].filter((_, i) => i !== index) }));
+  const updateDraftArrayItem = (arrayKey, index, key, value) => {
+    setAdminDraft((prev) => ({ 
+      ...prev, 
+      [arrayKey]: prev[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item) 
+    }));
+  };
+
+  const addDraftArrayItem = (arrayKey, item) => {
+    setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], item] }));
+  };
+
+  const removeDraftArrayItem = (arrayKey, index) => {
+    setAdminDraft((prev) => ({ ...prev, [arrayKey]: prev[arrayKey].filter((_, i) => i !== index) }));
+  };
   
   const updateGalleryImageFile = async (index, file) => { 
     if (!file) return; 
@@ -186,16 +257,25 @@ export default function AdminController() {
   };  
   
   const updateStoryImageFile = async (index, file) => {
-    if (!file) return;
+    if (!file) return; 
     const compressed = optimizeImage ? await optimizeImage(file) : file;
-    const url = await uploadMediaFile(compressed, "story");
+    const url = await uploadMediaFile(compressed, "story"); 
     updateDraftArrayItem("storyTimeline", index, "image", url);
   };
   
-  const addGalleryItem = () => setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: [...prev.invitation.gallery, ""] } }));
+  const addGalleryItem = () => {
+    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: [...prev.invitation.gallery, ""] } }));
+  };
+
   const removeGalleryItem = async (index) => {
     await deleteMediaFile(adminDraft.invitation.gallery[index]);
-    setAdminDraft((prev) => ({ ...prev, invitation: { ...prev.invitation, gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) } }));
+    setAdminDraft((prev) => ({ 
+      ...prev, 
+      invitation: { 
+        ...prev.invitation, 
+        gallery: prev.invitation.gallery.filter((_, idx) => idx !== index) 
+      } 
+    }));
   };
 
   const moveDraftArrayItem = useCallback((arrayKey, index, direction) => {
@@ -210,12 +290,13 @@ export default function AdminController() {
     });
   }, [setAdminDraft]);
 
-  // Filtrelemeler
   const filteredGuests = useMemo(() => guests.filter((guest) => {
     const searchMatch = normalizeText(`${guest.name} ${guest.phone}`).includes(normalizeText(adminGuestSearch));
     const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
-    return searchMatch && attendanceMatch;
-  }), [guests, adminGuestSearch, adminGuestAttendanceFilter]);
+    const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
+    const childMatch = adminGuestChildFilter === "all" || guest.hasChild === adminGuestChildFilter;
+    return searchMatch && attendanceMatch && sideMatch && childMatch;
+  }), [guests, adminGuestSearch, adminGuestAttendanceFilter, adminGuestSideFilter, adminGuestChildFilter]);
 
   const filteredWishes = useMemo(() => wishes.filter((wish) => {
     const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
@@ -224,7 +305,6 @@ export default function AdminController() {
     return searchMatch && statusMatch;
   }), [wishes, adminWishSearch, adminWishStatusFilter]);
 
-  // HATA 2 ve 3 ÇÖZÜMÜ: Excel ve CSV İndirme Fonksiyonları Eklendi
   const exportGuestsExcel = useCallback(() => {
     const html = createExcelTable(filteredGuests, "guests", isEn);
     downloadTextFile("misafirler.xls", html, "application/vnd.ms-excel");
@@ -245,11 +325,20 @@ export default function AdminController() {
     downloadTextFile("mesajlar.csv", csv, "text/csv;charset=utf-8;");
   }, [filteredWishes, isEn]);
 
-  const copyAdminLink = useCallback(async (linkToCopy, msg) => { try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(msg); } catch {} }, []);
-  const downloadQrCode = () => { window.open(qrImageUrl, "_blank"); };
+  const copyAdminLink = useCallback(async (linkToCopy, msg) => { 
+    try { 
+      await navigator.clipboard.writeText(linkToCopy); 
+      setAdminSaveMessage(msg); 
+    } catch {} 
+  }, []);
+
+  const downloadQrCode = () => { 
+    window.open(qrImageUrl, "_blank"); 
+  };
   
-  // HATA 4 ÇÖZÜMÜ: Import/Export fonksiyonları çalışır hale getirildi
-  const exportAllDataJson = () => downloadTextFile("yedek.json", JSON.stringify({ siteData, guests, wishes }), "application/json");
+  const exportAllDataJson = () => {
+    downloadTextFile("yedek.json", JSON.stringify({ siteData, guests, wishes }), "application/json");
+  };
   
   const importAllDataJson = async () => {
     try {
@@ -268,7 +357,6 @@ export default function AdminController() {
       
       await restoreBackupToDatabase(parsed);
       
-      // State'leri güncelle
       if (parsed.siteData) {
         const cleanedData = normalizeSiteData(parsed.siteData);
         localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { loadStoredSiteData } from '../utils/helpers';
-import { INITIAL_GUEST_FORM, INITIAL_WISH_FORM } from '../config/constants';
 
 export const SiteContext = createContext();
 export const UIContext = createContext();
@@ -13,8 +12,6 @@ export const Providers = ({ children }) => {
 
   const [opened, setOpened] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
-  const [guestForm, setGuestForm] = useState(INITIAL_GUEST_FORM);
-  const [wishForm, setWishForm] = useState(INITIAL_WISH_FORM);
 
   const [customAlert, setCustomAlert] = useState(null);
   const [customConfirm, setCustomConfirm] = useState(null);
@@ -37,16 +34,15 @@ export const Providers = ({ children }) => {
   const [personalLinkName, setPersonalLinkName] = useState("");
   const [dataImportText, setDataImportText] = useState("");
 
-  // DÜZELTME: Performans optimizasyonu için tüm context değerleri useMemo ile sarmalandı
   const siteContextValue = useMemo(() => ({ 
     siteData, setSiteData, guests, setGuests, wishes, setWishes 
   }), [siteData, guests, wishes]);
 
   const uiContextValue = useMemo(() => ({
-    opened, setOpened, isOpening, setIsOpening, guestForm, setGuestForm, wishForm, setWishForm,
+    opened, setOpened, isOpening, setIsOpening,
     customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt,
     showAppAlert, showAppConfirm, showAppPrompt
-  }), [opened, isOpening, guestForm, wishForm, customAlert, customConfirm, customPrompt, showAppAlert, showAppConfirm, showAppPrompt]);
+  }), [opened, isOpening, customAlert, customConfirm, customPrompt, showAppAlert, showAppConfirm, showAppPrompt]);
 
   const adminContextValue = useMemo(() => ({
     adminDraft, setAdminDraft, activeAdminTab, setActiveAdminTab, personalLinkName, setPersonalLinkName, dataImportText, setDataImportText

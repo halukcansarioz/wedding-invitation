@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { handleAddToCalendar } from "../../utils/helpers";
+import { handleAddToCalendar, getNavigationLinks } from "../../utils/helpers";
 import { motion } from "framer-motion";
 
 const fadeUp = {
@@ -9,7 +9,56 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
 };
 
-export function HeroSection({ invitation, copy, guestGreeting }) {
+function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
+  const [copied, setCopied] = useState(false);
+  if (!isOpen || typeof document === "undefined") return null;
+
+  const links = getNavigationLinks(invitation);
+
+  const copyAddress = () => {
+    navigator.clipboard.writeText(`${invitation?.venue || ""} ${invitation?.address || ""}`.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  return createPortal(
+    <div onClick={onClose} className="app-modal-backdrop">
+      <div onClick={(e) => e.stopPropagation()} className="app-modal-card" style={{ maxWidth: '420px', textAlign: 'center' }}>
+        <h3 style={{ margin: '0 0 8px 0', color: 'var(--rose-deep)' }}>
+          {isEn ? "Choose Navigation App" : "Yol Tarifi Al"}
+        </h3>
+        <p style={{ margin: '0 0 18px 0', fontSize: '15px' }}>
+          {invitation?.venue} – {invitation?.address}
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+            Google Maps 🗺️
+          </a>
+          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+            Apple Maps 🍏
+          </a>
+          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+            Yandex Navi 🚕
+          </a>
+          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+            Waze 🚙
+          </a>
+        </div>
+
+        <button type="button" className="main-button" onClick={copyAddress} style={{ width: '100%', marginBottom: '10px' }}>
+          {copied ? (isEn ? "Address Copied! ✅" : "Adres Kopyalandı! ✅") : (isEn ? "Copy Full Address 📋" : "Tam Adresi Kopyala 📋")}
+        </button>
+        <button type="button" className="secondary-button" onClick={onClose} style={{ width: '100%' }}>
+          {t('ui.closeBtn')}
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
@@ -50,7 +99,15 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
         <h1 className="couple-title"><span>{invitation?.bride}</span><em>&</em><span>{invitation?.groom}</span></h1>
         <p className="hero-date">{invitation?.dateText}</p>
         <p className="hero-time">{t('ui.time')} {invitation?.timeText}</p>
+        
         {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); handleScrollNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
@@ -66,16 +123,32 @@ export function HeroSection({ invitation, copy, guestGreeting }) {
 export function CountdownSection({ copy, timeLeft }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
+
+  const isFinished = timeLeft?.days === 0 && timeLeft?.hours === 0 && timeLeft?.minutes === 0 && timeLeft?.seconds === 0;
+
   return (
     <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
       <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
       <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
-      <div className="countdown-grid">
-        <div className="count-box countdown-animated"><strong>{timeLeft?.days || 0}</strong><span>{t('ui.days')}</span></div>
-        <div className="count-box countdown-animated"><strong>{timeLeft?.hours || 0}</strong><span>{t('ui.hours')}</span></div>
-        <div className="count-box countdown-animated"><strong>{timeLeft?.minutes || 0}</strong><span>{t('ui.mins')}</span></div>
-        <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
-      </div>
+      
+      {isFinished ? (
+        <div style={{ padding: '24px', background: 'var(--paper-soft)', borderRadius: '24px', border: '1px solid rgba(217, 140, 161, 0.4)', marginTop: '20px' }}>
+          <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🎉💍✨</span>
+          <strong style={{ fontSize: '24px', color: 'var(--rose-dark)' }}>
+            {isEn ? "Today is the Big Day!" : "Bugün En Mutlu Günümüz!"}
+          </strong>
+          <p style={{ marginTop: '6px', fontSize: '16px' }}>
+            {isEn ? "We can't wait to celebrate with you." : "Sizinle kutlamak için sabırsızlanıyoruz."}
+          </p>
+        </div>
+      ) : (
+        <div className="countdown-grid">
+          <div className="count-box countdown-animated"><strong>{timeLeft?.days || 0}</strong><span>{t('ui.days')}</span></div>
+          <div className="count-box countdown-animated"><strong>{timeLeft?.hours || 0}</strong><span>{t('ui.hours')}</span></div>
+          <div className="count-box countdown-animated"><strong>{timeLeft?.minutes || 0}</strong><span>{t('ui.mins')}</span></div>
+          <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
+        </div>
+      )}
     </motion.section>
   );
 }
@@ -188,6 +261,8 @@ export function ScheduleSection({ copy, invitation, scheduleItems }) {
 export function LocationSection({ copy, invitation, googleCalendarLink }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
   return (
     <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.locationLabel') : copy?.locationLabel}</p>
@@ -198,15 +273,19 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
         <div className="info-row"><span>{t('ui.venue')}</span><strong>{invitation?.venue}</strong></div>
         <div className="info-row"><span>{t('ui.address')}</span><strong>{invitation?.address}</strong></div>
       </div>
-      <div className="mini-map"><iframe title="Map" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe></div>
+      <div className="mini-map">
+        <iframe title="Map" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe>
+      </div>
       <div className="button-group">
-        <a className="main-button" href={invitation?.mapLink} target="_blank" rel="noreferrer">
+        <button type="button" className="main-button" onClick={() => setIsNavOpen(true)}>
           {t('ui.goToMap')}
-        </a>
+        </button>
         <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>
           {t('ui.addToCalendar')}
         </button>
       </div>
+
+      <NavigationModal invitation={invitation} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} isEn={isEn} t={t} />
     </motion.section>
   );
 }
@@ -290,7 +369,7 @@ export function GallerySection({ copy, invitation }) {
             loading="lazy" 
             onClick={(e) => {
               e.preventDefault();
-              e.stopPropagation(); // Tıklamanın sayfayı kaydırmasını engeller
+              e.stopPropagation();
               openLightbox(index);
             }}
             className="gallery-image"

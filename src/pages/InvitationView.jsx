@@ -27,34 +27,23 @@ export default function InvitationView({
   familyInfo,
   coupleName,
   guestGreeting,
+  personalTableNumber,
   timeLeft,
   googleCalendarLink,
   qrImageUrl,
   shareText,
   copyInvitationLink,
-  guestForm,
-  handleGuestChange,
-  updateAttendance,
-  setGuestForm,
-  isAttending,
   submitGuest,
   rsvpWhatsappText,
   guests,
   totalPersonCount,
   notAttendingCount,
-  wishForm,
-  handleWishChange,
   submitWish,
   approvedWishes,
-  scrollToNext // <-- 1. BURAYI EKLEDİK
+  scrollToNext
 }) {
-
-  // <-- 2. BURAYI EKLEDİK: Ekrana tıklayınca kaydırma fonksiyonu
   const handlePageClick = (e) => {
-    // Sadece mobil görünümde çalışsın
     if (window.innerWidth > 650) return;
-
-    // Eğer tıklanan yer bir buton, link, input veya form elemanıysa kaydırma yapma
     const target = e.target;
     const isInteractive = target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn');
 
@@ -64,9 +53,13 @@ export default function InvitationView({
   };
 
   return (
-    // <-- 3. BURAYI EKLEDİK: onClick={handlePageClick}
     <main className="invitation-page" onClick={handlePageClick}>
-      <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} />
+      <HeroSection 
+        invitation={invitation} 
+        copy={copy} 
+        guestGreeting={guestGreeting} 
+        personalTableNumber={personalTableNumber}
+      />
 
       {settings.visibility?.countdown !== false && (
         <CountdownSection copy={copy} timeLeft={timeLeft} />
@@ -101,16 +94,12 @@ export default function InvitationView({
       {settings.visibility?.rsvp !== false && (
         <RsvpSection
           copy={copy}
-          guestForm={guestForm}
-          handleGuestChange={handleGuestChange}
-          updateAttendance={updateAttendance}
-          setGuestForm={setGuestForm}
-          isAttending={isAttending}
           submitGuest={submitGuest}
           invitation={invitation}
           rsvpWhatsappText={rsvpWhatsappText}
           showIban={settings.visibility?.popupIban !== false}
           giftData={siteData.giftRegistry}
+          personalTableNumber={personalTableNumber}
         />
       )}
 
@@ -126,8 +115,6 @@ export default function InvitationView({
       {settings.visibility?.wishes !== false && (
         <WishesSection
           copy={copy}
-          wishForm={wishForm}
-          handleWishChange={handleWishChange}
           submitWish={submitWish}
           approvedWishes={approvedWishes}
         />

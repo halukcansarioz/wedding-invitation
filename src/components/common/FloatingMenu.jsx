@@ -13,12 +13,13 @@ export default function FloatingMenu({
 }) {
   return (
     <>
-      <div className="admin-quick-access">
+      {/* SADE VE TEMİZ ADMİN BUTONU (Halo/Halka efekti tamamen engellendi) */}
+      <div className="admin-panel-trigger">
        <a 
           href="/admin" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="admin-btn" 
+          className="admin-btn-clean" 
           title={isEn ? "Admin Panel" : "Yönetici Paneli"}
         >
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -80,7 +81,6 @@ export default function FloatingMenu({
           </svg>
         </button>
 
-        {/* 1. YUKARI OKU (Görseldeki gibi üstte ve ince düz ok tasarımı) */}
         <button
           type="button"
           className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`}
@@ -94,7 +94,6 @@ export default function FloatingMenu({
           </svg>
         </button>
 
-        {/* 2. AŞAĞI OKU (Görseldeki gibi altta ve ince düz ok tasarımı) */}
         <button
           type="button"
           className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`}

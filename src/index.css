@@ -119,15 +119,62 @@ html body .app .floating-actions .wa-btn {
 }
 
 /* =================================================================
-   3. YÜZEN BUTON KAPSAYICILARI & ROMANTİK ANİMASYON
+   3. YÖNETİCİ BUTONU (TEMİZ VE HALKASIZ) & YÜZEN BUTONLAR
+   ================================================================= */
+.admin-panel-trigger {
+  position: fixed !important;
+  top: 24px !important;
+  left: 24px !important;
+  z-index: 9999 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.admin-btn-clean {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  border: 1px solid rgba(220, 220, 220, 0.8) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  text-decoration: none !important;
+  position: relative !important;
+  outline: none !important;
+}
+
+.admin-btn-clean:hover {
+  transform: translateY(-2px) scale(1.05) !important;
+  background: #ffffff !important;
+  color: var(--amp-color, #9f4f68) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="dark"] .admin-btn-clean {
+  background: rgba(36, 26, 33, 0.95) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* =================================================================
+   4. YÜZEN DOCK MENÜ (SAĞ YAN)
    ================================================================= */
 @keyframes elegantFloatContainer {
   0%, 100% { translate: 0 0px; filter: drop-shadow(0 2px 4px rgba(159, 79, 104, 0.05)); }
-  50% { translate: 0 -12px; filter: drop-shadow(0 12px 24px rgba(159, 79, 104, 0.25)); }
+  50% { translate: 0 -10px; filter: drop-shadow(0 10px 20px rgba(159, 79, 104, 0.2)); }
 }
 
-html body .app .glass-dock, html body .app .floating-actions,
-html[data-theme] body .app .glass-dock, html[data-theme] body .app .floating-actions {
+html body .app .glass-dock, html body .app .floating-actions {
   background: transparent !important; border: none !important;
   box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
 }
@@ -136,24 +183,23 @@ html body .app .glass-dock .dock-btn, html body .app .floating-actions .dock-btn
   background: rgba(255, 255, 255, 0.95) !important;
   color: var(--amp-color, #9f4f68) !important;
   border: 1px solid rgba(230, 230, 230, 1) !important;
-  box-shadow: 0 0.5vh 2vh rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
   opacity: 1 !important;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              box-shadow 0.3s ease, opacity 0.7s ease-in-out, width 0.7s ease-in-out,
-              min-width 0.7s ease-in-out, height 0.7s ease-in-out, min-height 0.7s ease-in-out,
-              margin 0.7s ease-in-out, padding 0.7s ease-in-out !important;
+              box-shadow 0.3s ease, opacity 0.5s ease-in-out, width 0.5s ease-in-out,
+              height 0.5s ease-in-out !important;
 }
+
 [data-theme="dark"] html body .app .glass-dock .dock-btn,
 [data-theme="dark"] html body .app .floating-actions .dock-btn {
   background: rgba(40, 40, 40, 0.95) !important; color: var(--amp-color, #e3b6c7) !important;
   border: 1px solid rgba(70, 70, 70, 1) !important;
 }
 
-/* Zarf ekranındayken yön butonlarını yumuşakça saklar */
 html body .app .glass-dock .hidden-btn, html body .app .floating-actions .hidden-btn {
   display: flex !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
   width: 0 !important; min-width: 0 !important; height: 0 !important; min-height: 0 !important;
-  margin: 0 !important; padding: 0 !important; border-width: 0 !important;
+  margin: -16px 0 0 0 !important; padding: 0 !important; border-width: 0 !important;
   transform: scale(0) !important;
 }
 
@@ -165,17 +211,8 @@ html body .app .glass-dock .hidden-btn, html body .app .floating-actions .hidden
 }
 
 /* =================================================================
-   4. BİZİM HİKAYEMİZ & TABLOLAR & ADMİN
+   5. BİZİM HİKAYEMİZ & TABLOLAR
    ================================================================= */
-html body .app .admin-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9); color: var(--rose-dark, #9f4f68);
-  border: 1.5px solid rgba(159, 79, 104, 0.25); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  position: relative; z-index: 50;
-}
-html body .app .admin-btn:hover { background: var(--rose-dark, #9f4f68); color: #ffffff; transform: scale(1.08); }
-
 html body .app .info-list, html body .app .mini-map {
   overflow: hidden; -webkit-mask-image: -webkit-radial-gradient(white, black);
   mask-image: radial-gradient(white, black); transform: translateZ(0); 
@@ -205,7 +242,7 @@ html body .app .hero-section, html body .app .intro-card, html body .app .card, 
 html body .app .hero-section::before { border-radius: 24px !important; }
 
 /* =================================================================
-   5. MOBİL (STANDART TEK SAYFA AKIŞI - KESİNTİSİZ SCROLL)
+   6. MOBİL UYUM
    ================================================================= */
 @media (max-width: 650px) {
   html, body, #root, .app, .invitation-page {
@@ -218,11 +255,10 @@ html body .app .hero-section::before { border-radius: 24px !important; }
   
   .invitation-page {
     display: block !important;
-    padding: 0 0 120px 0 !important; /* Yüzen menü kartların üstüne binmesin diye altta güvenli boşluk */
+    padding: 0 0 120px 0 !important;
     background: linear-gradient(135deg, var(--paper-soft), var(--paper), var(--paper-soft));
   }
 
-  /* 1. ANA KAPAK TAM EKRAN KALSIN (Görsellik için) */
   html body .app .hero-section {
     display: flex !important;
     flex-direction: column !important;
@@ -243,7 +279,6 @@ html body .app .hero-section::before { border-radius: 24px !important; }
     min-height: 100dvh !important; 
   }
 
-  /* 2. DİĞER TÜM BÖLÜMLER NORMAL TEK SAYFA AKIŞINA DÖNER */
   .invitation-page > section:not(.hero-section),
   .invitation-page > footer {
     display: flex !important;
@@ -251,15 +286,15 @@ html body .app .hero-section::before { border-radius: 24px !important; }
     align-items: center !important;
     position: relative !important;
     height: auto !important; 
-    min-height: auto !important; /* SİHİRLİ DOKUNUŞ: İçerik ne kadarsa bölüm o kadar uzar */
+    min-height: auto !important;
     width: 100vw !important;
     margin: 0 !important;
-    padding: 24px 4vw !important; /* Bölümler arasına standart ve şık bir mesafe eklendi */
+    padding: 24px 4vw !important;
     box-sizing: border-box !important;
   }
 
-  /* Admin Butonu ve Mobil Yüzen Menü */
-  html body .app .admin-quick-access, html body .app .admin-btn { display: none !important; }
+  /* Mobil görünümde admin butonunu gizle */
+  .admin-panel-trigger { display: none !important; }
   
   html body .app .glass-dock, html body .app .floating-actions {
     position: fixed !important; bottom: 24px !important; right: 50% !important; left: auto !important;
@@ -278,17 +313,16 @@ html body .app .hero-section::before { border-radius: 24px !important; }
     bottom: clamp(100px, 15vh, 140px) !important; z-index: 10 !important;
   }
 
-  /* 3. KARTLAR SERBEST BIRAKILDI (Kendi İçinde Scroll Olmaz) */
   html body .app .card, 
   html body .app .countdown-section {
     width: 90vw !important; 
     max-width: 480px !important;
-    max-height: none !important; /* Maksimum boy sınırını sildik */
-    height: auto !important; /* İçeriğe göre otomatik uzar */
+    max-height: none !important;
+    height: auto !important;
     padding: clamp(24px, 5vh, 40px) clamp(16px, 4vw, 24px) !important;
     box-sizing: border-box !important;
     border-radius: 32px !important;
-    overflow-y: visible !important; /* Kaydırma çubuğu çıkmasını engeller */
+    overflow-y: visible !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
     margin: 0 auto !important;
   }
@@ -300,7 +334,6 @@ html body .app .hero-section::before { border-radius: 24px !important; }
     text-align: center !important;
   }
 
-  /* Geri Sayım Kutuları */
   html body .app .countdown-section > div:not(h2):not(p) {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important; 
@@ -315,43 +348,17 @@ html body .app .hero-section::before { border-radius: 24px !important; }
   html body .app .count-box strong { font-size: clamp(26px, 8vw, 42px) !important; line-height: 1 !important; margin: 0 !important; }
   html body .app .count-box span { font-size: clamp(12px, 3.5vw, 15px) !important; margin-top: 6px !important; opacity: 0.8 !important; }
 
-  /* Formlar ve Harita */
   html body .app .mini-map { height: 35vh !important; margin: 2vh auto !important; width: 100% !important; }
   html body .app .main-button, html body .app .secondary-button, html body .app .rsvp-form input, html body .app .wish-form input {
     width: 100% !important; padding: clamp(12px, 2.5vh, 18px) clamp(16px, 4vw, 24px) !important; font-size: clamp(14px, 4vw, 16px) !important;
   }
   
-  /* Bizim Hikayemiz Mobil Uyumu */
   html body .app .card .story-node, html body .app .card .story-node.left, html body .app .card .story-node.right { width: 100% !important; left: 0 !important; padding: 0 !important; margin-bottom: 24px !important; }
   html body .app .card .story-content-box { padding: 24px 20px !important; }
   html body .app .card .story-line, html body .app .card .story-node .story-dot { display: none !important; }
-}
-
-/* =================================================================
-   GİZLİ BUTONLARIN YARATTIĞI ÇİFT BOŞLUK (GAP) SORUNUNU ÇÖZME
-   ================================================================= */
-html body .app .glass-dock .hidden-btn, 
-html body .app .floating-actions .hidden-btn {
-  display: flex !important; 
-  opacity: 0 !important; 
-  visibility: hidden !important; 
-  pointer-events: none !important;
-  width: 0 !important; 
-  min-width: 0 !important; 
-  height: 0 !important; 
-  min-height: 0 !important;
-  padding: 0 !important; 
-  border-width: 0 !important;
-  transform: scale(0) !important;
   
-  /* SİHİRLİ DOKUNUŞ: Görünmez butonun yarattığı ekstra boşluğu eksi değerle yutuyoruz */
-  margin: -16px 0 0 0 !important; 
-}
-
-@media (max-width: 650px) {
   html body .app .glass-dock .hidden-btn, 
   html body .app .floating-actions .hidden-btn {
-    /* Mobilde menü yatay olduğu için üstten değil, soldan boşluğu çekeriz */
     margin: 0 0 0 -3.5vw !important; 
   }
 }
