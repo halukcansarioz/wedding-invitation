@@ -58,35 +58,14 @@ function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
   );
 }
 
-export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber }) {
+export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  
-  const handleScrollNext = () => {
-    const isMobile = window.innerWidth <= 650;
-    const container = isMobile ? document.querySelector('.invitation-page') : window;
-    if (!container) return;
-
-    const sections = document.querySelectorAll('.invitation-page > section, .invitation-page > footer');
-    for (let sec of sections) {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top > window.innerHeight * 0.55) { 
-        if (isMobile) {
-          const desiredTop = sec.offsetHeight > window.innerHeight ? 20 : (window.innerHeight - sec.offsetHeight) / 2;
-          container.scrollBy({ top: rect.top - desiredTop, behavior: 'smooth' });
-        } else {
-          sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        break;
-      }
-    }
-  };
   
   return (
     <motion.section 
       initial="hidden" animate="visible" variants={fadeUp}
       className="hero-section" 
-      onClick={window.innerWidth <= 650 ? handleScrollNext : undefined}
     >
       {invitation?.heroVideo ? (
         <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
@@ -110,7 +89,7 @@ export function HeroSection({ invitation, copy, guestGreeting, personalTableNumb
         )}
       </div>
 
-      <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); handleScrollNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+      <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
         <div className="mouse">
           <div className="wheel"></div>
         </div>

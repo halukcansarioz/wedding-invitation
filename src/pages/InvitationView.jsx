@@ -40,25 +40,39 @@ export default function InvitationView({
   notAttendingCount,
   submitWish,
   approvedWishes,
-  scrollToNext
+  scrollToNext,
+  scrollToPrev
 }) {
+
+  // Ekrana Tıklama (Tap) Tespiti (Sadece mobil için sağa sola basınca geçme)
   const handlePageClick = (e) => {
     if (window.innerWidth > 650) return;
+    
     const target = e.target;
-    const isInteractive = target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn');
+    // Eğer tıklanan şey bir buton, link, input, galeri resmi veya floating menu ise müdahale etme
+    const isInteractive = target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn, img');
 
-    if (!isInteractive && scrollToNext) {
-      scrollToNext();
+    if (!isInteractive) {
+      // Ekranın sol %35'ine basılırsa geri, sağa basılırsa ileri gider
+      if (e.clientX < window.innerWidth * 0.35) {
+        if (scrollToPrev) scrollToPrev();
+      } else {
+        if (scrollToNext) scrollToNext();
+      }
     }
   };
 
   return (
-    <main className="invitation-page" onClick={handlePageClick}>
+    <main 
+      className="invitation-page" 
+      onClick={handlePageClick}
+    >
       <HeroSection 
         invitation={invitation} 
         copy={copy} 
         guestGreeting={guestGreeting} 
         personalTableNumber={personalTableNumber}
+        scrollToNext={scrollToNext}
       />
 
       {settings.visibility?.countdown !== false && (
