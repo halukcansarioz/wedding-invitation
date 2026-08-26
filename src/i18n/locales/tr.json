@@ -109,5 +109,29 @@
     "linkCopied": "Davetiye linki kopyalandı. 🔗",
     "linkCopyError": "Link kopyalanamadı. ⚠️"
   },
-  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
+  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
+    "clearGuestsTitle": "Katılım kayıtlarını sil",
+    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
+    "clearWishesTitle": "Anı defterini temizle",
+    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
+    "deleteGuestTitle": "Kaydı sil",
+    "editGuestTitle": "Katılım kaydını düzenle",
+    "fullName": "Ad Soyad",
+    "phone": "Telefon",
+    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
+    "personCount": "Kişi sayısı",
+    "side": "Taraf",
+    "hasChild": "Çocuk var mı? (Evet/Hayır)",
+    "songRequest": "Müzik isteği",
+    "note": "Not",
+    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
+    "deleteWishTitle": "Mesajı sil",
+    "editWishTitle": "Mesajı düzenle",
+    "message": "Mesaj",
+    "couldNotDelete": "Silinemedi.",
+    "couldNotUpdate": "Güncellenemedi.",
+    "couldNotChangeStatus": "Durum değiştirilemedi."
+  }
 }

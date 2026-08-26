@@ -109,5 +109,29 @@
     "linkCopied": "Invitation link copied. 🔗",
     "linkCopyError": "Could not copy link. ⚠️"
   },
-  "popupIban": "Gift Button for Non-Attending (Modal)"
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status."
+  }
 }

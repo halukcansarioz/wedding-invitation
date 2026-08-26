@@ -3,20 +3,8 @@ import { supabase } from "../supabaseClient";
 import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
 import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 
-export function useDatabaseManager({ 
-  guests, 
-  setGuests, 
-  wishes, 
-  setWishes, 
-  settings, 
-  showAppAlert, 
-  showAppConfirm, 
-  showAppPrompt, 
-  setAdminSaveMessage, 
-  t, 
-  isEn 
-}) {
-  // SUPABASE REALTIME: Yeni onaylı mesajlar sayfayı yenilemeden anında listeye düşer
+export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
+  
   useEffect(() => {
     if (!isSupabaseReady()) return;
 
@@ -82,7 +70,7 @@ export function useDatabaseManager({
         });
       }
       await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { 
-        title: settings?.requireWishApproval ? (isEn ? "Sent for approval" : "Onaya gönderildi") : t('alerts.saveTitle') 
+        title: settings?.requireWishApproval ? t('alerts.saveTitle') : t('alerts.saveTitle') 
       });
     } catch (error) {
       console.error("Mesaj kaydedilemedi:", error);
@@ -92,60 +80,39 @@ export function useDatabaseManager({
   }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
 
   const clearGuests = useCallback(async () => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete all RSVP records?" : "Tüm katılım kayıtları silinsin mi?",
-      { title: isEn ? "Clear Guests" : "Katılım kayıtlarını sil" }
-    );
+    const confirmed = await showAppConfirm(t('admin.clearGuestsConfirm'), { title: t('admin.clearGuestsTitle') });
     if (!confirmed) return;
     const { error } = await supabase.from("guests").delete().not("id", "is", null);
-    if (error) { 
-      console.error("Silinemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not delete." : "Silinemedi."); 
-      return; 
-    }
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotDelete')); return; }
     setGuests([]);
-  }, [setGuests, setAdminSaveMessage, showAppConfirm, isEn]);
+  }, [setGuests, setAdminSaveMessage, showAppConfirm, t]);
 
   const clearWishes = useCallback(async () => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete all guestbook messages?" : "Tüm anı defteri mesajları silinsin mi?",
-      { title: isEn ? "Clear Guestbook" : "Anı defterini temizle" }
-    );
+    const confirmed = await showAppConfirm(t('admin.clearWishesConfirm'), { title: t('admin.clearWishesTitle') });
     if (!confirmed) return;
     const { error } = await supabase.from("wishes").delete().not("id", "is", null);
-    if (error) { 
-      console.error("Silinemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not delete." : "Silinemedi."); 
-      return; 
-    }
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotDelete')); return; }
     setWishes([]);
-  }, [setWishes, setAdminSaveMessage, showAppConfirm, isEn]);
+  }, [setWishes, setAdminSaveMessage, showAppConfirm, t]);
 
   const deleteGuest = useCallback(async (guestId) => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete this RSVP record?" : "Bu katılım kaydı silinsin mi?",
-      { title: isEn ? "Delete Record" : "Kaydı sil" }
-    );
+    const confirmed = await showAppConfirm(t('admin.deleteGuestConfirm'), { title: t('admin.deleteGuestTitle') });
     if (!confirmed) return;
     const { error } = await supabase.from("guests").delete().eq("id", guestId);
-    if (error) { 
-      console.error("Silinemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not delete." : "Silinemedi."); 
-      return; 
-    }
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotDelete')); return; }
     setGuests((prev) => prev.filter((g) => g.id !== guestId));
-  }, [setGuests, setAdminSaveMessage, showAppConfirm, isEn]);
+  }, [setGuests, setAdminSaveMessage, showAppConfirm, t]);
 
   const editGuest = useCallback(async (guestId) => {
     const guest = guests.find((item) => item.id === guestId);
     if (!guest) return;
-    const title = isEn ? "Edit RSVP" : "Katılım kaydını düzenle";
+    const title = t('admin.editGuestTitle');
 
-    const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", guest.name || "", { title }); if (name === null) return;
-    const phone = await showAppPrompt(isEn ? "Phone" : "Telefon", guest.phone || "", { title }); if (phone === null) return;
-    const attendance = await showAppPrompt(isEn ? "Attendance (Katılacağım/Katılamayacağım)" : "Katılım durumu", guest.attendance || "Katılacağım", { title }); if (attendance === null) return;
+    const name = await showAppPrompt(t('admin.fullName'), guest.name || "", { title }); if (name === null) return;
+    const phone = await showAppPrompt(t('admin.phone'), guest.phone || "", { title }); if (phone === null) return;
+    const attendance = await showAppPrompt(t('admin.attendanceStatus'), guest.attendance || "Katılacağım", { title }); if (attendance === null) return;
     
-    let personCountInput = await showAppPrompt(isEn ? "Person Count" : "Kişi sayısı", guest.personCount || "1", { title }); 
+    let personCountInput = await showAppPrompt(t('admin.personCount'), guest.personCount || "1", { title }); 
     if (personCountInput === null) return;
     
     let parsedCount = parseInt(personCountInput, 10);
@@ -154,66 +121,52 @@ export function useDatabaseManager({
     }
     const personCount = String(parsedCount);
 
-    const side = await showAppPrompt(isEn ? "Side" : "Taraf", guest.side || "Gelin Tarafı", { title }); if (side === null) return;
-    const hasChild = await showAppPrompt(isEn ? "Has children? (Evet/Hayır)" : "Çocuk var mı? Evet/Hayır", guest.hasChild || "Hayır", { title }); if (hasChild === null) return;
-    const songRequest = await showAppPrompt(isEn ? "Song Request" : "Müzik isteği", guest.songRequest || "", { title }); if (songRequest === null) return;
-    const note = await showAppPrompt(isEn ? "Note" : "Not", guest.note || "", { title, multiline: true }); if (note === null) return;
+    const side = await showAppPrompt(t('admin.side'), guest.side || "Gelin Tarafı", { title }); if (side === null) return;
+    const hasChild = await showAppPrompt(t('admin.hasChild'), guest.hasChild || "Hayır", { title }); if (hasChild === null) return;
+    const songRequest = await showAppPrompt(t('admin.songRequest'), guest.songRequest || "", { title }); if (songRequest === null) return;
+    const note = await showAppPrompt(t('admin.note'), guest.note || "", { title, multiline: true }); if (note === null) return;
 
     const nextGuest = { ...guest, name, phone, attendance, personCount, side, hasChild, songRequest, note };
     const { error } = await supabase.from("guests").update(uiGuestToDb(nextGuest)).eq("id", guestId);
-    if (error) { 
-      console.error("Güncellenemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not update." : "Güncellenemedi."); 
-      return; 
-    }
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotUpdate')); return; }
     setGuests((prev) => prev.map((item) => (item.id === guestId ? nextGuest : item)));
-  }, [guests, setGuests, setAdminSaveMessage, showAppPrompt, isEn]);
+  }, [guests, setGuests, setAdminSaveMessage, showAppPrompt, t]);
 
   const deleteWish = useCallback(async (wishId) => {
-    const confirmed = await showAppConfirm(
-      isEn ? "Delete this message?" : "Bu anı defteri mesajı silinsin mi?",
-      { title: isEn ? "Delete Message" : "Mesajı sil" }
-    );
+    const confirmed = await showAppConfirm(t('admin.deleteWishConfirm'), { title: t('admin.deleteWishTitle') });
     if (!confirmed) return;
     const { error } = await supabase.from("wishes").delete().eq("id", wishId);
-    if (error) { 
-      console.error("Silinemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not delete." : "Silinemedi."); 
-      return; 
-    }
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotDelete')); return; }
     setWishes((prev) => prev.filter((w) => w.id !== wishId));
-  }, [setWishes, setAdminSaveMessage, showAppConfirm, isEn]);
+  }, [setWishes, setAdminSaveMessage, showAppConfirm, t]);
 
   const editWish = useCallback(async (wishId) => {
     const wish = wishes.find((item) => item.id === wishId);
     if (!wish) return;
-    const title = isEn ? "Edit Message" : "Mesajı düzenle";
+    const title = t('admin.editWishTitle');
 
-    const name = await showAppPrompt(isEn ? "Full Name" : "Ad Soyad", wish.name || "", { title }); if (name === null) return;
-    const message = await showAppPrompt(isEn ? "Message" : "Mesaj", wish.message || "", { title, multiline: true }); if (message === null) return;
+    const name = await showAppPrompt(t('admin.fullName'), wish.name || "", { title }); if (name === null) return;
+    const message = await showAppPrompt(t('admin.message'), wish.message || "", { title, multiline: true }); if (message === null) return;
 
     const nextWish = { ...wish, name, message };
-    const { error } = await supabase.from("wishes").update(uiWishToDb(nextWish)).eq("id", wishId);
-    if (error) { 
-      console.error("Güncellenemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not update." : "Güncellenemedi."); 
-      return; 
-    }
+    // DÜZELTME: uiWishToDb hatası çözüldü
+    const { error } = await supabase.from("wishes").update({
+      name: nextWish.name,
+      message: nextWish.message
+    }).eq("id", wishId);
+    
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotUpdate')); return; }
     setWishes((prev) => prev.map((item) => (item.id === wishId ? nextWish : item)));
-  }, [wishes, setWishes, setAdminSaveMessage, showAppPrompt, isEn]);
+  }, [wishes, setWishes, setAdminSaveMessage, showAppPrompt, t]);
 
   const toggleWishApproval = useCallback(async (wishId) => {
     const wish = wishes.find((item) => item.id === wishId);
     if (!wish) return;
     const nextApproved = wish.approved === false;
     const { error } = await supabase.from("wishes").update({ approved: nextApproved }).eq("id", wishId);
-    if (error) { 
-      console.error("Değiştirilemedi:", error); 
-      setAdminSaveMessage?.(isEn ? "Could not change status." : "Değiştirilemedi."); 
-      return; 
-    }
+    if (error) { setAdminSaveMessage?.(t('admin.couldNotChangeStatus')); return; }
     setWishes((prev) => prev.map((item) => (item.id === wishId ? { ...item, approved: nextApproved } : item)));
-  }, [wishes, setWishes, setAdminSaveMessage, isEn]);
+  }, [wishes, setWishes, setAdminSaveMessage, t]);
 
   return {
     submitGuest,

@@ -3,28 +3,10 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { OptionGroup } from "../common/UIComponents";
 import { triggerConfetti } from "../../utils/helpers";
-import {
-  NOTE_MAX_LENGTH,
-  WISH_MAX_LENGTH,
-  ATTENDANCE_OPTIONS
-} from "../../config/constants";
-
-const getRsvpSchema = (t) => z.object({
-  name: z.string().min(3, { message: t('form.missingNameMessage') }),
-  attendance: z.string(),
-  songRequest: z.string().max(100).optional(),
-  note: z.string().max(NOTE_MAX_LENGTH).optional(),
-  honeypot: z.string().optional()
-});
-
-const getWishSchema = (t) => z.object({
-  name: z.string().min(2, { message: t('form.missingNameMessage') }),
-  message: z.string().min(5, { message: t('form.missingWishMessage') }).max(WISH_MAX_LENGTH),
-  honeypot: z.string().optional()
-});
+import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../config/constants";
+import { getRsvpSchema, getWishSchema } from "../../validations/schemas"; 
 
 function DeadlineBanner({ isEn, title, text }) {
   return (
@@ -127,18 +109,12 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
     }
     
     reset();
-    
-    if (isDeclining) {
-      setShowDeclineModal(true);
-    }
+    if (isDeclining) setShowDeclineModal(true);
   };
 
   const resetAndCloseModal = useCallback(() => {
     setShowDeclineModal(false);
-    setTimeout(() => {
-      setShowDeclineGift(false);
-      setCopied(false);
-    }, 300);
+    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
   }, []);
 
   const copyIban = useCallback(() => {
@@ -164,13 +140,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
         <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <input 
-            type="text" 
-            {...control.register("honeypot")} 
-            style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} 
-            tabIndex={-1} 
-            autoComplete="off" 
-          />
+          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
           {urlGuestName && (
             <div className="guest-badge-banner">
@@ -180,38 +150,22 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
           )}
 
           <div style={{ width: '100%' }}>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />}
-            />
+            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
             {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
           </div>
 
-          <Controller
-            name="attendance"
-            control={control}
-            render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />}
-          />
+          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
 
           {currentAttendance === "Katılacağım" && (
             <div style={{ width: '100%' }}>
-              <Controller
-                name="songRequest"
-                control={control}
-                render={({ field }) => (
+              <Controller name="songRequest" control={control} render={({ field }) => (
                   <input {...field} placeholder={isEn ? "Song Request for the DJ 🎵 (Optional)" : "DJ için Şarkı İsteğiniz 🎵 (İsteğe Bağlı)"} />
-                )}
-              />
+              )} />
             </div>
           )}
 
           <div className="field-with-counter">
-            <Controller
-              name="note"
-              control={control}
-              render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>}
-            />
+            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
 
@@ -252,9 +206,7 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
       </div>
       
       <div className="private-note-card">
-        <p className="private-note-text">
-          🔒 {t('ui.privateNote')}
-        </p>
+        <p className="private-note-text">🔒 {t('ui.privateNote')}</p>
       </div>
     </section>
   );
@@ -287,13 +239,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
       
       <form className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <input 
-          type="text" 
-          {...control.register("honeypot")} 
-          style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} 
-          tabIndex={-1} 
-          autoComplete="off" 
-        />
+        <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
         <div style={{ width: '100%' }}>
           <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
