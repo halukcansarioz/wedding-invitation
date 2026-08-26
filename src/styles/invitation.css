@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 /* =================================================================
    GENEL VE TÜRKÇE KARAKTER DÜZELTME VE STANDART FONT SİSTEMİ
    ================================================================= */
@@ -314,14 +316,14 @@ body .app .invitation-page .hero-section::after {
   position: absolute;
   inset: 0;
   background-color: var(--amp-color);
-  mask-image: var(--theme-flower-svg);
   -webkit-mask-image: var(--theme-flower-svg);
-  mask-size: 100px 100px;
+  mask-image: var(--theme-flower-svg);
   -webkit-mask-size: 100px 100px;
-  mask-position: center;
+  mask-size: 100px 100px;
   -webkit-mask-position: center;
-  mask-repeat: repeat;
+  mask-position: center;
   -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
   opacity: 0.1;
   mix-blend-mode: multiply;
   pointer-events: none;
