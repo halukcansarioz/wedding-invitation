@@ -1798,3 +1798,143 @@ button,
   opacity: 0.6;
   pointer-events: none; /* Sayacın üstüne tıklanmasını engeller */
 }
+
+/* =================================================================
+   YÜZEN DOCK MENÜ ARKA PLAN SIFIRLAMA VE BUTON ANİMASYONLARI
+   ================================================================= */
+
+/* 1. Arkadaki o hap şeklindeki gri/beyaz arka planı tamamen yok ediyoruz */
+.app .glass-dock, 
+.app .floating-actions {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+}
+
+/* 2. Butonlar için nefes alma (Pulse) animasyonu oluşturuyoruz */
+@keyframes dockPulse {
+  0% { 
+    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0.2); 
+    transform: scale(1); 
+  }
+  50% { 
+    box-shadow: 0 0 0 10px rgba(159, 79, 104, 0); 
+    transform: scale(1.05); 
+  }
+  100% { 
+    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0); 
+    transform: scale(1); 
+  }
+}
+
+/* =================================================================
+   YÜZEN DOCK MENÜ (ZIPLAMA ANİMASYONU VE KUSURSUZ HİZALAMA)
+   ================================================================= */
+
+/* 1. Arkadaki yarı saydam arka planı ve standart 'gap' boşluğunu kaldırıyoruz */
+.app .glass-dock, 
+.app .floating-actions {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  gap: 0 !important; /* Boşlukları margin ile yöneteceğiz ki animasyonlu daralsın */
+}
+
+/* 2. Butonlar için Zıplama (Bounce) ve Hafif Parlama animasyonu */
+@keyframes dockBounce {
+  0%, 100% { 
+    transform: translateY(0); 
+    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0.2); 
+  }
+  50% { 
+    transform: translateY(-6px); /* Yukarı zıplama mesafesi (İsteğe göre artırılabilir) */
+    box-shadow: 0 0 0 10px rgba(159, 79, 104, 0); 
+  }
+}
+
+/* 3. Butonların Standart Durumu ve Yumuşak Geçiş (Transition) Ayarları */
+.app .dock-btn {
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  border: 1px solid rgba(220, 220, 220, 0.8) !important;
+  
+  /* Animasyonlu geliş-gidiş için alan sınırları */
+  max-height: 58px !important;
+  max-width: 58px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow: hidden !important;
+  
+  /* Desktop için dikey boşluk (gap yerine margin kullanıyoruz) */
+  margin-bottom: 14px !important;
+  
+  /* Yavaşça belirme ve animasyon geçiş ayarları */
+  transition: max-height 0.5s ease-out, max-width 0.5s ease-out, margin 0.5s ease-out, opacity 0.6s ease, background 0.3s ease, box-shadow 0.3s ease !important;
+  
+  /* Yeni zıplama animasyonunu ekliyoruz */
+  animation: dockBounce 2.5s infinite ease-in-out !important;
+}
+
+/* En alttaki butonda ekstra boşluk kalmasın */
+.app .dock-btn:last-child {
+  margin-bottom: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* 4. GİZLİ BUTON DURUMU (Yavaşça küçülüp, boşluğunu kapatarak kaybolması için) */
+.app .glass-dock .hidden-btn, 
+.app .floating-actions .hidden-btn {
+  display: flex !important; 
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  
+  /* Boyutları ve boşlukları sıfıra indiriyoruz */
+  max-height: 0 !important;
+  max-width: 0 !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  border-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important; 
+  
+  /* Aşağı doğru süzülerek kaybolma efekti */
+  transform: translateY(20px) !important;
+  animation: none !important; /* Gizliyken zıplama yapmasın */
+}
+
+/* 5. Gecikmeler (Tüm butonların sırayla ritmik zıplaması için - Dalga efekti) */
+.app .dock-btn:nth-child(1) { animation-delay: 0s !important; }
+.app .dock-btn:nth-child(2) { animation-delay: 0.15s !important; }
+.app .dock-btn:nth-child(3) { animation-delay: 0.3s !important; }
+.app .dock-btn:nth-child(4) { animation-delay: 0.45s !important; }
+
+/* 6. Mouse ile üzerine gelince (Hover) efekti */
+.app .dock-btn:hover {
+  transform: translateY(-8px) scale(1.05) !important; /* Üzerine gelince biraz daha yukarı sabitlensin */
+  background: #ffffff !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12) !important;
+  animation: none !important; /* Üzerine gelince zıplama dursun */
+}
+
+/* 7. Mobil Uyum (Mobilde menü yatay olduğu için margin ayarını sağa veriyoruz) */
+@media (max-width: 650px) {
+  .app .dock-btn {
+    margin-bottom: 0 !important;
+    margin-right: 16px !important;
+  }
+}
+
+/* 8. Dark Mode (Karanlık Tema) Renk Uyumu */
+.app[data-theme="dark"] .dock-btn {
+  background: rgba(36, 26, 33, 0.95) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}

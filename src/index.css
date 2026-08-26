@@ -45,7 +45,9 @@ html, body {
 }
 
 button, input, select, textarea, .option-button, a {
-  appearance: none; -webkit-appearance: none; outline: none;
+  appearance: none; 
+  -webkit-appearance: none; 
+  outline: none;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -112,91 +114,116 @@ html body .app .app-modal-card::before { border-radius: 0; }
 
 html body .app .glass-dock .wa-btn,
 html body .app .floating-actions .wa-btn {
-  display: none !important;
-  opacity: 0; visibility: hidden; pointer-events: none;
-  position: absolute; width: 0; height: 0; margin: 0; padding: 0; overflow: hidden;
+  display: none;
+  opacity: 0; 
+  visibility: hidden; 
+  pointer-events: none;
+  position: absolute; 
+  width: 0; 
+  height: 0; 
+  margin: 0; 
+  padding: 0; 
+  overflow: hidden;
 }
 
 /* =================================================================
    3. YÖNETİCİ BUTONU (TEMİZ VE HALKASIZ)
    ================================================================= */
-.admin-panel-trigger {
-  position: fixed !important;
-  top: 24px !important;
-  left: 24px !important;
-  z-index: 9999 !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
+html body .app .admin-panel-trigger {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 9999;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
 }
 
-.admin-btn-clean {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 48px !important;
-  height: 48px !important;
-  border-radius: 50% !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  color: var(--amp-color, #9f4f68) !important;
-  border: 1px solid rgba(220, 220, 220, 0.8) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-  cursor: pointer !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-  text-decoration: none !important;
-  position: relative !important;
-  outline: none !important;
+html body .app .admin-btn-clean {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--amp-color, #9f4f68);
+  border: 1px solid rgba(220, 220, 220, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  position: relative;
+  outline: none;
 }
 
-.admin-btn-clean:hover {
-  transform: translateY(-2px) scale(1.05) !important;
-  background: #ffffff !important;
-  color: var(--amp-color, #9f4f68) !important;
-  border-color: var(--amp-color, #9f4f68) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+html body .app .admin-btn-clean:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: #ffffff;
+  color: var(--amp-color, #9f4f68);
+  border-color: var(--amp-color, #9f4f68);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-[data-theme="dark"] .admin-btn-clean {
-  background: rgba(36, 26, 33, 0.95) !important;
-  color: var(--amp-color, #e3b6c7) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+[data-theme="dark"] html body .app .admin-btn-clean {
+  background: rgba(36, 26, 33, 0.95);
+  color: var(--amp-color, #e3b6c7);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* =================================================================
    4. YÜZEN DOCK MENÜ (SAĞ YAN - MASAÜSTÜ)
    ================================================================= */
-html body .app .glass-dock, html body .app .floating-actions {
-  background: transparent !important; border: none !important;
-  box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+html body .app .glass-dock, 
+html body .app .floating-actions {
+  background: transparent; 
+  border: none;
+  box-shadow: none; 
+  backdrop-filter: none;
 }
 
-html body .app .glass-dock .dock-btn, html body .app .floating-actions .dock-btn {
-  background: rgba(255, 255, 255, 0.95) !important;
-  color: var(--amp-color, #9f4f68) !important;
-  border: 1px solid rgba(230, 230, 230, 1) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
-  opacity: 1 !important;
-  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+html body .app .glass-dock .dock-btn, 
+html body .app .floating-actions .dock-btn {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--amp-color, #9f4f68);
+  border: 1px solid rgba(230, 230, 230, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  opacity: 1;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 [data-theme="dark"] html body .app .glass-dock .dock-btn,
 [data-theme="dark"] html body .app .floating-actions .dock-btn {
-  background: rgba(40, 40, 40, 0.95) !important; color: var(--amp-color, #e3b6c7) !important;
-  border: 1px solid rgba(70, 70, 70, 1) !important;
+  background: rgba(40, 40, 40, 0.95); 
+  color: var(--amp-color, #e3b6c7);
+  border: 1px solid rgba(70, 70, 70, 1);
 }
 
-html body .app .glass-dock .hidden-btn, html body .app .floating-actions .hidden-btn {
-  display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;
-  width: 0 !important; min-width: 0 !important; height: 0 !important; min-height: 0 !important;
-  margin: 0 !important; padding: 0 !important; border-width: 0 !important;
+html body .app .glass-dock .hidden-btn, 
+html body .app .floating-actions .hidden-btn {
+  display: none; 
+  opacity: 0; 
+  visibility: hidden; 
+  pointer-events: none;
+  width: 0; 
+  min-width: 0; 
+  height: 0; 
+  min-height: 0;
+  margin: 0; 
+  padding: 0; 
+  border-width: 0;
 }
 
 @media (min-width: 651px) {
-  html body .app .glass-dock, html body .app .floating-actions {
-    position: fixed !important; top: 50% !important; right: 20px !important; transform: translateY(-50%) !important; 
+  html body .app .glass-dock, 
+  html body .app .floating-actions {
+    position: fixed; 
+    top: 50%; 
+    right: 20px; 
+    transform: translateY(-50%); 
   }
 }
 
@@ -204,36 +231,54 @@ html body .app .glass-dock .hidden-btn, html body .app .floating-actions .hidden
    5. BİZİM HİKAYEMİZ & TABLOLAR
    ================================================================= */
 html body .app .info-list, html body .app .mini-map {
-  overflow: hidden; -webkit-mask-image: -webkit-radial-gradient(white, black);
-  mask-image: radial-gradient(white, black); transform: translateZ(0); 
+  overflow: hidden; 
+  mask-image: radial-gradient(white, black); 
+  transform: translateZ(0); 
   border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent);
 }
-html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item { overflow: hidden; transform: translateZ(0); }
+html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item { 
+  overflow: hidden; 
+  transform: translateZ(0); 
+}
 
-html body .app .card .story-timeline-container { position: relative !important; width: 100% !important; max-width: 860px !important; margin: 40px auto 0 !important; padding: 0 !important; display: block !important; box-sizing: border-box !important; }
-html body .app .card .story-line { position: absolute !important; left: 50% !important; top: 0 !important; bottom: 0 !important; width: 2px !important; background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.4), var(--rose-dark), rgba(159, 79, 104, 0.4), transparent) !important; transform: translateX(-50%) !important; z-index: 1 !important; display: block !important; }
-html body .app .card .story-node { position: relative !important; width: 50% !important; display: block !important; box-sizing: border-box !important; margin: 0 0 40px 0 !important; }
-html body .app .card .story-node.left { left: 0 !important; padding: 0 40px 0 0 !important; }
-html body .app .card .story-node.right { left: 50% !important; padding: 0 0 0 40px !important; }
-html body .app .card .story-content-box { width: 100% !important; max-width: 100% !important; padding: 32px 24px !important; background: var(--paper-soft) !important; border: 1px solid rgba(217, 140, 161, 0.4) !important; box-shadow: 0 14px 30px rgba(111, 47, 67, 0.06) !important; text-align: center !important; position: relative !important; z-index: 10 !important; box-sizing: border-box !important; margin: 0 !important; }
-html body .app .card .story-node .story-dot { position: absolute !important; top: 50% !important; transform: translateY(-50%) !important; width: 20px !important; height: 20px !important; border-radius: 50% !important; background: var(--paper) !important; border: 4px solid var(--rose-dark) !important; z-index: 20 !important; margin: 0 !important; padding: 0 !important; }
-html body .app .card .story-node.left .story-dot { right: -10px !important; left: auto !important; }
-html body .app .card .story-node.right .story-dot { left: -10px !important; right: auto !important; }
-html body .app .card .story-node > div:not(.story-content-box):not(.story-dot) { display: none !important; }
+html body .app .card .story-timeline-container { 
+  position: relative; width: 100%; max-width: 860px; margin: 40px auto 0; padding: 0; display: block; box-sizing: border-box; 
+}
+html body .app .card .story-line { 
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; 
+  background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.4), var(--rose-dark), rgba(159, 79, 104, 0.4), transparent); 
+  transform: translateX(-50%); z-index: 1; display: block; 
+}
+html body .app .card .story-node { 
+  position: relative; width: 50%; display: block; box-sizing: border-box; margin: 0 0 40px 0; 
+}
+html body .app .card .story-node.left { left: 0; padding: 0 40px 0 0; }
+html body .app .card .story-node.right { left: 50%; padding: 0 0 0 40px; }
+html body .app .card .story-content-box { 
+  width: 100%; max-width: 100%; padding: 32px 24px; background: var(--paper-soft); 
+  border: 1px solid rgba(217, 140, 161, 0.4); box-shadow: 0 14px 30px rgba(111, 47, 67, 0.06); 
+  text-align: center; position: relative; z-index: 10; box-sizing: border-box; margin: 0; 
+}
+html body .app .card .story-node .story-dot { 
+  position: absolute; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; 
+  background: var(--paper); border: 4px solid var(--rose-dark); z-index: 20; margin: 0; padding: 0; 
+}
+html body .app .card .story-node.left .story-dot { right: -10px; left: auto; }
+html body .app .card .story-node.right .story-dot { left: -10px; right: auto; }
+html body .app .card .story-node > div:not(.story-content-box):not(.story-dot) { display: none; }
 
 @media (min-width: 651px) {
-  html body .app .card { padding: clamp(20px, 3vh, 48px) clamp(20px, 3vw, 40px) !important; }
-  html body .app .card h2, html body .app .countdown-section h2 { font-size: clamp(26px, 4.5vh, 46px) !important; margin-bottom: clamp(10px, 2vh, 20px) !important; }
-  html body .app .mini-map { height: clamp(260px, 36vh, 440px) !important; margin-top: clamp(16px, 2.5vh, 30px) !important; margin-bottom: clamp(16px, 2.5vh, 36px) !important; }
+  html body .app .card { padding: clamp(20px, 3vh, 48px) clamp(20px, 3vw, 40px); }
+  html body .app .card h2, html body .app .countdown-section h2 { font-size: clamp(26px, 4.5vh, 46px); margin-bottom: clamp(10px, 2vh, 20px); }
+  html body .app .mini-map { height: clamp(260px, 36vh, 440px); margin-top: clamp(16px, 2.5vh, 30px); margin-bottom: clamp(16px, 2.5vh, 36px); }
 }
-html body .app .hero-section, html body .app .intro-card, html body .app .card, html body .app .countdown-section, html body .app .footer, html body .app .mini-map, html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item, html body .app .app-modal-card, html body .app .story-content-box, html body .app .info-list { border-radius: 36px !important; }
-html body .app .hero-section::before { border-radius: 24px !important; }
+html body .app .hero-section, html body .app .intro-card, html body .app .card, html body .app .countdown-section, html body .app .footer, html body .app .mini-map, html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item, html body .app .app-modal-card, html body .app .story-content-box, html body .app .info-list { border-radius: 36px; }
+html body .app .hero-section::before { border-radius: 24px; }
 
 /* =================================================================
    6. TAM EKRAN SLAYT MOBİL UYUM (KUSURSUZ KAYDIRMA & ANİMASYON)
    ================================================================= */
 
-/* Buton Nabız (Pulse) Animasyonu */
 @keyframes elegantPulse {
   0% { transform: translateY(0); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
   50% { transform: translateY(-4px); box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
@@ -241,155 +286,143 @@ html body .app .hero-section::before { border-radius: 24px !important; }
 }
 
 @media (max-width: 650px) {
-  /* Sayfanın kökünü kilitleriz ki sekmeler arası zıplama yapmasın */
   html, body, #root, .app {
-    position: fixed !important; 
-    inset: 0 !important; /* Ekranı tam kaplar */
-    width: 100vw !important;
-    height: 100% !important;
-    overflow: hidden !important; 
-    background: #111 !important; 
-    margin: 0 !important;
-    padding: 0 !important;
+    position: fixed; 
+    inset: 0; 
+    width: 100vw;
+    height: 100%;
+    overflow: hidden; 
+    background: #111; 
+    margin: 0;
+    padding: 0;
   }
   
-  /* Davetiye Sayfası Kendi İçinde Kayar (Scroll) */
   .invitation-page {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    overflow-y: scroll !important; /* KAYDIRMAYI AKTİF EDER */
-    overflow-x: hidden !important;
-    scroll-snap-type: y mandatory !important; /* KUTULARI EKRANA KİLİTLER */
-    scroll-behavior: smooth !important;
-    -webkit-overflow-scrolling: touch !important; /* iPhone için pürüzsüz kaydırma */
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    z-index: 1 !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll; 
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory; 
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; 
+    display: block;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
   }
   
-  .invitation-page::-webkit-scrollbar { display: none !important; }
+  .invitation-page::-webkit-scrollbar { display: none; }
   
-  /* Her Bir Slayt (Kutu) Ayarları */
   .invitation-page > section,
   .invitation-page > footer {
-    position: relative !important;
-    height: 100vh !important; /* Standart ekran boyutu */
-    height: 100dvh !important; /* Destekleyen cihazlar için tam ekran */
-    width: 100% !important;
-    scroll-snap-align: start !important;
-    scroll-snap-stop: always !important; 
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    padding: 40px 24px 100px 24px !important; /* Alttaki butonlar için güvenli boşluk */
-    box-sizing: border-box !important;
-    border-radius: 0 !important; 
-    border: none !important;
-    box-shadow: none !important;
-    overflow-y: auto !important; /* Formlar çok uzunsa içten kaysın */
+    position: relative;
+    height: 100vh; 
+    height: 100dvh; 
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 40px 24px 100px 24px; 
+    box-sizing: border-box;
+    border-radius: 0; 
+    border: none;
+    box-shadow: none;
+    overflow-y: auto; 
   }
 
-  .invitation-page > section:nth-child(odd) { background: var(--paper) !important; }
-  .invitation-page > section:nth-child(even) { background: var(--paper-soft) !important; }
+  .invitation-page > section:nth-child(odd) { background: var(--paper); }
+  .invitation-page > section:nth-child(even) { background: var(--paper-soft); }
 
-  /* ANA KAPAK (Hero Section) Özel Ayarları */
-  html body .app .hero-section { padding: 0 !important; }
-  html body .app .hero-section::before, html body .app .hero-section::after { border-radius: 0 !important; }
-  html body .app .hero-content { padding-bottom: 80px !important; }
+  html body .app .hero-section { padding: 0; }
+  html body .app .hero-section::before, html body .app .hero-section::after { border-radius: 0; }
+  html body .app .hero-content { padding-bottom: 80px; }
 
-  html body .app .couple-title { font-size: clamp(44px, 14vw, 64px) !important; line-height: 1.1 !important; margin: 12px 0 !important; padding: 0 !important; }
-  html body .app .hero-date { font-size: 18px !important; padding: 8px 24px !important; margin-top: 16px !important; }
-  html body .app .card h2, html body .app .countdown-section h2 { font-size: 26px !important; margin-bottom: 16px !important; text-align: center !important; }
-  html body .app .card p { font-size: 16px !important; line-height: 1.6 !important; text-align: center !important; }
+  html body .app .couple-title { font-size: clamp(44px, 14vw, 64px); line-height: 1.1; margin: 12px 0; padding: 0; }
+  html body .app .hero-date { font-size: 18px; padding: 8px 24px; margin-top: 16px; }
+  html body .app .card h2, html body .app .countdown-section h2 { font-size: 26px; margin-bottom: 16px; text-align: center; }
+  html body .app .card p { font-size: 16px; line-height: 1.6; text-align: center; }
 
-  html body .app .countdown-grid { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; margin-top: 16px !important; width: 100% !important; }
-  html body .app .count-box { padding: 16px 8px !important; border-radius: 20px !important; width: 100% !important; }
-  html body .app .count-box strong { font-size: 32px !important; margin: 0 !important; }
-  html body .app .count-box span { font-size: 12px !important; margin-top: 4px !important; }
+  html body .app .countdown-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px; width: 100%; }
+  html body .app .count-box { padding: 16px 8px; border-radius: 20px; width: 100%; }
+  html body .app .count-box strong { font-size: 32px; margin: 0; }
+  html body .app .count-box span { font-size: 12px; margin-top: 4px; }
 
-  html body .app .info-row { flex-direction: column !important; align-items: flex-start !important; gap: 6px !important; padding: 16px !important; }
-  html body .app .button-group { flex-direction: column !important; gap: 12px !important; width: 100% !important; }
+  html body .app .info-row { flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px; }
+  html body .app .button-group { flex-direction: column; gap: 12px; width: 100%; }
   html body .app .main-button, html body .app .secondary-button, html body .app .rsvp-form input, html body .app .wish-form input {
-    width: 100% !important; min-height: 54px !important; font-size: 15px !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 20px !important; border-radius: 999px !important;
+    width: 100%; min-height: 54px; font-size: 15px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-radius: 999px;
   }
-  html body .app .rsvp-form textarea, html body .app .wish-form textarea { min-height: 100px !important; padding: 16px 20px !important; }
-  html body .app .option-group { flex-direction: column !important; gap: 8px !important; }
-  html body .app .option-button { width: 100% !important; min-height: 52px !important; }
+  html body .app .rsvp-form textarea, html body .app .wish-form textarea { min-height: 100px; padding: 16px 20px; }
+  html body .app .option-group { flex-direction: column; gap: 8px; }
+  html body .app .option-button { width: 100%; min-height: 52px; }
   
-  html body .app .mini-map { height: 260px !important; min-height: 200px !important; width: 100% !important; border-radius: 20px !important; margin-top: 16px !important; }
-  html body .app .guest-stats { display: grid !important; grid-template-columns: 1fr !important; gap: 12px !important; }
-  html body .app .guest-item, html body .app .wish-item { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; padding: 16px !important; }
+  html body .app .mini-map { height: 260px; min-height: 200px; width: 100%; border-radius: 20px; margin-top: 16px; }
+  html body .app .guest-stats { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  html body .app .guest-item, html body .app .wish-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; }
 
-  html body .app .admin-panel-trigger { display: none !important; }
+  html body .app .admin-panel-trigger { display: none; }
   
-  /* BEYAZ ARKA PLANI KALDIRILMIŞ ŞEFFAF YÜZEN BUTONLAR (DOCK) */
   html body .app .glass-dock, 
   html body .app .floating-actions {
-    position: fixed !important;
-    bottom: 26px !important;
-    top: auto !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    flex-direction: row !important;
-    gap: 16px !important;
-    width: max-content !important;
-    padding: 0 !important;
-    background: transparent !important; 
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    z-index: 99999 !important;
+    position: fixed;
+    bottom: 26px;
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: 16px;
+    width: max-content;
+    padding: 0;
+    background: transparent; 
+    backdrop-filter: none;
+    border: none;
+    box-shadow: none;
+    z-index: 99999;
   }
 
-  /* YUVARLAK VE ANİMASYONLU BUTONLAR */
   html body .app .glass-dock .dock-btn {
-    width: 58px !important;
-    height: 58px !important;
-    min-width: 58px !important;
-    max-width: 58px !important;
-    min-height: 58px !important;
-    max-height: 58px !important;
-    aspect-ratio: 1/1 !important;
-    border-radius: 50% !important; /* Kusursuz Daire */
-    background: rgba(255, 255, 255, 0.98) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    border: none !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 0 !important; 
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    
-    /* Nabız ve Havalanma Animasyonu */
-    animation: elegantPulse 2.5s infinite ease-in-out !important;
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    max-width: 58px;
+    min-height: 58px;
+    max-height: 58px;
+    aspect-ratio: 1/1;
+    border-radius: 50%; 
+    background: rgba(255, 255, 255, 0.98);
+    color: var(--amp-color, #9f4f68);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; 
+    margin: 0;
+    box-sizing: border-box;
+    animation: elegantPulse 2.5s infinite ease-in-out;
   }
 
-  /* Butonların Dalgalanarak Atması İçin Gecikme */
-  html body .app .glass-dock .dock-btn:nth-child(1) { animation-delay: 0s !important; }
-  html body .app .glass-dock .dock-btn:nth-child(2) { animation-delay: 0.2s !important; }
-  html body .app .glass-dock .dock-btn:nth-child(3) { animation-delay: 0.4s !important; }
-  html body .app .glass-dock .dock-btn:nth-child(4) { animation-delay: 0.6s !important; }
+  html body .app .glass-dock .dock-btn:nth-child(1) { animation-delay: 0s; }
+  html body .app .glass-dock .dock-btn:nth-child(2) { animation-delay: 0.2s; }
+  html body .app .glass-dock .dock-btn:nth-child(3) { animation-delay: 0.4s; }
+  html body .app .glass-dock .dock-btn:nth-child(4) { animation-delay: 0.6s; }
 
-  /* Tıklayınca hafifçe basılma efekti */
   html body .app .glass-dock .dock-btn:active {
-    transform: scale(0.9) !important;
-    box-shadow: none !important;
-    animation: none !important;
+    transform: scale(0.9);
+    box-shadow: none;
+    animation: none;
   }
 
   html body .app .scroll-indicator {
-    bottom: 110px !important; 
+    bottom: 110px; 
   }
 
-  /* Modallar (Popup) */
-  .app-modal-backdrop { padding: 16px !important; }
-  .app-modal-card { width: 100% !important; padding: 24px 20px !important; border-radius: 24px !important; }
-  .app-modal-actions { flex-direction: column !important; }
+  .app-modal-backdrop { padding: 16px; }
+  .app-modal-card { width: 100%; padding: 24px 20px; border-radius: 24px; }
+  .app-modal-actions { flex-direction: column; }
 }

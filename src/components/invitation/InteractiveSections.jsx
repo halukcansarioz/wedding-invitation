@@ -156,14 +156,6 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
           <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
 
-          {currentAttendance === "Katılacağım" && (
-            <div style={{ width: '100%' }}>
-              <Controller name="songRequest" control={control} render={({ field }) => (
-                  <input {...field} placeholder={isEn ? "Song Request for the DJ 🎵 (Optional)" : "DJ için Şarkı İsteğiniz 🎵 (İsteğe Bağlı)"} />
-              )} />
-            </div>
-          )}
-
           <div className="field-with-counter">
             <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
