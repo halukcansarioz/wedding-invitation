@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { triggerConfetti } from "../../utils/helpers";
 
@@ -10,10 +10,10 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
     : copy.openButton;
 
-  const handleOpen = () => {
+  const handleOpen = useCallback(() => {
     triggerConfetti();
     openInvitation();
-  };
+  }, [openInvitation]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -28,7 +28,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpening]);
+  }, [isOpening, handleOpen]);
 
   return (
     <section className={`intro-page ${isOpening ? "opening" : ""}`}>

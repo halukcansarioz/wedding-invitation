@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function FloatingMenu({
   isEn,
@@ -11,24 +11,34 @@ export default function FloatingMenu({
   showScrollTop,
   scrollToPrev
 }) {
+  const [showAdminBtn, setShowAdminBtn] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("admin") === "1" || localStorage.getItem("wedding-admin-last-active")) {
+      setShowAdminBtn(true);
+    }
+  }, []);
+
   return (
     <>
-      {/* SADE VE TEMİZ ADMİN BUTONU (Halo/Halka efekti tamamen engellendi) */}
-      <div className="admin-panel-trigger">
-       <a 
-          href="/admin" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="admin-btn-clean" 
-          title={isEn ? "Admin Panel" : "Yönetici Paneli"}
-        >
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v4" />
-            <path d="M12 16h.01" />
-          </svg>
-        </a>
-      </div>
+      {showAdminBtn && (
+        <div className="admin-panel-trigger">
+         <a 
+            href="/admin" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="admin-btn-clean" 
+            title={isEn ? "Admin Panel" : "Yönetici Paneli"}
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
+            </svg>
+          </a>
+        </div>
+      )}
       
       <div className="floating-actions glass-dock">
         <button

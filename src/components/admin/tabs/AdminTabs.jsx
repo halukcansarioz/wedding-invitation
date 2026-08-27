@@ -390,7 +390,7 @@ export function CeremonyTab({ adminDraft, updateDraftObject, saveSiteContent, up
       <p className="admin-help-text">{isEn ? "You can add or remove event venues and times here." : "Etkinlik mekanlarını ve saatlerini buradan ekleyip çıkarabilirsiniz."}</p>
       <div className="admin-repeat-list">
         {(adminDraft.eventDetails || []).map((event, index) => (
-          <div key={index} className="admin-repeat-item">
+          <div key={event._id || index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
               <AdminActionButtons 
@@ -424,7 +424,7 @@ export function ScheduleTab({ adminDraft, updateDraftObject, saveSiteContent, up
       <p className="admin-help-text">{isEn ? "You can edit the wedding day timeline schedule here." : "Düğün gününün saat saat akış planını buradan düzenleyebilirsiniz."}</p>
       <div className="admin-repeat-list">
         {(adminDraft.scheduleItems || []).map((item, index) => (
-          <div key={index} className="admin-repeat-item">
+          <div key={item._id || index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Program ${index + 1}` : `Program ${index + 1}`}</strong>
               <AdminActionButtons 
@@ -517,7 +517,7 @@ export function StoryTab({ adminDraft, updateDraftObject, saveSiteContent, updat
       <p className="admin-help-text">{isEn ? "You can add your relationship milestones here." : "Tanışma, söz, evlilik teklifi gibi ilişkinizin dönüm noktalarını buraya ekleyebilirsiniz."}</p>
       <div className="admin-repeat-list">
         {(adminDraft.storyTimeline || []).map((item, index) => (
-          <div key={index} className="admin-repeat-item">
+          <div key={item._id || index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Memory ${index + 1}` : `Anı ${index + 1}`}</strong>
               <AdminActionButtons 

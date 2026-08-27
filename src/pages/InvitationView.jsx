@@ -44,16 +44,14 @@ export default function InvitationView({
   scrollToPrev
 }) {
 
-  // Ekrana Tıklama (Tap) Tespiti (Sadece mobil için sağa sola basınca geçme)
   const handlePageClick = (e) => {
     if (window.innerWidth > 650) return;
     
     const target = e.target;
-    // Eğer tıklanan şey bir buton, link, input, galeri resmi veya floating menu ise müdahale etme
-    const isInteractive = target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn, img');
+    // iframe, .mini-map ve .info-row eklendi
+    const isInteractive = target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
 
     if (!isInteractive) {
-      // Ekranın sol %35'ine basılırsa geri, sağa basılırsa ileri gider
       if (e.clientX < window.innerWidth * 0.35) {
         if (scrollToPrev) scrollToPrev();
       } else {

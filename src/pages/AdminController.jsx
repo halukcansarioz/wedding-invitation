@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useMemo, useCallback, Suspense, lazy, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useSiteContext, useUIContext, useAdminContext } from '../context/Providers';
@@ -70,6 +70,20 @@ export default function AdminController() {
   const [adminPasswordMessage, setAdminPasswordMessage] = useState("");
   const [adminSaveMessage, setAdminSaveMessage] = useState("");
 
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const displaySaveMessage = useCallback((msg) => {
+    setAdminSaveMessage(msg);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setAdminSaveMessage(""), 3000);
+  }, []);
+
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
   const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
   const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
@@ -126,12 +140,11 @@ export default function AdminController() {
       localStorage.setItem(SITE_DATA_KEY, JSON.stringify(cleanedData));
       setSiteData(cleanedData); 
       setAdminDraft(cleanedData);
-      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
+      displaySaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
     } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+      displaySaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
     }
-  }, [adminDraft, isEn, setSiteData, setAdminDraft]);
+  }, [adminDraft, isEn, setSiteData, setAdminDraft, displaySaveMessage]);
 
   const handleThemeChange = useCallback(async (themeValue) => {
     updateDraftObject("settings", "theme", themeValue);
@@ -154,14 +167,13 @@ export default function AdminController() {
           saveSettingsToDatabase(newState).then(() => {
              localStorage.setItem(SITE_DATA_KEY, JSON.stringify(newState));
              setSiteData(newState);
-             setAdminSaveMessage(isEn ? "Theme applied and saved." : "Tema uygulandı ve kaydedildi.");
-             setTimeout(() => setAdminSaveMessage(""), 3000);
+             displaySaveMessage(isEn ? "Theme applied and saved." : "Tema uygulandı ve kaydedildi.");
           });
           return newState;
         });
       }
     }
-  }, [updateDraftObject, showAppConfirm, isEn, setSiteData, setAdminDraft]);
+  }, [updateDraftObject, showAppConfirm, isEn, setSiteData, setAdminDraft, displaySaveMessage]);
 
   const resetSiteContent = useCallback(async () => {
     const confirmed = await showAppConfirm(isEn ? "Reset to default?" : "Varsayılana dönsün mü?");
@@ -174,11 +186,11 @@ export default function AdminController() {
       await saveSettingsToDatabase(defaultData);
       setSiteData(defaultData); 
       setAdminDraft(defaultData);
-      setAdminSaveMessage(isEn ? "Content reset." : "Sıfırlandı.");
+      displaySaveMessage(isEn ? "Content reset." : "Sıfırlandı.");
     } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not reset.` : `Sıfırlanamadı.`);
+      displaySaveMessage(isEn ? `Could not reset.` : `Sıfırlanamadı.`);
     }
-  }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn, setSiteData, setAdminDraft]);
+  }, [adminDraft.settings.defaultTheme, showAppConfirm, isEn, setSiteData, setAdminDraft, displaySaveMessage]);
 
   const updateDraftImage = async (group, key, file) => { 
     if (!file) return; 
@@ -189,6 +201,10 @@ export default function AdminController() {
 
   const updateDraftVideo = async (group, key, file) => { 
     if (!file) return; 
+    if (file.size > 20 * 1024 * 1024) {
+      alert(isEn ? "Video file is too large! Maximum 20MB allowed." : "Video çok büyük! En fazla 20MB yüklenebilir.");
+      return;
+    }
     const url = await uploadMediaFile(file, "media"); 
     updateDraftObject(group, key, url); 
   };
@@ -217,6 +233,10 @@ export default function AdminController() {
 
   const updateDraftMusic = async (file) => { 
     if (!file) return; 
+    if (file.size > 5 * 1024 * 1024) {
+      alert(isEn ? "Music file is too large! Maximum 5MB allowed." : "Müzik çok büyük! En fazla 5MB yüklenebilir.");
+      return;
+    }
     const url = await uploadMediaFile(file, "music"); 
     setAdminDraft((prev) => ({ 
       ...prev, 
@@ -236,7 +256,8 @@ export default function AdminController() {
   };
 
   const addDraftArrayItem = (arrayKey, item) => {
-    setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], item] }));
+    const newItem = { ...item, _id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString() };
+    setAdminDraft((prev) => ({ ...prev, [arrayKey]: [...prev[arrayKey], newItem] }));
   };
 
   const removeDraftArrayItem = (arrayKey, index) => {
@@ -328,9 +349,9 @@ export default function AdminController() {
   const copyAdminLink = useCallback(async (linkToCopy, msg) => { 
     try { 
       await navigator.clipboard.writeText(linkToCopy); 
-      setAdminSaveMessage(msg); 
+      displaySaveMessage(msg); 
     } catch {} 
-  }, []);
+  }, [displaySaveMessage]);
 
   const downloadQrCode = () => { 
     window.open(qrImageUrl, "_blank"); 
@@ -343,7 +364,7 @@ export default function AdminController() {
   const importAllDataJson = async () => {
     try {
       if (!dataImportText.trim()) {
-        setAdminSaveMessage(isEn ? "Please paste JSON data." : "Lütfen JSON verisini yapıştırın.");
+        displaySaveMessage(isEn ? "Please paste JSON data." : "Lütfen JSON verisini yapıştırın.");
         return;
       }
       const parsed = JSON.parse(dataImportText);
@@ -353,7 +374,7 @@ export default function AdminController() {
       
       if (!confirmed) return;
 
-      setAdminSaveMessage(isEn ? "Restoring backup..." : "Yedek yükleniyor...");
+      displaySaveMessage(isEn ? "Restoring backup..." : "Yedek yükleniyor...");
       
       await restoreBackupToDatabase(parsed);
       
@@ -367,11 +388,10 @@ export default function AdminController() {
       if (parsed.wishes) setWishes(parsed.wishes);
       
       setDataImportText("");
-      setAdminSaveMessage(isEn ? "Backup imported successfully." : "Yedek başarıyla yüklendi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
+      displaySaveMessage(isEn ? "Backup imported successfully." : "Yedek başarıyla yüklendi.");
     } catch (error) {
       console.error("Yedek yükleme hatası:", error);
-      setAdminSaveMessage(isEn ? "Invalid JSON file or backup error." : "Geçersiz JSON formatı veya yükleme hatası.");
+      displaySaveMessage(isEn ? "Invalid JSON file or backup error." : "Geçersiz JSON formatı veya yükleme hatası.");
     }
   };
 
