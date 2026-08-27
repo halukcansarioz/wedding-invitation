@@ -455,9 +455,13 @@ html[data-theme] .intro-page .couple-title em {
   width: 24px;
   height: 24px;
   background-color: var(--amp-color);
+  -webkit-mask-image: var(--sakura-flower);
   mask-image: var(--sakura-flower);
+  -webkit-mask-size: contain;
   mask-size: contain;
+  -webkit-mask-position: center;
   mask-position: center;
+  -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   display: inline-block;
   margin: 0 auto;
@@ -469,9 +473,13 @@ html[data-theme] .intro-page .couple-title em {
   width: 26px;
   height: 26px;
   background-color: rgba(var(--theme-strong-rgb, 159, 79, 104), 0.35);
+  -webkit-mask-image: var(--sakura-flower);
   mask-image: var(--sakura-flower);
+  -webkit-mask-size: contain;
   mask-size: contain;
+  -webkit-mask-position: center;
   mask-position: center;
+  -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   position: absolute;
   top: 26px;
@@ -692,22 +700,22 @@ body .app .invitation-page .option-group.disabled .option-button.active {
    ================================================================= */
 .floating-actions,
 .glass-dock {
-  position: fixed;
-  top: 22px;
-  right: 22px;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 50px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-  height: auto !important;
-  max-height: none !important;
+  position: fixed !important;
+  top: 50% !important;
+  right: 20px !important;
+  transform: translateY(-50%) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
 .floating-actions .dock-btn,
@@ -721,10 +729,10 @@ body .app .invitation-page .option-group.disabled .option-button.active {
   justify-content: center;
   padding: 0;
   margin: 0;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text-soft, #777);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   text-decoration: none;
   font-family: "Playfair Display", serif;
@@ -735,11 +743,11 @@ body .app .invitation-page .option-group.disabled .option-button.active {
 
 .floating-actions .dock-btn:hover,
 .glass-dock .dock-btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
   background: #ffffff;
   color: var(--rose-dark, #9f4f68);
   border-color: #ffffff;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .glass-dock .dock-btn svg {
@@ -752,6 +760,17 @@ body .app .invitation-page .option-group.disabled .option-button.active {
   height: 20px;
   stroke: currentColor;
   fill: none;
+}
+
+[data-theme="dark"] .glass-dock {
+  background: transparent !important;
+  border: none !important;
+}
+
+[data-theme="dark"] .glass-dock .dock-btn {
+  background: rgba(30, 30, 30, 0.85) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* =================================================================
@@ -1107,7 +1126,6 @@ body .app .glass-dock .dock-btn.music-on {
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: auto !important;
-  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1172,10 +1190,6 @@ body .app .glass-dock .dock-btn.music-on {
 /* =================================================================
    MOBİL 
    ================================================================= */
-
-   /* =================================================================
-   MOBİL (TÜM TASARIM SABİTLEMELERİ VE SCROLL İPTALİ BURADA)
-   ================================================================= */
 @media (max-width: 650px) {
 
   .envelope-guest-badge {
@@ -1227,14 +1241,10 @@ body .app .glass-dock .dock-btn.music-on {
     flex-direction: column !important;
     justify-content: flex-start !important; 
     align-items: center !important;
-    /* Üst/alt padding sıfırlandı, hizalamayı yaylar yapacak */
     padding: 0 16px !important; 
     box-sizing: border-box !important;
   }
 
-  /* ========================================= */
-  /* KARTLARIN EKRANA SIĞMASI İÇİN DİNAMİK ORANLAR */
-  /* ========================================= */
   .card, .countdown-section {
     width: 100% !important;
     height: 100% !important;
@@ -1263,15 +1273,14 @@ body .app .glass-dock .dock-btn.music-on {
     line-height: 1.2 !important;
   }
 
-  /* TAKVİM (SCHEDULE) KÜÇÜLTME VE SIĞDIRMA */
   .schedule-list {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: flex-start !important; /* DÜZELTME: center yerine flex-start */
+    justify-content: flex-start !important;
     gap: clamp(8px, 1.5vh, 16px) !important;
     margin-top: clamp(12px, 2vh, 30px) !important;
-    flex: 0 0 auto !important; /* DÜZELTME: flex: 1 iptali, liste daralmasın */
-    min-height: min-content !important; /* DÜZELTME: İçerik kadar boyutu olsun */
+    flex: 0 0 auto !important;
+    min-height: min-content !important;
   }
 
   .schedule-item {
@@ -1293,7 +1302,6 @@ body .app .glass-dock .dock-btn.music-on {
     padding: clamp(4px, 1vh, 18px) clamp(8px, 2vw, 22px) !important;
   }
 
-  /* DİĞER KARTLAR İÇİN DİNAMİK ORANLAR */
   .family-grid { margin-top: 1vh !important; gap: 1vh !important; }
   .family-grid div { padding: clamp(12px, 2vh, 28px) !important; gap: 1vh !important; }
   .family-grid strong { font-size: clamp(28px, 5vh, 42px) !important; }
@@ -1316,7 +1324,6 @@ body .app .glass-dock .dock-btn.music-on {
   .gallery-grid { margin-top: 1vh !important; gap: 1vh !important; }
   .gallery-grid img { height: clamp(80px, 18vh, 260px) !important; }
 
-  /* GUEST & WISH LIST */
   .guest-list, .wish-list {
     margin-top: 1vh !important;
     gap: 1vh !important;
@@ -1329,4 +1336,39 @@ body .app .glass-dock .dock-btn.music-on {
   .guest-stats { gap: 1vh !important; margin: 1vh auto !important; }
   .guest-stats div { padding: clamp(10px, 1.5vh, 24px) 10px !important; }
   .guest-stats strong { font-size: clamp(20px, 3vh, 36px) !important; }
+
+  .glass-dock {
+    top: auto !important;
+    bottom: 24px !important;
+    right: 50% !important;
+    transform: translateX(50%) !important; 
+    flex-direction: row !important;
+    gap: 14px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+.field-with-counter {
+  position: relative;
+  width: 100%;
+}
+
+.field-with-counter textarea {
+  padding-bottom: 35px !important; 
+}
+
+.field-with-counter span {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.6;
+  pointer-events: none; 
 }
