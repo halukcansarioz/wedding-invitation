@@ -258,7 +258,21 @@ export const triggerConfetti = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const colors = ["#d98ca1", "#9f4f68", "#f8d7df", "#c69b5c", "#fff1f5", "#a3495d"];
+  // 1. Sitede o an seçili olan aktif temayı 'html' etiketinden alıyoruz
+  const activeTheme = document.documentElement.dataset.theme || "lavanta";
+  
+  // 2. Constants dosyasındaki ilgili temanın renk paletini buluyoruz
+  const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
+  
+  // 3. Kendi özel renkleriniz yerine, aktif temanın renklerini diziye atıyoruz
+  const colors = [
+    themeColors.petal, 
+    themeColors.stroke, 
+    themeColors.circle, 
+    themeColors.center, 
+    themeColors.bg
+  ];
+
   const particles = Array.from({ length: 65 }).map(() => ({
     x: canvas.width / 2 + (Math.random() - 0.5) * 80,
     y: canvas.height / 2 + (Math.random() - 0.5) * 80,

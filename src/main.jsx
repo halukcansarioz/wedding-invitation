@@ -4,17 +4,14 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import './i18n/config'
-import { Providers } from './context/Providers' 
-import { ErrorBoundary } from './components/common/ErrorBoundary' // DÜZELTME: Eklendi
+import { ErrorBoundary } from './components/common/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <Providers>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Providers>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>,
 )

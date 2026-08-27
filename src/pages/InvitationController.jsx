@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSiteContext, useUIContext } from "../context/Providers";
+import { useStore } from "../store/useStore";
 import { useAudio } from "../hooks/useAudio";
 import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
@@ -21,8 +21,17 @@ export default function InvitationController() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
-  const { siteData, guests, setGuests, wishes, setWishes } = useSiteContext();
-  const { opened, setOpened, isOpening, setIsOpening, showAppAlert, showAppConfirm } = useUIContext();
+  const siteData = useStore((state) => state.siteData);
+  const guests = useStore((state) => state.guests);
+  const setGuests = useStore((state) => state.setGuests);
+  const wishes = useStore((state) => state.wishes);
+  const setWishes = useStore((state) => state.setWishes);
+  const opened = useStore((state) => state.opened);
+  const setOpened = useStore((state) => state.setOpened);
+  const isOpening = useStore((state) => state.isOpening);
+  const setIsOpening = useStore((state) => state.setIsOpening);
+  const showAppAlert = useStore((state) => state.showAppAlert);
+  const showAppConfirm = useStore((state) => state.showAppConfirm);
 
   const toggleLanguage = () => i18n.changeLanguage(isEn ? 'tr' : 'en');
 
@@ -54,14 +63,10 @@ export default function InvitationController() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
 
-  // BUTONLARA VEYA EKRANA TIKLANDIĞINDA BİR SONRAKİ EKRANA (SLAYTA) GEÇİŞ
+  // TÜM CİHAZLAR İÇİN STANDARTLAŞTIRILMIŞ KAYDIRMA FONKSİYONLARI
   const scrollToNext = useCallback(() => {
-    const isMobile = window.innerWidth <= 650;
-    const container = isMobile ? document.querySelector('.invitation-page') : window;
-    if (!container) return;
-
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const viewCenter = (isMobile ? container.clientHeight : window.innerHeight) / 2;
+    const viewCenter = window.innerHeight / 2;
     let minDistance = Infinity;
     let currentIndex = 0;
 
@@ -77,25 +82,16 @@ export default function InvitationController() {
 
     if (currentIndex < sections.length - 1) {
       const targetSec = sections[currentIndex + 1];
-      if (isMobile) {
-        // Hedef kartın container içindeki konumuna tam hizalama
-        container.scrollTo({ top: targetSec.offsetTop, behavior: 'smooth' });
-      } else {
-        const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
-        let scrollToY = targetY - (window.innerHeight - targetSec.offsetHeight) / 2;
-        if (targetSec.offsetHeight > window.innerHeight * 0.95) scrollToY = targetY - 40;
-        window.scrollTo({ top: scrollToY, behavior: 'smooth' });
-      }
+      const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
+      let scrollToY = targetY - (window.innerHeight - targetSec.offsetHeight) / 2;
+      if (targetSec.offsetHeight > window.innerHeight * 0.95) scrollToY = targetY - 40;
+      window.scrollTo({ top: scrollToY, behavior: 'smooth' });
     }
   }, []);
 
   const scrollToPrev = useCallback(() => {
-    const isMobile = window.innerWidth <= 650;
-    const container = isMobile ? document.querySelector('.invitation-page') : window;
-    if (!container) return;
-
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const viewCenter = (isMobile ? container.clientHeight : window.innerHeight) / 2;
+    const viewCenter = window.innerHeight / 2;
     let minDistance = Infinity;
     let currentIndex = 0;
 
@@ -111,39 +107,31 @@ export default function InvitationController() {
 
     if (currentIndex > 0) {
       const targetSec = sections[currentIndex - 1];
-      if (isMobile) {
-        container.scrollTo({ top: targetSec.offsetTop, behavior: 'smooth' });
-      } else {
-        const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
-        let scrollToY = targetY - (window.innerHeight - targetSec.offsetHeight) / 2;
-        if (targetSec.offsetHeight > window.innerHeight * 0.95) scrollToY = targetY - 40;
-        window.scrollTo({ top: scrollToY, behavior: 'smooth' });
-      }
+      const targetY = targetSec.getBoundingClientRect().top + window.scrollY;
+      let scrollToY = targetY - (window.innerHeight - targetSec.offsetHeight) / 2;
+      if (targetSec.offsetHeight > window.innerHeight * 0.95) scrollToY = targetY - 40;
+      window.scrollTo({ top: scrollToY, behavior: 'smooth' });
     }
   }, []);
   
   useEffect(() => {
     if (!opened) return;
     
-    const isMobile = window.innerWidth <= 650;
-    const container = isMobile ? document.querySelector('.invitation-page') : window;
-    if (!container) return;
-
     const handleScroll = () => {
-      const currentScrollY = isMobile ? container.scrollTop : window.scrollY;
-      const scrollHeight = isMobile ? container.scrollHeight : document.documentElement.scrollHeight;
-      const clientHeight = isMobile ? container.clientHeight : window.innerHeight;
+      const currentScrollY = window.scrollY;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
 
       setShowScrollTop(currentScrollY > 50);
       const isAtBottom = Math.ceil(clientHeight + currentScrollY) >= scrollHeight - 50;
       setShowScrollDown(!isAtBottom);
     };
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     setShowScrollDown(true); 
     setTimeout(handleScroll, 800); 
     
-    return () => container.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [opened]);
 
   useEffect(() => {

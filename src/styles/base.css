@@ -1017,13 +1017,14 @@ button {
   flex-direction: column !important;
   align-items: center !important;
   gap: 12px !important;
-  padding: 10px !important;
-  background: rgba(255, 255, 255, 0.25) !important; 
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
-  border-radius: 50px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04) !important;
+  padding: 0 !important; /* Kutu kalktığı için iç boşluğa gerek yok */
+  
+  /* ARKA PLAN VE BLUR EFEKTİNİ KALDIRAN KISIM */
+  background: transparent !important; 
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .glass-dock .dock-btn {
@@ -1067,8 +1068,8 @@ button {
 }
 
 [data-theme="dark"] .glass-dock {
-  background: rgba(20, 15, 18, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: transparent !important;
+  border: none !important;
 }
 
 [data-theme="dark"] .glass-dock .dock-btn {

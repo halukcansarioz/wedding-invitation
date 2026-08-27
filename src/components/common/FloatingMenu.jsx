@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 export default function FloatingMenu({
   isEn,
@@ -11,34 +11,46 @@ export default function FloatingMenu({
   showScrollTop,
   scrollToPrev
 }) {
-  const [showAdminBtn, setShowAdminBtn] = useState(false);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("admin") === "1" || localStorage.getItem("wedding-admin-last-active")) {
-      setShowAdminBtn(true);
-    }
-  }, []);
-
   return (
     <>
-      {showAdminBtn && (
-        <div className="admin-panel-trigger">
-         <a 
-            href="/admin" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="admin-btn-clean" 
-            title={isEn ? "Admin Panel" : "Yönetici Paneli"}
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              <path d="M12 8v4" />
-              <path d="M12 16h.01" />
-            </svg>
-          </a>
-        </div>
-      )}
+      {/* SADE VE TEMİZ ADMİN BUTONU (INLINE CSS İLE KESİN GÖRÜNÜM) */}
+      <div
+        className="admin-panel-trigger"
+        style={{
+          display: "block",
+          position: "fixed",
+          top: "20px",
+          left: "20px",
+          zIndex: 999999
+        }}
+      >
+        <a 
+          href="/admin" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="admin-btn-clean" 
+          title={isEn ? "Admin Panel" : "Yönetici Paneli"}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "46px",
+            height: "46px",
+            borderRadius: "50%",
+            background: "var(--paper, rgba(255, 255, 255, 0.95))", /* Temanın arka plan rengi */
+            color: "var(--rose-dark, #9f4f68)", /* Temanın ana vurgu rengi */
+            border: "1px solid color-mix(in srgb, var(--rose-dark) 30%, transparent)", /* Temaya uygun şeffaf kenarlık */
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            textDecoration: "none"
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
+      </div>
       
       <div className="floating-actions glass-dock">
         <button

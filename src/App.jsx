@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useUIContext, useSiteContext, useAdminContext } from "./context/Providers";
+import { useStore } from "./store/useStore"; 
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
@@ -14,9 +14,19 @@ function App() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
-  const { customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt } = useUIContext();
-  const { siteData, setSiteData, setWishes, setGuests } = useSiteContext();
-  const { setAdminDraft } = useAdminContext();
+  // ZUSTAND'DAN STATE'LERİ ÇEKİYORUZ
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
   const location = useLocation();
   
   const activeTheme = siteData.settings?.theme || "lavanta";
@@ -34,10 +44,6 @@ function App() {
     favicon.href = getFaviconUrl(activeTheme);
     if (!favicon.parentNode) document.head.appendChild(favicon);
   }, [isEn, activeTheme]);
-
-  useEffect(() => {
-    document.title = `${invitation.bride} & ${invitation.groom} | ${isEn ? "Wedding Invitation" : "Düğün Davetiyesi"}`;
-  }, [invitation.bride, invitation.groom, isEn]);
 
   useEffect(() => {
     async function initDatabaseData() {
