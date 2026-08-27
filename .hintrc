@@ -14,7 +14,8 @@
           "scroll-snap-stop",
           "scroll-snap-stop: always",
           "scroll-behavior: smooth",
-          "position: sticky"
+          "position: sticky",
+          "overscroll-behavior-y: none"
         ]
       }
     ]

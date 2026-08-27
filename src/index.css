@@ -185,8 +185,7 @@ html body .app .glass-dock .dock-btn,
 html body .app .floating-actions .dock-btn {
   background: var(--paper, rgba(255, 255, 255, 0.95)); /* Temaya özel arka plan */
   color: var(--rose-dark, #9f4f68); /* Temaya özel vurgu rengi */
-  border: 1px solid color-mix(in srgb, var(--rose-dark) 25%, transparent); /* Temaya uygun yarı şeffaf kenarlık */
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(159, 79, 104, 0.25);  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   opacity: 1;
   visibility: visible;
   overflow: hidden;
@@ -197,26 +196,22 @@ html body .app .floating-actions .dock-btn {
 
 html body .app .glass-dock .dock-btn:hover, 
 html body .app .floating-actions .dock-btn:hover {
-  /* DİKKAT: animation-play-state: paused !important; satırını tamamen SİLDİK */
-  
-  transform: scale(1.1) !important; 
-  translate: 0 -2px !important; 
+  transform: scale(1.1) translateY(-2px) !important; 
   background: var(--rose-dark, #9f4f68) !important; 
   color: #ffffff !important; 
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--rose-dark) 35%, transparent) !important;
+  box-shadow: 0 8px 20px rgba(159, 79, 104, 0.35) !important;
 }
 
 [data-theme="dark"] html body .app .glass-dock .dock-btn,
 [data-theme="dark"] html body .app .floating-actions .dock-btn {
   background: rgba(40, 40, 40, 0.95); 
   color: var(--rose-light, #e3b6c7);
-  border: 1px solid color-mix(in srgb, var(--rose-light) 25%, transparent);
+  border: 1px solid rgba(227, 182, 199, 0.25);
 }
 
 [data-theme="dark"] html body .app .glass-dock .dock-btn:hover,
 [data-theme="dark"] html body .app .floating-actions .dock-btn:hover {
-  transform: scale(1.1) !important; 
-  translate: 0 -2px !important;
+  transform: scale(1.1) translateY(-2px) !important; 
   background: var(--rose-light, #e3b6c7) !important;
   color: #1a1a1a !important;
   box-shadow: 0 8px 20px color-mix(in srgb, var(--rose-light) 25%, transparent) !important;
@@ -465,8 +460,8 @@ html body .app .hero-section::before { border-radius: 24px; }
 }
 
 @keyframes floatBounce {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -8px; }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
 
 /* =================================================================
@@ -514,7 +509,7 @@ html body .app .floating-actions .hidden-btn {
   .invitation-page > section,
   .invitation-page > footer {
     height: auto !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     scroll-snap-align: none !important;
     padding: 36px 20px !important;
     margin-bottom: 24px !important;

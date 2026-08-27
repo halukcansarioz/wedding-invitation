@@ -843,6 +843,9 @@ body .app .invitation-page .option-group.disabled .option-button.active {
   object-fit: contain !important;
   border-radius: 16px !important;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
   user-select: none !important;
 }
 
@@ -1009,7 +1012,7 @@ body .app .floating-actions a.share-button,
 body .app .floating-actions button.music-toggle-button {
   background: rgba(255, 250, 251, 0.88) !important;
   color: var(--amp-color, #9f4f68) !important;
-  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 45%, transparent) !important;
+  border: 1.5px solid rgba(143, 127, 248, 0.45) !important;
   box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12) !important;
   -webkit-backdrop-filter: blur(10px) !important;
   backdrop-filter: blur(10px);
@@ -1076,7 +1079,7 @@ body .app .floating-actions button.music-toggle-button:hover path {
 [data-theme="dark"] body .app .floating-actions button.music-toggle-button {
   background: rgba(255, 255, 255, 0.08) !important;
   color: var(--amp-color, #e3b6c7) !important;
-  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 40%, transparent) !important;
+  border-color: rgba(227, 182, 199, 0.40) !important;
 }
 
 [data-theme="dark"] body .app .floating-actions a.share-button:hover,
@@ -1245,7 +1248,10 @@ body .app .glass-dock .dock-btn.music-on {
   /* 2. Tüm Davetiye Ekranı (Slide Kapsayıcısı) */
   .invitation-page {
     position: fixed !important;
-    inset: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
     width: 100vw !important;
     height: 100dvh !important;
     padding: 0 !important;

@@ -502,7 +502,7 @@
 .admin-actions-sticky .secondary-button.admin-logout-button {
   background: var(--paper);
   color: var(--rose-dark);
-  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 45%, transparent);
+  border: 1.5px solid rgba(159, 79, 104, 0.45);
   box-shadow: 0 10px 24px rgba(111, 47, 67, 0.08);
 }
 
@@ -519,7 +519,7 @@
 [data-theme="dark"] .admin-actions-sticky .secondary-button.admin-logout-button {
   background: rgba(255, 250, 251, 0.08);
   color: var(--rose-light);
-  border-color: color-mix(in srgb, var(--rose-light) 42%, transparent);
+  border-color: rgba(248, 215, 223, 0.42);
 }
 
 .admin-row {
@@ -529,7 +529,8 @@
   padding: 18px 22px;
   margin-bottom: 14px;
   background: var(--paper);
-  border: 1px solid color-mix(in srgb, var(--rose-dark) 15%, transparent);
+  border: 1px solid rgba(159, 79, 104, 0.15);
+  box-shadow: 0 6px 16px rgba(159, 79, 104, 0.05);
   border-left: 4px solid var(--amp-color, var(--rose-dark));
   border-radius: 14px;
   box-shadow: 0 6px 16px color-mix(in srgb, var(--rose-dark) 5%, transparent);
@@ -558,7 +559,8 @@
 }
 
 .admin-row em {
-  color: color-mix(in srgb, var(--text) 80%, transparent);
+  color: var(--text);
+  opacity: 0.8;
   margin-top: 4px;
 }
 
@@ -616,8 +618,8 @@
 .admin-repeat-title .small-admin-button.danger-button,
 .admin-gallery-upload-row .small-admin-button.danger-button {
   color: #d93838;
-  border-color: color-mix(in srgb, #d93838 40%, transparent);
-  background-color: color-mix(in srgb, #d93838 6%, var(--paper, #fff));
+  border-color: rgba(217, 141, 56, 0.40); /* #d93838 renginin %40 şeffaf hali */
+  background-color: rgba(217, 141, 56, 0.06); /* %6 hafif kırmızı/turuncu tonlu arka plan */
 }
 
 .admin-row-actions button.danger-button:hover,
@@ -654,7 +656,7 @@
 [data-theme="dark"] .admin-gallery-upload-row .small-admin-button {
   background: rgba(255, 255, 255, 0.06);
   color: var(--rose-light);
-  border-color: color-mix(in srgb, var(--rose-light) 30%, transparent);
+  border-color: rgba(248, 215, 223, 0.30);
 }
 
 [data-theme="dark"] .admin-row-actions button:hover,
@@ -671,7 +673,7 @@
   display: grid;
   gap: 12px;
   padding: 20px;
-  border: 1px dashed color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent);
+  border: 1px dashed rgba(143, 127, 248, 0.35);
   border-radius: 22px;
   background: transparent;
   box-shadow: none;
@@ -681,7 +683,7 @@
   display: grid;
   gap: 16px;
   padding: 24px;
-  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent);
+  border: 1.5px solid rgba(143, 127, 248, 0.20);
   border-radius: 22px;
   background: var(--paper, #ffffff);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
@@ -708,7 +710,8 @@
   display: grid;
   place-items: center;
   gap: 12px;
-  border: 1px solid color-mix(in srgb, var(--rose-dark) 20%, transparent);
+  border: 1px solid rgba(159, 79, 104, 0.20);
+  box-shadow: 0 12px 26px rgba(159, 79, 104, 0.07);
   border-radius: 18px;
   background: rgba(255, 247, 249, 0.8);
   color: var(--rose-dark);
@@ -762,7 +765,8 @@
   gap: 12px;
   padding: 20px 64px 20px 22px;
   background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent);
-  border: 1.5px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 20%, transparent);
+  border: 1px solid rgba(159, 79, 104, 0.20);
+  box-shadow: 0 12px 26px rgba(159, 79, 104, 0.07);
   border-radius: 22px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -792,7 +796,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--amp-color, #8f7fb8) 35%, transparent);
+  border: 2px solid rgba(143, 127, 248, 0.35);
   background-color: var(--paper, #ffffff);
   transition: all 0.2s ease;
   margin: 0;
@@ -830,7 +834,9 @@
   min-height: 56px;
   padding: 0 22px;
   border-radius: 999px;
-  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 24%, transparent);
+  border: 1.5px solid rgba(159, 79, 104, 0.24);
+  background: rgba(159, 79, 104, 0.04);
+  box-shadow: 0 10px 24px rgba(159, 79, 104, 0.07);
   background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent);
   color: var(--text);
   font-family: "Playfair Display", "Noto Serif", Georgia, serif;
@@ -854,7 +860,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  border: 1.5px solid color-mix(in srgb, var(--rose-dark) 28%, transparent);
+  border: 1.5px solid rgba(159, 79, 104, 0.28);
+  background: rgba(159, 79, 104, 0.04);
   background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent);
   color: var(--rose-dark);
   font-family: "Playfair Display", "Noto Serif", Georgia, serif;
@@ -906,7 +913,7 @@
   cursor: pointer;
 }
 
-.admin-gallery-list { contain: content; }
+.admin-gallery-list { overflow: hidden; }
 .admin-gallery-list .admin-gallery-upload-row { content-visibility: auto; contain-intrinsic-size: 160px; will-change: transform; }
 
 .app button.admin-add-button,
@@ -1290,9 +1297,9 @@ body .app .admin-content select {
   background-repeat: no-repeat;
   background-position: right 18px center;
   background-size: 16px;
-  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  appearance: none;
   color: var(--amp-color, #8f7fb8);
   font-family: "Playfair Display", "Noto Serif", Georgia, serif;
   font-size: 15px;
@@ -3297,8 +3304,8 @@ html body .app .admin-gallery-upload-row,
 html body .app .admin-image-field,
 html body .app .secondary-button,
 html body .app .main-button {
-  background-clip: border-box;
   -webkit-background-clip: border-box;
+  background-clip: border-box;
   transform: translateZ(0); 
   border-radius: 16px;
 }
