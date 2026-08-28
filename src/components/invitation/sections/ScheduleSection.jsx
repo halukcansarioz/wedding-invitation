@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -13,7 +13,7 @@ export const ScheduleSection = memo(function ScheduleSection({ copy, invitation,
   const items = Array.isArray(scheduleItems) ? scheduleItems : [];
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card schedule-card">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card schedule-card">
       <p className="section-label">{isEn ? t('invitation.scheduleLabel') : copy?.scheduleLabel}</p>
       <h2>{invitation?.dateText}</h2>
       <div className="schedule-list">
@@ -23,6 +23,6 @@ export const ScheduleSection = memo(function ScheduleSection({ copy, invitation,
           </div>
         ))}
       </div>
-    </motion.section>
+    </m.section>
   );
 });

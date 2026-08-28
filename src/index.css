@@ -521,3 +521,24 @@ html body .app .floating-actions .hidden-btn {
     transform: scale(1) !important;
   }
 }
+
+/* =================================================================
+   ZARF BUTONU ("DAVETİ AÇ") KESİN BEYAZ YAZI
+   ================================================================= */
+body #root .app .intro-page .envelope-seal span {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  background: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Butonun ve içindeki yazının alttaki renkle karışmasını (blend) kesin olarak engeller */
+body #root .app .intro-page .envelope-seal,
+body #root .app .intro-page .envelope-seal span {
+  mix-blend-mode: normal !important;
+}
+

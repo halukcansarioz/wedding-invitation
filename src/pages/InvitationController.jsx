@@ -6,6 +6,7 @@ import { useScrollNavigation } from "../hooks/useScrollNavigation";
 import IntroPage from "../components/invitation/IntroPage";
 import { FloatingMenu } from "../components/common/FloatingMenu";
 import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
+import { useAssetPreloader } from "../hooks/useAssetPreloader";
 
 
 const InvitationView = lazy(() => import("./InvitationView"));
@@ -21,6 +22,7 @@ export default function InvitationController() {
   const setIsOpening = useStore((state) => state.setIsOpening);
 
   const invitation = siteData.invitation;
+  const isHeroLoaded = useAssetPreloader(invitation.heroImage);
   const personalGuestName = getGuestNameFromUrl();
   const currentShareLink = invitation.shareLink || getCurrentShareLink();
   const coupleName = `${invitation.bride} & ${invitation.groom}`;
@@ -46,6 +48,7 @@ export default function InvitationController() {
           personalGuestName={personalGuestName} 
           personalTableNumber={getTableFromUrl()}
           openInvitation={openInvitation} 
+          isHeroLoaded={isHeroLoaded}
         />
         <FloatingMenu 
           isEn={isEn} 

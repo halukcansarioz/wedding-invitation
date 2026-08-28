@@ -1,6 +1,6 @@
 import React, { useState, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -21,7 +21,7 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
   if (!giftData) return null;
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{t('ui.giftTitle')}</p>
       <h2>{isEn ? t('ui.giftTitle') : giftData.title}</h2>
       <p className="gift-description">
@@ -37,6 +37,6 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
       <button type="button" className="main-button gift-copy-button" onClick={copyIban}>
         {copied ? t('ui.copied') : t('ui.copyIban')}
       </button>
-    </motion.section>
+    </m.section>
   );
 });

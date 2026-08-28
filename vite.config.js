@@ -10,9 +10,9 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Düğün Davetiyesi',
+        name: 'Handenur & Haluk Can Düğün Davetiyesi',
         short_name: 'Davetiye',
-        description: 'Düğün Davetiyemiz',
+        description: 'Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz.',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',

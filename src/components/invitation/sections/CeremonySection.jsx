@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -13,7 +13,7 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
   const events = Array.isArray(eventDetails) ? eventDetails : [];
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
       <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
       <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
       <div className="ceremony-grid">

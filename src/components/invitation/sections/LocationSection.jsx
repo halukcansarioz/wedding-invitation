@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { handleAddToCalendar, getNavigationLinks } from "../../../utils/helpers";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -64,7 +64,7 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.locationLabel') : copy?.locationLabel}</p>
       <h2>{isEn ? t('invitation.locationTitle') : copy?.locationTitle}</h2>
       <div className="info-list">
@@ -86,6 +86,6 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
       </div>
 
       <NavigationModal invitation={invitation} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} isEn={isEn} t={t} />
-    </motion.section>
+    </m.section>
   );
 }

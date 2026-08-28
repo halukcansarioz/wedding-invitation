@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { LazyImage } from "../../common/LazyImage";
 
 const fadeUp = {
@@ -76,7 +76,7 @@ export function GallerySection({ copy, invitation }) {
   }, [lightboxIndex, closeLightbox, prevImage, nextImage]);
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
       <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
       <div className="gallery-grid">
@@ -96,6 +96,6 @@ export function GallerySection({ copy, invitation }) {
         ))}
       </div>
       <LightboxModal gallery={gallery} lightboxIndex={lightboxIndex} closeLightbox={closeLightbox} prevImage={prevImage} nextImage={nextImage} isEn={isEn} />
-    </motion.section>
+    </m.section>
   );
 }

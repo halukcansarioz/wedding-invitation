@@ -8,22 +8,25 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   useEffect(() => {
     if (!isSupabaseReady()) return;
 
-    const wishesChannel = supabase
-      .channel("public:wishes")
+    const wishesChannel = supabase.channel("public:wishes")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "wishes" }, (payload) => {
         if (payload.new && payload.new.approved) {
-          setWishes((prev) => {
-            if (prev.some((w) => w.id === payload.new.id)) return prev;
-            return [dbWishToUi(payload.new), ...prev];
-          });
+          setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
         }
-      })
-      .subscribe();
+      }).subscribe();
+
+    const guestsChannel = supabase.channel("public:guests")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
+        if (payload.new) {
+          setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
+        }
+      }).subscribe();
 
     return () => {
       supabase.removeChannel(wishesChannel);
+      supabase.removeChannel(guestsChannel);
     };
-  }, [setWishes]);
+  }, [setWishes, setGuests]);
 
   const submitGuest = useCallback(async (formData) => {
     if (formData.honeypot) return;
@@ -149,7 +152,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     const message = await showAppPrompt(t('admin.message'), wish.message || "", { title, multiline: true }); if (message === null) return;
 
     const nextWish = { ...wish, name, message };
-    // DÜZELTME: uiWishToDb hatası çözüldü
     const { error } = await supabase.from("wishes").update({
       name: nextWish.name,
       message: nextWish.message

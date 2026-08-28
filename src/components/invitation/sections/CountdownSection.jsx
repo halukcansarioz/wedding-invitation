@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -13,7 +13,7 @@ export const CountdownSection = memo(function CountdownSection({ copy, timeLeft 
   const isFinished = timeLeft?.days === 0 && timeLeft?.hours === 0 && timeLeft?.minutes === 0 && timeLeft?.seconds === 0;
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
       <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
       <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
       
@@ -35,6 +35,6 @@ export const CountdownSection = memo(function CountdownSection({ copy, timeLeft 
           <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
         </div>
       )}
-    </motion.section>
+    </m.section>
   );
 });

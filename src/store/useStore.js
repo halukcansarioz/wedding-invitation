@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { loadStoredSiteData } from '../utils/helpers';
+import toast from 'react-hot-toast';
 
 export const useStore = create((set) => ({
   // --- SİTE VERİLERİ (SiteContext Yerine) ---
@@ -19,7 +20,10 @@ export const useStore = create((set) => ({
   customAlert: null,
   setCustomAlert: (alert) => set({ customAlert: alert }),
   showAppAlert: (message, options = {}) => new Promise((resolve) => {
-    set({ customAlert: { message, title: options.title || "Bilgi ℹ️", resolve } });
+    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
+    if (isError) toast.error(message);
+    else toast.success(message);
+    resolve(true);
   }),
   
   customConfirm: null,

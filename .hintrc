@@ -20,6 +20,15 @@
           "border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent)"
         ]
       }
+    ],
+    "meta-viewport": "off",
+    "compat-api/html": [
+      "default",
+      {
+        "ignore": [
+          "meta[name=theme-color]"
+        ]
+      }
     ]
   }
 }

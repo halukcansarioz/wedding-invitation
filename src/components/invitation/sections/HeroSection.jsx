@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -12,7 +12,7 @@ export function HeroSection({ invitation, copy, guestGreeting, personalTableNumb
   const isEn = i18n.language.startsWith('en');
   
   return (
-    <motion.section 
+    <m.section 
       initial="hidden" animate="visible" variants={fadeUp}
       className="hero-section" 
     >
@@ -44,6 +44,6 @@ export function HeroSection({ invitation, copy, guestGreeting, personalTableNumb
         </div>
         <span>{t('ui.scroll')}</span>
       </div>
-    </motion.section>
+    </m.section>
   );
 }

@@ -5,11 +5,14 @@ import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary"; // Ekledik
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
+
+// YENİ EKLENEN İMPORT
+import { LazyMotion, domAnimation } from "framer-motion";
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -67,35 +70,37 @@ function App() {
   }, [setSiteData, setAdminDraft, setWishes, setGuests]);
 
   return (
-    <div 
-      className="app" 
-      lang={isEn ? "en" : "tr"} 
-      data-theme={activeTheme}
-      style={{
-        "--intro-image": `url(${invitation.introImage})`,
-        "--hero-image": `url(${invitation.heroImage})`,
-        "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-      }}
-    >
-      <GlobalModals
-        customAlert={customAlert} setCustomAlert={setCustomAlert}
-        customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-        customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-      />
-      
-      <Routes>
-        <Route path="/" element={
-          <ErrorBoundary>
-            {isAuthRecovery ? <AdminController /> : <InvitationController />}
-          </ErrorBoundary>
-        } />
-        <Route path="/admin/*" element={
-          <ErrorBoundary>
-            <AdminController />
-          </ErrorBoundary>
-        } />
-      </Routes>
-    </div>
+    <LazyMotion features={domAnimation} strict>
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={activeTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals
+          customAlert={customAlert} setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+        </Routes>
+      </div>
+    </LazyMotion>
   );
 }
 

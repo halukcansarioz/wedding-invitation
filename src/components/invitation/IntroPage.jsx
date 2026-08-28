@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { triggerConfetti } from "../../utils/helpers";
 
-export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation }) {
+export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
@@ -11,13 +11,14 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     : copy.openButton;
 
   const handleOpen = useCallback(() => {
+    if (!isHeroLoaded) return;
     triggerConfetti();
     openInvitation();
-  }, [openInvitation]);
+  }, [openInvitation, isHeroLoaded]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (isOpening) return;
+      if (isOpening || !isHeroLoaded) return;
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         handleOpen();
@@ -28,7 +29,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpening, handleOpen]);
+  }, [isOpening, handleOpen, isHeroLoaded]);
 
   return (
     <section className={`intro-page ${isOpening ? "opening" : ""}`}>
@@ -68,7 +69,16 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
           </div>
         )}
 
-        <button className="envelope-seal" onClick={handleOpen}>
+        <button 
+          className="envelope-seal" 
+          onClick={handleOpen}
+          style={{ 
+            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
+            pointerEvents: isOpening ? "none" : "auto",
+            cursor: isHeroLoaded ? "pointer" : "wait",
+            transition: "opacity 0.4s ease"
+          }}
+        >
           <span 
             style={{ 
               display: 'block', 
@@ -78,11 +88,11 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
               WebkitTextFillColor: '#ffffff',
               textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
               fontWeight: '900',
-              fontSize: '18px',
+              fontSize: isHeroLoaded ? '18px' : '15px',
               letterSpacing: '0.5px'
             }}
           >
-            {openText}
+            {!isHeroLoaded ? (isEn ? "Loading..." : "Yükleniyor...") : openText}
           </span>
         </button>
       </div>

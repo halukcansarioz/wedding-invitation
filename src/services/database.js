@@ -35,11 +35,25 @@ export const getReadableAuthError = (error) => {
 
 export const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());
 
+export const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const result = await fetchFn();
+      return result;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Giderek artan bekleme süresi
+    }
+  }
+};
+
 export const loadSettingsFromDatabase = async () => {
   if (!isSupabaseReady()) return null;
-  const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
-  if (error) { console.error("Ayarlar Supabase'den alınamadı:", error); return null; }
-  return normalizeSiteData(data?.content || null);
+  return fetchWithRetry(async () => {
+    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
+    if (error) throw error;
+    return normalizeSiteData(data?.content || null);
+  });
 };
 
 export const saveSettingsToDatabase = async (settings) => {

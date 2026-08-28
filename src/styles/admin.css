@@ -3639,3 +3639,72 @@ html body #root .app .admin-page button.theme-option-card.active small {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
+
+/* =================================================================
+   ADMIN TOOLBAR ARAMA KUTUSU (INPUT) GÖRÜNÜM DÜZELTMESİ
+   ================================================================= */
+body #root .app .admin-page .admin-toolbar input {
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 30%, transparent) !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, var(--paper, #ffffff)) !important;
+  color: var(--text) !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #9f4f68) 7%, transparent) !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+body #root .app .admin-page .admin-toolbar input:focus {
+  border-color: var(--amp-color, #9f4f68) !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+}
+
+/* Koyu (Dark) Tema Uyumluluğu */
+[data-theme="dark"] body #root .app .admin-page .admin-toolbar input {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+  color: #fff4f8 !important;
+}
+
+[data-theme="dark"] body #root .app .admin-page .admin-toolbar input:focus {
+  border-color: var(--amp-color, #e3b6c7) !important;
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 12%, var(--paper, #1c141a)) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, transparent) !important;
+}
+
+/* =================================================================
+   ADMIN ÜST BİLGİ BUTONLARINI TEK SATIRDA SABİTLEME
+   ================================================================= */
+
+/* Başlık alanı ve buton alanının yan yana kalmasını zorunlu kılar */
+body #root .app .admin-page .admin-section-header,
+body #root .app .admin-page .admin-header {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Sağ taraftaki buton grubunun alt satıra düşmesini (wrap) engeller */
+body #root .app .admin-page .admin-section-header > div:last-child,
+body #root .app .admin-page .admin-header > div:last-child {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-shrink: 0 !important; /* Butonların sıkışıp ezilmesini önler */
+}
+
+/* Buton içindeki yazıların alt satıra geçmesini engeller */
+body #root .app .admin-page .admin-section-header button,
+body #root .app .admin-page .admin-header button {
+  white-space: nowrap !important;
+}

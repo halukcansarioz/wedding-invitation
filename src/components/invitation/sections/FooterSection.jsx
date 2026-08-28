@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -12,11 +12,11 @@ export const FooterSection = memo(function FooterSection({ coupleName, invitatio
   const isEn = i18n.language.startsWith('en');
 
   return (
-    <motion.footer initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="footer">
+    <m.footer initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="footer">
       <p>{coupleName}</p>
       <span>{invitation?.dateText}</span>
       <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
       <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
-    </motion.footer>
+    </m.footer>
   );
 });

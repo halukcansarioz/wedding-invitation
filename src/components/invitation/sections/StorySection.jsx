@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -15,14 +15,14 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }) 
   if (stories.length === 0) return null;
 
   return (
-    <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
       <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
       <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
       
       <div className="story-timeline-container">
         <div className="story-line"></div>
         {stories.map((story, index) => (
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0, y: 30 }} 
             whileInView={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.6, delay: index * 0.2 }} 
@@ -39,9 +39,9 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }) 
                 <img src={story.image} alt={story.title} className="story-image" loading="lazy" />
               )}
             </div>
-          </motion.div>
+          </m.div>
         ))}
       </div>
-    </motion.section>
+    </m.section>
   );
 });
