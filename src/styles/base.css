@@ -925,6 +925,7 @@ button {
   font-weight: 800;
   line-height: 1;
   box-shadow: 0 12px 30px rgba(111, 47, 67, 0.12);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -942,6 +943,7 @@ button {
   background: rgba(255, 250, 251, 0.82) !important;
   color: #9f4f68 !important;
   box-shadow: 0 10px 24px rgba(111, 47, 67, 0.14) !important;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   line-height: 1 !important;
 }
@@ -1243,8 +1245,8 @@ body .app .glass-dock .dock-btn.music-on {
   justify-content: center !important;
   line-height: 1 !important;
   z-index: 20 !important;
-  backdrop-filter: blur(6px) !important;
   -webkit-backdrop-filter: blur(6px) !important;
+  backdrop-filter: blur(6px) !important;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
   transition: all 0.2s ease !important;
 }
@@ -1340,6 +1342,7 @@ button,
   padding: 18px !important;
 
   background: var(--paper-soft) !important;
+  /* stylelint-disable-next-line function-no-unknown, property-no-unknown */
   border: 1.5px dashed color-mix(in srgb, var(--amp-color) 40%, transparent) !important;
   border-radius: 16px !important;
   width: 100% !important;
@@ -1381,6 +1384,7 @@ button,
 .gift-card code {
   background: var(--paper, #ffffff) !important; 
   color: var(--rose-deep, #393545) !important; 
+    /* stylelint-disable-next-line function-no-unknown, property-no-unknown */
   border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent) !important; 
   border-radius: 12px !important;
   padding: 14px 10px !important;
@@ -1395,7 +1399,10 @@ button,
 
 .app-modal-backdrop {
   position: fixed !important;
-  inset: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
   height: 100dvh !important; 
@@ -1475,16 +1482,19 @@ button,
 .envelope-flap::before {
   content: "";
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background-color: var(--amp-color);
-  mask-image: var(--theme-flower-svg);
   -webkit-mask-image: var(--theme-flower-svg);
-  mask-size: 85px 85px;
+  mask-image: var(--theme-flower-svg);
   -webkit-mask-size: 85px 85px;
-  mask-position: center;
+  mask-size: 85px 85px;
   -webkit-mask-position: center;
+  mask-position: center;
+ -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
-  -webkit-mask-repeat: repeat;
   opacity: 0.08;
   mix-blend-mode: multiply;
   pointer-events: none;
@@ -1495,9 +1505,16 @@ button,
   width: 24px;
   height: 24px;
   background-color: var(--amp-color);
+  -webkit-mask-image: var(--theme-flower-svg);
   mask-image: var(--theme-flower-svg);
+
+  -webkit-mask-size: contain;
   mask-size: contain;
+
+  -webkit-mask-position: center;
   mask-position: center;
+
+  -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   display: inline-block;
   margin: 0 auto;
@@ -1508,10 +1525,18 @@ button,
   content: "";
   width: 26px;
   height: 26px;
-  background-color: rgba(var(--theme-strong-rgb, 159, 79, 104), 0.35);
+  background-color: var(--theme-strong);
+  
+  -webkit-mask-image: var(--theme-flower-svg);
   mask-image: var(--theme-flower-svg);
+
+  -webkit-mask-size: contain;
   mask-size: contain;
+
+  -webkit-mask-position: center;
   mask-position: center;
+
+  -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   position: absolute;
   top: 26px;
@@ -1746,7 +1771,10 @@ button,
 
   .app-modal-backdrop {
     position: fixed !important;
-    inset: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
     height: 100dvh !important; 
     display: flex !important;
     align-items: center !important;
