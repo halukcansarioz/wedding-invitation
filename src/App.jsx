@@ -5,6 +5,7 @@ import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary"; // Ekledik
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
@@ -14,7 +15,6 @@ function App() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
-  // ZUSTAND'DAN STATE'LERİ ÇEKİYORUZ
   const customAlert = useStore((state) => state.customAlert);
   const setCustomAlert = useStore((state) => state.setCustomAlert);
   const customConfirm = useStore((state) => state.customConfirm);
@@ -28,11 +28,8 @@ function App() {
   const setAdminDraft = useStore((state) => state.setAdminDraft);
 
   const location = useLocation();
-  
   const activeTheme = siteData.settings?.theme || "lavanta";
   const invitation = siteData.invitation;
-
-  // Supabase şifre sıfırlama token'larını yakalamak için güvenli kontrol
   const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
 
   useEffect(() => {
@@ -49,7 +46,6 @@ function App() {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
       try {
-        // PERFORMANS OPTİMİZASYONU: Ağ istekleri sırayla değil, Promise.all ile paralel yapılıyor
         const [dbSettings, dbWishes, dbGuests] = await Promise.all([
           loadSettingsFromDatabase(),
           loadPublishedWishesFromDatabase(),
@@ -88,8 +84,16 @@ function App() {
       />
       
       <Routes>
-        <Route path="/" element={isAuthRecovery ? <AdminController /> : <InvitationController />} />
-        <Route path="/admin/*" element={<AdminController />} />
+        <Route path="/" element={
+          <ErrorBoundary>
+            {isAuthRecovery ? <AdminController /> : <InvitationController />}
+          </ErrorBoundary>
+        } />
+        <Route path="/admin/*" element={
+          <ErrorBoundary>
+            <AdminController />
+          </ErrorBoundary>
+        } />
       </Routes>
     </div>
   );

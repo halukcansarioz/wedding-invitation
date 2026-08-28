@@ -1,7 +1,9 @@
-import React from "react";
+import React, { memo } from "react";
 import "../../styles/modals.css"; 
 
-export function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
+export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
+  if (!customAlert && !customConfirm && !customPrompt) return null;
+
   return (
     <>
       {customAlert && (
@@ -16,7 +18,6 @@ export function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCu
         </div>
       )}
 
-      {/* Confirm Modal */}
       {customConfirm && (
         <div className="global-modal-overlay" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
           <div className="global-modal-container" onClick={e => e.stopPropagation()}>
@@ -34,7 +35,6 @@ export function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCu
         </div>
       )}
 
-      {/* Prompt Modal */}
       {customPrompt && (
         <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
           <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
@@ -54,4 +54,4 @@ export function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCu
       )}
     </>
   );
-}
+});

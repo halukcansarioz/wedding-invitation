@@ -133,5 +133,10 @@
     "couldNotDelete": "Could not delete.",
     "couldNotUpdate": "Could not update.",
     "couldNotChangeStatus": "Could not change status."
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
   }
 }

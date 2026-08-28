@@ -3488,3 +3488,154 @@ html body .app .admin-check-field {
   background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, var(--paper, #ffffff));
   border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 65%, transparent);
 }
+
+/* =================================================================
+   ADMIN CHECKBOX (TİK İŞARETİ)
+   ================================================================= */
+#root .app .admin-check-field input[type="checkbox"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  position: absolute !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  right: 20px !important;
+  width: 26px !important;
+  height: 26px !important;
+  margin: 0 !important;
+  border: 2px solid rgba(159, 79, 104, 0.4) !important;
+  border-radius: 8px !important;
+  background-color: var(--paper, #ffffff) !important;
+  background-image: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+
+/* İçerideki Tik (Check) İkonunun Çizimi */
+#root .app .admin-check-field input[type="checkbox"]::after {
+  content: "" !important;
+  width: 11px !important;
+  height: 6px !important;
+  border-left: 2.5px solid #fff !important;
+  border-bottom: 2.5px solid #fff !important;
+  transform: rotate(-45deg) scale(0) !important;
+  transition: transform 0.15s ease-in-out !important;
+  margin-top: -3px !important;
+}
+
+/* Tıklandığındaki (Checked) Durum */
+#root .app .admin-check-field input[type="checkbox"]:checked {
+  background-color: var(--amp-color, #9f4f68) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  background-image: none !important;
+}
+
+#root .app .admin-check-field input[type="checkbox"]:checked::after {
+  transform: rotate(-45deg) scale(1) !important;
+}
+
+/* Checkbox seçiliyken dış kapsayıcı çerçevenin (label) renklenmesi */
+#root .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  border-color: var(--amp-color, #9f4f68) !important;
+  background-color: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+}
+
+#root .app .admin-sidebar-menu .admin-nav-button.active span,
+#root .app .admin-sidebar-menu .admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+#root .app .admin-sidebar-menu .admin-nav-button:hover:not(.active) span {
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+#root .app .admin-sidebar-menu .admin-nav-button:hover:not(.active) small {
+  color: var(--text-soft, #6f4451) !important;
+}
+
+html body #root .app .admin-sidebar-menu .admin-nav-button:not(.active):hover,
+html body #root .app .admin-sidebar-menu .admin-nav-button:not(.active):hover span {
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+html body #root .app .admin-sidebar-menu .admin-nav-button:not(.active):hover small {
+  color: var(--text-soft, #6f4451) !important;
+}
+
+/* Aktif OLAN butonun içindeki yazılar her durumda BEYAZ kalmaya devam etsin */
+html body #root .app .admin-sidebar-menu .admin-nav-button.active span,
+html body #root .app .admin-sidebar-menu .admin-nav-button.active small {
+  color: #ffffff !important;
+}
+
+body #root .app .admin-sidebar-menu button.admin-nav-button:not(.active):hover {
+  /* Arka planı sabit pembe yerine, seçili temanın ana renginin %12 şeffaf hali yapıyoruz */
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+}
+
+/* Aktif OLMAYAN butonun hover durumundaki başlık (span) rengi */
+body #root .app .admin-sidebar-menu button.admin-nav-button:not(.active):hover span {
+  color: var(--amp-color, #9f4f68) !important;
+  -webkit-text-fill-color: var(--amp-color, #9f4f68) !important;
+}
+
+/* Aktif OLMAYAN butonun hover durumundaki alt metin (small) rengi */
+body #root .app .admin-sidebar-menu button.admin-nav-button:not(.active):hover small {
+  color: var(--text-soft, #6f4451) !important;
+  -webkit-text-fill-color: var(--text-soft, #6f4451) !important;
+}
+
+body #root .app .admin-sidebar-menu button.admin-nav-button.active,
+body #root .app .admin-sidebar-menu button.admin-nav-button.active:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important; /* Gölgelendirmeyi tamamen kaldıran komut */
+}
+
+body #root .app .admin-sidebar-menu button.admin-nav-button.active span,
+body #root .app .admin-sidebar-menu button.admin-nav-button.active small,
+body #root .app .admin-sidebar-menu button.admin-nav-button.active:hover span,
+body #root .app .admin-sidebar-menu button.admin-nav-button.active:hover small {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Aktif OLAN buton her durumda beyaz kalsın */
+body #root .app .admin-sidebar-menu button.admin-nav-button.active span,
+body #root .app .admin-sidebar-menu button.admin-nav-button.active small {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html body #root .app .admin-page .main-button,
+html body #root .app .admin-page .secondary-button,
+html body #root .app .admin-page .admin-add-button,
+html body #root .app .admin-page .small-admin-button,
+html body #root .app .admin-page .admin-upload-button {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+html body #root .app .admin-page .main-button:hover,
+html body #root .app .admin-page .secondary-button:hover,
+html body #root .app .admin-page .admin-add-button:hover,
+html body #root .app .admin-page .small-admin-button:hover,
+html body #root .app .admin-page .admin-upload-button:hover {
+  transform: translateY(-3px) translateZ(0) !important;
+}
+
+/* 3. Sol menüdeki (Sidebar) pasif butonların yukarı değil, hafif SAĞA kayma animasyonunu garanti altına alıyoruz */
+html body #root .app .admin-sidebar-menu button.admin-nav-button:not(.active) {
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+
+html body #root .app .admin-sidebar-menu button.admin-nav-button:not(.active):hover {
+  transform: translateX(3px) translateZ(0) !important;
+}
+
+html body #root .app .admin-page button.theme-option-card.active small {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}

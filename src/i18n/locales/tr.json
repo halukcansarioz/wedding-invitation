@@ -133,5 +133,10 @@
     "couldNotDelete": "Silinemedi.",
     "couldNotUpdate": "Güncellenemedi.",
     "couldNotChangeStatus": "Durum değiştirilemedi."
+  },
+    "navigation": {
+    "chooseApp": "Yol Tarifi Al",
+    "copyAddress": "Tam Adresi Kopyala 📋",
+    "addressCopied": "Adres Kopyalandı! ✅"
   }
 }
