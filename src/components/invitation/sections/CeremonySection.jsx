@@ -23,6 +23,6 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
           </div>
         ))}
       </div>
-    </motion.section>
+    </m.section>
   );
 });
