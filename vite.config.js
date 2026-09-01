@@ -7,20 +7,31 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      injectRegister: 'auto',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'icons.svg'], // Cache'lenecek ekstra statik dosyalar
       manifest: {
-        name: 'Handenur & Haluk Can Düğün Davetiyesi',
+        name: 'Düğün Davetiyesi',
         short_name: 'Davetiye',
-        description: 'Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz.',
+        description: 'Düğün Davetiyesi Uygulaması',
         theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
-          { src: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' }
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
         ]
+      },
+      workbox: {
+        // Çevrimdışı çalışması için önbelleğe alınacak dosya uzantıları
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,mp4,mp3}'] 
       }
     })
-  ],
+  ]
 })

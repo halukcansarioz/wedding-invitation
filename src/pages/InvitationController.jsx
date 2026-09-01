@@ -7,7 +7,7 @@ import IntroPage from "../components/invitation/IntroPage";
 import { FloatingMenu } from "../components/common/FloatingMenu";
 import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
 import { useAssetPreloader } from "../hooks/useAssetPreloader";
-
+import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
 
 const InvitationView = lazy(() => import("./InvitationView"));
 
@@ -68,6 +68,7 @@ export default function InvitationController() {
   return (
     <div style={{height: "100%"}}>
       <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
+      <PwaInstallBanner />
       <FloatingMenu 
         isEn={isEn} 
         toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
