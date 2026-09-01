@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-export function LazyImage({ src, alt, className, style, onClick }) {
+export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "1 / 1" }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
     <div 
       className={`lazy-image-wrapper ${className || ''}`} 
-      style={{ position: 'relative', overflow: 'hidden', ...style }}
+      style={{ position: 'relative', overflow: 'hidden', aspectRatio, ...style }}
       onClick={onClick}
     >
       {!isLoaded && (

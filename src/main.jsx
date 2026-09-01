@@ -1,17 +1,17 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import './index.css'
-import App from './App.jsx'
-import './i18n/config'
-import { ErrorBoundary } from './components/common/ErrorBoundary'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom'; // Router kütüphanesi eklendi
+import { HelmetProvider } from 'react-helmet-async';
+import './i18n/config';
+import App from './App';
+import './index.css';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <BrowserRouter>
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <HelmetProvider>
         <App />
-      </BrowserRouter>
-    </ErrorBoundary>
-  </StrictMode>,
-)
+      </HelmetProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);

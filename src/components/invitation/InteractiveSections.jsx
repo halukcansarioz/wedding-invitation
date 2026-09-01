@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import FocusTrap from 'focus-trap-react';
 import { OptionGroup } from "../common/UIComponents";
 import { triggerConfetti } from "../../utils/helpers";
 import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../config/constants";
@@ -23,52 +24,54 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
   if (!showDeclineModal) return null;
 
   return createPortal(
-    <div onClick={handleClose} className="app-modal-backdrop">
-      <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
-        <div className="app-modal-content">
-          <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
-          <p className="deadline-text modal-message">
-            {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
-          </p>
-        </div>
-
-        {!showDeclineGift ? (
-          <div className="app-modal-actions">
-            <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
-              {t('ui.close')}
-            </button>
-            {showIban && giftData && (
-              <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}>
-                <span>{t('ui.sendGift')}</span>
-              </button>
-            )}
-          </div>
-        ) : (
+    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
+      <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
+        <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
           <div className="app-modal-content">
-            <div className="modal-gift-card">
-              <strong className="modal-gift-receiver">{giftData.receiver}</strong>
-              <span className="modal-gift-bank">{giftData.bankName}</span>
-              <code className="modal-gift-iban">{giftData.iban}</code>
-            </div>
-            <div className="app-modal-actions">
-              <button type="button" className="main-button" onClick={copyIban}>
-                {copied ? t('ui.copied') : t('ui.copyIban')}
-              </button>
-              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
-                {t('ui.closeBtn')}
-              </button>
-            </div>
+            <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
+            <p className="deadline-text modal-message">
+              {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
+            </p>
           </div>
-        )}
+
+          {!showDeclineGift ? (
+            <div className="app-modal-actions">
+              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
+                {t('ui.close')}
+              </button>
+              {showIban && giftData && (
+                <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}>
+                  <span>{t('ui.sendGift')}</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="app-modal-content">
+              <div className="modal-gift-card">
+                <strong className="modal-gift-receiver">{giftData.receiver}</strong>
+                <span className="modal-gift-bank">{giftData.bankName}</span>
+                <code className="modal-gift-iban">{giftData.iban}</code>
+              </div>
+              <div className="app-modal-actions">
+                <button type="button" className="main-button" onClick={copyIban}>
+                  {copied ? t('ui.copied') : t('ui.copyIban')}
+                </button>
+                <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
+                  {t('ui.closeBtn')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>,
+    </FocusTrap>,
     document.body
   );
 }
 
 export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
+  const isEn = i18n.language?.startsWith('en') || false;
   
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showDeclineGift, setShowDeclineGift] = useState(false);
@@ -179,7 +182,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
 export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
+  const isEn = i18n.language?.startsWith('en') || false;
   const guestList = Array.isArray(guests) ? guests : [];
   
   const totalResponses = guestList.length;
@@ -206,7 +209,7 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
 
 export function WishesSection({ copy, submitWish, approvedWishes }) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
+  const isEn = i18n.language?.startsWith('en') || false;
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
 
   const wishSchema = useMemo(() => getWishSchema(t), [t]);

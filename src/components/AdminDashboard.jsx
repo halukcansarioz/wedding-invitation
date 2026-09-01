@@ -33,7 +33,7 @@ function AdminDashboard(props) {
     <main className="admin-page">
       <section className="card admin-card admin-page-card admin-shell-card">
         <div className="admin-page-header">
-          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 120px', alignItems: 'center', marginBottom: '28px', paddingTop: '16px', width: '100%' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 120px', alignItems: 'center', marginBottom: '28px', paddingTop: '24px', width: '100%' }}>
             <div />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button type="button" className="secondary-button admin-back-button" style={{ margin: 0 }} onClick={closeAdminPage}>

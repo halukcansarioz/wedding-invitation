@@ -4,11 +4,11 @@ import {
   GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
   VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
   QrTab, DataTab, GiftTab, StoryTab
-} from "./tabs/AdminTabs";
+} from "./tabs";
 
 export function AdminPanelContent(props) {
   const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith("en");
+  const isEn = i18n.language?.startsWith("en") || false;
   const { activeAdminTab } = props;
 
   switch (activeAdminTab) {

@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
 import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
@@ -15,7 +16,7 @@ import {
 
 export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
+  const isEn = i18n.language?.startsWith('en') || false; // Güvenli (Optional Chaining) dil kontrolü
 
   // Zustand Store Bağlantıları
   const siteData = useStore((state) => state.siteData);
@@ -68,6 +69,17 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
 
   return (
     <main className="invitation-page" onClick={handlePageClick}>
+      {/* Dinamik SEO ve OG Etiketleri */}
+      <Helmet>
+        <title>{coupleName} - Düğün Davetiyesi</title>
+        <meta name="description" content={invitation.message} />
+        <meta property="og:title" content={`${coupleName} - Evleniyoruz!`} />
+        <meta property="og:description" content={invitation.message} />
+        <meta property="og:image" content={invitation.heroImage} />
+        <meta property="og:url" content={currentShareLink} />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+
       <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />
       {settings.visibility?.countdown !== false && <CountdownSection copy={copy} timeLeft={timeLeft} />}
       <InvitationMessageSection copy={copy} invitation={invitation} />
