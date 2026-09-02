@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useStore } from "../store/useStore";
 import { useAudio } from "../hooks/useAudio";
@@ -29,7 +29,22 @@ export default function InvitationController() {
   const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
 
   const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
-  const { showScrollTop, showScrollDown, scrollToNext, scrollToPrev } = useScrollNavigation(false, opened);
+  const { showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
+
+  // Event listener'ları DOM'a attach et
+  useEffect(() => {
+    if (!opened) return;
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [opened, handleWheel, handleTouchStart, handleTouchEnd]);
 
   const openInvitation = () => {
     setIsOpening(true);
@@ -39,7 +54,7 @@ export default function InvitationController() {
 
   if (!opened) {
     return (
-      <div style={{height: "100%"}}>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
         <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
         <IntroPage 
           isOpening={isOpening} 
@@ -66,7 +81,7 @@ export default function InvitationController() {
   }
 
   return (
-    <div style={{height: "100%"}}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
       <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
       <PwaInstallBanner />
       <FloatingMenu 

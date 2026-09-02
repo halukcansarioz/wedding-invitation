@@ -1,5 +1,23 @@
 @charset "UTF-8";
 
+/* ===== GLOBAL MOBILE SCROLL FIX ===== */
+/* Mobilde normal kaydırmayı zorla */
+@media (max-width: 650px) {
+  html, body, #root, .app, .invitation-page {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  .invitation-page > * {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
 #root .app .admin-panel-trigger {
   display: block;
   position: fixed;
@@ -9,6 +27,16 @@
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+}
+
+/* Admin butonunu mobilde gizle */
+@media (max-width: 650px) {
+  #root .app .admin-panel-trigger {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
 #root .app .admin-btn-clean {
@@ -202,6 +230,13 @@ html body .app .floating-actions {
   box-shadow: none; 
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 12px;
+  z-index: 99998;
 }
 
 html body .app .glass-dock .dock-btn, 
@@ -253,15 +288,7 @@ html body .app .floating-actions .hidden-btn {
      Ekrana geri geldiğinde ise milisaniyesi milisaniyesine diğerlerine uyum sağlar. */
 }
 
-@media (min-width: 651px) {
-  html body .app .glass-dock, 
-  html body .app .floating-actions {
-    position: fixed; 
-    top: 50%; 
-    right: 20px; 
-    transform: translateY(-50%); 
-  }
-}
+/* Floating actions positioned consistently across all breakpoints */
 
 /* =================================================================
    5. BİZİM HİKAYEMİZ & TABLOLAR
@@ -378,31 +405,34 @@ html body .app .hero-section::before { border-radius: 24px; }
   html body .app .info-row { flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px; }
   html body .app .button-group { flex-direction: column; gap: 12px; width: 100%; }
   html body .app .main-button, html body .app .secondary-button, html body .app .rsvp-form input, html body .app .wish-form input {
-    width: 100%; min-height: 54px; font-size: 15px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-radius: 999px;
+    width: 100%; min-height: 56px; font-size: 16px; display: flex; align-items: center; justify-content: center; padding: 0 20px; border-radius: 999px; cursor: pointer;
   }
   html body .app .rsvp-form textarea, html body .app .wish-form textarea { min-height: 100px; padding: 16px 20px; }
   html body .app .option-group { flex-direction: column; gap: 8px; }
-  html body .app .option-button { width: 100%; min-height: 52px; }
+  html body .app .option-button { width: 100%; min-height: 56px; cursor: pointer; }
   
   html body .app .mini-map { height: 260px; min-height: 200px; width: 100%; border-radius: 20px; margin-top: 16px; }
   html body .app .guest-stats { display: grid; grid-template-columns: 1fr; gap: 12px; }
   html body .app .guest-item, html body .app .wish-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; }
 
   html body .app .admin-panel-trigger {
-    transform: scale(0.85) !important;
+    transform: scale(1) !important;
     transform-origin: top left !important;
+    padding: max(env(safe-area-inset-top), 0px) 0 0 max(env(safe-area-inset-left), 0px) !important;
   }
 
   html body .app .glass-dock, 
   html body .app .floating-actions {
     position: fixed;
-    bottom: 26px;
-    top: auto;
+    bottom: max(26px, calc(env(safe-area-inset-bottom) + 16px));
+    top: auto !important;
     left: 50%;
+    right: auto !important;
     transform: translateX(-50%);
     flex-direction: row;
     gap: 16px;
     width: max-content;
+    max-width: 90vw;
     padding: 0;
     background: transparent; 
     -webkit-backdrop-filter: none;
@@ -413,12 +443,12 @@ html body .app .hero-section::before { border-radius: 24px; }
   }
 
   html body .app .glass-dock .dock-btn {
-    width: 58px;
-    height: 58px;
-    min-width: 58px;
-    max-width: 58px;
-    min-height: 58px;
-    max-height: 58px;
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    max-width: 64px;
+    min-height: 64px;
+    max-height: 64px;
     border-radius: 50%; 
     background: rgba(255, 255, 255, 0.98);
     color: var(--amp-color, #9f4f68);
@@ -430,6 +460,10 @@ html body .app .hero-section::before { border-radius: 24px; }
     margin: 0;
     box-sizing: border-box;
     animation: elegantPulse 2.5s infinite ease-in-out;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   html body .app .glass-dock .dock-btn:nth-child(1) { animation-delay: 0s; }
@@ -445,11 +479,23 @@ html body .app .hero-section::before { border-radius: 24px; }
   }
 
   html body .app .scroll-indicator {
-    bottom: 110px; 
+    bottom: calc(40px + max(env(safe-area-inset-bottom), 0px)); 
   }
 
-  .app-modal-backdrop { padding: 16px; }
-  .app-modal-card { width: 100%; padding: 24px 20px; border-radius: 24px; }
+  .app-modal-backdrop { 
+    padding: calc(16px + max(env(safe-area-inset-top), 0px)) 16px calc(16px + max(env(safe-area-inset-bottom), 0px)) 16px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+  .app-modal-card { 
+    width: 100%; 
+    max-width: calc(100vw - 32px);
+    padding: 24px 20px; 
+    border-radius: 24px; 
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
   .app-modal-actions { flex-direction: column; }
 }
 
@@ -462,16 +508,7 @@ html body .app .hero-section::before { border-radius: 24px; }
    TÜM CİHAZLARDA (MOBİL VE MASAÜSTÜ) EŞİT GÖRÜNÜM ZORLAMASI
    ================================================================= */
 
-/* 1. YÜZEN BUTONLARI MOBİLDE DE SAĞDA VE DİKEY TUT */
-html body .app .glass-dock,
-html body .app .floating-actions {
-  top: 50% !important;
-  bottom: auto !important;
-  right: 20px !important;
-  left: auto !important;
-  transform: translateY(-50%) !important;
-  flex-direction: column !important;
-}
+/* Floating actions consistent positioning */
 
 html body .app .glass-dock .hidden-btn, 
 html body .app .floating-actions .hidden-btn {
@@ -488,26 +525,39 @@ html body .app .floating-actions .hidden-btn {
     min-height: 100vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-user-select: none;
+    user-select: none;
   }
   
   .invitation-page {
     position: relative !important;
     width: 100% !important;
     height: auto !important;
-    overflow: visible !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     scroll-snap-type: none !important; /* Kilitli kaydırmayı kapatır */
     display: block !important;
+    padding: max(env(safe-area-inset-left), 0px) max(env(safe-area-inset-right), 0px) max(env(safe-area-inset-bottom), 0px) max(env(safe-area-inset-left), 0px);
   }
   
-  /* Bölümleri (kartları) tıpkı bilgisayardaki gibi boşluklu hale getirir */
+  /* Bölümleri (kartları) tıpkı bilgisayardaki gibi boşluklu hale getirir - mobilde kaydırılabilir */
   .invitation-page > section,
   .invitation-page > footer {
     height: auto !important;
-    min-height: 0 !important;
+    min-height: auto !important;
     scroll-snap-align: none !important;
-    padding: 36px 20px !important;
+    padding: 36px max(20px, env(safe-area-inset-left)) 36px max(20px, env(safe-area-inset-right)) !important;
     margin-bottom: 24px !important;
+    margin-left: max(0px, env(safe-area-inset-left)) !important;
+    margin-right: max(0px, env(safe-area-inset-right)) !important;
     border-radius: 36px !important;
+    overflow: visible !important;
+  }
+  
+  /* Her bölümün altına ekstra padding ekle - sayfanın sonu */
+  .invitation-page > footer {
+    margin-bottom: 60px !important;
+    padding-bottom: 48px !important;
   }
   
   /* Ana giriş resmi mobilde yine ekranı kaplasın ama kart gibi dursun */
@@ -542,3 +592,1135 @@ body #root .app .intro-page .envelope-seal span {
   mix-blend-mode: normal !important;
 }
 
+/* --- MOBİL GÖRÜNÜM (RESPONSIVE) DÜZELTMELERİ --- */
+@media (max-width: 768px) {
+  /* 1. Admin Paneli: İstatistikleri 4 yerine 2 sütuna indir */
+  .admin-stats-inside {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    padding: 10px !important;
+  }
+  .admin-stats-inside div span {
+    font-size: 11px !important;
+  }
+
+  /* 2. PWA Banner: Kayan menü/müzik player ile çakışmayı önle */
+  div[style*="bottom: 24px"] {
+    bottom: 85px !important; /* Menünün hemen üstünde durması için */
+    padding: 8px 12px !important;
+    width: 85vw !important;
+  }
+  div[style*="bottom: 24px"] span {
+    font-size: 12px !important;
+  }
+
+  /* 3. Modal Ekranı: Taşmayı engelle ve kaydırılabilir yap */
+  .app-modal-card {
+    width: 90vw !important;
+    max-height: calc(85vh - max(env(safe-area-inset-top), 0px) - max(env(safe-area-inset-bottom), 0px)) !important;
+    overflow-y: auto !important;
+    padding: 24px 16px !important;
+    box-sizing: border-box;
+  }
+
+  /* 4. Form Elemanları: Yatay (horizontal) kaymayı engelle */
+  .rsvp-form input, 
+  .rsvp-form textarea, 
+  .wish-form input, 
+  .wish-form textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important; /* iOS Safari'de otomatik zoom'u engeller */
+    min-height: 48px !important;
+    padding: 12px 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* 5. Admin Liste Satırları: Sağ-sol boşluklarını daralt */
+  .admin-row {
+    margin: 0 0 12px 0 !important;
+    padding: 12px !important;
+  }
+}
+
+/* --- MOBİL KAYDIRMA (SCROLL) VE BEYAZ BOŞLUK ÇÖZÜMÜ --- */
+
+/* 1. Tüm ana kapsayıcıları serbest bırak ve dikey kaydırmaya izin ver */
+html, body, #root {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important; /* Sadece yatay kaymayı engelle */
+  overflow-y: auto !important;   /* Dikey kaydırmayı (scroll) ZORUNLU KIL */
+  background-color: var(--paper, #fdfbf7); /* Olası boşlukların rengini temaya uydur */
+}
+
+/* 2. React ana bileşeninin (InvitationController) tam boy kısıtlamasını ez */
+#root > div {
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+/* 3. Açılış ekranını (Hero) iOS Safari adres çubuğuna tam uyumlu yap - SADECE INTRO SAYFASINDA */
+.intro-page .hero-section {
+  height: 100dvh !important; /* Dinamik viewport yüksekliği */
+  min-height: 100vh !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Davetiye sayfasındaki hero section - MOBILDE TAM EKRAN */
+.invitation-page .hero-section {
+  height: auto !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  position: relative;
+  overflow: hidden !important;
+}
+
+@media (max-width: 650px) {
+  .invitation-page .hero-section {
+    min-height: 100vh !important;
+    height: 100vh !important;
+    max-height: none !important;
+  }
+  
+  .app .hero-section {
+    min-height: 100vh !important;
+    max-height: none !important;
+  }
+}
+
+/* Ana uygulama sarmalayıcısını serbest bırak */
+.app {
+  min-height: 100vh !important;
+  height: auto !important; /* Sabit 100vh veya 100% değerini ezer */
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-x: hidden !important; 
+  overflow-y: auto !important; /* Dikey kaydırmaya izin ver */
+}
+
+/* Sayfa seviyesindeki tüm kapsayıcıların esnemesini sağla */
+.app > div,
+#root > div {
+  min-height: 100vh !important;
+  height: auto !important; 
+  flex: 1;
+}
+
+@media screen and (max-width: 768px) {
+  /* 1. Tüm ana iskeleti zorla serbest bırak */
+  html, body, #root, .app {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    position: relative !important;
+  }
+
+  /* 2. React Router ve framer-motion sarmalayıcılarını akışa dahil et */
+  .app > div, 
+  #root > div {
+    position: relative !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 3. Açılış ekranının (Hero) tüm sayfayı yutmasını engelle */
+  .hero-section,
+  .hero-container {
+    position: relative !important;
+    height: 100dvh !important; /* Sadece ilk ekrana tam sığdır */
+    min-height: 100vh !important;
+    flex-shrink: 0 !important;
+    padding: max(env(safe-area-inset-top), 0px) max(env(safe-area-inset-right), 20px) max(env(safe-area-inset-bottom), 0px) max(env(safe-area-inset-left), 20px) !important;
+  }
+}
+
+/* =================================================================
+   7. MOBIL OPTİMİZASYON - INPUT & FORM ELEMANLAR
+   ================================================================= */
+
+/* Input focus states optimize for mobile */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px; /* iOS auto-zoom prevent */
+}
+
+/* Disable double-tap zoom on buttons */
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Admin stats responsive enhancement */
+@media (max-width: 480px) {
+  .admin-stats-inside {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .admin-stats-inside > div {
+    padding: 8px !important;
+    text-align: center;
+  }
+  
+  .admin-stats-inside div strong {
+    font-size: 18px !important;
+    display: block;
+  }
+  
+  .admin-stats-inside div span {
+    font-size: 10px !important;
+    display: block;
+    margin-top: 4px;
+  }
+}
+
+/* PWA Banner safe area adjustment */
+.pwa-install-banner {
+  bottom: max(24px, env(safe-area-inset-bottom)) !important;
+  left: max(16px, env(safe-area-inset-left)) !important;
+  right: max(16px, env(safe-area-inset-right)) !important;
+  max-width: calc(100vw - max(32px, 2 * env(safe-area-inset-left), 2 * env(safe-area-inset-right))) !important;
+}
+
+/* Scroll smooth performance optimization */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Touch feedback optimization */
+@media (hover: none) and (pointer: coarse) {
+  /* Mobile only - remove hover effects */
+  button:hover,
+  a:hover,
+  .dock-btn:hover,
+  .option-button:hover {
+    transform: none !important;
+  }
+  
+  /* Active states for touch */
+  button:active,
+  a:active,
+  .dock-btn:active,
+  .option-button:active {
+    opacity: 0.8;
+    transform: scale(0.98) !important;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+.dock-btn,
+.admin-btn-clean,
+.admin-panel-trigger,
+.option-button,
+button {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Image optimization for mobile */
+img {
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Loading skeleton performance */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes skeleton-loading {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+}
+
+/* Modal animation optimization for mobile */
+@media (max-width: 650px) {
+  .app-modal-backdrop {
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  .app-modal-card {
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =================================================================
+   8. UNIVERSAL PHONE SUPPORT - TÜM TELEFONLAR İÇİN
+   ================================================================= */
+
+/* Ultra-small phones (iPhone SE, SE 2, SE 3) - 320px-375px */
+@media (max-width: 375px) {
+  :root {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin: 1rem 0;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+  
+  html body .app .couple-title {
+    font-size: clamp(36px, 12vw, 48px) !important;
+  }
+  
+  html body .app .card,
+  html body .app .countdown-section {
+    padding: 20px 16px !important;
+  }
+  
+  html body .app .main-button,
+  html body .app .secondary-button,
+  html body .app .option-button {
+    min-height: 48px !important;
+    font-size: 14px !important;
+    padding: 0 16px !important;
+  }
+  
+  html body .app .glass-dock .dock-btn {
+    width: 56px !important;
+    height: 56px !important;
+    min-width: 56px !important;
+    max-width: 56px !important;
+  }
+  
+  html body .app .countdown-grid {
+    gap: 8px !important;
+  }
+  
+  html body .app .count-box {
+    padding: 12px 6px !important;
+  }
+  
+  html body .app .count-box strong {
+    font-size: 24px !important;
+  }
+  
+  html body .app .count-box span {
+    font-size: 10px !important;
+  }
+  
+  .app-modal-card {
+    padding: 16px 12px !important;
+  }
+  
+  .admin-stats-inside {
+    gap: 6px !important;
+    padding: 6px !important;
+  }
+  
+  .admin-stats-inside div strong {
+    font-size: 14px !important;
+  }
+  
+  .admin-stats-inside div span {
+    font-size: 9px !important;
+  }
+}
+
+/* Small phones (iPhone 6/7/8, SE 2) - 375px-414px */
+@media (min-width: 376px) and (max-width: 414px) {
+  :root {
+    font-size: 15px;
+  }
+  
+  html body .app .couple-title {
+    font-size: clamp(40px, 13vw, 56px) !important;
+  }
+  
+  html body .app .card,
+  html body .app .countdown-section {
+    padding: 24px 18px !important;
+  }
+  
+  html body .app .glass-dock .dock-btn {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+  }
+  
+  html body .app .count-box strong {
+    font-size: 28px !important;
+  }
+}
+
+/* Medium phones (iPhone 11/12/13, Pixel 4/5) - 414px-480px */
+@media (min-width: 415px) and (max-width: 480px) {
+  :root {
+    font-size: 16px;
+  }
+  
+  html body .app .couple-title {
+    font-size: clamp(42px, 14vw, 60px) !important;
+  }
+  
+  html body .app .card,
+  html body .app .countdown-section {
+    padding: 28px 20px !important;
+  }
+  
+  html body .app .glass-dock,
+  html body .app .floating-actions {
+    gap: 14px !important;
+  }
+}
+
+/* Large phones (iPhone 12/13/14/15 Pro Max, Pixel 5/6/7) - 480px-600px */
+@media (min-width: 481px) and (max-width: 600px) {
+  :root {
+    font-size: 16px;
+  }
+  
+  html body .app .couple-title {
+    font-size: clamp(44px, 15vw, 64px) !important;
+  }
+  
+  html body .app .card,
+  html body .app .countdown-section {
+    padding: 32px 24px !important;
+  }
+}
+
+/* Landscape orientation support - Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  html, body, #root, .app {
+    min-height: 100dvh !important;
+  }
+  
+  .hero-section {
+    height: 100dvh !important;
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  }
+  
+  html body .app .hero-content {
+    padding-bottom: 40px !important;
+  }
+  
+  html body .app .couple-title {
+    font-size: clamp(32px, 12vh, 48px) !important;
+    margin: 8px 0 !important;
+  }
+  
+  html body .app .hero-date {
+    font-size: 14px !important;
+    padding: 4px 16px !important;
+  }
+  
+  html body .app .card h2 {
+    font-size: 20px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  html body .app .card p {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+  
+  html body .app .countdown-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+  }
+  
+  html body .app .count-box {
+    padding: 12px 4px !important;
+  }
+  
+  html body .app .count-box strong {
+    font-size: 20px !important;
+  }
+  
+  html body .app .count-box span {
+    font-size: 10px !important;
+  }
+  
+  html body .app .button-group {
+    flex-direction: row !important;
+    gap: 10px !important;
+  }
+  
+  html body .app .main-button,
+  html body .app .secondary-button {
+    flex: 1 !important;
+    min-height: 44px !important;
+    font-size: 14px !important;
+    padding: 0 12px !important;
+  }
+  
+  html body .app .glass-dock,
+  html body .app .floating-actions {
+    top: auto !important;
+    bottom: max(12px, env(safe-area-inset-bottom)) !important;
+    right: auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+  }
+  
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+  }
+  
+  html body .app .scroll-indicator {
+    display: none !important;
+  }
+  
+  .app-modal-backdrop {
+    padding: calc(8px + max(env(safe-area-inset-top), 0px)) 8px calc(8px + max(env(safe-area-inset-bottom), 0px)) 8px !important;
+  }
+  
+  .app-modal-card {
+    max-width: calc(100vw - 16px) !important;
+    padding: 16px 12px !important;
+  }
+}
+
+/* Tablet support (600px-1024px) */
+@media (min-width: 601px) and (max-width: 1024px) {
+  html, body, #root, .app, .invitation-page {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  html body .app .card,
+  html body .app .countdown-section {
+    padding: 36px 32px !important;
+  }
+  
+  html body .app .couple-title {
+    font-size: clamp(48px, 12vw, 72px) !important;
+  }
+  
+  html body .app .main-button,
+  html body .app .secondary-button,
+  html body .app .option-button {
+    min-height: 52px !important;
+  }
+  
+  html body .app .countdown-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 16px !important;
+  }
+  
+  html body .app .glass-dock,
+  html body .app .floating-actions {
+    position: fixed;
+    top: 50% !important;
+    right: 28px !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    width: 60px !important;
+    height: 60px !important;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1025px) {
+  html, body, #root, .app, .invitation-page {
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+/* iOS-specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    padding: 12px 16px !important;
+  }
+  
+  body {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  a, button, input[type="button"], input[type="submit"] {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Fix iOS fixed positioning issues */
+  .glass-dock,
+  .floating-actions,
+  .admin-panel-trigger {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* iOS keyboard handling */
+  input:focus,
+  textarea:focus {
+    font-size: 16px !important;
+    outline: none;
+  }
+}
+
+/* Android-specific fixes */
+@-webkit-keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Chrome/Edge on Android */
+@supports (-webkit-appearance: none) {
+  input[type="search"],
+  input[type="text"],
+  textarea {
+    border-radius: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  button {
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+}
+
+/* Firefox on mobile */
+@-moz-document url-prefix() {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+  
+  button {
+    cursor: pointer;
+  }
+}
+
+/* Samsung Internet fix */
+@media (-webkit-min-device-pixel-ratio: 2) {
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Low bandwidth / Slow 3G optimization */
+@media (prefers-reduced-data: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* High DPI / Retina displays */
+@media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
+  html body .app .card,
+  html body .app .countdown-section {
+    border-width: 0.5px;
+  }
+  
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    border-width: 0.5px;
+  }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+  input,
+  textarea,
+  select {
+    background-color: var(--code-bg, #1f2028);
+    color: var(--text, #9ca3af);
+    border-color: var(--border, #2e303a);
+  }
+  
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: var(--accent, #c084fc);
+  }
+}
+
+/* Support for devices with notches (all modern phones) */
+@media (orientation: portrait) {
+  body {
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (orientation: landscape) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Accessibility - Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
+}
+
+/* Prevent zoom on double-tap for buttons (iOS) */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="checkbox"],
+input[type="radio"],
+label {
+  touch-action: manipulation;
+}
+
+/* Text size adjustment (remove automatic sizing) */
+body {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Optimize for keyboard */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* iOS specific input styles */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+input[type="search"] {
+  font-size: 16px;
+  padding: 12px;
+}
+
+/* Smooth scroll for supported browsers */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Performance: GPU acceleration */
+.glass-dock,
+.floating-actions,
+.app-modal-card,
+.app-modal-backdrop,
+.invitation-page,
+.hero-section {
+  -webkit-transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Print styles for mobile */
+@media print {
+  html, body, .app {
+    height: auto;
+    min-height: auto;
+  }
+  
+  .glass-dock,
+  .floating-actions,
+  .admin-panel-trigger,
+  .scroll-indicator {
+    display: none !important;
+  }
+}
+
+/* =================================================================
+   DEVICE-SPECIFIC FINAL OPTIMIZATIONS
+   ================================================================= */
+
+/* Fallback for browsers without env() support */
+@supports not (top: max(0px, env(safe-area-inset-top))) {
+  .glass-dock,
+  .floating-actions {
+    bottom: 26px;
+  }
+  
+  .invitation-page {
+    padding: 0;
+  }
+  
+  .hero-section {
+    padding: 0;
+  }
+}
+
+/* Fix for iOS 13-14 viewport issues */
+@supports (-webkit-touch-callout: none) {
+  @media (orientation: portrait) {
+    html, body {
+      position: fixed;
+      width: 100%;
+    }
+    
+    html, body, #root, .app {
+      height: 100vh;
+      height: 100dvh;
+    }
+  }
+}
+
+/* Samsung Galaxy Fold & Foldable devices */
+@media (max-height: 512px) and (max-width: 512px) {
+  html body .app .couple-title {
+    font-size: clamp(28px, 10vw, 40px) !important;
+    margin: 8px 0 !important;
+  }
+  
+  html body .app .card,
+  html body .app .countdown-section {
+    padding: 16px 12px !important;
+  }
+  
+  html body .app .countdown-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  html body .app .count-box strong {
+    font-size: 18px !important;
+  }
+  
+  html body .app .glass-dock .dock-btn {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+/* Extremely tall phones (aspect ratio > 2.5) */
+@media (max-aspect-ratio: 2/5) {
+  html body .app .hero-section {
+    min-height: 80vh !important;
+  }
+  
+  html body .app .card {
+    padding: 24px 18px !important;
+  }
+}
+
+/* Very wide devices (landscape tablets, foldables) */
+@media (min-aspect-ratio: 3/1) {
+  html body .app .card,
+  html body .app .countdown-section {
+    max-width: 60%;
+    margin: 0 auto;
+  }
+  
+  html body .app .countdown-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+  }
+  
+  html body .app .button-group {
+    flex-direction: row !important;
+  }
+  
+  html body .app .glass-dock,
+  html body .app .floating-actions {
+    position: fixed;
+    top: 50% !important;
+    right: 20px !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: translateY(-50%) !important;
+    flex-direction: column !important;
+  }
+}
+
+/* One-hand usage optimization - Large phones */
+@media (min-width: 480px) and (max-width: 600px) and (min-height: 800px) {
+  html body .app .glass-dock .dock-btn,
+  html body .app .floating-actions .dock-btn {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  
+  html body .app .button-group {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+/* Scroll performance - Disable animations on slow devices */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Network aware - Slow 2G/3G */
+@media (max-width: 384px) {
+  img {
+    loading: lazy;
+  }
+  
+  .glass-dock .dock-btn,
+  .floating-actions .dock-btn {
+    animation: none !important;
+  }
+}
+
+/* Cursor/pointer detection */
+@media (pointer: fine) {
+  /* Desktop/stylus - show hover states */
+  button:hover,
+  .dock-btn:hover,
+  a:hover {
+    opacity: 0.9;
+  }
+}
+
+@media (pointer: coarse) {
+  /* Touch devices - large targets */
+  button,
+  .dock-btn,
+  a,
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* No hover capability (mobile) */
+@media (hover: none) {
+  button:hover,
+  a:hover,
+  .dock-btn:hover,
+  input:hover,
+  textarea:hover {
+    background-color: inherit;
+    color: inherit;
+    transform: none !important;
+  }
+}
+
+/* Smooth scrolling support - DISABLED for mobile normal scroll */
+/* Keeping snap for desktop only if needed in future */
+@supports (scroll-snap-type: y mandatory) {
+  @media (min-width: 651px) {
+    /* Desktop scroll snap */
+    /* Disabled for now - users prefer free scrolling */
+  }
+}
+
+/* Support for :has() selector for modern browsers */
+@supports selector(:has(> div)) {
+  .app:has(.hero-section) {
+    scroll-behavior: auto;
+  }
+}
+
+/* Accessibility - High contrast mode */
+@media (prefers-contrast: more) {
+  body {
+    border-width: 2px;
+  }
+  
+  button,
+  input,
+  textarea,
+  select {
+    border-width: 2px;
+  }
+}
+
+/* Force light/dark mode regardless of system preference */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+/* Browser-specific fixes */
+
+/* Chrome Android */
+@media (-webkit-min-device-pixel-ratio: 1) {
+  input,
+  button,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}
+
+/* Firefox Android */
+@-moz-document url-prefix() {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    max-width: 100%;
+  }
+  
+  body {
+    line-height: 1.5;
+  }
+}
+
+/* Edge on mobile */
+@supports (-ms-ime-align: auto) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/* Opera Mini fallback */
+@-o-keyframes float {
+  0%, 100% { bottom: 0; }
+  50% { bottom: 8px; }
+}
+
+/* UC Browser fix */
+body[data-uc-browser] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* WeChat browser optimization */
+@media (max-width: 375px) and (max-height: 667px) {
+  .glass-dock,
+  .floating-actions {
+    bottom: 12px !important;
+  }
+}
+
+/* Ensure buttons are always clickable on iOS */
+@supports (-webkit-touch-callout: none) {
+  .glass-dock .dock-btn,
+  .floating-actions .dock-btn,
+  .admin-btn-clean,
+  button {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    cursor: pointer;
+  }
+  
+  /* Prevent iOS rubber band effect */
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+/* Progressive enhancement for old browsers */
+@supports (display: grid) {
+  .admin-stats-inside {
+    display: grid;
+  }
+}
+
+@supports not (display: grid) {
+  .admin-stats-inside {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}

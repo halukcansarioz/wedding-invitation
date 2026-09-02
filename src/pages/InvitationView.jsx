@@ -60,7 +60,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   };
 
   const handlePageClick = (e) => {
-    if (window.innerWidth > 650) return;
+    // Hem mobilde hem desktop'ta tıkla-kaydır özelliği aktif
     const isInteractive = e.target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
     if (!isInteractive) {
       e.clientX < window.innerWidth * 0.35 ? scrollToPrev() : scrollToNext();

@@ -9,36 +9,36 @@ export function useScrollNavigation(isAdminPage, opened) {
   const touchStartYRef = useRef(0);
 
   const scrollToNext = useCallback(() => {
-    const isMobile = window.innerWidth <= 650;
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+    const currentScroll = window.scrollY;
     
-    if (isMobile) {
-      setCurrentSlideIndex((prev) => (prev < sections.length - 1 ? prev + 1 : prev));
-    } else {
-      const currentScroll = window.scrollY;
-      const nextSection = sections.find(sec => {
-        const rect = sec.getBoundingClientRect();
-        return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
-      });
-      if (nextSection) nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else if (sections.length > 0) sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });    }
+    // Tüm cihazlarda: bir sonraki section'a scroll yap
+    const nextSection = sections.find(sec => {
+      const rect = sec.getBoundingClientRect();
+      return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
+    });
+    
+    if (nextSection) {
+      nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (sections.length > 0) {
+      sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }, []);
 
   const scrollToPrev = useCallback(() => {
-    const isMobile = window.innerWidth <= 650;
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
+    const currentScroll = window.scrollY;
     
-    if (isMobile) {
-      setCurrentSlideIndex((prev) => (prev > 0 ? prev - 1 : prev));
-    } else {
-      const currentScroll = window.scrollY;
-      const prevSection = [...sections].reverse().find(sec => {
-        const rect = sec.getBoundingClientRect();
-        return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
-      });
+    // Tüm cihazlarda: bir önceki section'a scroll yap
+    const prevSection = [...sections].reverse().find(sec => {
+      const rect = sec.getBoundingClientRect();
+      return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
+    });
 
-      if (prevSection) prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (prevSection) {
+      prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, []);
 

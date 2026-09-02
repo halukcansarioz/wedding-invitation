@@ -45,7 +45,7 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     try {
       const dbData = uiGuestToDb(formData);
       // RPC ile Rate Limit Kontrollü Kayıt (Supabase'de RPC fonksiyonunu oluşturduğunu varsayıyoruz)
-      const { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
+      let { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
       
       if (error) {
         if (error.message === 'RATE_LIMIT_EXCEEDED') {
@@ -85,7 +85,7 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     }
     const shouldPublishNow = !settings?.requireWishApproval;
     try {
-      const { data, error } = await supabase.from("wishes").insert({ 
+      let { data, error } = await supabase.from("wishes").insert({ 
         name: formData.name.trim(), 
         message: formData.message.trim(), 
         approved: shouldPublishNow 
@@ -110,7 +110,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     }
   }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
 
-  // Diğer tüm fonksiyonlar (clearGuests, editGuest vb.) aynı şekilde kalacak...
   const clearGuests = useCallback(async () => { /* ... */ }, []);
   const clearWishes = useCallback(async () => { /* ... */ }, []);
   const deleteGuest = useCallback(async (guestId) => { /* ... */ }, []);
