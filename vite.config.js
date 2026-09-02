@@ -29,6 +29,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5000000,
         // Çevrimdışı çalışması için önbelleğe alınacak dosya uzantıları
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,mp4,mp3}'] 
       }
