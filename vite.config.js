@@ -33,10 +33,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // 2. Büyük boyutlu fotoğrafların önbellek hatası için (2MB limitini 5MB'a çıkarır)
-        maximumFileSizeToCacheInBytes: 5000000, 
-        // Çevrimdışı çalışması için önbelleğe alınacak dosya uzantıları
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,mp4,mp3}'] 
+        maximumFileSizeToCacheInBytes: 10000000,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,mp4,mp3}']
       }
     })
   ]
