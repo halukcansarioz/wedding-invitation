@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // 1. Javascript paket boyutu uyarısı için (chunkSizeWarningLimit buraya yazılır)
+  build: {
+    chunkSizeWarningLimit: 1000
+  },
   plugins: [
     react(),
     VitePWA({
@@ -29,7 +33,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 5000000,
+        // 2. Büyük boyutlu fotoğrafların önbellek hatası için (2MB limitini 5MB'a çıkarır)
+        maximumFileSizeToCacheInBytes: 5000000, 
         // Çevrimdışı çalışması için önbelleğe alınacak dosya uzantıları
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,mp4,mp3}'] 
       }
