@@ -32,7 +32,7 @@ const AdminView = lazy(() => import('./AdminView'));
 
 export default function AdminController() {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
+  const isEn = i18n.language?.startsWith('en') || false;
   const navigate = useNavigate();
 
   // ZUSTAND'DAN VERİLERİ VE FONKSİYONLARI ÇEKİYORUZ
@@ -103,7 +103,8 @@ export default function AdminController() {
     setGuests, setWishes, showAppConfirm, isEn
   });
 
-  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval } = useDatabaseManager({
+  // toggleCheckIn EKLENDİ
+  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn } = useDatabaseManager({
     guests, setGuests, wishes, setWishes, settings: adminDraft.settings, 
     showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
   });
@@ -417,6 +418,7 @@ export default function AdminController() {
         moveDraftArrayItem={moveDraftArrayItem}
         updateDraftVideo={updateDraftVideo}
         clearDraftVideo={clearDraftVideo}
+        toggleCheckIn={toggleCheckIn} 
       />
     </Suspense>
   );

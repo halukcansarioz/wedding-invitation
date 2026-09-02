@@ -1,7 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "1 / 1" }) {
+export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "1 / 1", width = 800 }) {
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const optimizedSrc = useMemo(() => {
+    if (!src || typeof src !== 'string') return src;
+    if (src.includes('.supabase.co/storage/v1/object/public/')) {
+      return src.replace('/object/public/', '/render/image/public/') + `?width=${width}&quality=80`;
+    }
+    return src;
+  }, [src, width]);
 
   return (
     <div 
@@ -20,7 +28,7 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
         />
       )}
       <img
-        src={src}
+        src={optimizedSrc}
         alt={alt}
         loading="lazy"
         onLoad={() => setIsLoaded(true)}

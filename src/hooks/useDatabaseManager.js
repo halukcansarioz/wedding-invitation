@@ -119,5 +119,12 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   const editWish = useCallback(async (wishId) => { /* ... */ }, []);
   const toggleWishApproval = useCallback(async (wishId) => { /* ... */ }, []);
 
-  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval };
+  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
+    const nextStatus = !currentStatus;
+    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
+    if (error) { setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); return; }
+    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
+  }, [setGuests, setAdminSaveMessage, isEn]);
+
+  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn };
 }
