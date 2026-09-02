@@ -17,7 +17,8 @@
           "position: sticky",
           "overscroll-behavior-y: none",
           "border: 1.5px dashed color-mix(in srgb, var(--amp-color) 40%, transparent)",
-          "border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent)"
+          "border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent)",
+          "-webkit-user-drag"
         ]
       }
     ],

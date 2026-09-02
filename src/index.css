@@ -5,7 +5,7 @@
 @media (max-width: 650px) {
   html, body, #root, .app, .invitation-page {
     height: auto !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
@@ -544,7 +544,7 @@ html body .app .floating-actions .hidden-btn {
   .invitation-page > section,
   .invitation-page > footer {
     height: auto !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     scroll-snap-align: none !important;
     padding: 36px max(20px, env(safe-area-inset-left)) 36px max(20px, env(safe-area-inset-right)) !important;
     margin-bottom: 24px !important;
@@ -759,7 +759,6 @@ select:focus {
 button,
 a,
 [role="button"] {
-  touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
 }
@@ -1189,11 +1188,13 @@ img {
   
   body {
     -webkit-user-select: none;
+    user-select: none;
     -webkit-touch-callout: none;
   }
   
   a, button, input[type="button"], input[type="submit"] {
     -webkit-user-select: none;
+    user-select: none;
     -webkit-touch-callout: none;
   }
   
@@ -1241,8 +1242,8 @@ img {
   }
 }
 
-/* Firefox on mobile */
-@-moz-document url-prefix() {
+/* Mobile browser fixes */
+@media (max-width: 768px) {
   input,
   textarea,
   select {
@@ -1346,14 +1347,7 @@ input[type="submit"],
 input[type="checkbox"],
 input[type="radio"],
 label {
-  touch-action: manipulation;
-}
-
-/* Text size adjustment (remove automatic sizing) */
-body {
-  -webkit-text-size-adjust: 100%;
-  -moz-text-size-adjust: 100%;
-  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Optimize for keyboard */
@@ -1364,7 +1358,9 @@ input::-webkit-inner-spin-button {
 }
 
 input[type="number"] {
+  -webkit-appearance: textfield;
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* iOS specific input styles */
@@ -1405,7 +1401,7 @@ input[type="search"] {
 @media print {
   html, body, .app {
     height: auto;
-    min-height: auto;
+    min-height: 0;
   }
   
   .glass-dock,
@@ -1539,16 +1535,11 @@ input[type="search"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
 
 /* Network aware - Slow 2G/3G */
 @media (max-width: 384px) {
-  img {
-    loading: lazy;
-  }
-  
   .glass-dock .dock-btn,
   .floating-actions .dock-btn {
     animation: none !important;
@@ -1621,19 +1612,6 @@ input[type="search"] {
   }
 }
 
-/* Force light/dark mode regardless of system preference */
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-  }
-}
-
 /* Browser-specific fixes */
 
 /* Chrome Android */
@@ -1646,22 +1624,20 @@ input[type="search"] {
   }
 }
 
-/* Firefox Android */
-@-moz-document url-prefix() {
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="number"],
-  input[type="date"],
-  input[type="time"],
-  textarea,
-  select {
-    max-width: 100%;
-  }
-  
-  body {
-    line-height: 1.5;
-  }
+/* Mobile form sizing fallback */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="time"],
+textarea,
+select {
+  max-width: 100%;
+}
+
+body {
+  line-height: 1.5;
 }
 
 /* Edge on mobile */
@@ -1705,10 +1681,6 @@ body[data-uc-browser] {
     cursor: pointer;
   }
   
-  /* Prevent iOS rubber band effect */
-  body {
-    overscroll-behavior: none;
-  }
 }
 
 /* Progressive enhancement for old browsers */
