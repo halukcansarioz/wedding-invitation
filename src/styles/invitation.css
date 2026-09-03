@@ -1416,28 +1416,90 @@ body .app .glass-dock .dock-btn.music-on {
   pointer-events: none; 
 }
 
-/* Sayfadaki her bir bölümü (section) temsil eden class */
 .invitation-section {
-  position: relative;
-  min-height: 100dvh; /* 100vh yerine 100dvh! Mobil tarayıcı adres çubuğunu hesaba katar */
-  width: 100%;
-  overflow: hidden; /* Önceki/sonraki bölümden taşan kavisli arka planları kesin olarak gizler */
+  /* 1. Yükseklik sınırlarını iptal et */
+  height: auto !important; 
+  min-height: auto !important; 
+  max-content: fit-content;
   
-  /* Scroll hizalama ayarları */
-  scroll-snap-align: start; /* Kullanıcı parmağıyla kaydırdığında ekranın tam başına kilitler */
-  scroll-margin-top: 0; /* Yukarıdan boşluk kalmasını engeller */
+  /* 2. Flex ortalamasını sıfırla ki boşlukları zorla uzatmasın */
+  display: block; /* Veya flex kullanıyorsan justify-content: flex-start; yap */
   
-  /* İçeriği ortalamak için (eğer zaten varsa mevcut olanları koru) */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  /* 3. İçerik ile çerçeve sınırı arasındaki nefes boşluğu (devasa boşluklar yerine sabit bir değer) */
+  padding: 40px 20px; 
+  
+  /* 4. Kart görünümü veriyorsan (isteğe bağlı) */
+  margin: 30px 15px; /* Kartlar arası boşluk */
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #fbfbfe;
 }
 
-/* Tüm davetiyeyi saran ana container class'ın (örneğin .app-container veya .main-wrapper) */
 .invitation-container {
   height: 100dvh;
   overflow-y: auto;
-  scroll-snap-type: y mandatory; /* Sürükleme bittiğinde bölümlerin yarım kalmasını engeller, tam oturtur */
-  scroll-behavior: smooth; /* Kaydırmanın yumuşak olmasını sağlar */
+  scroll-snap-type: y mandatory; 
+  scroll-behavior: smooth; 
+}
+
+.section-content-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100dvh;
+  
+  padding-top: 100px; 
+  padding-bottom: 130px; 
+  padding-left: 20px;
+  padding-right: 20px;
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.top-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1; /* Yazıların arkasında kalmalı */
+  pointer-events: none;
+}
+
+.floating-navigation-container {
+  position: fixed;
+  bottom: 30px; /* Güvenli alan için: calc(20px + env(safe-area-inset-bottom)) */
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  pointer-events: none; /* Tıklama sorunu yaşamamak için ana div'i etkisiz yap */
+}
+
+.floating-navigation-container button {
+  pointer-events: auto; /* Sadece butonların tıklanabilir olmasını sağla */
+}
+
+.decoration-top-left {
+  position: absolute;
+  /* Eskiden muhtemelen top: 0; left: 0; şeklindeydi. Bunları metnin hizasına çekiyoruz: */
+  top: 40px;  /* Metin kapsayıcısının padding-top değeri ile aynı yapın */
+  left: 20px; /* Metin kapsayıcısının padding-left değeri ile aynı yapın */
+  
+  /* Eğer SVG görseli esneyip taşıyorsa boyutunu sabitleyin */
+  max-width: 80px; 
+  height: auto;
+  z-index: 0;
+}
+
+/* Sağ alt veya diğer köşelerdeki dekorlar için de tam tersini uygula */
+.decoration-bottom-right {
+  position: absolute;
+  bottom: 40px;  /* padding-bottom ile eşitleyin */
+  right: 20px; /* padding-right ile eşitleyin */
+  max-width: 80px;
+  height: auto;
 }
