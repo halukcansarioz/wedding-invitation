@@ -1,5 +1,17 @@
 import React, { memo } from "react";
 
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId);
+  
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start', // EN ÖNEMLİ KISIM: Elementin üst kısmını, ekranın en üstüne milimetrik hizalar. Boşluk kalmasını önler.
+      inline: 'nearest'
+    });
+  }
+};
+
 export const FloatingMenu = memo(function FloatingMenu({
   isEn, toggleLanguage, shareText, toggleMusic, isMusicPlaying, 
   showScrollDown, scrollToNext, showScrollTop, scrollToPrev

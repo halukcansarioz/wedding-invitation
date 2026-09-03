@@ -1881,3 +1881,30 @@ body[data-uc-browser] {
     flex-wrap: wrap;
   }
 }
+
+.hero-section-class {
+  height: 100dvh; 
+  position: relative;
+}
+
+.floating-buttons-class {
+  position: absolute;
+  bottom: 30px; 
+}
+
+.main-wrapper {
+  padding-bottom: 100px; 
+}
+
+.decoration-element {
+  position: absolute;
+  /* top, left, right, bottom değerlerin... */
+  z-index: 0; /* Yazıların arkasında kalması için */
+  pointer-events: none; /* Tıklamaları engellememesi için */
+}
+
+/* Davet yazılarının (Mutluluğumuza Ortak Olur Musunuz?) olduğu div */
+.content-wrapper {
+  position: relative;
+  z-index: 1; /* Dekorların üstünde görünmesi için */
+}
