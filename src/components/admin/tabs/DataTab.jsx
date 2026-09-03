@@ -19,3 +19,19 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, se
     </AdminSection>
   );
 }
+
+const updateSiteContent = async (lang, newContent) => {
+  const { error } = await supabase
+    .from('site_content')
+    .update({ 
+      hero_title: newContent.title, 
+      story_text: newContent.story,
+      ceremony_time: newContent.time,
+      rsvp_button_text: newContent.btnText
+    })
+    .eq('lang_code', lang);
+
+  if (!error) {
+    alert("İçerik başarıyla güncellendi, web sitesine anında yansıdı!");
+  }
+};

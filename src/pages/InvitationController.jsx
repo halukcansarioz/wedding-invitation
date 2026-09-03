@@ -1,6 +1,5 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useStore } from "../store/useStore";
 import { useAudio } from "../hooks/useAudio";
 import { useScrollNavigation } from "../hooks/useScrollNavigation";
 import IntroPage from "../components/invitation/IntroPage";
@@ -8,6 +7,7 @@ import { FloatingMenu } from "../components/common/FloatingMenu";
 import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
 import { useAssetPreloader } from "../hooks/useAssetPreloader";
 import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
+import { useStore } from "../store/useStore";
 
 const InvitationView = lazy(() => import("./InvitationView"));
 

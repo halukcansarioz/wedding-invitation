@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { loadStoredSiteData } from '../utils/helpers';
 import toast from 'react-hot-toast';
+import { supabase } from '../supabaseClient';
 
-export const useStore = create((set) => ({
-  // --- SİTE VERİLERİ (SiteContext Yerine) ---
+export const useStore = create((set, get) => ({
   siteData: loadStoredSiteData(),
   setSiteData: (data) => set({ siteData: data }),
   guests: [],
@@ -11,12 +11,11 @@ export const useStore = create((set) => ({
   wishes: [],
   setWishes: (wishes) => set({ wishes }),
 
-  // --- ARAYÜZ KONTROLLERİ (UIContext Yerine) ---
   opened: false,
   setOpened: (opened) => set({ opened }),
   isOpening: false,
   setIsOpening: (isOpening) => set({ isOpening }),
-  
+
   customAlert: null,
   setCustomAlert: (alert) => set({ customAlert: alert }),
   showAppAlert: (message, options = {}) => new Promise((resolve) => {
@@ -25,7 +24,7 @@ export const useStore = create((set) => ({
     else toast.success(message);
     resolve(true);
   }),
-  
+
   customConfirm: null,
   setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
   showAppConfirm: (message, options = {}) => new Promise((resolve) => {
@@ -38,7 +37,6 @@ export const useStore = create((set) => ({
     set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
   }),
 
-  // --- ADMİN PANELİ (AdminContext Yerine) ---
   adminDraft: loadStoredSiteData(),
   setAdminDraft: (draftOrUpdater) => set((state) => ({
     adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
@@ -48,5 +46,27 @@ export const useStore = create((set) => ({
   personalLinkName: "",
   setPersonalLinkName: (name) => set({ personalLinkName: name }),
   dataImportText: "",
-  setDataImportText: (text) => set({ dataImportText: text })
+  setDataImportText: (text) => set({ dataImportText: text }),
+}));
+
+export const useContentStore = create((set, get) => ({
+  currentLang: 'tr',
+  content: loadStoredSiteData(),
+  
+  setLang: async (lang) => {
+    set({ currentLang: lang });
+    await get().fetchContent(lang);
+  },
+
+  fetchContent: async (lang) => {
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('*')
+      .eq('lang_code', lang)
+      .single();
+
+    if (!error && data) {
+      set({ content: data });
+    }
+  }
 }));
