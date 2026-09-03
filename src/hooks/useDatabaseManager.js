@@ -47,6 +47,19 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
       // RPC ile Rate Limit Kontrollü Kayıt (Supabase'de RPC fonksiyonunu oluşturduğunu varsayıyoruz)
       let { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
       
+      // Veritabanına kayıt başarılı olduktan hemen sonra çalışacak tetikleyici:
+      if (dbData.email) {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: dbData.email,
+            firstName: dbData.first_name, 
+            isAttending: dbData.is_attending 
+          })
+        }).catch(err => console.error("Mail gönderilemedi:", err));
+      }
+
       if (error) {
         if (error.message === 'RATE_LIMIT_EXCEEDED') {
           throw new Error(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.");
