@@ -186,6 +186,8 @@ button {
   max-width: 1500px;
   margin: 0 auto;
   padding: 30px 42px 76px;
+  scroll-snap-type: none !important;
+  padding-bottom: 120px !important;
 }
 
 .invitation-page::before {
@@ -1833,4 +1835,20 @@ button,
   font-weight: 700;
   opacity: 0.6;
   pointer-events: none; /* Sayacın üstüne tıklanmasını engeller */
+}
+
+.invitation-page > section:not(.hero-section),
+.invitation-page > footer {
+  min-height: auto !important; 
+  height: max-content !important; /* Sadece yazılar/içerik kadar uzasın */
+  
+  /* Kartı kenarlardan ve diğer kartlardan ayır */
+  margin: 32px 16px !important; 
+  padding: 48px 24px !important; /* İçeriğin çerçeve sınırına yapışmasını engeller */
+  
+  border-radius: 32px !important; /* Köşeleri yuvarlat */
+  scroll-snap-align: none !important;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }

@@ -9,41 +9,32 @@ export function useScrollNavigation(isAdminPage, opened) {
   const touchStartYRef = useRef(0);
 
   const scrollToNext = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const scrollContainer = document.scrollingElement || document.documentElement;
-    const currentScroll = scrollContainer.scrollTop;
-    const scrollOffset = window.innerWidth <= 650 ? 16 : 0;
-    // Tüm cihazlarda: bir sonraki section'a scroll yap
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    
     const nextSection = sections.find(sec => {
       const rect = sec.getBoundingClientRect();
-      return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
+      // Ekranın üstünden %20 daha aşağıda beliren ilk slide'ı bul
+      return rect.top > window.innerHeight * 0.2; 
     });
     
     if (nextSection) {
-      const targetTop = nextSection.offsetTop - scrollOffset;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else if (sections.length > 0) {
-      const lastSection = sections[sections.length - 1];
-      const targetTop = lastSection.offsetTop - scrollOffset;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
 
   const scrollToPrev = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const scrollContainer = document.scrollingElement || document.documentElement;
-    const currentScroll = scrollContainer.scrollTop;
-    const scrollOffset = window.innerWidth <= 650 ? 16 : 0;
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
     
-    // Tüm cihazlarda: bir önceki section'a scroll yap
     const prevSection = [...sections].reverse().find(sec => {
       const rect = sec.getBoundingClientRect();
-      return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
+      // Ekranın altından daha yukarıda olan ilk slide'ı bul
+      return rect.bottom < window.innerHeight * 0.8; 
     });
 
     if (prevSection) {
-      const targetTop = prevSection.offsetTop - scrollOffset;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+      prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

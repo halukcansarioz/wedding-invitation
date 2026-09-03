@@ -67,7 +67,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
     }
   };
 
-  return (
+return (
     <main className="invitation-page" onClick={handlePageClick}>
       {/* Dinamik SEO ve OG Etiketleri */}
       <Helmet>
@@ -80,21 +80,65 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />
-      {settings.visibility?.countdown !== false && <CountdownSection copy={copy} timeLeft={timeLeft} />}
-      <InvitationMessageSection copy={copy} invitation={invitation} />
-      {settings.visibility?.family !== false && <FamilySection copy={copy} familyInfo={familyInfo} />}
-      {settings.visibility?.story !== false && <StorySection copy={copy} storyTimeline={storyTimeline} />}
-      {settings.visibility?.ceremony !== false && <CeremonySection copy={copy} eventDetails={eventDetails} />}
-      {settings.visibility?.schedule !== false && <ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-      {settings.visibility?.location !== false && <LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} />}
-      {settings.visibility?.gallery !== false && <GallerySection copy={copy} invitation={invitation} />}
-      {settings.visibility?.rsvp !== false && <RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} />}
-      {settings.visibility?.guests !== false && <GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} />}
-      {settings.visibility?.wishes !== false && <WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} />}
-      {settings.visibility?.iban !== false && <GiftSection giftData={giftRegistry} />}
-      <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
-      <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+      <div className="slide-wrapper">
+        <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />
+      </div>
+      
+      {settings.visibility?.countdown !== false && (
+        <div className="slide-wrapper"><CountdownSection copy={copy} timeLeft={timeLeft} /></div>
+      )}
+      
+      <div className="slide-wrapper">
+        <InvitationMessageSection copy={copy} invitation={invitation} />
+      </div>
+      
+      {settings.visibility?.family !== false && (
+        <div className="slide-wrapper"><FamilySection copy={copy} familyInfo={familyInfo} /></div>
+      )}
+      
+      {settings.visibility?.story !== false && (
+        <div className="slide-wrapper"><StorySection copy={copy} storyTimeline={storyTimeline} /></div>
+      )}
+      
+      {settings.visibility?.ceremony !== false && (
+        <div className="slide-wrapper"><CeremonySection copy={copy} eventDetails={eventDetails} /></div>
+      )}
+      
+      {settings.visibility?.schedule !== false && (
+        <div className="slide-wrapper"><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></div>
+      )}
+      
+      {settings.visibility?.location !== false && (
+        <div className="slide-wrapper"><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></div>
+      )}
+      
+      {settings.visibility?.gallery !== false && (
+        <div className="slide-wrapper"><GallerySection copy={copy} invitation={invitation} /></div>
+      )}
+      
+      {settings.visibility?.rsvp !== false && (
+        <div className="slide-wrapper"><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></div>
+      )}
+      
+      {settings.visibility?.guests !== false && (
+        <div className="slide-wrapper"><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></div>
+      )}
+      
+      {settings.visibility?.wishes !== false && (
+        <div className="slide-wrapper"><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></div>
+      )}
+      
+      {settings.visibility?.iban !== false && (
+        <div className="slide-wrapper"><GiftSection giftData={giftRegistry} /></div>
+      )}
+      
+      <div className="slide-wrapper">
+        <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
+      </div>
+      
+      <div className="slide-wrapper">
+        <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+      </div>
     </main>
   );
 }
