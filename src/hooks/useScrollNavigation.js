@@ -10,8 +10,9 @@ export function useScrollNavigation(isAdminPage, opened) {
 
   const scrollToNext = useCallback(() => {
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const currentScroll = window.scrollY;
-    
+    const scrollContainer = document.scrollingElement || document.documentElement;
+    const currentScroll = scrollContainer.scrollTop;
+    const scrollOffset = window.innerWidth <= 650 ? 16 : 0;
     // Tüm cihazlarda: bir sonraki section'a scroll yap
     const nextSection = sections.find(sec => {
       const rect = sec.getBoundingClientRect();
@@ -19,15 +20,20 @@ export function useScrollNavigation(isAdminPage, opened) {
     });
     
     if (nextSection) {
-      nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const targetTop = nextSection.offsetTop - scrollOffset;
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
     } else if (sections.length > 0) {
-      sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const lastSection = sections[sections.length - 1];
+      const targetTop = lastSection.offsetTop - scrollOffset;
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
     }
   }, []);
 
   const scrollToPrev = useCallback(() => {
     const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const currentScroll = window.scrollY;
+    const scrollContainer = document.scrollingElement || document.documentElement;
+    const currentScroll = scrollContainer.scrollTop;
+    const scrollOffset = window.innerWidth <= 650 ? 16 : 0;
     
     // Tüm cihazlarda: bir önceki section'a scroll yap
     const prevSection = [...sections].reverse().find(sec => {
@@ -36,7 +42,8 @@ export function useScrollNavigation(isAdminPage, opened) {
     });
 
     if (prevSection) {
-      prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const targetTop = prevSection.offsetTop - scrollOffset;
+      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -86,21 +93,19 @@ export function useScrollNavigation(isAdminPage, opened) {
     if (isAdminPage || !opened) return;
 
     const handleScroll = () => {
-      if (window.innerWidth > 650) {
-        setShowScrollTop(window.scrollY > 100);
-        const isAtBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 100;
-        setShowScrollDown(!isAtBottom);
-      }
+      const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
+      setShowScrollTop(scrollTop > 100);
+      const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
+      setShowScrollDown(!isAtBottom);
     };
 
-    if (window.innerWidth > 650) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      setShowScrollDown(true); 
-      setTimeout(handleScroll, 800); 
-    }
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    const revealTimer = window.setTimeout(() => setShowScrollDown(true), 900);
+    handleScroll();
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.clearTimeout(revealTimer);
     };
   }, [isAdminPage, opened]);
 

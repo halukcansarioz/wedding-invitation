@@ -78,6 +78,12 @@ export function HeroSection({ invitation, copy, guestGreeting, personalTableNumb
         <h1 className="couple-title"><span>{invitation?.bride}</span><em>&</em><span>{invitation?.groom}</span></h1>
         <p className="hero-date">{invitation?.dateText}</p>
         <p className="hero-time">{t('ui.time')} {invitation?.timeText}</p>
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
         
         {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
         {personalTableNumber && (
@@ -89,12 +95,6 @@ export function HeroSection({ invitation, copy, guestGreeting, personalTableNumb
         )}
       </div>
 
-      <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-        <div className="mouse">
-          <div className="wheel"></div>
-        </div>
-        <span>{t('ui.scroll')}</span>
-      </div>
     </m.section>
   );
 }
