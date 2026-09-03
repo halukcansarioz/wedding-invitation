@@ -1160,7 +1160,6 @@ body .app .glass-dock .dock-btn.music-on {
 
 .scroll-indicator {
   position: absolute;
-  bottom: 32px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: auto !important;
@@ -1503,3 +1502,24 @@ body .app .glass-dock .dock-btn.music-on {
   max-width: 80px;
   height: auto;
 }
+
+/* Zıplama (Bounce) Animasyonu Tanımı */
+@keyframes jump-animation {
+  0%   { transform: translateY(0) scale(1); }
+  50%  { transform: translateY(-8px) scale(1.05); } /* Yukarı doğru 8px zıplar ve çok hafif büyür */
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Dil ve Müzik Butonu İçin Animasyonun Uygulanması */
+.dock-btn.lang-btn:hover,
+.dock-btn.lang-btn:active,
+.dock-btn.music-btn:hover,
+.dock-btn.music-btn:active {
+  /* Fare üzerindeyken veya tıklandığında zıplama efektini tetikler */
+  animation: jump-animation 0.4s ease-in-out;
+}
+
+/* Opsiyonel: Eğer fare üzerinde beklediği sürece SÜREKLİ zıplamasını isterseniz 
+   yukarıdaki 'animation' satırını şu şekilde değiştirebilirsiniz:
+   animation: jump-animation 0.5s ease-in-out infinite; 
+*/

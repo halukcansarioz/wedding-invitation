@@ -2,33 +2,46 @@ import React, { memo } from "react";
 
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId);
-  
   if (element) {
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start', // EN ÖNEMLİ KISIM: Elementin üst kısmını, ekranın en üstüne milimetrik hizalar. Boşluk kalmasını önler.
+    element.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start', 
       inline: 'nearest'
     });
   }
 };
 
-export const FloatingMenu = memo(function FloatingMenu({
-  isEn, toggleLanguage, shareText, toggleMusic, isMusicPlaying, 
-  showScrollDown, scrollToNext, showScrollTop, scrollToPrev
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
 }) {
   return (
     <>
       <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-         <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-             <path d="M12 8v4" />
-             <path d="M12 16h.01" />
-           </svg>
-         </a>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
       </div>
-      
+
       <div className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}>
+        
+        {/* DİL DEĞİŞTİRME BUTONU */}
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        {/* PAYLAŞ BUTONU */}
         <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3"></circle>
@@ -38,13 +51,9 @@ export const FloatingMenu = memo(function FloatingMenu({
             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
           </svg>
         </a>
-        <button 
-          type="button" 
-          className="dock-btn music-btn" 
-          onClick={toggleMusic} 
-          aria-pressed={isMusicPlaying}
-          title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-        >
+
+        {/* MÜZİK AÇMA/KAPATMA BUTONU */}
+        <button type="button" className={`dock-btn music-btn ${isMusicPlaying ? 'music-on' : ''}`} onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {isMusicPlaying ? (
               <>
@@ -62,11 +71,21 @@ export const FloatingMenu = memo(function FloatingMenu({
             )}
           </svg>
         </button>
+
+        {/* YUKARI KAYDIRMA BUTONU */}
         <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
         </button>
+        
+        {/* AŞAĞI KAYDIRMA BUTONU */}
         <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
         </button>
       </div>
     </>

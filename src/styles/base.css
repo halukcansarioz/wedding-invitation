@@ -1118,7 +1118,7 @@ button {
 
 .scroll-indicator {
   position: absolute;
-  bottom: 40px;
+  bottom: 15px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -1851,4 +1851,16 @@ button,
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+}
+
+.force-scroll-bottom {
+  position: absolute !important;
+  bottom: 25px !important; 
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-top: 0 !important;
+  z-index: 50 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
 }
