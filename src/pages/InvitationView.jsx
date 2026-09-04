@@ -16,7 +16,7 @@ import {
 
 export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false; // Güvenli (Optional Chaining) dil kontrolü
+  const isEn = i18n.language?.startsWith('en') || false;
 
   // Zustand Store Bağlantıları
   const siteData = useStore((state) => state.siteData);

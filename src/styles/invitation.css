@@ -971,37 +971,8 @@ body .app .invitation-page .option-group.disabled .option-button.active {
   border: 1px solid rgba(217, 140, 161, 0.2);
 }
 
+/* Mobil Cihazlar İçin Çizgiyi Sola Alma */
 @media (max-width: 768px) {
-  body, html {
-    overflow: hidden !important;
-    height: 100dvh !important;
-  }
-
-  .snap-container {
-    height: 100dvh !important;
-    overflow-y: scroll !important;
-    overflow-x: hidden !important;
-    scroll-snap-type: y mandatory !important;
-    scroll-behavior: smooth !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .snap-section {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
-    width: 100% !important;
-    scroll-snap-align: start !important;
-    scroll-snap-stop: always !important;
-    
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 1rem !important;
-    box-sizing: border-box !important;
-  }
-
   .story-line {
     left: 20px;
   }
