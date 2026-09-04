@@ -8,6 +8,26 @@ export function useScrollNavigation(isAdminPage, opened) {
   const isScrollingRef = useRef(false);
   const touchStartYRef = useRef(0);
 
+  const handleScrollUp = useCallback(() => {
+    const container = document.querySelector('.snap-container');
+    if (container) {
+      container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleScrollDown = useCallback(() => {
+    const container = document.querySelector('.snap-container');
+    if (container) {
+      container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    }
+  }, []);
+
+  return { handleScrollUp, handleScrollDown };
+
   const scrollToNext = useCallback(() => {
     const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
     

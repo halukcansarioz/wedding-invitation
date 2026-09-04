@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { useScrollNavigation } from '../../hooks/useScrollNavigation';
 
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId);
@@ -36,12 +37,10 @@ export const FloatingMenu = memo(function FloatingMenu({
 
       <div className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}>
         
-        {/* DİL DEĞİŞTİRME BUTONU */}
         <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
         </button>
 
-        {/* PAYLAŞ BUTONU */}
         <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3"></circle>
