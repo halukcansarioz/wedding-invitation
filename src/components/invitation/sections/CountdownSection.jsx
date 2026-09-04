@@ -18,12 +18,12 @@ export const CountdownSection = memo(function CountdownSection({ copy, timeLeft 
       <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
       
       {isFinished ? (
-        <div style={{ padding: '24px', background: 'var(--paper-soft)', borderRadius: '24px', border: '1px solid rgba(217, 140, 161, 0.4)', marginTop: '20px' }}>
-          <span style={{ fontSize: '32px', display: 'block', margin: '0 0 8px 0' }}>🎉💍✨</span>
-          <strong style={{ fontSize: '24px', color: 'var(--rose-dark)' }}>
+        <div className="countdown-finished-box">
+          <span className="countdown-finished-icon">🎉💍✨</span>
+          <strong className="countdown-finished-title">
             {isEn ? "Today is the Big Day!" : "Bugün En Mutlu Günümüz!"}
           </strong>
-          <p style={{ marginTop: '6px', fontSize: '16px' }}>
+          <p className="countdown-finished-text">
             {isEn ? "We can't wait to celebrate with you." : "Sizinle kutlamak için sabırsızlanıyoruz."}
           </p>
         </div>

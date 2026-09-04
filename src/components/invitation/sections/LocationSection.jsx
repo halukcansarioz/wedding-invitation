@@ -23,33 +23,33 @@ function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
 
   return createPortal(
     <div onClick={onClose} className="app-modal-backdrop">
-      <div onClick={(e) => e.stopPropagation()} className="app-modal-card" style={{ maxWidth: '420px', textAlign: 'center' }}>
-        <h3 style={{ margin: '0 0 8px 0', color: 'var(--rose-deep)' }}>
+      <div onClick={(e) => e.stopPropagation()} className="app-modal-card location-nav-modal">
+        <h3 className="location-nav-title">
           {t('navigation.chooseApp')}
         </h3>
-        <p style={{ margin: '0 0 18px 0', fontSize: '15px' }}>
+        <p className="location-nav-address">
           {invitation?.venue} – {invitation?.address}
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
-          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+        <div className="location-nav-grid">
+          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
             Google Maps 🗺️
           </a>
-          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
             Apple Maps 🍏
           </a>
-          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
             Yandex Navi 🚕
           </a>
-          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
+          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
             Waze 🚙
           </a>
         </div>
 
-        <button type="button" className="main-button" onClick={copyAddress} style={{ width: '100%', marginBottom: '10px' }}>
+        <button type="button" className="main-button location-nav-copy" onClick={copyAddress}>
           {copied ? t('navigation.addressCopied') : t('navigation.copyAddress')}
         </button>
-        <button type="button" className="secondary-button" onClick={onClose} style={{ width: '100%' }}>
+        <button type="button" className="secondary-button location-nav-close" onClick={onClose}>
           {t('ui.closeBtn')}
         </button>
       </div>

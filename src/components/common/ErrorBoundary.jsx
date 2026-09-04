@@ -17,10 +17,12 @@ export class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: '20px', textAlign: 'center', background: '#fffafb', color: '#9f4f68', fontFamily: 'sans-serif' }}>
+        <div className="error-boundary-container">
           <h2>Opps! Beklenmeyen bir hata oluştu.</h2>
           <p>Lütfen sayfayı yenileyerek tekrar deneyin.</p>
-          <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', marginTop: '16px', background: '#9f4f68', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Sayfayı Yenile</button>
+          <button onClick={() => window.location.reload()} className="error-boundary-btn">
+            Sayfayı Yenile
+          </button>
         </div>
       );
     }

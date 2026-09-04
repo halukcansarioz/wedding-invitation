@@ -79,8 +79,51 @@
 }
 
 .admin-main-panel { min-width: 0; }
-.admin-main-panel .admin-actions-sticky { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding: 16px 20px; }
-.admin-actions-sticky .admin-save-message { flex: 1 1 100%; width: 100%; order: 99; margin: 4px 0 0 0; padding: 12px 16px; border-radius: 12px; text-align: center; font-weight: 800; }
+.admin-main-panel .admin-actions-sticky {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  flex-wrap: nowrap !important;
+}
+
+.admin-actions-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: nowrap; /* Asla alt satıra geçme */
+}
+
+.admin-actions-top-row .admin-current-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  min-width: 0; /* Metnin taşıp butonları itmesini engeller */
+  flex: 1 1 auto;
+}
+
+.admin-actions-top-row .admin-current-section strong,
+.admin-actions-top-row .admin-current-section span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.admin-actions-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0; /* Butonların daralıp bozulmasını engeller */
+}
+
+.admin-actions-sticky .admin-save-message {
+  width: 100%;
+  margin: 0 !important;
+}
+
 .admin-current-section { min-width: min(100%, 160px); display: grid; gap: 4px; margin-right: auto; }
 .admin-current-section strong { font-family: "Playfair Display", serif; font-size: 19px; font-weight: 800; }
 
@@ -298,9 +341,15 @@
 }
 
 .admin-actions-sticky .admin-current-section {
+  min-width: 0; 
   flex: 1 1 auto;
-  margin-right: auto;
-  text-align: left;
+}
+
+.admin-actions-sticky .admin-current-section span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Yazı çok uzunsa sonuna "..." ekler */
+  display: block;
 }
 
 .admin-actions-sticky span {
@@ -480,15 +529,20 @@
 }
 
 @media (max-width: 950px) {
-  .admin-main-panel .admin-actions-sticky {
-    justify-content: center; 
-    flex-wrap: wrap;
+  .admin-actions-top-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .admin-actions-sticky .admin-current-section {
-    flex: 1 1 100%;
-    text-align: center;
-    margin-right: 0;
-    margin-bottom: 8px;
+  .admin-actions-top-row .admin-current-section {
+    width: 100%;
+  }
+  .admin-actions-btn-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .admin-actions-btn-group button {
+    flex: 1;
+    padding: 10px 8px;
   }
 }
 
@@ -3685,7 +3739,6 @@ body #root .app .admin-page .admin-toolbar input:focus {
    ADMIN ÜST BİLGİ BUTONLARINI TEK SATIRDA SABİTLEME
    ================================================================= */
 
-/* Başlık alanı ve buton alanının yan yana kalmasını zorunlu kılar */
 body #root .app .admin-page .admin-section-header,
 body #root .app .admin-page .admin-header {
   display: flex !important;
@@ -3694,18 +3747,989 @@ body #root .app .admin-page .admin-header {
   justify-content: space-between !important;
 }
 
-/* Sağ taraftaki buton grubunun alt satıra düşmesini (wrap) engeller */
 body #root .app .admin-page .admin-section-header > div:last-child,
 body #root .app .admin-page .admin-header > div:last-child {
   display: flex !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
   gap: 12px !important;
-  flex-shrink: 0 !important; /* Butonların sıkışıp ezilmesini önler */
+  flex-shrink: 0 !important; 
 }
 
-/* Buton içindeki yazıların alt satıra geçmesini engeller */
 body #root .app .admin-page .admin-section-header button,
 body #root .app .admin-page .admin-header button {
   white-space: nowrap !important;
 }
+
+.admin-panel-grid { display: grid; gap: 18px; }
+.admin-panel-grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.admin-link-result-label { display: block; margin-bottom: 6px; font-weight: 700; color: var(--rose-dark); }
+.admin-link-result-input { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1.5px dashed var(--rose-dark); background: var(--paper-soft); font-weight: 700; color: var(--text); }
+.admin-button-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
+.admin-button-flex { flex: 1; min-width: 180px; margin: 0; }
+.admin-whatsapp-btn { background-color: #25D366; color: #fff; border-color: #25D366; }
+
+.admin-toolbar-flex {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent);
+  border-radius: 24px;
+}
+
+.admin-toolbar-search {
+  flex: 1;
+  min-width: 200px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 30%, transparent);
+  background: var(--paper, #ffffff);
+  color: var(--text);
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.admin-toolbar-search:focus {
+  border-color: var(--amp-color, #9f4f68);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent);
+}
+
+.admin-toolbar-filter {
+  min-width: 160px;
+  margin: 0;
+}
+
+.admin-toolbar-filter .admin-custom-select-button {
+  min-height: 48px !important;
+  height: 48px !important;
+  border-radius: 999px !important;
+}
+
+.admin-toolbar-btn {
+  height: 48px;
+  min-height: 48px !important;
+  border-radius: 999px !important;
+  padding: 0 24px !important;
+  margin: 0;
+}
+
+.admin-guest-list-container { height: 600px; margin: 0; padding: 0; }
+.admin-guest-row {
+  background: var(--paper, #ffffff) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-guest-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px color-mix(in srgb, var(--amp-color, #9f4f68) 10%, transparent) !important;
+}
+
+.admin-guest-header {
+  margin-bottom: 8px;
+}
+
+.admin-guest-header strong {
+  font-size: 18px;
+  color: var(--amp-color, #9f4f68) !important;
+  font-weight: 900;
+}
+
+.admin-guest-badge {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 20%, transparent);
+}
+
+.admin-guest-badge.arrived { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.admin-guest-badge.pending { background: rgba(0,0,0,0.05); color: inherit; }
+.admin-guest-song { color: var(--rose-dark); }
+.admin-guest-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1.5px dashed color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+}
+
+.admin-guest-actions .secondary-button {
+  flex: 1; /* Butonların %50 %50 alanı kaplamasını sağlar */
+  height: 44px;
+  min-height: 44px;
+  border-radius: 999px !important; /* Yuvarlak pill form */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+.admin-guest-actions .secondary-button:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #ffffff !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .admin-toolbar-flex {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a));
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, transparent);
+}
+
+[data-theme="dark"] .admin-toolbar-search {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent);
+  color: #fff4f8;
+}
+
+[data-theme="dark"] .admin-guest-row {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 4%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-guest-header strong {
+  color: #ffd8e4 !important;
+}
+
+[data-theme="dark"] .admin-guest-badge {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 12%, transparent) !important;
+  color: #ffd8e4 !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent);
+}
+
+[data-theme="dark"] .admin-guest-actions {
+  border-top-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-guest-actions .secondary-button {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 6%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+}
+
+[data-theme="dark"] .admin-guest-actions .secondary-button:hover {
+  background: var(--amp-color, #e3b6c7) !important;
+  color: #1a1a1a !important;
+}
+
+.admin-btn-arrived { background: #e74c3c !important; border-color: #e74c3c !important; color: #fff; flex: 1; }
+.admin-btn-pending { background: #2ecc71 !important; border-color: #2ecc71 !important; color: #fff; flex: 1; }
+
+.admin-qr-box { display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--paper-soft); padding: 32px 24px; border-radius: 22px; border: 1px solid var(--border); }
+.admin-qr-image { width: 180px; height: 180px; object-fit: contain; border-radius: 16px; margin: 0 auto 20px; background: #fff; padding: 12px; border: 1px solid var(--border); }
+.admin-qr-btn { min-width: 220px; margin: 0; }
+.admin-link-preview-box { display: flex; flex-direction: column; gap: 16px; background: var(--paper-soft); padding: 24px; border-radius: 22px; border: 1px solid var(--border); }
+.admin-link-preview-label { font-weight: 800; color: var(--rose-dark); display: block; margin-bottom: 8px; font-size: 16px; }
+.admin-link-preview-input { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1.5px solid rgba(159, 79, 104, 0.46); background: #fff; font-weight: 700; color: var(--text); outline: none; }
+.admin-link-copy-btn { align-self: flex-start; margin: 0; }
+.admin-import-container { margin: 0; }
+.admin-import-label { display: block; margin-bottom: 8px; color: var(--rose-deep); }
+.admin-import-btn { margin-top: 12px; width: 100%; }
+
+html body .app .admin-main-panel .admin-actions-sticky,
+html[data-theme] body .app .admin-main-panel .admin-actions-sticky {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, var(--paper, #ffffff)) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 18%, transparent) !important;
+  border-radius: 28px !important;
+  padding: 20px 28px !important;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+  margin-bottom: 28px !important; 
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+[data-theme="dark"] html body .app .admin-main-panel .admin-actions-sticky {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+@media (max-width: 950px) {
+  html body .app .admin-main-panel .admin-actions-sticky,
+  html[data-theme] body .app .admin-main-panel .admin-actions-sticky {
+    padding: 20px !important;
+    border-radius: 24px !important;
+  }
+}
+
+
+/* =========================================================
+   GENEL ADMİN PANELİ TEMA STANDARTLAŞTIRMASI (KÜRESEL DÜZELTME)
+   ========================================================= */
+
+/* 1. KARTLAR VE KUTULAR (Editor, Yükleme Kutuları, Liste Elemanları, İstatistikler, Giriş Ekranı) */
+.admin-editor-section,
+.admin-image-field,
+.admin-music-field,
+.admin-gallery-upload-row,
+.admin-repeat-item,
+.admin-login,
+.admin-export-card,
+.admin-import-box,
+.admin-stats div,
+.admin-link-preview-box {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 3%, var(--paper, #ffffff)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.admin-repeat-item:hover,
+.admin-gallery-upload-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+}
+
+/* 2. INPUT VE TEXTAREA ALANLARI (Metin Girişleri) */
+.admin-field input,
+.admin-field textarea,
+.admin-login input,
+.admin-import-box textarea,
+.admin-personal-link-box input {
+  background: var(--paper, #ffffff) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  border-radius: 16px !important;
+  color: var(--text) !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.01) !important;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-login input:focus,
+.admin-import-box textarea:focus,
+.admin-personal-link-box input:focus {
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+}
+
+/* Form Üst Bilgi Yazıları (Label) */
+.admin-field span,
+.admin-image-header > span,
+.admin-repeat-title strong,
+.admin-export-card strong,
+.admin-import-label {
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+/* 3. ANA AKSİYON BUTONLARI (Kaydet, Görsel Seç, Yeni Ekle vb. - Pill Shape) */
+.admin-upload-button,
+button.admin-add-button,
+.admin-login .main-button,
+.admin-export-card .main-button,
+.admin-qr-btn,
+.admin-actions-top-row .main-button {
+  border-radius: 999px !important;
+  background: var(--amp-color, #9f4f68) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--amp-color, #9f4f68) 30%, transparent) !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-upload-button:hover,
+button.admin-add-button:hover,
+.admin-login .main-button:hover,
+.admin-export-card .main-button:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 25px color-mix(in srgb, var(--amp-color, #9f4f68) 40%, transparent) !important;
+}
+
+/* 4. İKİNCİL BUTONLAR (Yukarı/Aşağı, Düzenle, Kaldır vb. - Pill Shape) */
+.admin-row-actions button,
+.admin-repeat-title .small-admin-button,
+.admin-image-header .small-admin-button,
+.admin-gallery-upload-row .small-admin-button {
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 6%, transparent) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+
+.admin-row-actions button:hover,
+.admin-repeat-title .small-admin-button:hover,
+.admin-image-header .small-admin-button:hover,
+.admin-gallery-upload-row .small-admin-button:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+
+/* Kırmızı Sil/Kaldır Butonları İçin Özel Uyarlama */
+.admin-row-actions button.danger-button,
+.admin-repeat-title .small-admin-button.danger-button,
+.admin-image-header .small-admin-button.danger-button,
+.admin-gallery-upload-row .small-admin-button.danger-button,
+.admin-import-btn {
+  background: rgba(231, 76, 60, 0.08) !important;
+  border-color: rgba(231, 76, 60, 0.25) !important;
+  color: #e74c3c !important;
+}
+
+.admin-row-actions button.danger-button:hover,
+.admin-repeat-title .small-admin-button.danger-button:hover,
+.admin-image-header .small-admin-button.danger-button:hover,
+.admin-gallery-upload-row .small-admin-button.danger-button:hover,
+.admin-import-btn:hover {
+  background: #e74c3c !important;
+  color: #fff !important;
+  border-color: #e74c3c !important;
+}
+
+/* 5. SOL MENÜ (SİDEBAR) VE TOGGLE BUTONLAR */
+.admin-sidebar-menu .admin-nav-button {
+  border-radius: 20px !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+  background: var(--paper, #ffffff) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button.active {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--amp-color, #9f4f68) 35%, transparent) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+}
+
+.admin-sidebar-menu .admin-nav-button.active span,
+.admin-sidebar-menu .admin-nav-button.active small {
+  color: #fff !important;
+}
+
+/* Checkbox (Aç/Kapat) Tasarımı */
+.admin-check-field {
+  border-radius: 20px !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, var(--paper, #ffffff)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+}
+.admin-check-field:has(input[type="checkbox"]:checked) {
+  border-color: var(--amp-color, #9f4f68) !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, var(--paper, #ffffff)) !important;
+}
+
+/* =========================================================
+   6. DARK MODE (KOYU TEMA) KÜRESEL UYUMU
+   ========================================================= */
+[data-theme="dark"] .admin-editor-section,
+[data-theme="dark"] .admin-image-field,
+[data-theme="dark"] .admin-music-field,
+[data-theme="dark"] .admin-gallery-upload-row,
+[data-theme="dark"] .admin-repeat-item,
+[data-theme="dark"] .admin-login,
+[data-theme="dark"] .admin-export-card,
+[data-theme="dark"] .admin-import-box,
+[data-theme="dark"] .admin-link-preview-box,
+[data-theme="dark"] .admin-check-field {
+   background: color-mix(in srgb, var(--amp-color, #e3b6c7) 6%, var(--paper, #1c141a)) !important;
+   border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 20%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-field input,
+[data-theme="dark"] .admin-field textarea,
+[data-theme="dark"] .admin-login input,
+[data-theme="dark"] .admin-import-box textarea,
+[data-theme="dark"] .admin-personal-link-box input,
+[data-theme="dark"] .admin-sidebar-menu .admin-nav-button {
+   background: rgba(0, 0, 0, 0.2) !important;
+   color: #fff !important;
+   border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 25%, transparent) !important;
+}
+
+/* =========================================================
+   GELİŞTİRİLMİŞ ADMİN PANELİ TEMA STANDARTLAŞTIRMASI (BEYAZLIK AZALTILDI)
+   ========================================================= */
+
+/* 1. ANA KAPSAYICILAR (Sidebar, Üst Bar, Ana Editör Kutusu) 
+   - Tamamen beyaz olmak yerine %2 tema rengi ile kırılmış çok hafif bir zemin. */
+.admin-sidebar,
+.admin-main-panel .admin-actions-sticky,
+.admin-editor-section {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 2%, var(--paper-soft, #fdfbfb)) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--amp-color, #9f4f68) 5%, transparent) !important;
+}
+
+/* 2. İÇ KUTULAR (Liste Elemanları, Veri Yedeği Kutuları, Görsel Yükleme Alanları)
+   - Beyazlık yerine hafif tema rengi (transparent ile) kullanıldı.
+   - İç içe kutularda boğucu gölgeler kaldırıldı. */
+.admin-row,
+.admin-guest-row,
+.admin-repeat-item,
+.admin-gallery-upload-row,
+.admin-music-field,
+.admin-image-field,
+.admin-export-card,
+.admin-import-box,
+.admin-stats div,
+.admin-link-preview-box,
+.admin-login {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 10%, transparent) !important;
+  border-radius: 20px !important;
+  box-shadow: none !important; 
+}
+
+/* 3. İNPUT, TEXTAREA VE ARAMA ALANLARI
+   - Beyaz zemin yerine temanın %4 oranında renklendirdiği transparan bir zemin. */
+.admin-field input,
+.admin-field textarea,
+.admin-login input,
+.admin-import-box textarea,
+.admin-personal-link-box input,
+.admin-toolbar-search,
+.admin-custom-select-button {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, transparent) !important;
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 15%, transparent) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+  border-radius: 16px !important;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-toolbar-search:focus,
+.admin-custom-select-button:hover {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+}
+
+/* 4. İKİNCİL VE SATIR İÇİ BUTONLAR (Düzenle, Çıkış Yap, Varsayılana Döndür vb.)
+   - Çizgili beyaz butonlar yerine; çizgisiz, yumuşak ve şık arka planlı butonlar. */
+.admin-page .secondary-button,
+.admin-row-actions button,
+.admin-guest-actions .secondary-button,
+.admin-repeat-title .small-admin-button,
+.admin-gallery-upload-row .small-admin-button {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+  border: none !important; /* Boğucu çerçeveler kaldırıldı */
+  color: var(--amp-color, #9f4f68) !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+}
+
+.admin-page .secondary-button:hover,
+.admin-row-actions button:hover,
+.admin-guest-actions .secondary-button:hover {
+  background: var(--amp-color, #9f4f68) !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+
+/* Kırmızı İşlem Butonları (Sil, Yayından Kaldır vb.) */
+.admin-page .danger-button,
+.admin-row-actions button.danger-button,
+.admin-guest-actions .admin-btn-arrived {
+  background: rgba(231, 76, 60, 0.12) !important;
+  color: #e74c3c !important;
+  border: none !important;
+}
+
+.admin-page .danger-button:hover,
+.admin-row-actions button.danger-button:hover,
+.admin-guest-actions .admin-btn-arrived:hover {
+  background: #e74c3c !important;
+  color: #fff !important;
+}
+
+/* Yeşil İşlem Butonları (Kapıdan Girdi İşaretle vb.) */
+.admin-guest-actions .admin-btn-pending {
+  background: rgba(46, 204, 113, 0.15) !important;
+  color: #27ae60 !important;
+  border: none !important;
+}
+
+.admin-guest-actions .admin-btn-pending:hover {
+  background: #27ae60 !important;
+  color: #fff !important;
+}
+
+/* 5. SIDEBAR (SOL MENÜ) BUTONLARI */
+.admin-sidebar-menu .admin-nav-button {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 16px !important;
+}
+
+.admin-sidebar-menu .admin-nav-button:hover:not(.active) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, transparent) !important;
+}
+
+/* 6. KOYU TEMA (DARK MODE) DENGESİ */
+[data-theme="dark"] .admin-sidebar,
+[data-theme="dark"] .admin-main-panel .admin-actions-sticky,
+[data-theme="dark"] .admin-editor-section {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 4%, var(--paper, #1c141a)) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 15%, transparent) !important;
+}
+
+[data-theme="dark"] .admin-row,
+[data-theme="dark"] .admin-guest-row,
+[data-theme="dark"] .admin-repeat-item,
+[data-theme="dark"] .admin-export-card,
+[data-theme="dark"] .admin-import-box,
+[data-theme="dark"] .admin-field input,
+[data-theme="dark"] .admin-field textarea,
+[data-theme="dark"] .admin-toolbar-search {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 8%, transparent) !important;
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 15%, transparent) !important;
+  color: #fff !important;
+}
+
+[data-theme="dark"] .admin-page .secondary-button {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 12%, transparent) !important;
+  color: var(--amp-color, #e3b6c7) !important;
+}
+
+/* =========================================================
+   ADMİN PANELİ TEMİZ, KESKİN VE PROFESYONEL TASARIM
+   ========================================================= */
+
+/* 1. KARTLAR VE SATIRLAR (Net Çerçeveler, Beyaz Zemin) */
+.admin-editor-section,
+.admin-row,
+.admin-guest-row,
+.admin-repeat-item,
+.admin-gallery-upload-row,
+.admin-music-field,
+.admin-image-field,
+.admin-check-field,
+.admin-link-preview-box {
+  background: var(--paper, #ffffff) !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Veri Yedeği gibi iç kutuların ana karttan ayrışması için hafif gri zemin */
+.admin-export-card,
+.admin-import-box {
+  background: #f9fafb !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+}
+
+/* 2. İNPUT, TEXTAREA VE ARAMA KUTULARI (Gri Zemin, Belirgin Sınır) */
+.admin-field input,
+.admin-field textarea,
+.admin-toolbar-search,
+.admin-custom-select-button,
+.admin-personal-link-box input {
+  background: #f3f4f6 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+.admin-field input:focus,
+.admin-field textarea:focus,
+.admin-toolbar-search:focus {
+  background: #ffffff !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--amp-color, #9f4f68) 20%, transparent) !important;
+}
+
+/* 3. İKİNCİL BUTONLAR (Düzenle, Sil, Yayından Kaldır - Çerçeveli ve Okunaklı) */
+.admin-page .secondary-button,
+.admin-row-actions button,
+.admin-guest-actions .secondary-button,
+.admin-repeat-title .small-admin-button,
+.admin-editor-section > div > button.small-admin-button {
+  background: #ffffff !important;
+  border: 1px solid color-mix(in srgb, var(--amp-color, #9f4f68) 40%, transparent) !important;
+  color: var(--amp-color, #9f4f68) !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important; /* Hap yerine daha profesyonel yuvarlak kare */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  min-height: 42px !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-page .secondary-button:hover,
+.admin-row-actions button:hover,
+.admin-guest-actions .secondary-button:hover {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, #ffffff) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Kırmızı Butonlar (Sil, Yayından Kaldır) */
+.admin-page .danger-button,
+.admin-row-actions button.danger-button,
+.admin-guest-actions .admin-btn-arrived {
+  background: #fff5f5 !important;
+  border: 1px solid #fca5a5 !important;
+  color: #dc2626 !important;
+}
+
+.admin-page .danger-button:hover,
+.admin-row-actions button.danger-button:hover,
+.admin-guest-actions .admin-btn-arrived:hover {
+  background: #fee2e2 !important;
+  border-color: #ef4444 !important;
+  color: #b91c1c !important;
+}
+
+/* Yeşil Butonlar (Kapıdan Girdi) */
+.admin-guest-actions .admin-btn-pending {
+  background: #f0fdf4 !important;
+  border: 1px solid #86efac !important;
+  color: #16a34a !important;
+}
+
+.admin-guest-actions .admin-btn-pending:hover {
+  background: #dcfce7 !important;
+  border-color: #4ade80 !important;
+  color: #15803d !important;
+}
+
+/* 4. HİZALAMA VE İÇ BOŞLUKLAR (1. ve 3. Resimdeki Düzenlemeler) */
+.admin-row-actions,
+.admin-guest-actions {
+  border-top: 1px solid #f3f4f6 !important;
+  margin-top: 16px !important;
+  padding-top: 16px !important;
+  display: flex;
+  gap: 12px;
+}
+
+.admin-row-actions button,
+.admin-guest-actions button {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Bölüm Başlığındaki "Kaydet" Butonunun Hizası (1. Resim) */
+.admin-editor-section > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.admin-editor-section > div > h3 {
+  margin: 0 !important;
+}
+.admin-editor-section > div > button.small-admin-button {
+  margin: 0 !important;
+  min-height: 38px !important;
+  padding: 6px 16px !important;
+  font-size: 14px !important;
+}
+
+/* 5. KOYU TEMA (DARK MODE) DENGESİ */
+[data-theme="dark"] .admin-editor-section,
+[data-theme="dark"] .admin-row,
+[data-theme="dark"] .admin-guest-row,
+[data-theme="dark"] .admin-repeat-item,
+[data-theme="dark"] .admin-check-field,
+[data-theme="dark"] .admin-export-card,
+[data-theme="dark"] .admin-import-box {
+  background: #1f1f1f !important;
+  border-color: #333 !important;
+}
+
+[data-theme="dark"] .admin-field input,
+[data-theme="dark"] .admin-field textarea,
+[data-theme="dark"] .admin-toolbar-search {
+  background: #141414 !important;
+  border-color: #333 !important;
+  color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] .admin-page .secondary-button {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+  color: var(--amp-color, #e3b6c7) !important;
+}
+
+.admin-page .secondary-button:hover,
+.admin-row-actions button:hover,
+.admin-guest-actions .secondary-button:hover,
+.admin-repeat-title .small-admin-button:hover,
+.admin-editor-section > div > button.small-admin-button:hover {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 8%, #ffffff) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  color: var(--amp-color, #9f4f68) !important; /* BEYAZ YAZI KAYBOLMA SORUNUNU ÇÖZEN SATIR */
+  transform: translateY(-1px) !important;
+}
+
+/* =========================================================
+   AÇILIR MENÜ (DROPDOWN) VE CHECKBOX KÖŞE DÜZELTMELERİ
+   ========================================================= */
+
+/* 1. AÇILIR MENÜ (DROPDOWN - 1. Resimdeki Uyumsuzluk Düzeltmesi) */
+.admin-custom-select-button {
+  background: #f3f4f6 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  color: #1f2937 !important;
+  box-shadow: none !important;
+}
+
+.admin-custom-select-button:hover,
+.admin-custom-select.open .admin-custom-select-button {
+  background: #ffffff !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+}
+
+.admin-custom-select-menu {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+  padding: 8px !important;
+  margin-top: 4px !important;
+}
+
+.admin-custom-select-option {
+  border-radius: 8px !important;
+  color: #374151 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.admin-custom-select-option:hover,
+.admin-custom-select-option.selected {
+  background: #f3f4f6 !important;
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+/* 2. CHECKBOX (AÇ/KAPAT - 3. Resimdeki Köşe Bozulması Düzeltmesi) */
+.admin-check-field,
+html body .app .admin-check-field,
+html[data-theme] body .app .admin-check-field {
+  background: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.2s ease !important;
+}
+
+.admin-check-field:hover,
+html body .app .admin-check-field:hover {
+  border-color: #9ca3af !important;
+  background: #f9fafb !important;
+}
+
+.admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: #ffffff !important; 
+  border: 1.5px solid var(--amp-color, #9f4f68) !important; 
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+}
+
+.admin-check-field span,
+html body .app .admin-check-field span,
+html[data-theme] body .app .admin-check-field span {
+  color: #374151 !important; /* Koyu gri, okunaklı metin */
+  font-weight: 700 !important;
+  font-size: 15px !important;
+}
+
+.admin-check-field:has(input[type="checkbox"]:checked) span,
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) span {
+  color: var(--amp-color, #9f4f68) !important; /* Seçiliyken temanın rengi */
+}
+
+.admin-check-field span,
+html body .app .admin-check-field span {
+  color: var(--text, #333) !important;
+  font-weight: 700 !important;
+}
+
+.admin-check-field input[type="checkbox"],
+html body .app .admin-check-field input[type="checkbox"] {
+  border: 1.5px solid #d1d5db !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 6px !important; 
+  transition: all 0.2s ease !important;
+}
+
+.admin-check-field input[type="checkbox"]:checked,
+html body .app .admin-check-field input[type="checkbox"]:checked {
+  background: var(--amp-color, #9f4f68) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+}
+
+[data-theme="dark"] .admin-check-field:has(input[type="checkbox"]:checked),
+[data-theme="dark"] html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #e3b6c7) 4%, #1f1f1f) !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+[data-theme="dark"] .admin-check-field span {
+  color: #fff4f8 !important;
+}
+
+.admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 4%, #ffffff) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important; /* Kötü duran iç gölge (inset) iptal edildi */
+}
+
+/* 3. KOYU TEMA (DARK MODE) UYUMU */
+[data-theme="dark"] .admin-custom-select-button {
+  background: #141414 !important;
+  border-color: #333 !important;
+  color: #f3f4f6 !important;
+}
+[data-theme="dark"] .admin-custom-select-menu {
+  background: #1f1f1f !important;
+  border-color: #333 !important;
+}
+[data-theme="dark"] .admin-custom-select-option {
+  color: #d1d5db !important;
+}
+[data-theme="dark"] .admin-custom-select-option:hover,
+[data-theme="dark"] .admin-custom-select-option.selected {
+  background: #2a2a2a !important;
+  color: var(--amp-color, #e3b6c7) !important;
+}
+[data-theme="dark"] .admin-check-field {
+  background: #1f1f1f !important;
+  border-color: #333 !important;
+}
+[data-theme="dark"] .admin-check-field span {
+  color: #d1d5db !important;
+}
+[data-theme="dark"] .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: #1f1f1f !important;
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+[data-theme="dark"] .admin-check-field:has(input[type="checkbox"]:checked) span {
+  color: var(--amp-color, #e3b6c7) !important;
+}
+[data-theme="dark"] .admin-check-field input[type="checkbox"] {
+  border-color: #444 !important;
+  background: #2a2a2a !important;
+}
+
+html[data-theme] body .app .admin-check-field,
+html body .app .admin-check-field,
+.admin-check-field {
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  border: 1.5px solid #d1d5db !important;
+  border-radius: 14px !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+  background-clip: border-box !important;
+  overflow: hidden !important;
+}
+
+html[data-theme] body .app .admin-check-field::before,
+html[data-theme] body .app .admin-check-field::after,
+html body .app .admin-check-field::before,
+html body .app .admin-check-field::after {
+  display: none !important;
+  content: none !important;
+}
+
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-check-field:has(input[type="checkbox"]:checked),
+.admin-check-field:has(input[type="checkbox"]:checked) {
+  border: 1.5px solid var(--amp-color, #9f4f68) !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+}
+
+html[data-theme] body .app .admin-check-field:hover,
+html body .app .admin-check-field:hover {
+  border-color: #d1d5db !important;
+  background: #fafafa !important;
+}
+
+/* 2. SEÇİLİ (CHECKED) DURUM (Sadece kenarlık renklenir) */
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  background: #ffffff !important;
+  border: 1.5px solid var(--amp-color, #9f4f68) !important;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+}
+
+/* 3. YAZI (METİN) STİLİ */
+html[data-theme] body .app .admin-check-field span,
+html body .app .admin-check-field span {
+  color: #374151 !important;
+  font-weight: 700 !important;
+  font-size: 15px !important;
+  text-shadow: none !important;
+}
+
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked) span,
+html body .app .admin-check-field:has(input[type="checkbox"]:checked) span {
+  color: var(--amp-color, #9f4f68) !important;
+}
+
+/* 4. KUTUCUK (CHECKBOX ICON) TASARIMI */
+html[data-theme] body .app .admin-check-field input[type="checkbox"],
+html body .app .admin-check-field input[type="checkbox"] {
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 6px !important;
+  border: 1.5px solid #d1d5db !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  margin: 0 !important;
+}
+
+html[data-theme] body .app .admin-check-field input[type="checkbox"]:checked,
+html body .app .admin-check-field input[type="checkbox"]:checked {
+  background-color: var(--amp-color, #9f4f68) !important;
+  border-color: var(--amp-color, #9f4f68) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-size: 14px !important;
+  background-position: center !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field {
+  border-color: #333 !important;
+}
+[data-theme="dark"] html body .app .admin-check-field span {
+  color: #e5e7eb !important;
+}
+[data-theme="dark"] html body .app .admin-check-field:has(input[type="checkbox"]:checked) {
+  border-color: var(--amp-color, #e3b6c7) !important;
+}
+[data-theme="dark"] html body .app .admin-check-field:has(input[type="checkbox"]:checked) span {
+  color: var(--amp-color, #e3b6c7) !important;
+}
+[data-theme="dark"] html body .app .admin-check-field input[type="checkbox"] {
+  background: #2a2a2a !important;
+  border-color: #444 !important;
+}
+

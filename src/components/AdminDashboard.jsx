@@ -104,19 +104,24 @@ function AdminDashboard(props) {
 
             <div className="admin-main-panel">
               <div className="admin-actions-sticky">
-                <div className="admin-current-section">
-                  <strong>{currentTabInfo?.label}</strong>
-                  <span>{currentTabInfo?.description}</span>
+                <div className="admin-actions-top-row">
+                  <div className="admin-current-section">
+                    <strong>{currentTabInfo?.label}</strong>
+                    <span>{currentTabInfo?.description}</span>
+                  </div>
+                  
+                  <div className="admin-actions-btn-group">
+                    <button type="button" className="main-button" onClick={saveSiteContent}>
+                      {isEn ? "Save Changes 💾" : "Değişiklikleri Kaydet 💾"}
+                    </button>
+                    <button type="button" className="secondary-button" onClick={resetSiteContent}>
+                      {isEn ? "Reset Default 🔄" : "Varsayılana Döndür 🔄"}
+                    </button>
+                    <button type="button" className="secondary-button admin-logout-button" onClick={logoutAdmin}>
+                      {isEn ? "Logout 🚪" : "Çıkış Yap 🚪"}
+                    </button>
+                  </div>
                 </div>
-                <button type="button" className="main-button" onClick={saveSiteContent}>
-                  {isEn ? "Save Changes 💾" : "Değişiklikleri Kaydet 💾"}
-                </button>
-                <button type="button" className="secondary-button" onClick={resetSiteContent}>
-                  {isEn ? "Reset Default 🔄" : "Varsayılana Döndür 🔄"}
-                </button>
-                <button type="button" className="secondary-button admin-logout-button" onClick={logoutAdmin}>
-                  {isEn ? "Logout 🚪" : "Çıkış Yap 🚪"}
-                </button>
                 {adminSaveMessage && <span className="admin-save-message">{adminSaveMessage}</span>}
               </div>
               <div className="admin-editor admin-editor-single">

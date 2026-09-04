@@ -1519,7 +1519,22 @@ body .app .glass-dock .dock-btn.music-on {
   animation: jump-animation 0.4s ease-in-out;
 }
 
-/* Opsiyonel: Eğer fare üzerinde beklediği sürece SÜREKLİ zıplamasını isterseniz 
-   yukarıdaki 'animation' satırını şu şekilde değiştirebilirsiniz:
-   animation: jump-animation 0.5s ease-in-out infinite; 
-*/
+.countdown-finished-box { padding: 24px; background: var(--paper-soft); border-radius: 24px; border: 1px solid rgba(217, 140, 161, 0.4); margin-top: 20px; }
+.countdown-finished-icon { font-size: 32px; display: block; margin: 0 0 8px 0; }
+.countdown-finished-title { font-size: 24px; color: var(--rose-dark); font-weight: bold; }
+.countdown-finished-text { margin-top: 6px; font-size: 16px; }
+
+.location-nav-modal { max-width: 420px; text-align: center; }
+.location-nav-title { margin: 0 0 8px 0; color: var(--rose-deep); }
+.location-nav-address { margin: 0 0 18px 0; font-size: 15px; }
+.location-nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.location-nav-btn { padding: 12px; font-size: 14px; border-radius: 14px; }
+.location-nav-copy { width: 100%; margin-bottom: 10px; }
+.location-nav-close { width: 100%; }
+
+.error-boundary-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; text-align: center; background: #fffafb; color: #9f4f68; font-family: sans-serif; }
+.error-boundary-btn { padding: 12px 24px; margin-top: 16px; background: #9f4f68; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+.pwa-banner-wrapper { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background-color: var(--paper); border: 1.5px solid var(--rose-dark); padding: 12px 20px; border-radius: 999px; box-shadow: 0 12px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 14px; z-index: 99999; width: max-content; max-width: 90vw; }
+.pwa-banner-text { font-size: 14px; font-weight: 800; color: var(--text); }
+.pwa-banner-btn { min-height: 36px; padding: 8px 16px; margin: 0; font-size: 13px; }
