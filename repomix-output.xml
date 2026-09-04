@@ -1,4 +1,4 @@
-This file is a merged representation of a subset of the codebase, containing specifically included files and files not matching ignore patterns, combined into a single document by Repomix.
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
 
 <file_summary>
 This section contains a summary of this file.
@@ -32,8 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/**/*.jsx, src/**/*.js, src/**/*.css
-- Files matching these patterns are excluded: playwright-report/**, test-results/**, public/**, node_modules/**
+- Only files matching these patterns are included: src/**/*.{js,jsx,css}
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -199,6 +198,16 @@ i18n
   });
 
 export default i18n;
+</file>
+
+<file path="src/styles/index.css">
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
+
+@import "./variables.css";
+@import "./base.css";
+@import "./invitation.css";
+@import "./admin.css";
+@import "./responsive.css";
 </file>
 
 <file path="src/styles/responsive.css">
@@ -1394,6 +1403,613 @@ export function usePWAInstall() {
 }
 </file>
 
+<file path="src/styles/variables.css">
+/* =================================================================
+   GENEL AYARLAR VE TEMA RENKLERİ
+   ================================================================= */
+:root {
+  --amp-color: var(--rose-dark);
+  --amp-glow: color-mix(in srgb, var(--rose-dark) 36%, transparent);
+  --sakura-flower: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --sakura-pattern: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black' opacity='0.03'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round' opacity='0.03'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --paper: #fffafb;
+  --paper-soft: #fff7f9;
+  --text-main: #55303b;
+  --text-soft: #6f4451;
+  
+  /* ADMIN PANEL DEĞİŞKENLERİ */
+  --admin-bg: rgba(255, 250, 251, 0.96);
+  --admin-border: rgba(159, 79, 104, 0.34);
+  --admin-text: #3f1f2c;
+  --admin-input-bg: #fff9fb;
+  --admin-nav-bg: rgba(255, 250, 251, 0.9);
+  --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 8%, var(--paper));
+  
+  /* Admin Panel Tema Değişkenleri - !important kullanımını bitirmek için */
+  --admin-bg-primary: rgba(255, 250, 251, 0.96);
+  --admin-bg-secondary: rgba(255, 250, 251, 0.9);
+  --admin-border-color: rgba(159, 79, 104, 0.34);
+  --admin-input-bg: #fff9fb;
+  --admin-text-main: #3f1f2c;
+  --admin-text-muted: #5c2f3f;
+
+  /* BUTON DEĞİŞKENLERİ */
+  --btn-primary-color: #ffffff;
+  --btn-primary-bg: linear-gradient(135deg, #e69aae, #9f4f68);
+  --btn-danger-bg: linear-gradient(135deg, #9f3f58, #6d2639);
+  --btn-danger-color: #ffffff;
+}
+
+[data-theme="rose"] { --amp-color: #c36f8b; --amp-glow: rgba(195, 111, 139, 0.38); }
+[data-theme="sage"] { --amp-color: #6f8650; --amp-glow: rgba(111, 134, 80, 0.42); }
+[data-theme="gold"] { --amp-color: #c69b5c; --amp-glow: rgba(198, 155, 92, 0.42); }
+[data-theme="burgundy"] { --amp-color: #9f354f; --amp-glow: rgba(159, 53, 79, 0.42); }
+[data-theme="minimal"] { --amp-color: #7c6f64; --amp-glow: rgba(124, 111, 100, 0.38); }
+[data-theme="lavanta"] { --amp-color: #8f7fb8; --amp-glow: rgba(143, 127, 184, 0.42); }
+[data-theme="dark"] {
+  --amp-color: #e3b6c7; 
+  --amp-glow: rgba(227, 182, 199, 0.46);
+  --paper: #1c141a;
+  --paper-soft: #241a21;
+  --text-main: #fff4f8;
+  --text-soft: #ead0da;
+
+  --admin-bg: rgba(36, 26, 33, 0.92);
+  --admin-border: rgba(255, 255, 255, 0.14);
+  --admin-text: #fff4f8;
+  --admin-input-bg: rgba(18, 13, 17, 0.92);
+  --admin-nav-bg: rgba(255, 255, 255, 0.06);
+  --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 10%, transparent);
+  
+  --admin-bg-primary: rgba(36, 26, 33, 0.92);
+  --admin-bg-secondary: rgba(255, 255, 255, 0.06);
+  --admin-border-color: rgba(255, 255, 255, 0.14);
+  --admin-input-bg: rgba(18, 13, 17, 0.92);
+  --admin-text-main: #fff4f8;
+  --admin-text-muted: #ead0da;
+  
+  --btn-primary-bg: linear-gradient(135deg, #d36a86, #7a203b);
+  --btn-danger-bg: linear-gradient(135deg, #d36a86, #7a203b);
+  --btn-danger-color: #fff7f9;
+}
+
+.app-modal-card {
+  border-top: 0 !important;
+}
+
+.app-modal-card::before,
+.app-modal-card::after {
+  display: none !important;
+  content: none !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* =================================================================
+   LAVANTA TEMASINA ÖZEL UÇAN KELEBEKLER
+   ================================================================= */
+[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
+[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  width: 36px !important;
+  height: 36px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' opacity='0.75'%3E%3Cpath d='M12 2c-.5 0-1 .5-1 1v18c0 .5.5 1 1 1s1-.5 1-1V3c0-.5-.5-1-1-1zm-1.8 2.2C8.3 3.5 5.6 4.5 4 6.8c-1.8 2.6-1.5 6.2.8 8.4 1.5 1.5 3.6 2.1 5.7 1.8-1.5-3.2-1.2-6.8.3-9.8v-.1v-2.9zm3.6 0v2.9c1.5 3 1.8 6.6.3 9.8 2.1.3 4.2-.3 5.7-1.8 2.3-2.2 2.6-5.8.8-8.4-1.6-2.3-4.3-3.3-6.2-2.6h-.6z'/%3E%3C/svg%3E") !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 14px rgba(143, 127, 184, 0.6)) !important;
+}
+
+[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before {
+  bottom: -40px !important;
+  left: -10% !important;
+  animation: floatButterfly1 16s infinite ease-in-out !important;
+}
+
+[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
+  bottom: 20px !important;
+  right: -10% !important;
+  width: 28px !important;
+  height: 28px !important;
+  animation: floatButterfly2 22s infinite ease-in-out 4s !important;
+}
+
+@keyframes floatButterfly1 {
+  0% { transform: translate(0, 0) rotate(-15deg) scale(0.9); opacity: 0; }
+  15% { opacity: 0.85; }
+  50% { transform: translate(120px, -220px) rotate(10deg) scale(1.1); }
+  85% { opacity: 0.85; }
+  100% { transform: translate(250px, -450px) rotate(-5deg) scale(0.8); opacity: 0; }
+}
+
+@keyframes floatButterfly2 {
+  0% { transform: translate(0, 0) rotate(20deg) scale(0.8); opacity: 0; }
+  20% { opacity: 0.7; }
+  50% { transform: translate(-100px, -200px) rotate(-10deg) scale(1); }
+  80% { opacity: 0.7; }
+  100% { transform: translate(-220px, -420px) rotate(15deg) scale(0.85); opacity: 0; }
+}
+
+/* =========================================================
+   FINAL TEMA SİSTEMİ - HER ALANI SEÇİLEN TEMAYA BAĞLAR
+   ========================================================= */
+
+html[data-theme="rose"] {
+  --theme-rgb: 159, 79, 104;
+  --theme-strong-rgb: 122, 47, 73;
+  --theme-soft-rgb: 248, 215, 223;
+  --theme-faint-rgb: 255, 250, 251;
+  --theme-page-start: #fff8fa;
+  --theme-page-end: #fbeef2;
+  --theme-surface: rgba(255, 252, 253, 0.98);
+  --theme-surface-soft: rgba(255, 247, 249, 0.98);
+  --theme-input: rgba(255, 248, 250, 0.98);
+  --theme-text-main: #55303b;
+  --theme-text-muted: #6f4451;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(159, 79, 104, 0.08);
+  --theme-hero-mid: rgba(159, 79, 104, 0.15);
+  --theme-hero-edge: rgba(122, 47, 73, 0.26);
+}
+
+html[data-theme="sage"] {
+  --paper: #fbfff7;
+  --paper-soft: #f4faec;
+  --rose-light: #dce8c8;
+  --rose: #9cad75;
+  --rose-dark: #607244;
+  --rose-deep: #40502e;
+  --gold: #c5a461;
+  --dark-gold: #7b652e;
+  --text: #34402c;
+  --text-soft: #58674c;
+  --shadow: 0 20px 48px rgba(76, 94, 57, 0.13);
+  --theme-rgb: 96, 114, 68;
+  --theme-strong-rgb: 64, 80, 46;
+  --theme-soft-rgb: 220, 232, 200;
+  --theme-faint-rgb: 251, 255, 247;
+  --theme-page-start: #fbfff7;
+  --theme-page-end: #edf6e5;
+  --theme-surface: rgba(251, 255, 247, 0.98);
+  --theme-surface-soft: rgba(244, 250, 236, 0.98);
+  --theme-input: rgba(251, 255, 247, 0.98);
+  --theme-text-main: #34402c;
+  --theme-text-muted: #58674c;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(96, 114, 68, 0.08);
+  --theme-hero-mid: rgba(96, 114, 68, 0.16);
+  --theme-hero-edge: rgba(64, 80, 46, 0.28);
+}
+
+html[data-theme="gold"] {
+  --paper: #fffdf4;
+  --paper-soft: #fff8df;
+  --rose-light: #f4dfad;
+  --rose: #c9a45d;
+  --rose-dark: #9b7433;
+  --rose-deep: #6e4b1e;
+  --gold: #c59a45;
+  --dark-gold: #7e5520;
+  --text: #4b3620;
+  --text-soft: #725b3c;
+  --shadow: 0 20px 48px rgba(126, 85, 32, 0.13);
+  --theme-rgb: 155, 116, 51;
+  --theme-strong-rgb: 110, 75, 30;
+  --theme-soft-rgb: 244, 223, 173;
+  --theme-faint-rgb: 255, 253, 244;
+  --theme-page-start: #fffdf4;
+  --theme-page-end: #f7edd0;
+  --theme-surface: rgba(255, 253, 244, 0.98);
+  --theme-surface-soft: rgba(255, 248, 223, 0.98);
+  --theme-input: rgba(255, 253, 244, 0.98);
+  --theme-text-main: #4b3620;
+  --theme-text-muted: #725b3c;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(155, 116, 51, 0.08);
+  --theme-hero-mid: rgba(155, 116, 51, 0.16);
+  --theme-hero-edge: rgba(110, 75, 30, 0.28);
+}
+
+html[data-theme="burgundy"] {
+  --paper: #fff8fa;
+  --paper-soft: #fbeaf0;
+  --rose-light: #e2b6c4;
+  --rose: #b55b79;
+  --rose-dark: #7f2747;
+  --rose-deep: #53182e;
+  --gold: #d0aa68;
+  --dark-gold: #936c34;
+  --text: #3f1d2b;
+  --text-soft: #6b3a4d;
+  --shadow: 0 20px 48px rgba(83, 24, 46, 0.14);
+  --theme-rgb: 127, 39, 71;
+  --theme-strong-rgb: 83, 24, 46;
+  --theme-soft-rgb: 226, 182, 196;
+  --theme-faint-rgb: 255, 248, 250;
+  --theme-page-start: #fff8fa;
+  --theme-page-end: #f4dbe4;
+  --theme-surface: rgba(255, 248, 250, 0.98);
+  --theme-surface-soft: rgba(251, 234, 240, 0.98);
+  --theme-input: rgba(255, 248, 250, 0.98);
+  --theme-text-main: #3f1d2b;
+  --theme-text-muted: #6b3a4d;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(127, 39, 71, 0.08);
+  --theme-hero-mid: rgba(127, 39, 71, 0.17);
+  --theme-hero-edge: rgba(83, 24, 46, 0.30);
+}
+
+html[data-theme="minimal"] {
+  --paper: #ffffff;
+  --paper-soft: #f8f8f8;
+  --rose-light: #e8e1dc;
+  --rose: #b69f91;
+  --rose-dark: #775e50;
+  --rose-deep: #45362e;
+  --gold: #b99d72;
+  --dark-gold: #796247;
+  --text: #2f2926;
+  --text-soft: #665d58;
+  --shadow: 0 20px 48px rgba(47, 41, 38, 0.10);
+  --theme-rgb: 119, 94, 80;
+  --theme-strong-rgb: 69, 54, 46;
+  --theme-soft-rgb: 232, 225, 220;
+  --theme-faint-rgb: 255, 255, 255;
+  --theme-page-start: #ffffff;
+  --theme-page-end: #eeeeee;
+  --theme-surface: rgba(255, 255, 255, 0.98);
+  --theme-surface-soft: rgba(248, 248, 248, 0.98);
+  --theme-input: rgba(255, 255, 255, 0.98);
+  --theme-text-main: #2f2926;
+  --theme-text-muted: #665d58;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(119, 94, 80, 0.06);
+  --theme-hero-mid: rgba(119, 94, 80, 0.14);
+  --theme-hero-edge: rgba(69, 54, 46, 0.24);
+}
+
+html[data-theme="lavanta"] {
+  --paper: #fcfbfd;
+  --paper-soft: #f6f4fa;
+  --rose-light: #dcd6eb;
+  --rose: #a696c8;
+  --rose-dark: #7a6ba3;
+  --rose-deep: #4c3f70;
+  --gold: #c5a461;
+  --dark-gold: #7b652e;
+  --text: #393545;
+  --text-soft: #635d73;
+  --shadow: 0 20px 48px rgba(122, 107, 163, 0.13);
+  
+  --theme-rgb: 122, 107, 163;
+  --theme-strong-rgb: 76, 63, 112;
+  --theme-soft-rgb: 220, 214, 235;
+  --theme-faint-rgb: 252, 251, 253;
+  --theme-page-start: #fcfbfd;
+  --theme-page-end: #eeeaf5;
+  --theme-surface: rgba(252, 251, 253, 0.98);
+  --theme-surface-soft: rgba(246, 244, 250, 0.98);
+  --theme-input: rgba(252, 251, 253, 0.98);
+  --theme-text-main: #393545;
+  --theme-text-muted: #635d73;
+  --theme-on-accent: #ffffff;
+  --theme-hero-center: rgba(122, 107, 163, 0.08);
+  --theme-hero-mid: rgba(122, 107, 163, 0.16);
+  --theme-hero-edge: rgba(76, 63, 112, 0.28);
+}
+
+html[data-theme="dark"] {
+  --paper: #241a21;
+  --paper-soft: #2d222a;
+  --rose-light: #8f5269;
+  --rose: #c47b96;
+  --rose-dark: #e6a7bc;
+  --rose-deep: #ffd8e4;
+  --gold: #d9ba75;
+  --dark-gold: #f0cf88;
+  --text: #fff4f8;
+  --text-soft: #e2cbd4;
+  --shadow: 0 22px 54px rgba(0, 0, 0, 0.36);
+  --theme-rgb: 196, 123, 150;
+  --theme-strong-rgb: 255, 216, 228;
+  --theme-soft-rgb: 143, 82, 105;
+  --theme-faint-rgb: 45, 34, 42;
+  --theme-page-start: #130e12;
+  --theme-page-end: #281d25;
+  --theme-surface: rgba(36, 26, 33, 0.98);
+  --theme-surface-soft: rgba(45, 34, 42, 0.98);
+  --theme-input: rgba(30, 22, 28, 0.98);
+  --theme-text-main: #fff4f8;
+  --theme-text-muted: #e2cbd4;
+  --theme-on-accent: #22151b;
+  --theme-hero-center: rgba(0, 0, 0, 0.10);
+  --theme-hero-mid: rgba(0, 0, 0, 0.24);
+  --theme-hero-edge: rgba(0, 0, 0, 0.44);
+}
+
+html[data-theme] body,
+html[data-theme] .app,
+html[data-theme] .admin-page {
+  color: var(--theme-text-main) !important;
+  background:
+    radial-gradient(circle at top left, rgba(var(--theme-rgb), 0.18), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(var(--theme-soft-rgb), 0.18), transparent 36%),
+    linear-gradient(180deg, var(--theme-page-start), var(--theme-page-end)) !important;
+}
+
+html[data-theme] .invitation-page::before {
+  background:
+    radial-gradient(circle at 8% 18%, rgba(var(--theme-rgb), 0.10), transparent 12%),
+    radial-gradient(circle at 90% 28%, rgba(var(--theme-soft-rgb), 0.16), transparent 13%),
+    radial-gradient(circle at 18% 82%, rgba(var(--theme-rgb), 0.08), transparent 12%),
+    radial-gradient(circle at 88% 86%, rgba(var(--theme-soft-rgb), 0.14), transparent 12%) !important;
+}
+
+html[data-theme] .intro-page {
+  background:
+    linear-gradient(rgba(var(--theme-rgb), 0.08), rgba(var(--theme-rgb), 0.26)),
+    var(--intro-image) center/cover no-repeat !important;
+}
+
+html[data-theme] .hero-section {
+  background:
+    radial-gradient(
+      circle at center,
+      var(--theme-hero-center) 0%,
+      var(--theme-hero-mid) 52%,
+      var(--theme-hero-edge) 100%
+    ),
+    linear-gradient(to bottom, rgba(var(--theme-rgb), 0.04), rgba(var(--theme-rgb), 0.12)),
+    var(--hero-image) center/cover no-repeat !important;
+}
+
+html[data-theme] .intro-card,
+html[data-theme] .card,
+html[data-theme] .countdown-section,
+html[data-theme] .info-list,
+html[data-theme] .count-box,
+html[data-theme] .timeline-item p,
+html[data-theme] .gallery-grid img,
+html[data-theme] .rsvp-card,
+html[data-theme] .guest-stats div,
+html[data-theme] .guest-item,
+html[data-theme] .wish-item,
+html[data-theme] .family-grid div,
+html[data-theme] .ceremony-item,
+html[data-theme] .schedule-item,
+html[data-theme] .mini-map,
+html[data-theme] .admin-shell-card,
+html[data-theme] .admin-sidebar,
+html[data-theme] .admin-editor-section,
+html[data-theme] .admin-repeat-item,
+html[data-theme] .admin-gallery-row,
+html[data-theme] .admin-image-field,
+html[data-theme] .admin-music-field,
+html[data-theme] .admin-list,
+html[data-theme] .admin-row,
+html[data-theme] .admin-stats div,
+html[data-theme] .admin-export-card,
+html[data-theme] .admin-import-box,
+html[data-theme] .admin-qr-panel > div,
+html[data-theme] .admin-personal-link-box,
+html[data-theme] .theme-option-card,
+html[data-theme] .admin-theme-check-row {
+  color: var(--theme-text-main) !important;
+  background: var(--theme-surface) !important;
+  border-color: rgba(var(--theme-rgb), 0.34) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+html[data-theme] .card,
+html[data-theme] .countdown-section,
+html[data-theme] .rsvp-card,
+html[data-theme] .admin-shell-card {
+  background:
+    radial-gradient(circle at top right, rgba(var(--theme-soft-rgb), 0.18), transparent 28%),
+    linear-gradient(145deg, var(--theme-surface), var(--theme-surface-soft)) !important;
+}
+
+html[data-theme] .section-label,
+html[data-theme] .card h2,
+html[data-theme] .countdown-section h2,
+html[data-theme] .count-box strong,
+html[data-theme] .guest-stats strong,
+html[data-theme] .info-row span,
+html[data-theme] .timeline-item span,
+html[data-theme] .family-grid span,
+html[data-theme] .family-grid strong,
+html[data-theme] .ceremony-item span,
+html[data-theme] .ceremony-item strong,
+html[data-theme] .schedule-item > strong,
+html[data-theme] .schedule-item span,
+html[data-theme] .guest-item strong,
+html[data-theme] .wish-item strong,
+html[data-theme] .footer p,
+html[data-theme] .footer span,
+html[data-theme] .admin-page h2,
+html[data-theme] .admin-editor-section h3,
+html[data-theme] .admin-sidebar-title span,
+html[data-theme] .admin-current-section strong,
+html[data-theme] .admin-nav-button span,
+html[data-theme] .admin-field > span,
+html[data-theme] .admin-row strong,
+html[data-theme] .admin-export-card strong,
+html[data-theme] .theme-option-card strong {
+  color: var(--rose-deep) !important;
+}
+
+html[data-theme] .card p,
+html[data-theme] .countdown-section p,
+html[data-theme] .intro-text,
+html[data-theme] .info-row strong,
+html[data-theme] .timeline-item p,
+html[data-theme] .schedule-item p,
+html[data-theme] .ceremony-item p,
+html[data-theme] .ceremony-item em,
+html[data-theme] .guest-stats span,
+html[data-theme] .guest-item span,
+html[data-theme] .guest-item small,
+html[data-theme] .wish-item p,
+html[data-theme] .footer small,
+html[data-theme] .admin-help-text,
+html[data-theme] .admin-page p,
+html[data-theme] .admin-page small,
+html[data-theme] .admin-nav-button small,
+html[data-theme] .admin-current-section span,
+html[data-theme] .admin-field small,
+html[data-theme] .admin-export-card span,
+html[data-theme] .theme-option-card small,
+html[data-theme] .admin-save-message {
+  color: var(--theme-text-muted) !important;
+}
+
+html[data-theme] .intro-small,
+html[data-theme] .hero-section .small-title,
+html[data-theme] .hero-section .couple-title,
+html[data-theme] .hero-date,
+html[data-theme] .hero-time,
+html[data-theme] .hero-guest-greeting,
+html[data-theme] .guest-greeting {
+  color: #ffffff !important;
+  text-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.62),
+    0 0 22px rgba(var(--theme-rgb), 0.28) !important;
+}
+
+html[data-theme] .couple-title em,
+html[data-theme] .hero-section .couple-title em,
+html[data-theme] .intro-page .couple-title em {
+  color: var(--gold) !important;
+}
+
+html[data-theme] .hero-date,
+html[data-theme] .floating-actions .share-button,
+html[data-theme] .floating-actions .music-toggle-button,
+html[data-theme] .secondary-button {
+  background: rgba(var(--theme-faint-rgb), 0.82) !important;
+  border-color: rgba(var(--theme-rgb), 0.42) !important;
+  color: var(--rose-dark) !important;
+}
+
+html[data-theme="dark"] .hero-date,
+html[data-theme="dark"] .floating-actions .share-button,
+html[data-theme="dark"] .floating-actions .music-toggle-button,
+html[data-theme="dark"] .secondary-button {
+  background: rgba(36, 26, 33, 0.78) !important;
+  color: var(--rose-deep) !important;
+}
+
+html[data-theme] .open-button,
+html[data-theme] .main-button,
+html[data-theme] .admin-upload-button,
+html[data-theme] .admin-nav-button.active,
+html[data-theme] .option-button.active {
+  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
+  border-color: rgba(var(--theme-rgb), 0.5) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 34px rgba(var(--theme-rgb), 0.24) !important;
+}
+
+html[data-theme="dark"] .open-button,
+html[data-theme="dark"] .main-button,
+html[data-theme="dark"] .admin-upload-button,
+html[data-theme="dark"] .admin-nav-button.active,
+html[data-theme="dark"] .option-button.active {
+  color: #241a21 !important;
+}
+
+html[data-theme] input,
+html[data-theme] textarea,
+html[data-theme] select,
+html[data-theme] .admin-field input,
+html[data-theme] .admin-field textarea,
+html[data-theme] .admin-login input,
+html[data-theme] .admin-field select,
+html[data-theme] .admin-toolbar select,
+html[data-theme] .admin-toolbar input,
+html[data-theme] .admin-personal-link-box input,
+html[data-theme] .admin-link-preview-box input,
+html[data-theme] .option-button,
+html[data-theme] .admin-check-field,
+html[data-theme] .admin-nav-button {
+  background: var(--theme-input) !important;
+  color: var(--theme-text-main) !important;
+  border-color: rgba(var(--theme-rgb), 0.42) !important;
+}
+
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder {
+  color: var(--theme-text-muted) !important;
+  opacity: 0.82 !important;
+}
+
+html[data-theme] .option-button:hover,
+html[data-theme] .admin-nav-button:hover,
+html[data-theme] .secondary-button:hover,
+html[data-theme] .theme-option-card:hover {
+  border-color: rgba(var(--theme-rgb), 0.68) !important;
+  background: var(--theme-surface-soft) !important;
+}
+
+html[data-theme] .card::before,
+html[data-theme] .countdown-section::before {
+  background: rgba(var(--theme-soft-rgb), 0.22) !important;
+}
+
+html[data-theme] .card::after,
+html[data-theme] .hero-section::after,
+html[data-theme] .leaf-mark::before {
+  color: rgba(var(--theme-rgb), 0.52) !important;
+}
+
+html[data-theme] .card h2::after,
+html[data-theme] .countdown-section h2::after,
+html[data-theme] .timeline::before {
+  background: linear-gradient(90deg, transparent, var(--rose), transparent) !important;
+}
+
+html[data-theme] .petal-layer span {
+  background: rgba(var(--theme-soft-rgb), 0.78) !important;
+  box-shadow: 0 0 16px rgba(var(--theme-rgb), 0.20) !important;
+}
+
+html[data-theme] .theme-picker-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+html[data-theme] .theme-option-card[data-theme-preview="dark"] .theme-swatch {
+  background: linear-gradient(135deg, #130e12, #c47b96, #ffd8e4) !important;
+}
+
+html[data-theme="dark"] .theme-swatch {
+  border-color: rgba(255, 255, 255, 0.32) !important;
+}
+
+html[data-theme="dark"] img,
+html[data-theme="dark"] .gallery-grid img {
+  filter: saturate(0.96) brightness(0.88);
+}
+
+@media (max-width: 900px) {
+  html[data-theme] .hero-section {
+    background:
+      radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 52%, var(--theme-hero-edge) 100%),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+}
+
+@media (max-width: 650px) {
+  html[data-theme] .hero-section {
+    background:
+      radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 54%, var(--theme-hero-edge) 100%),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+}
+</file>
+
 <file path="src/validations/schemas.js">
 import * as z from "zod";
 import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH } from "../config/constants";
@@ -2500,623 +3116,6 @@ export default function AdminView(props) {
 }
 </file>
 
-<file path="src/styles/index.css">
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
-
-@import "./variables.css";
-@import "./base.css";
-@import "./invitation.css";
-@import "./admin.css";
-@import "./responsive.css";
-</file>
-
-<file path="src/styles/variables.css">
-/* =================================================================
-   GENEL AYARLAR VE TEMA RENKLERİ
-   ================================================================= */
-:root {
-  --amp-color: var(--rose-dark);
-  --amp-glow: color-mix(in srgb, var(--rose-dark) 36%, transparent);
-  --sakura-flower: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  --sakura-pattern: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black' opacity='0.03'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round' opacity='0.03'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  --paper: #fffafb;
-  --paper-soft: #fff7f9;
-  --text-main: #55303b;
-  --text-soft: #6f4451;
-  
-  /* ADMIN PANEL DEĞİŞKENLERİ */
-  --admin-bg: rgba(255, 250, 251, 0.96);
-  --admin-border: rgba(159, 79, 104, 0.34);
-  --admin-text: #3f1f2c;
-  --admin-input-bg: #fff9fb;
-  --admin-nav-bg: rgba(255, 250, 251, 0.9);
-  --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 8%, var(--paper));
-  
-  /* Admin Panel Tema Değişkenleri - !important kullanımını bitirmek için */
-  --admin-bg-primary: rgba(255, 250, 251, 0.96);
-  --admin-bg-secondary: rgba(255, 250, 251, 0.9);
-  --admin-border-color: rgba(159, 79, 104, 0.34);
-  --admin-input-bg: #fff9fb;
-  --admin-text-main: #3f1f2c;
-  --admin-text-muted: #5c2f3f;
-
-  /* BUTON DEĞİŞKENLERİ */
-  --btn-primary-color: #ffffff;
-  --btn-primary-bg: linear-gradient(135deg, #e69aae, #9f4f68);
-  --btn-danger-bg: linear-gradient(135deg, #9f3f58, #6d2639);
-  --btn-danger-color: #ffffff;
-}
-
-[data-theme="rose"] { --amp-color: #c36f8b; --amp-glow: rgba(195, 111, 139, 0.38); }
-[data-theme="sage"] { --amp-color: #6f8650; --amp-glow: rgba(111, 134, 80, 0.42); }
-[data-theme="gold"] { --amp-color: #c69b5c; --amp-glow: rgba(198, 155, 92, 0.42); }
-[data-theme="burgundy"] { --amp-color: #9f354f; --amp-glow: rgba(159, 53, 79, 0.42); }
-[data-theme="minimal"] { --amp-color: #7c6f64; --amp-glow: rgba(124, 111, 100, 0.38); }
-[data-theme="lavanta"] { --amp-color: #8f7fb8; --amp-glow: rgba(143, 127, 184, 0.42); }
-[data-theme="dark"] {
-  --amp-color: #e3b6c7; 
-  --amp-glow: rgba(227, 182, 199, 0.46);
-  --paper: #1c141a;
-  --paper-soft: #241a21;
-  --text-main: #fff4f8;
-  --text-soft: #ead0da;
-
-  --admin-bg: rgba(36, 26, 33, 0.92);
-  --admin-border: rgba(255, 255, 255, 0.14);
-  --admin-text: #fff4f8;
-  --admin-input-bg: rgba(18, 13, 17, 0.92);
-  --admin-nav-bg: rgba(255, 255, 255, 0.06);
-  --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 10%, transparent);
-  
-  --admin-bg-primary: rgba(36, 26, 33, 0.92);
-  --admin-bg-secondary: rgba(255, 255, 255, 0.06);
-  --admin-border-color: rgba(255, 255, 255, 0.14);
-  --admin-input-bg: rgba(18, 13, 17, 0.92);
-  --admin-text-main: #fff4f8;
-  --admin-text-muted: #ead0da;
-  
-  --btn-primary-bg: linear-gradient(135deg, #d36a86, #7a203b);
-  --btn-danger-bg: linear-gradient(135deg, #d36a86, #7a203b);
-  --btn-danger-color: #fff7f9;
-}
-
-.app-modal-card {
-  border-top: 0 !important;
-}
-
-.app-modal-card::before,
-.app-modal-card::after {
-  display: none !important;
-  content: none !important;
-  height: 0 !important;
-  background: transparent !important;
-}
-
-/* =================================================================
-   LAVANTA TEMASINA ÖZEL UÇAN KELEBEKLER
-   ================================================================= */
-[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
-[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
-  content: "" !important;
-  display: block !important;
-  position: absolute !important;
-  width: 36px !important;
-  height: 36px !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' opacity='0.75'%3E%3Cpath d='M12 2c-.5 0-1 .5-1 1v18c0 .5.5 1 1 1s1-.5 1-1V3c0-.5-.5-1-1-1zm-1.8 2.2C8.3 3.5 5.6 4.5 4 6.8c-1.8 2.6-1.5 6.2.8 8.4 1.5 1.5 3.6 2.1 5.7 1.8-1.5-3.2-1.2-6.8.3-9.8v-.1v-2.9zm3.6 0v2.9c1.5 3 1.8 6.6.3 9.8 2.1.3 4.2-.3 5.7-1.8 2.3-2.2 2.6-5.8.8-8.4-1.6-2.3-4.3-3.3-6.2-2.6h-.6z'/%3E%3C/svg%3E") !important;
-  background-size: contain !important;
-  background-repeat: no-repeat !important;
-  pointer-events: none !important;
-  z-index: 10 !important;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 14px rgba(143, 127, 184, 0.6)) !important;
-}
-
-[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before {
-  bottom: -40px !important;
-  left: -10% !important;
-  animation: floatButterfly1 16s infinite ease-in-out !important;
-}
-
-[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
-  bottom: 20px !important;
-  right: -10% !important;
-  width: 28px !important;
-  height: 28px !important;
-  animation: floatButterfly2 22s infinite ease-in-out 4s !important;
-}
-
-@keyframes floatButterfly1 {
-  0% { transform: translate(0, 0) rotate(-15deg) scale(0.9); opacity: 0; }
-  15% { opacity: 0.85; }
-  50% { transform: translate(120px, -220px) rotate(10deg) scale(1.1); }
-  85% { opacity: 0.85; }
-  100% { transform: translate(250px, -450px) rotate(-5deg) scale(0.8); opacity: 0; }
-}
-
-@keyframes floatButterfly2 {
-  0% { transform: translate(0, 0) rotate(20deg) scale(0.8); opacity: 0; }
-  20% { opacity: 0.7; }
-  50% { transform: translate(-100px, -200px) rotate(-10deg) scale(1); }
-  80% { opacity: 0.7; }
-  100% { transform: translate(-220px, -420px) rotate(15deg) scale(0.85); opacity: 0; }
-}
-
-/* =========================================================
-   FINAL TEMA SİSTEMİ - HER ALANI SEÇİLEN TEMAYA BAĞLAR
-   ========================================================= */
-
-html[data-theme="rose"] {
-  --theme-rgb: 159, 79, 104;
-  --theme-strong-rgb: 122, 47, 73;
-  --theme-soft-rgb: 248, 215, 223;
-  --theme-faint-rgb: 255, 250, 251;
-  --theme-page-start: #fff8fa;
-  --theme-page-end: #fbeef2;
-  --theme-surface: rgba(255, 252, 253, 0.98);
-  --theme-surface-soft: rgba(255, 247, 249, 0.98);
-  --theme-input: rgba(255, 248, 250, 0.98);
-  --theme-text-main: #55303b;
-  --theme-text-muted: #6f4451;
-  --theme-on-accent: #ffffff;
-  --theme-hero-center: rgba(159, 79, 104, 0.08);
-  --theme-hero-mid: rgba(159, 79, 104, 0.15);
-  --theme-hero-edge: rgba(122, 47, 73, 0.26);
-}
-
-html[data-theme="sage"] {
-  --paper: #fbfff7;
-  --paper-soft: #f4faec;
-  --rose-light: #dce8c8;
-  --rose: #9cad75;
-  --rose-dark: #607244;
-  --rose-deep: #40502e;
-  --gold: #c5a461;
-  --dark-gold: #7b652e;
-  --text: #34402c;
-  --text-soft: #58674c;
-  --shadow: 0 20px 48px rgba(76, 94, 57, 0.13);
-  --theme-rgb: 96, 114, 68;
-  --theme-strong-rgb: 64, 80, 46;
-  --theme-soft-rgb: 220, 232, 200;
-  --theme-faint-rgb: 251, 255, 247;
-  --theme-page-start: #fbfff7;
-  --theme-page-end: #edf6e5;
-  --theme-surface: rgba(251, 255, 247, 0.98);
-  --theme-surface-soft: rgba(244, 250, 236, 0.98);
-  --theme-input: rgba(251, 255, 247, 0.98);
-  --theme-text-main: #34402c;
-  --theme-text-muted: #58674c;
-  --theme-on-accent: #ffffff;
-  --theme-hero-center: rgba(96, 114, 68, 0.08);
-  --theme-hero-mid: rgba(96, 114, 68, 0.16);
-  --theme-hero-edge: rgba(64, 80, 46, 0.28);
-}
-
-html[data-theme="gold"] {
-  --paper: #fffdf4;
-  --paper-soft: #fff8df;
-  --rose-light: #f4dfad;
-  --rose: #c9a45d;
-  --rose-dark: #9b7433;
-  --rose-deep: #6e4b1e;
-  --gold: #c59a45;
-  --dark-gold: #7e5520;
-  --text: #4b3620;
-  --text-soft: #725b3c;
-  --shadow: 0 20px 48px rgba(126, 85, 32, 0.13);
-  --theme-rgb: 155, 116, 51;
-  --theme-strong-rgb: 110, 75, 30;
-  --theme-soft-rgb: 244, 223, 173;
-  --theme-faint-rgb: 255, 253, 244;
-  --theme-page-start: #fffdf4;
-  --theme-page-end: #f7edd0;
-  --theme-surface: rgba(255, 253, 244, 0.98);
-  --theme-surface-soft: rgba(255, 248, 223, 0.98);
-  --theme-input: rgba(255, 253, 244, 0.98);
-  --theme-text-main: #4b3620;
-  --theme-text-muted: #725b3c;
-  --theme-on-accent: #ffffff;
-  --theme-hero-center: rgba(155, 116, 51, 0.08);
-  --theme-hero-mid: rgba(155, 116, 51, 0.16);
-  --theme-hero-edge: rgba(110, 75, 30, 0.28);
-}
-
-html[data-theme="burgundy"] {
-  --paper: #fff8fa;
-  --paper-soft: #fbeaf0;
-  --rose-light: #e2b6c4;
-  --rose: #b55b79;
-  --rose-dark: #7f2747;
-  --rose-deep: #53182e;
-  --gold: #d0aa68;
-  --dark-gold: #936c34;
-  --text: #3f1d2b;
-  --text-soft: #6b3a4d;
-  --shadow: 0 20px 48px rgba(83, 24, 46, 0.14);
-  --theme-rgb: 127, 39, 71;
-  --theme-strong-rgb: 83, 24, 46;
-  --theme-soft-rgb: 226, 182, 196;
-  --theme-faint-rgb: 255, 248, 250;
-  --theme-page-start: #fff8fa;
-  --theme-page-end: #f4dbe4;
-  --theme-surface: rgba(255, 248, 250, 0.98);
-  --theme-surface-soft: rgba(251, 234, 240, 0.98);
-  --theme-input: rgba(255, 248, 250, 0.98);
-  --theme-text-main: #3f1d2b;
-  --theme-text-muted: #6b3a4d;
-  --theme-on-accent: #ffffff;
-  --theme-hero-center: rgba(127, 39, 71, 0.08);
-  --theme-hero-mid: rgba(127, 39, 71, 0.17);
-  --theme-hero-edge: rgba(83, 24, 46, 0.30);
-}
-
-html[data-theme="minimal"] {
-  --paper: #ffffff;
-  --paper-soft: #f8f8f8;
-  --rose-light: #e8e1dc;
-  --rose: #b69f91;
-  --rose-dark: #775e50;
-  --rose-deep: #45362e;
-  --gold: #b99d72;
-  --dark-gold: #796247;
-  --text: #2f2926;
-  --text-soft: #665d58;
-  --shadow: 0 20px 48px rgba(47, 41, 38, 0.10);
-  --theme-rgb: 119, 94, 80;
-  --theme-strong-rgb: 69, 54, 46;
-  --theme-soft-rgb: 232, 225, 220;
-  --theme-faint-rgb: 255, 255, 255;
-  --theme-page-start: #ffffff;
-  --theme-page-end: #eeeeee;
-  --theme-surface: rgba(255, 255, 255, 0.98);
-  --theme-surface-soft: rgba(248, 248, 248, 0.98);
-  --theme-input: rgba(255, 255, 255, 0.98);
-  --theme-text-main: #2f2926;
-  --theme-text-muted: #665d58;
-  --theme-on-accent: #ffffff;
-  --theme-hero-center: rgba(119, 94, 80, 0.06);
-  --theme-hero-mid: rgba(119, 94, 80, 0.14);
-  --theme-hero-edge: rgba(69, 54, 46, 0.24);
-}
-
-html[data-theme="lavanta"] {
-  --paper: #fcfbfd;
-  --paper-soft: #f6f4fa;
-  --rose-light: #dcd6eb;
-  --rose: #a696c8;
-  --rose-dark: #7a6ba3;
-  --rose-deep: #4c3f70;
-  --gold: #c5a461;
-  --dark-gold: #7b652e;
-  --text: #393545;
-  --text-soft: #635d73;
-  --shadow: 0 20px 48px rgba(122, 107, 163, 0.13);
-  
-  --theme-rgb: 122, 107, 163;
-  --theme-strong-rgb: 76, 63, 112;
-  --theme-soft-rgb: 220, 214, 235;
-  --theme-faint-rgb: 252, 251, 253;
-  --theme-page-start: #fcfbfd;
-  --theme-page-end: #eeeaf5;
-  --theme-surface: rgba(252, 251, 253, 0.98);
-  --theme-surface-soft: rgba(246, 244, 250, 0.98);
-  --theme-input: rgba(252, 251, 253, 0.98);
-  --theme-text-main: #393545;
-  --theme-text-muted: #635d73;
-  --theme-on-accent: #ffffff;
-  --theme-hero-center: rgba(122, 107, 163, 0.08);
-  --theme-hero-mid: rgba(122, 107, 163, 0.16);
-  --theme-hero-edge: rgba(76, 63, 112, 0.28);
-}
-
-html[data-theme="dark"] {
-  --paper: #241a21;
-  --paper-soft: #2d222a;
-  --rose-light: #8f5269;
-  --rose: #c47b96;
-  --rose-dark: #e6a7bc;
-  --rose-deep: #ffd8e4;
-  --gold: #d9ba75;
-  --dark-gold: #f0cf88;
-  --text: #fff4f8;
-  --text-soft: #e2cbd4;
-  --shadow: 0 22px 54px rgba(0, 0, 0, 0.36);
-  --theme-rgb: 196, 123, 150;
-  --theme-strong-rgb: 255, 216, 228;
-  --theme-soft-rgb: 143, 82, 105;
-  --theme-faint-rgb: 45, 34, 42;
-  --theme-page-start: #130e12;
-  --theme-page-end: #281d25;
-  --theme-surface: rgba(36, 26, 33, 0.98);
-  --theme-surface-soft: rgba(45, 34, 42, 0.98);
-  --theme-input: rgba(30, 22, 28, 0.98);
-  --theme-text-main: #fff4f8;
-  --theme-text-muted: #e2cbd4;
-  --theme-on-accent: #22151b;
-  --theme-hero-center: rgba(0, 0, 0, 0.10);
-  --theme-hero-mid: rgba(0, 0, 0, 0.24);
-  --theme-hero-edge: rgba(0, 0, 0, 0.44);
-}
-
-html[data-theme] body,
-html[data-theme] .app,
-html[data-theme] .admin-page {
-  color: var(--theme-text-main) !important;
-  background:
-    radial-gradient(circle at top left, rgba(var(--theme-rgb), 0.18), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(var(--theme-soft-rgb), 0.18), transparent 36%),
-    linear-gradient(180deg, var(--theme-page-start), var(--theme-page-end)) !important;
-}
-
-html[data-theme] .invitation-page::before {
-  background:
-    radial-gradient(circle at 8% 18%, rgba(var(--theme-rgb), 0.10), transparent 12%),
-    radial-gradient(circle at 90% 28%, rgba(var(--theme-soft-rgb), 0.16), transparent 13%),
-    radial-gradient(circle at 18% 82%, rgba(var(--theme-rgb), 0.08), transparent 12%),
-    radial-gradient(circle at 88% 86%, rgba(var(--theme-soft-rgb), 0.14), transparent 12%) !important;
-}
-
-html[data-theme] .intro-page {
-  background:
-    linear-gradient(rgba(var(--theme-rgb), 0.08), rgba(var(--theme-rgb), 0.26)),
-    var(--intro-image) center/cover no-repeat !important;
-}
-
-html[data-theme] .hero-section {
-  background:
-    radial-gradient(
-      circle at center,
-      var(--theme-hero-center) 0%,
-      var(--theme-hero-mid) 52%,
-      var(--theme-hero-edge) 100%
-    ),
-    linear-gradient(to bottom, rgba(var(--theme-rgb), 0.04), rgba(var(--theme-rgb), 0.12)),
-    var(--hero-image) center/cover no-repeat !important;
-}
-
-html[data-theme] .intro-card,
-html[data-theme] .card,
-html[data-theme] .countdown-section,
-html[data-theme] .info-list,
-html[data-theme] .count-box,
-html[data-theme] .timeline-item p,
-html[data-theme] .gallery-grid img,
-html[data-theme] .rsvp-card,
-html[data-theme] .guest-stats div,
-html[data-theme] .guest-item,
-html[data-theme] .wish-item,
-html[data-theme] .family-grid div,
-html[data-theme] .ceremony-item,
-html[data-theme] .schedule-item,
-html[data-theme] .mini-map,
-html[data-theme] .admin-shell-card,
-html[data-theme] .admin-sidebar,
-html[data-theme] .admin-editor-section,
-html[data-theme] .admin-repeat-item,
-html[data-theme] .admin-gallery-row,
-html[data-theme] .admin-image-field,
-html[data-theme] .admin-music-field,
-html[data-theme] .admin-list,
-html[data-theme] .admin-row,
-html[data-theme] .admin-stats div,
-html[data-theme] .admin-export-card,
-html[data-theme] .admin-import-box,
-html[data-theme] .admin-qr-panel > div,
-html[data-theme] .admin-personal-link-box,
-html[data-theme] .theme-option-card,
-html[data-theme] .admin-theme-check-row {
-  color: var(--theme-text-main) !important;
-  background: var(--theme-surface) !important;
-  border-color: rgba(var(--theme-rgb), 0.34) !important;
-  box-shadow: var(--shadow) !important;
-}
-
-html[data-theme] .card,
-html[data-theme] .countdown-section,
-html[data-theme] .rsvp-card,
-html[data-theme] .admin-shell-card {
-  background:
-    radial-gradient(circle at top right, rgba(var(--theme-soft-rgb), 0.18), transparent 28%),
-    linear-gradient(145deg, var(--theme-surface), var(--theme-surface-soft)) !important;
-}
-
-html[data-theme] .section-label,
-html[data-theme] .card h2,
-html[data-theme] .countdown-section h2,
-html[data-theme] .count-box strong,
-html[data-theme] .guest-stats strong,
-html[data-theme] .info-row span,
-html[data-theme] .timeline-item span,
-html[data-theme] .family-grid span,
-html[data-theme] .family-grid strong,
-html[data-theme] .ceremony-item span,
-html[data-theme] .ceremony-item strong,
-html[data-theme] .schedule-item > strong,
-html[data-theme] .schedule-item span,
-html[data-theme] .guest-item strong,
-html[data-theme] .wish-item strong,
-html[data-theme] .footer p,
-html[data-theme] .footer span,
-html[data-theme] .admin-page h2,
-html[data-theme] .admin-editor-section h3,
-html[data-theme] .admin-sidebar-title span,
-html[data-theme] .admin-current-section strong,
-html[data-theme] .admin-nav-button span,
-html[data-theme] .admin-field > span,
-html[data-theme] .admin-row strong,
-html[data-theme] .admin-export-card strong,
-html[data-theme] .theme-option-card strong {
-  color: var(--rose-deep) !important;
-}
-
-html[data-theme] .card p,
-html[data-theme] .countdown-section p,
-html[data-theme] .intro-text,
-html[data-theme] .info-row strong,
-html[data-theme] .timeline-item p,
-html[data-theme] .schedule-item p,
-html[data-theme] .ceremony-item p,
-html[data-theme] .ceremony-item em,
-html[data-theme] .guest-stats span,
-html[data-theme] .guest-item span,
-html[data-theme] .guest-item small,
-html[data-theme] .wish-item p,
-html[data-theme] .footer small,
-html[data-theme] .admin-help-text,
-html[data-theme] .admin-page p,
-html[data-theme] .admin-page small,
-html[data-theme] .admin-nav-button small,
-html[data-theme] .admin-current-section span,
-html[data-theme] .admin-field small,
-html[data-theme] .admin-export-card span,
-html[data-theme] .theme-option-card small,
-html[data-theme] .admin-save-message {
-  color: var(--theme-text-muted) !important;
-}
-
-html[data-theme] .intro-small,
-html[data-theme] .hero-section .small-title,
-html[data-theme] .hero-section .couple-title,
-html[data-theme] .hero-date,
-html[data-theme] .hero-time,
-html[data-theme] .hero-guest-greeting,
-html[data-theme] .guest-greeting {
-  color: #ffffff !important;
-  text-shadow:
-    0 3px 8px rgba(0, 0, 0, 0.62),
-    0 0 22px rgba(var(--theme-rgb), 0.28) !important;
-}
-
-html[data-theme] .couple-title em,
-html[data-theme] .hero-section .couple-title em,
-html[data-theme] .intro-page .couple-title em {
-  color: var(--gold) !important;
-}
-
-html[data-theme] .hero-date,
-html[data-theme] .floating-actions .share-button,
-html[data-theme] .floating-actions .music-toggle-button,
-html[data-theme] .secondary-button {
-  background: rgba(var(--theme-faint-rgb), 0.82) !important;
-  border-color: rgba(var(--theme-rgb), 0.42) !important;
-  color: var(--rose-dark) !important;
-}
-
-html[data-theme="dark"] .hero-date,
-html[data-theme="dark"] .floating-actions .share-button,
-html[data-theme="dark"] .floating-actions .music-toggle-button,
-html[data-theme="dark"] .secondary-button {
-  background: rgba(36, 26, 33, 0.78) !important;
-  color: var(--rose-deep) !important;
-}
-
-html[data-theme] .open-button,
-html[data-theme] .main-button,
-html[data-theme] .admin-upload-button,
-html[data-theme] .admin-nav-button.active,
-html[data-theme] .option-button.active {
-  background: linear-gradient(135deg, var(--rose), var(--rose-dark)) !important;
-  border-color: rgba(var(--theme-rgb), 0.5) !important;
-  color: #ffffff !important;
-  box-shadow: 0 16px 34px rgba(var(--theme-rgb), 0.24) !important;
-}
-
-html[data-theme="dark"] .open-button,
-html[data-theme="dark"] .main-button,
-html[data-theme="dark"] .admin-upload-button,
-html[data-theme="dark"] .admin-nav-button.active,
-html[data-theme="dark"] .option-button.active {
-  color: #241a21 !important;
-}
-
-html[data-theme] input,
-html[data-theme] textarea,
-html[data-theme] select,
-html[data-theme] .admin-field input,
-html[data-theme] .admin-field textarea,
-html[data-theme] .admin-login input,
-html[data-theme] .admin-field select,
-html[data-theme] .admin-toolbar select,
-html[data-theme] .admin-toolbar input,
-html[data-theme] .admin-personal-link-box input,
-html[data-theme] .admin-link-preview-box input,
-html[data-theme] .option-button,
-html[data-theme] .admin-check-field,
-html[data-theme] .admin-nav-button {
-  background: var(--theme-input) !important;
-  color: var(--theme-text-main) !important;
-  border-color: rgba(var(--theme-rgb), 0.42) !important;
-}
-
-html[data-theme] input::placeholder,
-html[data-theme] textarea::placeholder {
-  color: var(--theme-text-muted) !important;
-  opacity: 0.82 !important;
-}
-
-html[data-theme] .option-button:hover,
-html[data-theme] .admin-nav-button:hover,
-html[data-theme] .secondary-button:hover,
-html[data-theme] .theme-option-card:hover {
-  border-color: rgba(var(--theme-rgb), 0.68) !important;
-  background: var(--theme-surface-soft) !important;
-}
-
-html[data-theme] .card::before,
-html[data-theme] .countdown-section::before {
-  background: rgba(var(--theme-soft-rgb), 0.22) !important;
-}
-
-html[data-theme] .card::after,
-html[data-theme] .hero-section::after,
-html[data-theme] .leaf-mark::before {
-  color: rgba(var(--theme-rgb), 0.52) !important;
-}
-
-html[data-theme] .card h2::after,
-html[data-theme] .countdown-section h2::after,
-html[data-theme] .timeline::before {
-  background: linear-gradient(90deg, transparent, var(--rose), transparent) !important;
-}
-
-html[data-theme] .petal-layer span {
-  background: rgba(var(--theme-soft-rgb), 0.78) !important;
-  box-shadow: 0 0 16px rgba(var(--theme-rgb), 0.20) !important;
-}
-
-html[data-theme] .theme-picker-grid {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
-}
-
-html[data-theme] .theme-option-card[data-theme-preview="dark"] .theme-swatch {
-  background: linear-gradient(135deg, #130e12, #c47b96, #ffd8e4) !important;
-}
-
-html[data-theme="dark"] .theme-swatch {
-  border-color: rgba(255, 255, 255, 0.32) !important;
-}
-
-html[data-theme="dark"] img,
-html[data-theme="dark"] .gallery-grid img {
-  filter: saturate(0.96) brightness(0.88);
-}
-
-@media (max-width: 900px) {
-  html[data-theme] .hero-section {
-    background:
-      radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 52%, var(--theme-hero-edge) 100%),
-      var(--hero-image) center/cover no-repeat !important;
-  }
-}
-
-@media (max-width: 650px) {
-  html[data-theme] .hero-section {
-    background:
-      radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 54%, var(--theme-hero-edge) 100%),
-      var(--hero-image) center/cover no-repeat !important;
-  }
-}
-</file>
-
 <file path="src/utils/imageOptimizer.js">
 import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
 
@@ -3427,73 +3426,6 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
 });
 </file>
 
-<file path="src/components/invitation/sections/HeroSection.jsx">
-import React, { useEffect } from 'react';
-import { useContentStore } from '../../../store/useStore';
-
-export default function HeroSection() {
-  // Zustand store'dan dil state'ini ve içerikleri çekiyoruz
-  const { currentLang, content, fetchContent, setLang } = useContentStore();
-
-  // Bileşen ekrana geldiğinde veya dil değiştiğinde veritabanından güncel metinleri al
-  useEffect(() => {
-    fetchContent(currentLang);
-  }, [currentLang, fetchContent]);
-
-  // Supabase'den veri gelene kadar boş ekran çıkmasını önlemek için bekleme durumu
-  if (!content || !content.hero_title) {
-    return <div className="flex justify-center items-center h-screen">Yükleniyor...</div>;
-  }
-
-  return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center text-center">
-      
-      {/* Sağ üst köşeye eklenecek şık bir dil değiştirici */}
-      <div className="absolute top-5 right-5 flex gap-2 z-50">
-        <button 
-          onClick={() => setLang('tr')} 
-          className={`px-3 py-1 rounded-full border transition-all ${currentLang === 'tr' ? 'bg-black text-white' : 'bg-white text-black'}`}
-        >
-          TR
-        </button>
-        <button 
-          onClick={() => setLang('en')} 
-          className={`px-3 py-1 rounded-full border transition-all ${currentLang === 'en' ? 'bg-black text-white' : 'bg-white text-black'}`}
-        >
-          EN
-        </button>
-      </div>
-
-      {/* Supabase veritabanından (site_content tablosu) gelen dinamik metinler */}
-      <div className="hero-content z-10 px-4">
-        
-        {/* Örn: "Evleniyoruz!" veya "We are getting married!" */}
-        <h1 className="text-5xl md:text-7xl font-bold mb-6">
-          {content.hero_title}
-        </h1>
-        
-        {/* Örn: "22 Ağustos 2026'da Fenerbahçe Parkı'nda başlayıp Boğaz manzaralı vapur turuyla devam edecek hikayemize ortak olun..." */}
-        <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
-          {content.story_text}
-        </p>
-        
-        <div className="flex items-center justify-center gap-4 mb-10 text-xl">
-          <span>⏰ {content.ceremony_time}</span>
-        </div>
-
-        <button 
-          className="px-8 py-3 bg-rose-600 text-white rounded-full hover:bg-rose-700 transition-colors shadow-lg"
-          onClick={() => document.getElementById('rsvp-section').scrollIntoView({ behavior: 'smooth' })}
-        >
-          {content.rsvp_button_text}
-        </button>
-
-      </div>
-    </section>
-  );
-}
-</file>
-
 <file path="src/services/database.js">
 import { supabase } from "../supabaseClient";
 import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
@@ -3795,6 +3727,66 @@ export const useContentStore = create((set, get) => ({
 }
 </file>
 
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React, { useEffect } from 'react';
+import { useContentStore } from '../../../store/useStore';
+
+export default function HeroSection() {
+  const { currentLang, content, fetchContent, setLang } = useContentStore();
+
+  useEffect(() => {
+    fetchContent(currentLang);
+  }, [currentLang, fetchContent]);
+
+  if (!content || !content.hero_title) {
+    return <div className="flex justify-center items-center h-screen">Yükleniyor...</div>;
+  }
+
+  return (
+    <section className="relative min-h-screen flex flex-col items-center justify-center text-center">
+      
+      <div className="absolute top-5 right-5 flex gap-2 z-50">
+        <button 
+          onClick={() => setLang('en')} 
+          className={`px-3 py-1 rounded-full border transition-all ${currentLang === 'tr' ? 'bg-black text-white' : 'bg-white text-black'}`}
+        >
+          EN
+        </button>
+        <button 
+          onClick={() => setLang('tr')} 
+          className={`px-3 py-1 rounded-full border transition-all ${currentLang === 'en' ? 'bg-black text-white' : 'bg-white text-black'}`}
+        >
+          TR
+        </button>
+      </div>
+
+      <div className="hero-content z-10 px-4">
+        
+        <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          {content.hero_title}
+        </h1>
+        
+        <p className="text-lg md:text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+          {content.story_text}
+        </p>
+        
+        <div className="flex items-center justify-center gap-4 mb-10 text-xl">
+          <span>⏰ {content.ceremony_time}</span>
+        </div>
+
+        <button 
+          className="px-8 py-3 bg-rose-600 text-white rounded-full hover:bg-rose-700 transition-colors shadow-lg"
+          onClick={() => document.getElementById('rsvp-section').scrollIntoView({ behavior: 'smooth' })}
+        >
+          {content.rsvp_button_text}
+        </button>
+
+      </div>
+    </section>
+  );
+}
+</file>
+
 <file path="src/hooks/useAudio.js">
 import { useRef, useState, useEffect, useCallback } from "react";
 import { DEFAULT_WEDDING_MUSIC_FILE } from "../config/constants";
@@ -3958,131 +3950,6 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
       </div>
     </section>
   );
-}
-</file>
-
-<file path="src/hooks/useScrollNavigation.js">
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-
-  const scrollToNext = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const scrollContainer = document.scrollingElement || document.documentElement;
-    const currentScroll = scrollContainer.scrollTop;
-    const scrollOffset = window.innerWidth <= 650 ? 16 : 0;
-    // Tüm cihazlarda: bir sonraki section'a scroll yap
-    const nextSection = sections.find(sec => {
-      const rect = sec.getBoundingClientRect();
-      return (rect.top + window.scrollY) > currentScroll + (window.innerHeight * 0.5);
-    });
-    
-    if (nextSection) {
-      const targetTop = nextSection.offsetTop - scrollOffset;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
-    } else if (sections.length > 0) {
-      const lastSection = sections[sections.length - 1];
-      const targetTop = lastSection.offsetTop - scrollOffset;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
-    }
-  }, []);
-
-  const scrollToPrev = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.invitation-page > section, .invitation-page > footer'));
-    const scrollContainer = document.scrollingElement || document.documentElement;
-    const currentScroll = scrollContainer.scrollTop;
-    const scrollOffset = window.innerWidth <= 650 ? 16 : 0;
-    
-    // Tüm cihazlarda: bir önceki section'a scroll yap
-    const prevSection = [...sections].reverse().find(sec => {
-      const rect = sec.getBoundingClientRect();
-      return (rect.top + window.scrollY) < currentScroll - (window.innerHeight * 0.1); 
-    });
-
-    if (prevSection) {
-      const targetTop = prevSection.offsetTop - scrollOffset;
-      window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, []);
-
-  const handleWheel = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current) return;
-    
-    if (window.innerWidth <= 650) {
-      if (e.deltaY > 0) scrollToNext();
-      else scrollToPrev();
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 600);
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0) return;
-
-    if (window.innerWidth <= 650) {
-      const target = e.target;
-      if (target.closest('input, textarea, select, .wish-list, .guest-list, .gallery-lightbox-overlay')) {
-        return; 
-      }
-
-      const touchEndY = e.changedTouches[0].clientY;
-      const diff = touchStartYRef.current - touchEndY;
-
-      if (Math.abs(diff) > 60) {
-        if (diff > 0) scrollToNext(); 
-        else scrollToPrev(); 
-
-        isScrollingRef.current = true;
-        setTimeout(() => { isScrollingRef.current = false; }, 600);
-      }
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
-
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    const handleScroll = () => {
-      const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
-      setShowScrollTop(scrollTop > 100);
-      const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
-      setShowScrollDown(!isAtBottom);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    const revealTimer = window.setTimeout(() => setShowScrollDown(true), 900);
-    handleScroll();
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.clearTimeout(revealTimer);
-    };
-  }, [isAdminPage, opened]);
-
-  return {
-    currentSlideIndex,  
-    showScrollTop,
-    showScrollDown,
-    scrollToNext,
-    scrollToPrev,
-    handleWheel,
-    handleTouchStart,
-    handleTouchEnd
-  };
 }
 </file>
 
@@ -4736,6 +4603,142 @@ export default function AdminController() {
       />
     </Suspense>
   );
+}
+</file>
+
+<file path="src/hooks/useScrollNavigation.js">
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+
+  const handleScrollUp = useCallback(() => {
+    const container = document.querySelector('.snap-container');
+    if (container) {
+      container.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleScrollDown = useCallback(() => {
+    const container = document.querySelector('.snap-container');
+    if (container) {
+      container.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    }
+  }, []);
+
+  return { handleScrollUp, handleScrollDown };
+
+  const scrollToNext = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    
+    const nextSection = sections.find(sec => {
+      const rect = sec.getBoundingClientRect();
+      // Ekranın üstünden %20 daha aşağıda beliren ilk slide'ı bul
+      return rect.top > window.innerHeight * 0.2; 
+    });
+    
+    if (nextSection) {
+      nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (sections.length > 0) {
+      sections[sections.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
+
+  const scrollToPrev = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    
+    const prevSection = [...sections].reverse().find(sec => {
+      const rect = sec.getBoundingClientRect();
+      // Ekranın altından daha yukarıda olan ilk slide'ı bul
+      return rect.bottom < window.innerHeight * 0.8; 
+    });
+
+    if (prevSection) {
+      prevSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current) return;
+    
+    if (window.innerWidth <= 650) {
+      if (e.deltaY > 0) scrollToNext();
+      else scrollToPrev();
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 600);
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0) return;
+
+    if (window.innerWidth <= 650) {
+      const target = e.target;
+      if (target.closest('input, textarea, select, .wish-list, .guest-list, .gallery-lightbox-overlay')) {
+        return; 
+      }
+
+      const touchEndY = e.changedTouches[0].clientY;
+      const diff = touchStartYRef.current - touchEndY;
+
+      if (Math.abs(diff) > 60) {
+        if (diff > 0) scrollToNext(); 
+        else scrollToPrev(); 
+
+        isScrollingRef.current = true;
+        setTimeout(() => { isScrollingRef.current = false; }, 600);
+      }
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
+
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    const handleScroll = () => {
+      const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
+      setShowScrollTop(scrollTop > 100);
+      const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
+      setShowScrollDown(!isAtBottom);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    const revealTimer = window.setTimeout(() => setShowScrollDown(true), 900);
+    handleScroll();
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.clearTimeout(revealTimer);
+    };
+  }, [isAdminPage, opened]);
+
+  return {
+    currentSlideIndex,  
+    showScrollTop,
+    showScrollDown,
+    scrollToNext,
+    scrollToPrev,
+    handleWheel,
+    handleTouchStart,
+    handleTouchEnd
+  };
 }
 </file>
 
@@ -5672,83 +5675,6 @@ export const CHILD_OPTIONS = [
 ];
 </file>
 
-<file path="src/components/common/FloatingMenu.jsx">
-import React, { memo } from "react";
-
-const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId);
-  
-  if (element) {
-    element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start', // EN ÖNEMLİ KISIM: Elementin üst kısmını, ekranın en üstüne milimetrik hizalar. Boşluk kalmasını önler.
-      inline: 'nearest'
-    });
-  }
-};
-
-export const FloatingMenu = memo(function FloatingMenu({
-  isEn, toggleLanguage, shareText, toggleMusic, isMusicPlaying, 
-  showScrollDown, scrollToNext, showScrollTop, scrollToPrev
-}) {
-  return (
-    <>
-      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-         <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-             <path d="M12 8v4" />
-             <path d="M12 16h.01" />
-           </svg>
-         </a>
-      </div>
-      
-      <div className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}>
-        <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-        </a>
-        <button 
-          type="button" 
-          className="dock-btn music-btn" 
-          onClick={toggleMusic} 
-          aria-pressed={isMusicPlaying}
-          title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-        >
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isMusicPlaying ? (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </>
-            ) : (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-                <line x1="3" y1="3" x2="21" y2="21" />
-              </>
-            )}
-          </svg>
-        </button>
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
-        </button>
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-        </button>
-      </div>
-    </>
-  );
-});
-</file>
-
 <file path="src/pages/InvitationController.jsx">
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -5855,6 +5781,101 @@ export default function InvitationController() {
 }
 </file>
 
+<file path="src/components/common/FloatingMenu.jsx">
+import React, { memo } from "react";
+import { useScrollNavigation } from '../../hooks/useScrollNavigation';
+
+const scrollToSection = (sectionId) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start', 
+      inline: 'nearest'
+    });
+  }
+};
+
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
+}) {
+  return (
+    <>
+      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
+      </div>
+
+      <div className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}>
+        
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </a>
+
+        {/* MÜZİK AÇMA/KAPATMA BUTONU */}
+        <button type="button" className={`dock-btn music-btn ${isMusicPlaying ? 'music-on' : ''}`} onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMusicPlaying ? (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+              </>
+            )}
+          </svg>
+        </button>
+
+        {/* YUKARI KAYDIRMA BUTONU */}
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        
+        {/* AŞAĞI KAYDIRMA BUTONU */}
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+});
+</file>
+
 <file path="src/pages/InvitationView.jsx">
 import React, { useMemo } from "react";
 import { useStore } from "../store/useStore";
@@ -5925,7 +5946,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
     }
   };
 
-  return (
+return (
     <main className="invitation-page" onClick={handlePageClick}>
       {/* Dinamik SEO ve OG Etiketleri */}
       <Helmet>
@@ -5938,21 +5959,65 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />
-      {settings.visibility?.countdown !== false && <CountdownSection copy={copy} timeLeft={timeLeft} />}
-      <InvitationMessageSection copy={copy} invitation={invitation} />
-      {settings.visibility?.family !== false && <FamilySection copy={copy} familyInfo={familyInfo} />}
-      {settings.visibility?.story !== false && <StorySection copy={copy} storyTimeline={storyTimeline} />}
-      {settings.visibility?.ceremony !== false && <CeremonySection copy={copy} eventDetails={eventDetails} />}
-      {settings.visibility?.schedule !== false && <ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-      {settings.visibility?.location !== false && <LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} />}
-      {settings.visibility?.gallery !== false && <GallerySection copy={copy} invitation={invitation} />}
-      {settings.visibility?.rsvp !== false && <RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} />}
-      {settings.visibility?.guests !== false && <GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} />}
-      {settings.visibility?.wishes !== false && <WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} />}
-      {settings.visibility?.iban !== false && <GiftSection giftData={giftRegistry} />}
-      <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
-      <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+      <div className="slide-wrapper">
+        <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />
+      </div>
+      
+      {settings.visibility?.countdown !== false && (
+        <div className="slide-wrapper"><CountdownSection copy={copy} timeLeft={timeLeft} /></div>
+      )}
+      
+      <div className="slide-wrapper">
+        <InvitationMessageSection copy={copy} invitation={invitation} />
+      </div>
+      
+      {settings.visibility?.family !== false && (
+        <div className="slide-wrapper"><FamilySection copy={copy} familyInfo={familyInfo} /></div>
+      )}
+      
+      {settings.visibility?.story !== false && (
+        <div className="slide-wrapper"><StorySection copy={copy} storyTimeline={storyTimeline} /></div>
+      )}
+      
+      {settings.visibility?.ceremony !== false && (
+        <div className="slide-wrapper"><CeremonySection copy={copy} eventDetails={eventDetails} /></div>
+      )}
+      
+      {settings.visibility?.schedule !== false && (
+        <div className="slide-wrapper"><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></div>
+      )}
+      
+      {settings.visibility?.location !== false && (
+        <div className="slide-wrapper"><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></div>
+      )}
+      
+      {settings.visibility?.gallery !== false && (
+        <div className="slide-wrapper"><GallerySection copy={copy} invitation={invitation} /></div>
+      )}
+      
+      {settings.visibility?.rsvp !== false && (
+        <div className="slide-wrapper"><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></div>
+      )}
+      
+      {settings.visibility?.guests !== false && (
+        <div className="slide-wrapper"><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></div>
+      )}
+      
+      {settings.visibility?.wishes !== false && (
+        <div className="slide-wrapper"><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></div>
+      )}
+      
+      {settings.visibility?.iban !== false && (
+        <div className="slide-wrapper"><GiftSection giftData={giftRegistry} /></div>
+      )}
+      
+      <div className="slide-wrapper">
+        <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
+      </div>
+      
+      <div className="slide-wrapper">
+        <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+      </div>
     </main>
   );
 }
@@ -10292,6 +10357,8 @@ button {
   max-width: 1500px;
   margin: 0 auto;
   padding: 30px 42px 76px;
+  scroll-snap-type: none !important;
+  padding-bottom: 120px !important;
 }
 
 .invitation-page::before {
@@ -11222,7 +11289,7 @@ button {
 
 .scroll-indicator {
   position: absolute;
-  bottom: 40px;
+  bottom: 15px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -11939,6 +12006,34 @@ button,
   font-weight: 700;
   opacity: 0.6;
   pointer-events: none; /* Sayacın üstüne tıklanmasını engeller */
+}
+
+.invitation-page > section:not(.hero-section),
+.invitation-page > footer {
+  min-height: auto !important; 
+  height: max-content !important; /* Sadece yazılar/içerik kadar uzasın */
+  
+  /* Kartı kenarlardan ve diğer kartlardan ayır */
+  margin: 32px 16px !important; 
+  padding: 48px 24px !important; /* İçeriğin çerçeve sınırına yapışmasını engeller */
+  
+  border-radius: 32px !important; /* Köşeleri yuvarlat */
+  scroll-snap-align: none !important;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.force-scroll-bottom {
+  position: absolute !important;
+  bottom: 25px !important; 
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-top: 0 !important;
+  z-index: 50 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
 }
 </file>
 
@@ -15264,8 +15359,37 @@ body .app .invitation-page .option-group.disabled .option-button.active {
   border: 1px solid rgba(217, 140, 161, 0.2);
 }
 
-/* Mobil Cihazlar İçin Çizgiyi Sola Alma */
 @media (max-width: 768px) {
+  body, html {
+    overflow: hidden !important;
+    height: 100dvh !important;
+  }
+
+  .snap-container {
+    height: 100dvh !important;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+    scroll-snap-type: y mandatory !important;
+    scroll-behavior: smooth !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .snap-section {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    width: 100% !important;
+    scroll-snap-align: start !important;
+    scroll-snap-stop: always !important;
+    
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 1rem !important;
+    box-sizing: border-box !important;
+  }
+
   .story-line {
     left: 20px;
   }
@@ -15453,7 +15577,6 @@ body .app .glass-dock .dock-btn.music-on {
 
 .scroll-indicator {
   position: absolute;
-  bottom: 32px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: auto !important;
@@ -15796,6 +15919,27 @@ body .app .glass-dock .dock-btn.music-on {
   max-width: 80px;
   height: auto;
 }
+
+/* Zıplama (Bounce) Animasyonu Tanımı */
+@keyframes jump-animation {
+  0%   { transform: translateY(0) scale(1); }
+  50%  { transform: translateY(-8px) scale(1.05); } /* Yukarı doğru 8px zıplar ve çok hafif büyür */
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Dil ve Müzik Butonu İçin Animasyonun Uygulanması */
+.dock-btn.lang-btn:hover,
+.dock-btn.lang-btn:active,
+.dock-btn.music-btn:hover,
+.dock-btn.music-btn:active {
+  /* Fare üzerindeyken veya tıklandığında zıplama efektini tetikler */
+  animation: jump-animation 0.4s ease-in-out;
+}
+
+/* Opsiyonel: Eğer fare üzerinde beklediği sürece SÜREKLİ zıplamasını isterseniz 
+   yukarıdaki 'animation' satırını şu şekilde değiştirebilirsiniz:
+   animation: jump-animation 0.5s ease-in-out infinite; 
+*/
 </file>
 
 </files>
