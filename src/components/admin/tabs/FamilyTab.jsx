@@ -1,9 +1,16 @@
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
-export function FamilyTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }) {
+export function FamilyTab({ isEn }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  if (!adminDraft?.familyInfo) return null;
+
   return (
-    <AdminSection title={isEn ? "Family Information" : "Aile Bilgileri"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "Family Information" : "Aile Bilgileri"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.family ?? true} label={isEn ? "Show Family Section" : "Aile Bilgilerini göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, family: v })} />
       </div>

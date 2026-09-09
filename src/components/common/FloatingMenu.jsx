@@ -1,27 +1,8 @@
 import React, { memo } from "react";
-import { useScrollNavigation } from '../../hooks/useScrollNavigation';
-
-const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId);
-  if (element) {
-    element.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'start', 
-      inline: 'nearest'
-    });
-  }
-};
 
 export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, 
-  toggleLanguage, 
-  shareText, 
-  toggleMusic, 
-  isMusicPlaying, 
-  showScrollDown, 
-  scrollToNext, 
-  showScrollTop, 
-  scrollToPrev 
+  isEn, toggleLanguage, shareText, toggleMusic, isMusicPlaying, 
+  showScrollDown, scrollToNext, showScrollTop, scrollToPrev 
 }) {
   return (
     <>
@@ -35,7 +16,8 @@ export const FloatingMenu = memo(function FloatingMenu({
         </a>
       </div>
 
-      <div className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}>
+      {/* DÜZELTME: Hatalı style özelliği silindi, sınıflar CSS'e bırakıldı */}
+      <div className="floating-actions glass-dock">
         
         <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
@@ -51,7 +33,6 @@ export const FloatingMenu = memo(function FloatingMenu({
           </svg>
         </a>
 
-        {/* MÜZİK AÇMA/KAPATMA BUTONU */}
         <button type="button" className={`dock-btn music-btn ${isMusicPlaying ? 'music-on' : ''}`} onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {isMusicPlaying ? (
@@ -71,7 +52,6 @@ export const FloatingMenu = memo(function FloatingMenu({
           </svg>
         </button>
 
-        {/* YUKARI KAYDIRMA BUTONU */}
         <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="19" x2="12" y2="5"></line>
@@ -79,13 +59,13 @@ export const FloatingMenu = memo(function FloatingMenu({
           </svg>
         </button>
         
-        {/* AŞAĞI KAYDIRMA BUTONU */}
         <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <polyline points="19 12 12 19 5 12"></polyline>
           </svg>
         </button>
+
       </div>
     </>
   );

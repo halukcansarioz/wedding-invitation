@@ -7,7 +7,12 @@ const supabaseAnonKey = String(
     ""
 ).trim();
 
-// Env eksikken uygulama komple çökmesin diye geçici placeholder kullanılır.
+// Canlı (Production) ortamdaysak ve key eksikse uygulamayı durdur (Fail-fast mekanizması)
+if (import.meta.env?.PROD && (!supabaseUrl || !supabaseAnonKey)) {
+  throw new Error("Kritik Hata: Supabase ortam değişkenleri eksik! Uygulama başlatılamıyor. Lütfen VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerlerini kontrol edin.");
+}
+
+// Env eksikken uygulama geliştirme (dev) ortamında komple çökmesin diye geçici placeholder kullanılır.
 // Asıl kontrol App.jsx içinde isSupabaseReady() ile yapılıyor.
 export const supabase = createClient(
   supabaseUrl || "https://placeholder.supabase.co",

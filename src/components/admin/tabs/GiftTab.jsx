@@ -1,9 +1,16 @@
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
-export function GiftTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }) {
+export function GiftTab({ isEn }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  if (!adminDraft?.settings) return null;
+
   return (
-    <AdminSection title={isEn ? "Gift & IBAN Details" : "Hediye & IBAN Bilgileri"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "Gift & IBAN Details" : "Hediye & IBAN Bilgileri"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label={isEn ? "Show Gift Section" : "Bu bölümü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
         <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={isEn ? "Gift Button for Non-Attending" : "Katılmayanlar İçin Hediye Butonu (Modal)"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />

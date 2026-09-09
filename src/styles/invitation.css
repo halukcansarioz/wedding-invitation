@@ -1538,3 +1538,23 @@ body .app .glass-dock .dock-btn.music-on {
 .pwa-banner-wrapper { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background-color: var(--paper); border: 1.5px solid var(--rose-dark); padding: 12px 20px; border-radius: 999px; box-shadow: 0 12px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 14px; z-index: 99999; width: max-content; max-width: 90vw; }
 .pwa-banner-text { font-size: 14px; font-weight: 800; color: var(--text); }
 .pwa-banner-btn { min-height: 36px; padding: 8px 16px; margin: 0; font-size: 13px; }
+
+/* Floating Menu Buton Animasyon Hızını Yavaşlatma */
+.dock-btn {
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden;
+}
+
+/* Buton Gizlendiğinde Yumuşakça Küçülüp Boşluğu Kapatması İçin */
+.hidden-btn {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: scale(0.4) translateY(10px) !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+

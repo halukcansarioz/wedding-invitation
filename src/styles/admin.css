@@ -4733,3 +4733,36 @@ html body .app .admin-check-field input[type="checkbox"]:checked {
   border-color: #444 !important;
 }
 
+/* =================================================================
+   KÖŞE KIRPILMA HATASI DÜZELTMESİ (CHECKBOX KARTLARI İÇİN)
+   ================================================================= */
+html body .app .admin-check-field,
+html[data-theme] body .app .admin-check-field,
+html body .app .admin-editor-section .admin-check-field {
+  clip-path: none !important;
+  mask-image: none !important;
+  border-radius: 16px !important; /* 2. resimdeki gibi yumuşak ve tam köşe */
+  border: 1.5px solid color-mix(in srgb, var(--amp-color, #9f4f68) 25%, transparent) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+  transform: none !important;
+}
+
+/* Seçili (İşaretlenmiş) Durum İçin Kenarlık Düzeltmesi */
+html body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html[data-theme] body .app .admin-check-field:has(input[type="checkbox"]:checked),
+html body .app .admin-editor-section .admin-check-field:has(input[type="checkbox"]:checked) {
+  border: 2px solid var(--amp-color, #9f4f68) !important;
+  background: color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--amp-color, #9f4f68) 12%, transparent) !important;
+}
+
+/* Koyu (Dark) Tema Uyumluluğu */
+[data-theme="dark"] html body .app .admin-check-field,
+[data-theme="dark"] html body .app .admin-editor-section .admin-check-field {
+  border-color: color-mix(in srgb, var(--amp-color, #e3b6c7) 30%, transparent) !important;
+}
+
+[data-theme="dark"] html body .app .admin-check-field:has(input[type="checkbox"]:checked),
+[data-theme="dark"] html body .app .admin-editor-section .admin-check-field:has(input[type="checkbox"]:checked) {
+  border-color: var(--amp-color, #e3b6c7) !important;
+}

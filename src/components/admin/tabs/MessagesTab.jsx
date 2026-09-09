@@ -1,9 +1,16 @@
 import React from "react";
 import { AdminSection, AdminTextarea } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
-export function MessagesTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }) {
+export function MessagesTab({ isEn }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  if (!adminDraft?.messages) return null;
+
   return (
-    <AdminSection title={isEn ? "WhatsApp Messages" : "WhatsApp Mesajları"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "WhatsApp Messages" : "WhatsApp Mesajları"} onSave={() => saveSiteContent(isEn)}>
       <p className="admin-help-text">
         {isEn ? "Edit default messages sent via invitation link. {couple} represents couple names, {link} is the link." : "Hazır mesajları düzenleyin. {couple} gelin-damat adını, {link} davetiye linkini temsil eder."}
       </p>

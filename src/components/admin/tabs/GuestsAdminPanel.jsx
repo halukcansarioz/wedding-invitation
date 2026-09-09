@@ -3,15 +3,21 @@ import { useTranslation } from "react-i18next";
 import { Virtuoso } from "react-virtuoso";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
 
 export function GuestsAdminPanel({ 
   guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
-  filteredGuests, editGuest, deleteGuest, clearGuests, adminDraft, updateDraftObject,
+  filteredGuests, editGuest, deleteGuest, clearGuests,
   adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
   toggleCheckIn
 }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith("en") || false;
+
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+
+  if (!adminDraft?.settings) return null;
 
   const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
   const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);

@@ -2,9 +2,20 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
 
-export function WishesAdminPanel({ wishes, filteredWishes, adminWishSearch, setAdminWishSearch, adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn, adminDraft, updateDraftObject }) {
+export function WishesAdminPanel({ 
+  wishes, filteredWishes, adminWishSearch, setAdminWishSearch, 
+  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
+  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
+}) {
   const { t } = useTranslation();
+  
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+
+  if (!adminDraft?.settings) return null;
+
   return (
     <AdminSection title={isEn ? "Guestbook Messages" : "Anı Defteri Mesajları"}>
       <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>

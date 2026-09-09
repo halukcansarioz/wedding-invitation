@@ -1,11 +1,18 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
-export function VisibilityTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }) {
+export function VisibilityTab({ isEn }) {
   const { t } = useTranslation();
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  if (!adminDraft?.settings) return null;
+
   return (
-    <AdminSection title={isEn ? "Section Visibility" : "Bölüm Görünürlüğü"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "Section Visibility" : "Bölüm Görünürlüğü"} onSave={() => saveSiteContent(isEn)}>
       <p className="admin-help-text">
         {isEn ? "You can toggle the visibility of sections here." : "Davetiyenizde görünmesini istemediğiniz bölümleri buradan kapatabilirsiniz."}
       </p>

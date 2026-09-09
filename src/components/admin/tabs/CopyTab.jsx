@@ -1,9 +1,16 @@
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
-export function CopyTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }) {
+export function CopyTab({ isEn }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  if (!adminDraft?.copy) return null;
+
   return (
-    <AdminSection title={isEn ? "Headings and Page Texts" : "Başlıklar ve Sayfa Metinleri"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "Headings and Page Texts" : "Başlıklar ve Sayfa Metinleri"} onSave={() => saveSiteContent(isEn)}>
       <p className="admin-help-text">
         {isEn ? "You can change all section titles here." : "Tüm bölüm başlıklarını buradan değiştirebilirsiniz."}
       </p>

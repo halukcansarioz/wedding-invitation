@@ -1,21 +1,32 @@
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
-export function ScheduleTab({ adminDraft, updateDraftObject, saveSiteContent, updateDraftArrayItem, removeDraftArrayItem, addDraftArrayItem, moveDraftArrayItem, isEn }) {
+export function ScheduleTab({ isEn }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+  const updateDraftArrayItem = useStore((state) => state.updateDraftArrayItem);
+  const removeDraftArrayItem = useStore((state) => state.removeDraftArrayItem);
+  const addDraftArrayItem = useStore((state) => state.addDraftArrayItem);
+  const moveDraftArrayItem = useStore((state) => state.moveDraftArrayItem);
+
+  if (!adminDraft?.settings) return null;
+
   return (
-    <AdminSection title={isEn ? "Wedding Schedule" : "Düğün Programı (Akış)"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "Wedding Schedule" : "Düğün Programı (Akış)"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.schedule ?? true} label={isEn ? "Show Schedule Section" : "Düğün Takvimi bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, schedule: v })} />
       </div>
       <div className="admin-repeat-list">
         {(adminDraft.scheduleItems || []).map((item, index) => (
-          <div key={item._id || index} className="admin-repeat-item">
+          <div key={index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Program ${index + 1}` : `Program ${index + 1}`}</strong>
               <AdminActionButtons 
                 onMoveUp={index > 0 ? () => moveDraftArrayItem("scheduleItems", index, -1) : null}
                 onMoveDown={index < (adminDraft.scheduleItems?.length || 0) - 1 ? () => moveDraftArrayItem("scheduleItems", index, 1) : null}
-                onSave={saveSiteContent} onDelete={() => removeDraftArrayItem("scheduleItems", index)} isEn={isEn} 
+                onSave={() => saveSiteContent(isEn)} onDelete={() => removeDraftArrayItem("scheduleItems", index)} isEn={isEn} 
               />
             </div>
             <div className="admin-edit-grid">

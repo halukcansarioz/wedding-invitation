@@ -26,14 +26,11 @@ export function useScrollNavigation(isAdminPage, opened) {
     }
   }, []);
 
-  return { handleScrollUp, handleScrollDown };
-
   const scrollToNext = useCallback(() => {
     const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
     
     const nextSection = sections.find(sec => {
       const rect = sec.getBoundingClientRect();
-      // Ekranın üstünden %20 daha aşağıda beliren ilk slide'ı bul
       return rect.top > window.innerHeight * 0.2; 
     });
     
@@ -49,7 +46,6 @@ export function useScrollNavigation(isAdminPage, opened) {
     
     const prevSection = [...sections].reverse().find(sec => {
       const rect = sec.getBoundingClientRect();
-      // Ekranın altından daha yukarıda olan ilk slide'ı bul
       return rect.bottom < window.innerHeight * 0.8; 
     });
 
@@ -128,6 +124,8 @@ export function useScrollNavigation(isAdminPage, opened) {
     scrollToPrev,
     handleWheel,
     handleTouchStart,
-    handleTouchEnd
+    handleTouchEnd,
+    handleScrollUp,
+    handleScrollDown
   };
 }

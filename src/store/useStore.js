@@ -84,6 +84,20 @@ export const useStore = create((set, get) => ({
     }
   })),
 
+  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
+    const newArray = [...(state.adminDraft[arrayKey] || [])];
+    if (index + direction < 0 || index + direction >= newArray.length) return state;
+    const temp = newArray[index];
+    newArray[index] = newArray[index + direction];
+    newArray[index + direction] = temp;
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: newArray
+      }
+    };
+  }),
+
   saveSiteContent: async (isEn) => {
     const { adminDraft, setSiteData, setAdminDraft, setAdminSaveMessage } = get();
     const cleanedData = normalizeSiteData({ 
@@ -126,4 +140,28 @@ export const useContentStore = create((set, get) => ({
       set({ content: data });
     }
   }
+}));
+
+// ADMIN AUTH STORE: Prop drilling'i önlemek için admin oturum durumları
+export const useAdminStore = create((set) => ({
+  isAdminUnlocked: false,
+  adminUser: null,
+  adminEmail: "",
+  adminError: "",
+  adminLoginNotice: "",
+  
+  setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
+  setAdminUser: (user) => set({ adminUser: user }),
+  setAdminEmail: (email) => set({ adminEmail: email }),
+  setAdminError: (error) => set({ adminError: error }),
+  setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
+  
+  // Çıkış yapıldığında store'u temizlemek için
+  clearAdminAuth: () => set({
+    isAdminUnlocked: false,
+    adminUser: null,
+    adminPassword: "",
+    adminError: "",
+    adminSaveMessage: ""
+  })
 }));
