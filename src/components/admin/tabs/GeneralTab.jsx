@@ -1,13 +1,27 @@
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
 import { getCurrentShareLink } from "../../../utils/helpers";
+import { useStore } from "../../../store/useStore";
 
-export function GeneralTab({ adminDraft, updateDraftObject, saveSiteContent, isEn }) {
+export function GeneralTab({ isEn }) {
+  // REFACTOR: Veriyi props'tan değil, doğrudan Zustand Store'dan alıyoruz
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
   return (
-    <AdminSection title={isEn ? "General Invitation Information" : "Genel Davetiye Bilgileri"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "General Invitation Information" : "Genel Davetiye Bilgileri"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.countdown ?? true} label={isEn ? "Show Countdown Section" : "Geri Sayım bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} />
-        <AdminCheckbox checked={adminDraft.settings.visibility?.location ?? true} label={isEn ? "Show Map & Location" : "Konum bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} />
+        <AdminCheckbox 
+          checked={adminDraft.settings.visibility?.countdown ?? true} 
+          label={isEn ? "Show Countdown Section" : "Geri Sayım bölümünü göster"} 
+          onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, countdown: v })} 
+        />
+        <AdminCheckbox 
+          checked={adminDraft.settings.visibility?.location ?? true} 
+          label={isEn ? "Show Map & Location" : "Konum bölümünü göster"} 
+          onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, location: v })} 
+        />
       </div>
       <div className="admin-edit-grid">
         <AdminField label={isEn ? "Bride Name" : "Gelin adı"} onChange={(v) => updateDraftObject("invitation", "bride", v)} value={adminDraft.invitation.bride} />

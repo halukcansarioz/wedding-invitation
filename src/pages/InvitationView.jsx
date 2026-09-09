@@ -5,14 +5,16 @@ import { Helmet } from "react-helmet-async";
 import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
+
+// REFACTOR: PublicSections ve InteractiveSections yerine doğrudan importlar
 import {
   HeroSection, CountdownSection, InvitationMessageSection, FamilySection,
   CeremonySection, ScheduleSection, LocationSection, GallerySection,
   ShareSection, FooterSection, GiftSection, StorySection
-} from "../components/invitation/PublicSections";
-import {
-  RsvpSection, GuestsListSection, WishesSection
-} from "../components/invitation/InteractiveSections";
+} from "../components/invitation/sections";
+import { RsvpSection } from "../components/invitation/sections/RsvpSection";
+import { GuestsListSection } from "../components/invitation/sections/GuestsListSection";
+import { WishesSection } from "../components/invitation/sections/WishesSection";
 
 export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const { t, i18n } = useTranslation();
@@ -60,7 +62,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   };
 
   const handlePageClick = (e) => {
-    // Hem mobilde hem desktop'ta tıkla-kaydır özelliği aktif
     const isInteractive = e.target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
     if (!isInteractive) {
       e.clientX < window.innerWidth * 0.35 ? scrollToPrev() : scrollToNext();
@@ -69,7 +70,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
 
 return (
     <main className="invitation-page" onClick={handlePageClick}>
-      {/* Dinamik SEO ve OG Etiketleri */}
       <Helmet>
         <title>{coupleName} - Düğün Davetiyesi</title>
         <meta name="description" content={invitation.message} />

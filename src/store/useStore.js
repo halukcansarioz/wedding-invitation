@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { loadStoredSiteData } from '../utils/helpers';
+import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
+import { saveSettingsToDatabase } from '../services/database';
 
 export const useStore = create((set, get) => ({
   siteData: loadStoredSiteData(),
@@ -37,6 +38,7 @@ export const useStore = create((set, get) => ({
     set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
   }),
 
+  // Admin Panel State & Actions
   adminDraft: loadStoredSiteData(),
   setAdminDraft: (draftOrUpdater) => set((state) => ({
     adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
@@ -47,6 +49,61 @@ export const useStore = create((set, get) => ({
   setPersonalLinkName: (name) => set({ personalLinkName: name }),
   dataImportText: "",
   setDataImportText: (text) => set({ dataImportText: text }),
+  adminSaveMessage: "",
+  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
+
+  // --- REFACTOR: Prop Drilling Yerine Global Metotlar ---
+  updateDraftObject: (group, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [group]: {
+        ...state.adminDraft[group],
+        [key]: value
+      }
+    }
+  })),
+
+  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
+    }
+  })),
+
+  addDraftArrayItem: (arrayKey, item) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: [...state.adminDraft[arrayKey], item]
+    }
+  })),
+
+  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
+    }
+  })),
+
+  saveSiteContent: async (isEn) => {
+    const { adminDraft, setSiteData, setAdminDraft, setAdminSaveMessage } = get();
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    });
+    try {
+      await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
+      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    } catch (error) {
+      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+    }
+  }
 }));
 
 export const useContentStore = create((set, get) => ({
