@@ -62,7 +62,7 @@
   .gallery-grid img {
     width: 100% !important;
     height: auto !important;
-    aspect-ratio: 16 / 9 !important; /* Sinematik görünüm */
+    padding-bottom: 16 / 9 !important;
     object-fit: cover !important;
     margin: 0 !important;
     border-radius: 14px !important;

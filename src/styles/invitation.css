@@ -1418,9 +1418,9 @@ body .app .glass-dock .dock-btn.music-on {
 .invitation-section {
   /* 1. Yükseklik sınırlarını iptal et */
   height: auto !important; 
-  min-height: auto !important; 
-  max-content: fit-content;
-  
+  height: max-content !important;
+  width: fit-content !important;
+
   /* 2. Flex ortalamasını sıfırla ki boşlukları zorla uzatmasın */
   display: block; /* Veya flex kullanıyorsan justify-content: flex-start; yap */
   

@@ -1839,8 +1839,8 @@ button,
 
 .invitation-page > section:not(.hero-section),
 .invitation-page > footer {
-  min-height: auto !important; 
-  height: max-content !important; /* Sadece yazılar/içerik kadar uzasın */
+  min-height: unset !important;
+  height: max-content !important;
   
   /* Kartı kenarlardan ve diğer kartlardan ayır */
   margin: 32px 16px !important; 
