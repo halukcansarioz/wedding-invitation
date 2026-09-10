@@ -527,7 +527,7 @@ html body .app .floating-actions .hidden-btn {
     min-height: 100vh !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    touch-action: pan-y !important;
+    scroll-snap-type: y proximity !important;
     -webkit-user-select: none;
     user-select: none;
   }
@@ -538,7 +538,6 @@ html body .app .floating-actions .hidden-btn {
     height: auto !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    touch-action: pan-y !important;
     scroll-snap-type: y proximity !important;
     display: block !important;
     padding: max(env(safe-area-inset-left), 0px) max(env(safe-area-inset-right), 0px) max(env(safe-area-inset-bottom), 0px) max(env(safe-area-inset-left), 0px);
@@ -1532,22 +1531,18 @@ input[type="search"] {
 
   .invitation-page {
     position: relative !important;
-    inset: auto !important;
     width: 100% !important;
     height: auto !important;
     min-height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
-    display: block !important;
-    scroll-snap-type: y proximity !important;
   }
 
   .invitation-page > section,
   .invitation-page > footer {
     display: flex !important;
     position: relative !important;
-    inset: auto !important;
     width: 100vw !important;
     max-width: 100vw !important;
     margin-left: calc(50% - 50vw) !important;
@@ -1611,7 +1606,7 @@ input[type="search"] {
   .invitation-page .schedule-item {
     min-width: 0 !important;
     max-width: 100% !important;
-    overflow-wrap: anywhere !important;
+    overflow-wrap: break-word !important;
   }
 
   .invitation-page .story-timeline-container {
@@ -1643,13 +1638,13 @@ input[type="search"] {
     top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    overflow-wrap: anywhere !important;
+    overflow-wrap: break-word !important;
   }
 
   .invitation-page .wish-list,
   .invitation-page .guest-list {
     flex: 0 0 auto !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
   }
