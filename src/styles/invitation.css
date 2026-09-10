@@ -1641,3 +1641,20 @@ body .app .glass-dock .dock-btn.music-on {
 .hero-title {
   text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
 }
+.gift-copy-button {
+  margin-top: 28px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  position: relative;
+  z-index: 2;
+}
+.btn, .floating-menu-btn, button, .main-button, .secondary-button, .option-button { 
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s !important; 
+  will-change: transform; 
+}
+.btn:hover, button:hover, .main-button:hover, .secondary-button:hover, .option-button:hover { 
+  transform: translateY(-5px) !important; 
+}
+.btn:active, button:active, .main-button:active, .secondary-button:active, .option-button:active { 
+  transform: translateY(2px) !important; 
+}
