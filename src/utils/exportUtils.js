@@ -23,7 +23,10 @@ export const createCsv = (headers, rows) => {
   rows.forEach((row) => {
     lines.push(headers.map((header) => csvEscape(row[header])).join(";"));
   });
-  return `\ufeff${lines.join("\n")}`;
+  
+  // \ufeff (BOM) Türkçe karakterlerin düzgün görünmesini sağlar.
+  // sep=;\n ibaresi ise Excel'in sütunları otomatik olarak ayırmasını garantiler.
+  return `\ufeffsep=;\n${lines.join("\n")}`;
 };
 
 export const excelEscape = (value) =>
