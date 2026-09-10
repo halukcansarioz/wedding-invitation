@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '../store/useStore';
-import useAdminSession from '../hooks/useAdminSession';
+import { useStore, useAdminStore } from '../store/useStore';
+import { useAdminSession } from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
 import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
@@ -15,9 +15,8 @@ export default function AdminController() {
   const isEn = i18n.language?.startsWith('en') || false;
   const navigate = useNavigate();
 
-  // Zustand
+  // Zustand Store'lar
   const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
   const guests = useStore((state) => state.guests);
   const setGuests = useStore((state) => state.setGuests);
   const wishes = useStore((state) => state.wishes);
@@ -26,38 +25,14 @@ export default function AdminController() {
   const showAppPrompt = useStore((state) => state.showAppPrompt);
   
   const adminDraft = useStore((state) => state.adminDraft);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-  const activeAdminTab = useStore((state) => state.activeAdminTab);
-  const setActiveAdminTab = useStore((state) => state.setActiveAdminTab);
   const personalLinkName = useStore((state) => state.personalLinkName);
   const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
   const dataImportText = useStore((state) => state.dataImportText);
   const setDataImportText = useStore((state) => state.setDataImportText);
-  const adminSaveMessage = useStore((state) => state.adminSaveMessage);
-  const setAdminSaveMessage = useStore((state) => state.setAdminSaveMessage);
+  
+  const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
 
-  // State Management
-  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
-  const [adminUser, setAdminUser] = useState(null);
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPassword, setAdminPassword] = useState("");
-  const [adminAuthLoading, setAdminAuthLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
-  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
-  const [recoveryPassword, setRecoveryPassword] = useState("");
-  const [recoveryPasswordAgain, setRecoveryPasswordAgain] = useState("");
-  const [recoveryMessage, setRecoveryMessage] = useState("");
-  const [recoveryLoading, setRecoveryLoading] = useState(false);
-  const [adminError, setAdminError] = useState("");
-  const [adminLoginNotice, setAdminLoginNotice] = useState("");
-  const [adminCurrentPassword, setAdminCurrentPassword] = useState("");
-  const [adminNewPassword, setAdminNewPassword] = useState("");
-  const [adminNewPasswordAgain, setAdminNewPasswordAgain] = useState("");
-  const [adminPasswordMessage, setAdminPasswordMessage] = useState("");
-
+  // Lokal Form & Filtre Durumları
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
   const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
   const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
@@ -69,15 +44,8 @@ export default function AdminController() {
   const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
   const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
 
-  const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({
-    isAdminPage: true, adminEmail, adminPassword, adminUser, adminCurrentPassword, adminNewPassword, adminNewPasswordAgain,
-    recoveryPassword, recoveryPasswordAgain, siteData, isAdminUnlocked, setAdminEmail, setAdminPassword, setAdminUser,
-    setIsAdminUnlocked, setAdminError, setAdminLoginNotice, setShowForgotPassword, setForgotPasswordEmail,
-    setForgotPasswordMessage, setAdminPasswordMessage, setAdminSaveMessage, setAdminCurrentPassword, setAdminNewPassword,
-    setAdminNewPasswordAgain, setRecoveryPassword, setRecoveryPasswordAgain, setRecoveryMessage, setRecoveryLoading,
-    setForgotPasswordLoading, setAdminAuthLoading, setIsPasswordRecovery, setActiveAdminTab, setSiteData, setAdminDraft,
-    setGuests, setWishes, showAppConfirm, isEn
-  });
+  // Auth Methodları
+  const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
 
   const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn } = useDatabaseManager({
     guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
@@ -86,7 +54,6 @@ export default function AdminController() {
   const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
 
   const closeAdminPage = useCallback(() => navigate("/"), [navigate]);
-  const openAdminTab = useCallback((tabId) => setActiveAdminTab(tabId), [setActiveAdminTab]);
 
   const filteredGuests = useMemo(() => guests.filter((guest) => {
     const searchMatch = normalizeText(`${guest.name} ${guest.phone}`).includes(normalizeText(adminGuestSearch));
@@ -109,19 +76,13 @@ export default function AdminController() {
   return (
     <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
       <AdminView
-        isAdminUnlocked={isAdminUnlocked} isPasswordRecovery={isPasswordRecovery} showForgotPassword={showForgotPassword}
-        adminEmail={adminEmail} adminPassword={adminPassword} recoveryPassword={recoveryPassword} recoveryPasswordAgain={recoveryPasswordAgain}
-        recoveryLoading={recoveryLoading} recoveryMessage={recoveryMessage} forgotPasswordEmail={forgotPasswordEmail}
-        forgotPasswordLoading={forgotPasswordLoading} forgotPasswordMessage={forgotPasswordMessage} adminAuthLoading={adminAuthLoading}
-        adminLoginNotice={adminLoginNotice} adminError={adminError} adminSaveMessage={adminSaveMessage} activeAdminTab={activeAdminTab}
-        setAdminEmail={setAdminEmail} setAdminPassword={setAdminPassword} setForgotPasswordEmail={setForgotPasswordEmail}
-        setShowForgotPassword={setShowForgotPassword} setAdminError={setAdminError} setAdminLoginNotice={setAdminLoginNotice}
-        setRecoveryPassword={setRecoveryPassword} setRecoveryPasswordAgain={setRecoveryPasswordAgain} setRecoveryMessage={setRecoveryMessage}
-        setForgotPasswordMessage={setForgotPasswordMessage} submitAdminPassword={submitAdminPassword} completePasswordRecovery={completePasswordRecovery}
-        sendPasswordResetEmail={sendPasswordResetEmail} openAdminTab={openAdminTab} logoutAdmin={logoutAdmin} closeAdminPage={closeAdminPage} 
-        changeAdminPassword={changeAdminPassword} adminCurrentPassword={adminCurrentPassword} setAdminCurrentPassword={setAdminCurrentPassword} 
-        adminNewPassword={adminNewPassword} setAdminNewPassword={setAdminNewPassword} adminNewPasswordAgain={adminNewPasswordAgain} 
-        setAdminNewPasswordAgain={setAdminNewPasswordAgain} adminPasswordMessage={adminPasswordMessage}
+        submitAdminPassword={submitAdminPassword} 
+        completePasswordRecovery={completePasswordRecovery}
+        sendPasswordResetEmail={sendPasswordResetEmail} 
+        changeAdminPassword={changeAdminPassword} 
+        logoutAdmin={logoutAdmin} 
+        closeAdminPage={closeAdminPage} 
+        
         guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
         adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
         adminGuestSideFilter={adminGuestSideFilter} setAdminGuestSideFilter={setAdminGuestSideFilter} adminGuestChildFilter={adminGuestChildFilter}

@@ -38,7 +38,6 @@ export const useStore = create((set, get) => ({
     set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
   }),
 
-  // Admin Panel State & Actions
   adminDraft: loadStoredSiteData(),
   setAdminDraft: (draftOrUpdater) => set((state) => ({
     adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
@@ -49,10 +48,7 @@ export const useStore = create((set, get) => ({
   setPersonalLinkName: (name) => set({ personalLinkName: name }),
   dataImportText: "",
   setDataImportText: (text) => set({ dataImportText: text }),
-  adminSaveMessage: "",
-  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
 
-  // --- REFACTOR: Prop Drilling Yerine Global Metotlar ---
   updateDraftObject: (group, key, value) => set((state) => ({
     adminDraft: {
       ...state.adminDraft,
@@ -99,7 +95,9 @@ export const useStore = create((set, get) => ({
   }),
 
   saveSiteContent: async (isEn) => {
-    const { adminDraft, setSiteData, setAdminDraft, setAdminSaveMessage } = get();
+    const { adminDraft, setSiteData, setAdminDraft } = get();
+    // Use useAdminStore for saving messages
+    const { setAdminSaveMessage } = useAdminStore.getState();
     const cleanedData = normalizeSiteData({ 
       ...adminDraft, 
       invitation: { 
@@ -120,48 +118,62 @@ export const useStore = create((set, get) => ({
   }
 }));
 
-export const useContentStore = create((set, get) => ({
-  currentLang: 'tr',
-  content: loadStoredSiteData(),
-  
-  setLang: async (lang) => {
-    set({ currentLang: lang });
-    await get().fetchContent(lang);
-  },
-
-  fetchContent: async (lang) => {
-    const { data, error } = await supabase
-      .from('site_content')
-      .select('*')
-      .eq('lang_code', lang)
-      .single();
-
-    if (!error && data) {
-      set({ content: data });
-    }
-  }
-}));
-
-// ADMIN AUTH STORE: Prop drilling'i önlemek için admin oturum durumları
+// PROP DRILLING ÇÖZÜMÜ: Yalnızca Admin Authentication ve form State'ini tutan bağımsız bir store.
 export const useAdminStore = create((set) => ({
   isAdminUnlocked: false,
   adminUser: null,
   adminEmail: "",
+  adminPassword: "",
   adminError: "",
   adminLoginNotice: "",
-  
+  adminSaveMessage: "",
+  adminAuthLoading: false,
+  showForgotPassword: false,
+  forgotPasswordEmail: "",
+  forgotPasswordMessage: "",
+  forgotPasswordLoading: false,
+  isPasswordRecovery: false,
+  recoveryPassword: "",
+  recoveryPasswordAgain: "",
+  recoveryMessage: "",
+  recoveryLoading: false,
+  adminCurrentPassword: "",
+  adminNewPassword: "",
+  adminNewPasswordAgain: "",
+  adminPasswordMessage: "",
+
   setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
   setAdminUser: (user) => set({ adminUser: user }),
   setAdminEmail: (email) => set({ adminEmail: email }),
+  setAdminPassword: (pass) => set({ adminPassword: pass }),
   setAdminError: (error) => set({ adminError: error }),
   setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
-  
-  // Çıkış yapıldığında store'u temizlemek için
+  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
+  setAdminAuthLoading: (loading) => set({ adminAuthLoading: loading }),
+  setShowForgotPassword: (show) => set({ showForgotPassword: show }),
+  setForgotPasswordEmail: (email) => set({ forgotPasswordEmail: email }),
+  setForgotPasswordMessage: (msg) => set({ forgotPasswordMessage: msg }),
+  setForgotPasswordLoading: (loading) => set({ forgotPasswordLoading: loading }),
+  setIsPasswordRecovery: (isRec) => set({ isPasswordRecovery: isRec }),
+  setRecoveryPassword: (pass) => set({ recoveryPassword: pass }),
+  setRecoveryPasswordAgain: (pass) => set({ recoveryPasswordAgain: pass }),
+  setRecoveryMessage: (msg) => set({ recoveryMessage: msg }),
+  setRecoveryLoading: (loading) => set({ recoveryLoading: loading }),
+  setAdminCurrentPassword: (pass) => set({ adminCurrentPassword: pass }),
+  setAdminNewPassword: (pass) => set({ adminNewPassword: pass }),
+  setAdminNewPasswordAgain: (pass) => set({ adminNewPasswordAgain: pass }),
+  setAdminPasswordMessage: (msg) => set({ adminPasswordMessage: msg }),
+
   clearAdminAuth: () => set({
     isAdminUnlocked: false,
     adminUser: null,
     adminPassword: "",
     adminError: "",
-    adminSaveMessage: ""
+    showForgotPassword: false,
+    forgotPasswordMessage: "",
+    adminPasswordMessage: "",
+    adminCurrentPassword: "",
+    adminNewPassword: "",
+    adminNewPasswordAgain: ""
   })
 }));

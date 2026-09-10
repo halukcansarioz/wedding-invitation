@@ -1,19 +1,24 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AdminLogin } from "./admin/auth/AdminLogin";
+import { useAdminStore, useStore } from "../store/useStore";
 
 function AdminDashboard(props) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
+  // Zustand
+  const { isAdminUnlocked, adminSaveMessage } = useAdminStore();
+  const { activeAdminTab, setActiveAdminTab, saveSiteContent } = useStore();
+
   const {
-    isAdminUnlocked, closeAdminPage, toggleMusic, isMusicPlaying,
-    activeAdminTab, activeTabInfo, adminTabs, openAdminTab,
-    saveSiteContent, resetSiteContent, logoutAdmin, adminSaveMessage,
-    renderAdminActivePanel
+    closeAdminPage, toggleMusic, isMusicPlaying,
+    activeTabInfo, adminTabs, resetSiteContent, logoutAdmin,
+    renderAdminActivePanel, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
   } = props;
 
   const toggleLanguage = () => i18n.changeLanguage(isEn ? 'tr' : 'en');
+  const openAdminTab = (tabId) => setActiveAdminTab(tabId);
 
   const enhancedAdminTabs = useMemo(() => {
     const tabs = [];
@@ -79,7 +84,12 @@ function AdminDashboard(props) {
         </div>
 
         {!isAdminUnlocked ? (
-          <AdminLogin {...props} isEn={isEn} />
+          <AdminLogin 
+            isEn={isEn} 
+            submitAdminPassword={submitAdminPassword} 
+            completePasswordRecovery={completePasswordRecovery} 
+            sendPasswordResetEmail={sendPasswordResetEmail} 
+          />
         ) : (
           <div className="admin-layout">
             <aside className="admin-sidebar">
@@ -111,7 +121,7 @@ function AdminDashboard(props) {
                   </div>
                   
                   <div className="admin-actions-btn-group">
-                    <button type="button" className="main-button" onClick={saveSiteContent}>
+                    <button type="button" className="main-button" onClick={() => saveSiteContent(isEn)}>
                       {isEn ? "Save Changes 💾" : "Değişiklikleri Kaydet 💾"}
                     </button>
                     <button type="button" className="secondary-button" onClick={resetSiteContent}>

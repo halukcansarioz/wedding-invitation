@@ -1,14 +1,19 @@
 import React from "react";
+import { useAdminStore } from "../../../store/useStore";
 
 export function AdminLogin({
-  isEn, isPasswordRecovery, showForgotPassword, adminEmail, adminPassword,
-  recoveryPassword, recoveryPasswordAgain, recoveryLoading, recoveryMessage,
-  forgotPasswordEmail, forgotPasswordLoading, forgotPasswordMessage,
-  adminAuthLoading, adminLoginNotice, adminError, setAdminEmail, setAdminPassword,
-  setForgotPasswordEmail, setShowForgotPassword, setAdminError, setAdminLoginNotice,
-  setRecoveryPassword, setRecoveryPasswordAgain, setForgotPasswordMessage,
-  submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
+  isEn, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
 }) {
+  const {
+    isPasswordRecovery, showForgotPassword, adminEmail, adminPassword,
+    recoveryPassword, recoveryPasswordAgain, recoveryLoading, recoveryMessage,
+    forgotPasswordEmail, forgotPasswordLoading, forgotPasswordMessage,
+    adminAuthLoading, adminLoginNotice, adminError,
+    setAdminEmail, setAdminPassword, setForgotPasswordEmail, setShowForgotPassword,
+    setAdminError, setAdminLoginNotice, setRecoveryPassword, setRecoveryPasswordAgain,
+    setForgotPasswordMessage
+  } = useAdminStore();
+
   if (isPasswordRecovery) {
     return (
       <form className="admin-login admin-recovery-form" onSubmit={completePasswordRecovery}>

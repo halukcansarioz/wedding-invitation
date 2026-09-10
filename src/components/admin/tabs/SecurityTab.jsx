@@ -1,9 +1,18 @@
 import React from "react";
 import { AdminSection, AdminField } from "../../AdminUI";
+import { useStore, useAdminStore } from "../../../store/useStore";
 
-export function SecurityTab({ saveSiteContent, adminCurrentPassword, setAdminCurrentPassword, adminNewPassword, setAdminNewPassword, adminNewPasswordAgain, setAdminNewPasswordAgain, changeAdminPassword, adminPasswordMessage, isEn }) {
+export function SecurityTab({ changeAdminPassword, isEn }) {
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+  const {
+    adminCurrentPassword, setAdminCurrentPassword,
+    adminNewPassword, setAdminNewPassword,
+    adminNewPasswordAgain, setAdminNewPasswordAgain,
+    adminPasswordMessage
+  } = useAdminStore();
+
   return (
-    <AdminSection title={isEn ? "Admin Password" : "Admin Şifresi"} onSave={saveSiteContent}>
+    <AdminSection title={isEn ? "Admin Password" : "Admin Şifresi"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-edit-grid">
         <AdminField label={isEn ? "Current Password" : "Mevcut Şifre"} onChange={setAdminCurrentPassword} value={adminCurrentPassword} type="password" />
         <AdminField label={isEn ? "New Password" : "Yeni Şifre"} onChange={setAdminNewPassword} value={adminNewPassword} type="password" />

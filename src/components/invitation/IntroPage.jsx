@@ -43,7 +43,10 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
         <div className="envelope-back"></div>
 
         <div className="intro-card">
-          <div className="leaf-mark" aria-hidden="true"></div>
+          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
+            ❀
+          </div>
+          
           <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
 
           <h1 className="couple-title">
