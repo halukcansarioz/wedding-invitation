@@ -6,17 +6,17 @@ import trTranslation from './locales/tr.json';
 import enTranslation from './locales/en.json';
 
 i18n
-  .use(LanguageDetector) // Tarayıcı dilini otomatik algılar
+  .use(LanguageDetector) 
   .use(initReactI18next)
   .init({
     resources: {
       tr: { translation: trTranslation },
       en: { translation: enTranslation }
     },
-    fallbackLng: 'tr', // Varsayılan dil
+    fallbackLng: 'tr', 
     debug: false,
     interpolation: {
-      escapeValue: false, // React zaten XSS koruması sağlıyor
+      escapeValue: false, 
     }
   });
 

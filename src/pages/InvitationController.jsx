@@ -8,6 +8,7 @@ import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTab
 import { useAssetPreloader } from "../hooks/useAssetPreloader";
 import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
 import { useStore } from "../store/useStore";
+import '../styles/invitation.css';
 
 const InvitationView = lazy(() => import("./InvitationView"));
 

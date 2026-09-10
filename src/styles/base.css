@@ -1864,3 +1864,47 @@ button,
   flex-direction: column !important;
   align-items: center !important;
 }
+
+.gift-card button, 
+.gift-section button,
+.iban-container button {
+    margin-top: 24px !important;
+    position: relative;
+    z-index: 2;
+}
+
+.iban-container, 
+.gift-details {
+    padding-bottom: 20px; 
+}
+
+.hero-icon,
+.intro-icon,
+.flower-icon,
+.section-icon {
+    background-color: transparent !important;
+    background: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* --- TÜM BUTONLAR İÇİN ZIPLAMA EFEKTİ --- */
+
+button,
+.btn,
+.floating-menu-btn {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease !important;
+    will-change: transform;
+}
+
+button:hover,
+.btn:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important; 
+}
+
+button:active,
+.btn:active {
+    transform: translateY(2px) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}

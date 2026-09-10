@@ -6,6 +6,7 @@ import useAdminSession from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
 import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
+import '../styles/admin.css';
 
 const AdminView = lazy(() => import('./AdminView'));
 

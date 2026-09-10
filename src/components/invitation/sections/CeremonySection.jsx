@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
+import { LocalizedDate } from "../../common/LocalizedDate";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -16,6 +17,11 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
       <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
       <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
+      
+      <div className="ceremony-date" style={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}>
+        <LocalizedDate dateString="2026-08-22T19:00:00" />
+      </div>
+
       <div className="ceremony-grid">
         {events.map((event, index) => (
           <div className="ceremony-item" key={`${event.label}-${index}`}>

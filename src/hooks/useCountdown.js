@@ -7,6 +7,9 @@ export function useCountdown(weddingDate) {
     const targetDate = new Date(weddingDate);
 
     const updateCountdown = () => {
+      // Sayfa aktif değilse (arka plandaysa) hesaplama yapmayı durdur
+      if (document.hidden) return; 
+      
       const diff = targetDate.getTime() - Date.now();
 
       if (Number.isNaN(diff) || diff <= 0) {
