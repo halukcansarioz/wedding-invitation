@@ -1,0 +1,16 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "ignore": [
+    "node_modules/**",
+    "playwright-report/**",
+    "test-results/**",
+    "public/**",
+    "dist/**"
+  ]
+}
