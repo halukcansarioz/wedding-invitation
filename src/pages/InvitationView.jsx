@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -6,7 +6,6 @@ import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
 
-// REFACTOR: PublicSections ve InteractiveSections yerine doğrudan importlar
 import {
   HeroSection, CountdownSection, InvitationMessageSection, FamilySection,
   CeremonySection, ScheduleSection, LocationSection, GallerySection,
@@ -20,7 +19,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
 
-  // Zustand Store Bağlantıları
   const siteData = useStore((state) => state.siteData);
   const guests = useStore((state) => state.guests);
   const wishes = useStore((state) => state.wishes);
@@ -29,7 +27,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const showAppAlert = useStore((state) => state.showAppAlert);
   const showAppConfirm = useStore((state) => state.showAppConfirm);
 
-  // Türetilmiş Veriler
   const { invitation, settings, copy, familyInfo, messages, storyTimeline, eventDetails, scheduleItems, giftRegistry } = siteData;
   const coupleName = `${invitation.bride} & ${invitation.groom}`;
   const personalGuestName = getGuestNameFromUrl();
@@ -52,6 +49,11 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
     guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
   });
 
+  // Zarf açıldığında görünümün her zaman en üstten başlamasını garanti eder
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const copyInvitationLink = async () => {
     try {
       await navigator.clipboard.writeText(currentShareLink);
@@ -62,14 +64,33 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   };
 
   const handlePageClick = (e) => {
-    const isInteractive = e.target.closest('button, a, input, textarea, select, .dock-btn, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
-    if (!isInteractive) {
-      e.clientX < window.innerWidth * 0.35 ? scrollToPrev() : scrollToNext();
+    if (window.innerWidth > 768) return;
+    
+    // Tıklanan hedefi güvenli bir şekilde yakala
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('.floating-actions, .glass-dock, .dock-btn')) return;
+    
+    const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
+    if (isInteractive) return;
+
+    if (e.clientX < window.innerWidth * 0.35) {
+      if (typeof scrollToPrev === 'function') scrollToPrev();
+    } else {
+      if (typeof scrollToNext === 'function') scrollToNext();
     }
   };
 
-return (
-    <main className="invitation-page" onClick={handlePageClick}>
+  return (
+    <main 
+      className="invitation-page" 
+      onClick={handlePageClick}
+      style={{ 
+        '--hero-image': `url(${invitation.heroImage})`, 
+        '--intro-image': `url(${invitation.introImage})` 
+      }}
+    >
       <Helmet>
         <title>{coupleName} - Düğün Davetiyesi</title>
         <meta name="description" content={invitation.message} />

@@ -1,8 +1,15 @@
 import React, { memo } from "react";
 
 export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, toggleLanguage, shareText, toggleMusic, isMusicPlaying, 
-  showScrollDown, scrollToNext, showScrollTop, scrollToPrev 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
 }) {
   return (
     <>
@@ -16,8 +23,11 @@ export const FloatingMenu = memo(function FloatingMenu({
         </a>
       </div>
 
-      {/* DÜZELTME: Hatalı style özelliği silindi, sınıflar CSS'e bırakıldı */}
-      <div className="floating-actions glass-dock">
+      {/* Menü bloğuna zIndex: 999999 ve pointerEvents: 'auto' eklenerek her zaman tıklanabilir yapıldı */}
+      <div 
+        className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}
+        style={{ zIndex: 999999, pointerEvents: 'auto' }}
+      >
         
         <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
@@ -65,7 +75,6 @@ export const FloatingMenu = memo(function FloatingMenu({
             <polyline points="19 12 12 19 5 12"></polyline>
           </svg>
         </button>
-
       </div>
     </>
   );

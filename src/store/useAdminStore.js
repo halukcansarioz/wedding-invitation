@@ -1,0 +1,33 @@
+import { create } from 'zustand';
+
+export const useAdminStore = create((set) => ({
+  isAdminUnlocked: false,
+  adminUser: null,
+  adminEmail: "",
+  adminPassword: "",
+  adminAuthLoading: false,
+  showForgotPassword: false,
+  forgotPasswordEmail: "",
+  forgotPasswordMessage: "",
+  forgotPasswordLoading: false,
+  isPasswordRecovery: false,
+  recoveryPassword: "",
+  recoveryPasswordAgain: "",
+  recoveryMessage: "",
+  recoveryLoading: false,
+  adminError: "",
+  adminLoginNotice: "",
+  adminCurrentPassword: "",
+  adminNewPassword: "",
+  adminNewPasswordAgain: "",
+  adminPasswordMessage: "",
+  adminSaveMessage: "",
+  adminGuestSearch: "",
+  adminGuestAttendanceFilter: "all",
+  adminGuestSideFilter: "all",
+  adminGuestChildFilter: "all",
+  adminWishSearch: "",
+  adminWishStatusFilter: "all",
+
+  setAdminState: (updates) => set((state) => ({ ...state, ...updates })),
+}));

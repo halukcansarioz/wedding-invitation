@@ -44,21 +44,7 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     
     try {
       const dbData = uiGuestToDb(formData);
-      // RPC ile Rate Limit Kontrollü Kayıt (Supabase'de RPC fonksiyonunu oluşturduğunu varsayıyoruz)
       let { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
-      
-      // Veritabanına kayıt başarılı olduktan hemen sonra çalışacak tetikleyici:
-      if (dbData.email) {
-        fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: dbData.email,
-            firstName: dbData.first_name, 
-            isAttending: dbData.is_attending 
-          })
-        }).catch(err => console.error("Mail gönderilemedi:", err));
-      }
 
       if (error) {
         if (error.message === 'RATE_LIMIT_EXCEEDED') {
@@ -123,13 +109,13 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     }
   }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
 
-  const clearGuests = useCallback(async () => { /* ... */ }, []);
-  const clearWishes = useCallback(async () => { /* ... */ }, []);
-  const deleteGuest = useCallback(async (guestId) => { /* ... */ }, []);
-  const editGuest = useCallback(async (guestId) => { /* ... */ }, []);
-  const deleteWish = useCallback(async (wishId) => { /* ... */ }, []);
-  const editWish = useCallback(async (wishId) => { /* ... */ }, []);
-  const toggleWishApproval = useCallback(async (wishId) => { /* ... */ }, []);
+  const clearGuests = useCallback(async () => { /* Supabase delete methods */ }, []);
+  const clearWishes = useCallback(async () => { /* Supabase delete methods */ }, []);
+  const deleteGuest = useCallback(async (guestId) => { /* Supabase delete methods */ }, []);
+  const editGuest = useCallback(async (guestId) => { /* Supabase update methods */ }, []);
+  const deleteWish = useCallback(async (wishId) => { /* Supabase delete methods */ }, []);
+  const editWish = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
+  const toggleWishApproval = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
 
   const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
     const nextStatus = !currentStatus;
