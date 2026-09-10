@@ -1382,8 +1382,16 @@ button {
 .envelope-flap::before,
 .envelope-front::before {
   background-color: var(--amp-color);
+  
   -webkit-mask-image: var(--theme-flower-svg);
+  mask-image: var(--theme-flower-svg);
   -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  
 }
 .gift-card .gift-card-receiver {
   font-size: 22px !important;
@@ -1409,9 +1417,11 @@ button {
   right: 0;
   bottom: 0;
   left: 0;
+  -webkit-mask-image: var(--theme-flower-svg);
   mask-image: var(--theme-flower-svg);
   -webkit-mask-size: 85px 85px;
   mask-size: 85px 85px;
+  -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
@@ -1423,9 +1433,11 @@ button {
 .leaf-mark {
   width: 24px;
   height: 24px;
+  -webkit-mask-image: var(--theme-flower-svg);
   mask-image: var(--theme-flower-svg);
   -webkit-mask-size: contain;
   mask-size: contain;
+  -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;

@@ -343,7 +343,12 @@ body .app .invitation-page .hero-section::after {
 .envelope-front::before,
 .leaf-mark {
   background-color: var(--amp-color);
+  -webkit-mask-image: var(--theme-flower-svg);
+  mask-image: var(--theme-flower-svg);
   -webkit-mask-position: center;
+  mask-position: center;
+ -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 .envelope-flap::before,
 .envelope-front::before {
@@ -357,6 +362,7 @@ body .app .invitation-page .hero-section::after {
   mask-image: var(--theme-flower-svg);
   -webkit-mask-size: 100px 100px;
   mask-size: 100px 100px;
+  -webkit-mask-position: center;
   mask-position: center;
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
