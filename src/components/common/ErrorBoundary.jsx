@@ -1,5 +1,5 @@
 import React from 'react';
-// import * as Sentry from '@sentry/react'; // Canlıya çıkarken aktif edebilirsiniz
+// import * as Sentry from '@sentry/react'; // Şimdilik tekrar yoruma aldık
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -14,7 +14,7 @@ export class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error("React Error Boundary Yakaladı:", error, errorInfo);
     
-    // SENTRY ENTEGRASYONU (ÖNERİ)
+    // SENTRY ENTEGRASYONU ŞİMDİLİK İPTAL
     // Sentry.captureException(error, { extra: errorInfo });
   }
 

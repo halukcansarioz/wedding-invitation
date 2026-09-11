@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
 
@@ -7,7 +7,8 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
 };
 
-export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+// React.memo ile sarmalandı
+export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   const isPostWedding = settings?.isPostWedding;
@@ -67,4 +68,4 @@ export function HeroSection({ invitation, copy, guestGreeting, personalTableNumb
       </div>
     </m.section>
   );
-}
+});

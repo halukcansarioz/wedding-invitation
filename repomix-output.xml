@@ -4069,6 +4069,68 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
 });
 </file>
 
+<file path="src/hooks/useAudio.js">
+import { useRef, useState, useEffect, useCallback } from "react";
+import { DEFAULT_WEDDING_MUSIC_FILE } from "../config/constants";
+
+export function useAudio(musicFile) {
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
+  }, [musicFile]);
+
+  const stopMusic = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsMusicPlaying(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wedding-music-muted", "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopMusic();
+    };
+  }, [stopMusic]);
+
+  const startMusic = useCallback(async (forcePlay = false) => {
+    if (forcePlay !== true && typeof window !== "undefined") {
+      if (localStorage.getItem("wedding-music-muted") === "true") {
+        return;
+      }
+    }
+
+    try {
+      if (musicFile && audioRef.current) {
+        audioRef.current.volume = 0.15;
+        await audioRef.current.play();
+        setIsMusicPlaying(true);
+        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
+      }
+    } catch (error) {
+      console.error("Müzik başlatılamadı:", error);
+      setIsMusicPlaying(false);
+    }
+  }, [musicFile]);
+
+  const toggleMusic = useCallback(async () => {
+    if (isMusicPlaying) {
+      stopMusic();
+    } else {
+      await startMusic(true);
+    }
+  }, [isMusicPlaying, stopMusic, startMusic]);
+
+  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
+}
+</file>
+
 <file path="src/styles/modals.css">
 .global-modal-input,
 .global-modal-text,
@@ -4144,68 +4206,6 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
 }
 .global-modal-input:focus {
   border-color: var(--rose-dark);
-}
-</file>
-
-<file path="src/hooks/useAudio.js">
-import { useRef, useState, useEffect, useCallback } from "react";
-import { DEFAULT_WEDDING_MUSIC_FILE } from "../config/constants";
-
-export function useAudio(musicFile) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
-    }
-  }, [musicFile]);
-
-  const stopMusic = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setIsMusicPlaying(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("wedding-music-muted", "true");
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      stopMusic();
-    };
-  }, [stopMusic]);
-
-  const startMusic = useCallback(async (forcePlay = false) => {
-    if (forcePlay !== true && typeof window !== "undefined") {
-      if (localStorage.getItem("wedding-music-muted") === "true") {
-        return;
-      }
-    }
-
-    try {
-      if (musicFile && audioRef.current) {
-        audioRef.current.volume = 0.15;
-        await audioRef.current.play();
-        setIsMusicPlaying(true);
-        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
-      }
-    } catch (error) {
-      console.error("Müzik başlatılamadı:", error);
-      setIsMusicPlaying(false);
-    }
-  }, [musicFile]);
-
-  const toggleMusic = useCallback(async () => {
-    if (isMusicPlaying) {
-      stopMusic();
-    } else {
-      await startMusic(true);
-    }
-  }, [isMusicPlaying, stopMusic, startMusic]);
-
-  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
 }
 </file>
 
@@ -5045,458 +5045,6 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
 }
 </file>
 
-<file path="src/i18n/locales/en.json">
-{
-  "invitation": {
-    "introLabel": "Wedding Invitation",
-    "introText": "You are invited to the most special day of our love story.",
-    "openButton": "Open Invitation 💌",
-    "heroLabel": "We Are Getting Married",
-    "countdownLabel": "Countdown",
-    "countdownTitle": "Time Left Until Our Wedding",
-    "invitationLabel": "Invitation",
-    "invitationTitle": "Will You Share Our Happiness?",
-    "familyLabel": "Our Families",
-    "familyTitle": "With the Joy of Our Families",
-    "ceremonyLabel": "Ceremony & Celebration",
-    "ceremonyTitle": "Details of the Day",
-    "scheduleLabel": "Wedding Schedule",
-    "locationLabel": "Date & Location",
-    "locationTitle": "Wedding Details",
-    "galleryLabel": "Photos",
-    "galleryTitle": "Outdoor Wedding Atmosphere",
-    "rsvpLabel": "RSVP",
-    "rsvpTitle": "RSVP Form",
-    "rsvpText": "Please let us know if you can attend to help us plan.",
-    "guestsLabel": "Guests",
-    "guestsTitle": "Guest List",
-    "wishesLabel": "Guestbook",
-    "wishesTitle": "Your Best Wishes",
-    "shareLabel": "Share",
-    "shareTitle": "Share the Invitation",
-    "shareDescription": "You can share our invitation with your loved ones.",
-    "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You! 😔",
-    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
-    "deadlineTitle": "RSVP Deadline Passed",
-    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
-  },
-  "form": {
-    "namePlaceholder": "Full Name",
-    "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Please Specify The Number Of People",
-    "messagePlaceholder": "Your Message",
-    "submitRsvp": "Send RSVP 🕊️",
-    "submitWish": "Send Message 💌",
-    "whatsappRsvp": "RSVP via WhatsApp 💬",
-    "missingInfo": "Missing Info ⚠️",
-    "missingNameMessage": "Please enter your full name. ✍️",
-    "missingWishMessage": "Please enter your name and message. ✍️"
-  },
-  "ui": {
-    "time": "Time",
-    "scroll": "SCROLL",
-    "days": "Days",
-    "hours": "Hours",
-    "mins": "Mins",
-    "secs": "Secs",
-    "date": "Date",
-    "venue": "Venue",
-    "address": "Address",
-    "goToMap": "Go to Map 📍",
-    "addToCalendar": "Add to Calendar 📅",
-    "closeEsc": "Close (Esc)",
-    "prev": "Previous (←)",
-    "next": "Next (→)",
-    "shareQr": "Share quickly via QR code.",
-    "shareWhatsapp": "Share via WhatsApp 💬",
-    "copyLink": "Copy Link 🔗",
-    "giftTitle": "Gift & Registry",
-    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
-    "copyIban": "Copy IBAN 📋",
-    "copied": "Copied! ✅",
-    "close": "OK 👍",
-    "closeBtn": "Close ❌",
-    "sendGift": "Would you like to send a gift? 🎁",    
-    "totalResponses": "Total Responses",
-    "attending": "Attending",
-    "notAttending": "Not Attending",
-    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
-    "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
-    "save": "Save 💾",
-    "cancel": "Cancel 🚫",
-    "yes": "Yes ✔️",
-    "ok": "OK 👍"
-  },
-  "visibility": {
-    "countdown": "Countdown",
-    "family": "Family Info",
-    "ceremony": "Ceremony & Wedding",
-    "schedule": "Wedding Schedule",
-    "location": "Location (Map)",
-    "gallery": "Photo Gallery",
-    "rsvp": "RSVP Form",
-    "wishes": "Guestbook",
-    "iban": "Gift / IBAN Section",
-    "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Information ℹ️",
-    "errorTitle": "Error ❌",
-    "saveTitle": "Saved 🎉",
-    "saveErrorTitle": "Save error 😔",
-    "supabaseMissingTitle": "Supabase connection missing 🔌",
-    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
-    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
-    "wishSaved": "Your wish has been saved. 💖",
-    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
-    "wishError": "Could not save message. Detail: {{message}} ❌",
-    "linkCopied": "Invitation link copied. 🔗",
-    "linkCopyError": "Could not copy link. ⚠️"
-  },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Delete all RSVP records?",
-    "clearGuestsTitle": "Clear Guests",
-    "clearWishesConfirm": "Delete all guestbook messages?",
-    "clearWishesTitle": "Clear Guestbook",
-    "deleteGuestConfirm": "Delete this RSVP record?",
-    "deleteGuestTitle": "Delete Record",
-    "editGuestTitle": "Edit RSVP",
-    "fullName": "Full Name",
-    "phone": "Phone",
-    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
-    "personCount": "Person Count",
-    "side": "Side",
-    "hasChild": "Has children? (Evet/Hayır)",
-    "songRequest": "Song Request",
-    "note": "Note",
-    "deleteWishConfirm": "Delete this message?",
-    "deleteWishTitle": "Delete Message",
-    "editWishTitle": "Edit Message",
-    "message": "Message",
-    "couldNotDelete": "Could not delete.",
-    "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
-  },
-    "navigation": {
-    "chooseApp": "Choose Navigation App",
-    "copyAddress": "Copy Full Address 📋",
-    "addressCopied": "Address Copied! ✅"
-  }
-}
-</file>
-
-<file path="src/styles/responsive.css">
-/* =================================================================
-   Masaüstü ve Tablet Kuralları (MIN 651PX)
-   ================================================================= */
-@media (min-width: 651px) {
-  html body .app .glass-dock .wa-btn { display: none !important; }
-  
-  html body .app .hero-section {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-  }
-
-  html body .app .hero-content {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-    padding-bottom: 60px !important;
-  }
-  
-  html body .app .invitation-page .scroll-indicator,
-  html body .app .scroll-indicator {
-    position: relative !important;
-    width: fit-content !important;
-    margin: 48px auto 32px auto !important;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto !important;
-    z-index: 10 !important;
-  }
-  
-  html body .app .card, html body .app .invitation-page > footer, html body .app .invitation-page > section { scroll-margin-top: 40px !important; }
-}
-
-/* =================================================================
-   Geniş Tablet (MAX 900PX)
-   ================================================================= */
-@media (max-width: 900px) {
-  .invitation-page { padding: 22px 16px 60px; }
-  .hero-section {
-    min-height: 560px; padding: 64px 18px;
-    background: radial-gradient(circle at center, rgba(120, 52, 78, 0.1) 0, rgba(120, 52, 78, 0.2) 48%, rgba(60, 24, 38, 0.3) 100%), var(--hero-image) center/cover no-repeat;
-  }
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-  .guest-stats { grid-template-columns: 1fr; }
-}
-
-/* =================================================================
-   MOBİL EKRAN KURALLARI (RESPONSIVE - MAX 650PX)
-   ================================================================= */
-@media (max-width: 650px) {
-  /* --- Admin Paneli --- */
-  .theme-option-card.active { transform: translateY(-3px) scale(1.01) !important; }
-  .theme-option-card.active::after { width: 30px; height: 30px; font-size: 17px; }
-  .admin-music-field .admin-upload-button, .admin-content input[type="search"], .admin-content input[placeholder*="ara" i], .admin-content input[placeholder*="Kayıtlarda" i], .admin-content .secondary-button, .admin-list .secondary-button, .admin-editor .secondary-button { width: 100%; }
-  .admin-custom-select { width: 100%; min-width: 100%; }
-  .admin-custom-select-button { min-height: 52px; }
-  .admin-custom-select-arrow { width: 28px; height: 28px; min-width: 28px; }
-  .admin-row-actions { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; width: 100% !important; }
-  .admin-row-actions button, .admin-list .small-admin-button { width: 100% !important; max-width: none !important; min-width: 0 !important; }
-
-  /* =========================================================
-     TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
-     ========================================================= */
-  .invitation-page {
-    position: relative;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-    width: 100vw;
-    height: 100dvh !important;
-    overflow: hidden !important; 
-  }
-
-  .slide-wrapper {
-    position: absolute !important; 
-    top: 0; left: 0;
-    width: 100% !important;
-    height: 100dvh !important; 
-    
-    opacity: 0 !important; 
-    pointer-events: none !important;
-    visibility: hidden !important;
-    z-index: 1;
-    
-    /* Gelişmiş GRID Sistemi: 
-       Büyük kartları 24px'ten başlatır, küçük kartları ise tam ekranın ortasına dengeler */
-    display: grid !important;
-    grid-template-columns: 100% !important;
-    grid-template-rows: 1.5fr auto 1fr !important;
-    align-items: start !important;
-    
-    /* Üstten 24px boşluk (büyük kartlar için), Alttan butonlara değmesin diye 110px boşluk */
-    padding: 24px 16px 110px 16px !important;
-    box-sizing: border-box !important;
-    
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    
-    /* Kaydırma Çubuğunu Gizle (Temiz Görünüm İçin) */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    
-    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
-    transform: translateY(30px) scale(0.98); 
-  }
-  
-  /* Webkit tarayıcılarda (Chrome, Safari, iOS) scrollbar'ı gizle */
-  .slide-wrapper::-webkit-scrollbar {
-    display: none;
-  }
-
-  .slide-wrapper.active-slide {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    visibility: visible !important;
-    z-index: 2;
-    transform: translateY(0) scale(1);
-  }
-
-  /* Grid hücresine yerleşim */
-  html body .app .invitation-page .slide-wrapper > section:not(.hero-section),
-  .invitation-page .slide-wrapper > section:not(.hero-section) { 
-    grid-row: 2 !important; /* Ortadaki 'auto' satırına yerleşir */
-    margin: 0 !important; 
-    width: 100% !important; 
-  }
-
-  /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
-  .slide-wrapper:first-child {
-    display: flex !important; /* Hero özel olduğu için flex kalır */
-    flex-direction: column !important;
-    justify-content: center !important;
-    padding: 0 !important; 
-    background: transparent;
-  }
-  
-  .slide-wrapper:first-child.active-slide {
-    overflow: hidden !important; 
-  }
-
-  .slide-wrapper > .hero-section {
-    min-height: 100dvh !important; 
-    width: 100vw !important; 
-    border-radius: 0 !important; 
-    padding: 64px 16px 80px 16px !important; 
-    margin: 0 !important;
-    background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
-  }
-
-  .hero-section::before {
-    top: 14px !important;
-    right: 14px !important;
-    bottom: 14px !important;
-    left: 14px !important;
-    border-radius: 24px !important;
-  }
-  
-  /* --- Arayüz ve Tipografi --- */
-  .intro-page { padding: 18px; }
-  .intro-card { padding: 46px 24px; border-radius: 32px; }
-  .couple-title { font-size: 58px; }
-  .couple-title em { display: block; margin: 4px 0; }
-  .intro-text, .rsvp-card > p { font-size: 19px; }
-  
-  .hero-section .couple-title {
-    color: #fff; font-size: clamp(68px, 8vw, 118px); line-height: 1.04;
-    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 24px rgba(255, 220, 230, 0.22);
-  }
-  .hero-section .couple-title em { margin: -4px 0 -6px; font-size: 0.45em; }
-  .hero-date { padding: 10px 20px; font-size: 21px; }
-  .hero-time { font-size: 20px; }
-
-  /* KAYDIR BUTONU MOBİL AYARI */
-  .scroll-indicator {
-    position: relative !important;
-    width: fit-content !important;
-    margin: 20px auto 0 auto !important;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto !important;
-  }
-  
-  /* --- Kartlar ve Formlar --- */
-  .card, .countdown-section { padding: 36px 20px; border-radius: 30px; }
-  .rsvp-card h2 { font-size: 32px; }
-  .option-button, .rsvp-form input, .rsvp-form textarea, .wish-form input, .wish-form textarea { font-size: 16px; }
-  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
-  .guest-item, .info-row, .option-group { flex-direction: column; gap: 6px; text-align: center; }
-  .mini-map { border-radius: 22px; }
-  .option-button, .main-button, .secondary-button { width: 100%; min-width: unset; }
-
-  /* --- Galeri Modülü --- */
-  .gallery-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-    align-content: start !important;
-  }
-
-  .gallery-grid .gallery-image,
-  .gallery-grid .lazy-image-wrapper,
-  .gallery-grid img, .mini-map {
-    width: 100% !important;
-    height: 300px !important;
-    object-fit: cover !important;
-    margin: 0 !important;
-    border-radius: 14px !important;
-  }
-  
-  /* --- Yüzen Menü (Floating Actions) --- */
-  .floating-actions.glass-dock {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 8px !important;
-    justify-content: center !important;
-    left: 50% !important;
-    top: auto !important;
-    transform: translateX(-50%) !important;
-    bottom: 24px !important;
-    width: max-content !important;
-  }
-
-  /* --- İnteraktif Hikaye Rotası Mobil Uyumu --- */
-  .story-line-bg, .story-line-progress { left: 32px; }
-  .story-traveler { left: 32px; }
-  .story-node { flex-direction: column !important; align-items: flex-start; }
-  .story-node .story-content-box { width: calc(100% - 64px); margin-left: 64px; }
-  .story-node.left .story-content-box::after, .story-node.right .story-content-box::after { top: 32px; left: -12px; right: auto; border-width: 12px 12px 12px 0; border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent; }
-  .story-map-marker { left: 32px; }
-
-  /* --- Modallar --- */
-  .app-modal-backdrop { padding: 24px !important; }
-  .app-modal-card { width: 100% !important; max-width: 380px !important; padding: 36px 24px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important; }
-}
-
-/* =================================================================
-   DOKUNMATİK EKRAN (HOVER OLMAYAN) CİHAZLAR İÇİN STICKY HOVER ÇÖZÜMÜ
-   ================================================================= */
-@media (hover: none) {
-  /* Mobilde tıklandıktan sonra butonun seçili/hover renginde takılı kalmasını engeller */
-  html[data-theme] .dock-btn:hover {
-    background: rgba(var(--theme-faint-rgb, 255, 255, 255), 0.85) !important;
-    color: var(--rose-dark) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-    transform: none !important;
-  }
-  
-  html[data-theme="dark"] .dock-btn:hover {
-    background: rgba(36, 26, 33, 0.85) !important;
-    color: var(--rose-deep) !important;
-  }
-
-  /* Butona sadece parmak basılıyken (anlık olarak) renk efekti verir */
-  html[data-theme] .dock-btn:active {
-    background: var(--amp-color) !important;
-    color: #fff !important;
-    transform: scale(0.92) !important;
-  }
-  
-  html[data-theme="dark"] .dock-btn:active {
-    background: var(--rose-light) !important;
-    color: #1a1a1a !important;
-  }
-  
-  html[data-theme] .dock-btn.music-on,
-  html[data-theme] .dock-btn.music-on:hover {
-    background: var(--amp-color) !important;
-    color: #fff !important;
-  }
-}
-</file>
-
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register'; // Eklendi
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-registerSW({ immediate: true }); 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
-</file>
-
-<file path="src/components/AdminUI.jsx">
-export * from "./admin/ui/AdminInputs";
-export * from "./admin/ui/AdminMediaFields";
-export * from "./admin/ui/AdminLayout";
-</file>
-
 <file path="src/config/constants.js">
 export const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
 export const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
@@ -5778,6 +5326,184 @@ export const CHILD_OPTIONS = [
 ];
 </file>
 
+<file path="src/i18n/locales/en.json">
+{
+  "invitation": {
+    "introLabel": "Wedding Invitation",
+    "introText": "You are invited to the most special day of our love story.",
+    "openButton": "Open Invitation 💌",
+    "heroLabel": "We Are Getting Married",
+    "countdownLabel": "Countdown",
+    "countdownTitle": "Time Left Until Our Wedding",
+    "invitationLabel": "Invitation",
+    "invitationTitle": "Will You Share Our Happiness?",
+    "familyLabel": "Our Families",
+    "familyTitle": "With the Joy of Our Families",
+    "ceremonyLabel": "Ceremony & Celebration",
+    "ceremonyTitle": "Details of the Day",
+    "scheduleLabel": "Wedding Schedule",
+    "locationLabel": "Date & Location",
+    "locationTitle": "Wedding Details",
+    "galleryLabel": "Photos",
+    "galleryTitle": "Outdoor Wedding Atmosphere",
+    "rsvpLabel": "RSVP",
+    "rsvpTitle": "RSVP Form",
+    "rsvpText": "Please let us know if you can attend to help us plan.",
+    "guestsLabel": "Guests",
+    "guestsTitle": "Guest List",
+    "wishesLabel": "Guestbook",
+    "wishesTitle": "Your Best Wishes",
+    "shareLabel": "Share",
+    "shareTitle": "Share the Invitation",
+    "shareDescription": "You can share our invitation with your loved ones.",
+    "thanksText": "Having you with us on this special day is the greatest gift.",
+    "footerSmall": "Made with love",
+    "declineTitle": "We'll Miss You! 😔",
+    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
+  },
+  "form": {
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Your Phone Number",
+    "notePlaceholder": "Please Specify The Number Of People",
+    "messagePlaceholder": "Your Message",
+    "submitRsvp": "Send RSVP 🕊️",
+    "submitWish": "Send Message 💌",
+    "whatsappRsvp": "RSVP via WhatsApp 💬",
+    "missingInfo": "Missing Info ⚠️",
+    "missingNameMessage": "Please enter your full name. ✍️",
+    "missingWishMessage": "Please enter your name and message. ✍️"
+  },
+  "ui": {
+    "time": "Time",
+    "scroll": "SCROLL",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "date": "Date",
+    "venue": "Venue",
+    "address": "Address",
+    "goToMap": "Go to Map 📍",
+    "addToCalendar": "Add to Calendar 📅",
+    "closeEsc": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "shareQr": "Share quickly via QR code.",
+    "shareWhatsapp": "Share via WhatsApp 💬",
+    "copyLink": "Copy Link 🔗",
+    "giftTitle": "Gift & Registry",
+    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
+    "copyIban": "Copy IBAN 📋",
+    "copied": "Copied! ✅",
+    "close": "OK 👍",
+    "closeBtn": "Close ❌",
+    "sendGift": "Would you like to send a gift? 🎁",    
+    "totalResponses": "Total Responses",
+    "attending": "Attending",
+    "notAttending": "Not Attending",
+    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
+    "noWishes": "No wishes yet.",
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save 💾",
+    "cancel": "Cancel 🚫",
+    "yes": "Yes ✔️",
+    "ok": "OK 👍"
+  },
+  "visibility": {
+    "countdown": "Countdown",
+    "family": "Family Info",
+    "ceremony": "Ceremony & Wedding",
+    "schedule": "Wedding Schedule",
+    "location": "Location (Map)",
+    "gallery": "Photo Gallery",
+    "rsvp": "RSVP Form",
+    "wishes": "Guestbook",
+    "iban": "Gift / IBAN Section",
+    "guests": "Guest List",
+    "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information ℹ️",
+    "errorTitle": "Error ❌",
+    "saveTitle": "Saved 🎉",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing 🔌",
+    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
+    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
+    "wishSaved": "Your wish has been saved. 💖",
+    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
+    "wishError": "Could not save message. Detail: {{message}} ❌",
+    "linkCopied": "Invitation link copied. 🔗",
+    "linkCopyError": "Could not copy link. ⚠️"
+  },
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status."
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
+  }
+}
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register'; // Eklendi
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+registerSW({ immediate: true }); 
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <HelmetProvider>
+        <App />
+        <Analytics />
+        <SpeedInsights />
+      </HelmetProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+</file>
+
+<file path="src/components/AdminUI.jsx">
+export * from "./admin/ui/AdminInputs";
+export * from "./admin/ui/AdminMediaFields";
+export * from "./admin/ui/AdminLayout";
+</file>
+
 <file path="src/i18n/locales/tr.json">
 {
   "invitation": {
@@ -5919,6 +5645,281 @@ export const CHILD_OPTIONS = [
     "chooseApp": "Yol Tarifi Al",
     "copyAddress": "Tam Adresi Kopyala 📋",
     "addressCopied": "Adres Kopyalandı! ✅"
+  }
+}
+</file>
+
+<file path="src/styles/responsive.css">
+/* =================================================================
+   Masaüstü ve Tablet Kuralları (MIN 651PX)
+   ================================================================= */
+@media (min-width: 651px) {
+  html body .app .glass-dock .wa-btn { display: none !important; }
+  
+  html body .app .hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+
+  html body .app .hero-content {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    padding-bottom: 60px !important;
+  }
+  
+  html body .app .invitation-page .scroll-indicator,
+  html body .app .scroll-indicator {
+    position: relative !important;
+    width: fit-content !important;
+    margin: 48px auto 32px auto !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 10 !important;
+  }
+  
+  html body .app .card, html body .app .invitation-page > footer, html body .app .invitation-page > section { scroll-margin-top: 40px !important; }
+}
+
+/* =================================================================
+   Geniş Tablet (MAX 900PX)
+   ================================================================= */
+@media (max-width: 900px) {
+  .invitation-page { padding: 22px 16px 60px; }
+  .hero-section {
+    min-height: 560px; padding: 64px 18px;
+    background: radial-gradient(circle at center, rgba(120, 52, 78, 0.1) 0, rgba(120, 52, 78, 0.2) 48%, rgba(60, 24, 38, 0.3) 100%), var(--hero-image) center/cover no-repeat;
+  }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .guest-stats { grid-template-columns: 1fr; }
+}
+
+/* =================================================================
+   MOBİL EKRAN KURALLARI (RESPONSIVE - MAX 650PX)
+   ================================================================= */
+@media (max-width: 650px) {
+  /* --- Admin Paneli --- */
+  .theme-option-card.active { transform: translateY(-3px) scale(1.01) !important; }
+  .theme-option-card.active::after { width: 30px; height: 30px; font-size: 17px; }
+  .admin-music-field .admin-upload-button, .admin-content input[type="search"], .admin-content input[placeholder*="ara" i], .admin-content input[placeholder*="Kayıtlarda" i], .admin-content .secondary-button, .admin-list .secondary-button, .admin-editor .secondary-button { width: 100%; }
+  .admin-custom-select { width: 100%; min-width: 100%; }
+  .admin-custom-select-button { min-height: 52px; }
+  .admin-custom-select-arrow { width: 28px; height: 28px; min-width: 28px; }
+  .admin-row-actions { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; width: 100% !important; }
+  .admin-row-actions button, .admin-list .small-admin-button { width: 100% !important; max-width: none !important; min-width: 0 !important; }
+
+  /* =========================================================
+     TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
+     ========================================================= */
+  .invitation-page {
+    position: relative;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100vw;
+    height: 100dvh !important;
+    overflow: hidden !important; 
+  }
+
+  .slide-wrapper {
+    position: absolute !important; 
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100dvh !important; 
+    
+    opacity: 0 !important; 
+    pointer-events: none !important;
+    visibility: hidden !important;
+    z-index: 1;
+    
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    
+    /* Üstten 24px boşluk (büyük kartlar için), Alttan butonlara değmesin diye 110px boşluk */
+    padding: 24px 16px 110px 16px !important;
+    box-sizing: border-box !important;
+    
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    
+    /* Kaydırma Çubuğunu Tamamen Gizle (Temiz Görünüm İçin) */
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+    
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
+    transform: translateY(30px) scale(0.98); 
+  }
+
+  /* Webkit tarayıcılarda (Chrome, Safari, iOS) scrollbar'ı gizle */
+  .invitation-page .slide-wrapper::-webkit-scrollbar,
+  .slide-wrapper::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
+  }
+
+  .slide-wrapper.active-slide {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    z-index: 2;
+    transform: translateY(0) scale(1);
+  }
+
+  /* SİHİRLİ KURAL: Küçük kartları ekranın ortasına çeker, Büyük kartları yukarıdan başlatır */
+  html body .app .invitation-page .slide-wrapper > section:not(.hero-section),
+  .invitation-page .slide-wrapper > section:not(.hero-section) { 
+    margin: auto 0 !important; 
+    width: 100% !important; 
+    flex-shrink: 0 !important;
+  }
+
+  /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
+  .slide-wrapper:first-child {
+    display: flex !important; 
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 0 !important; 
+    background: transparent;
+  }
+  
+  .slide-wrapper:first-child.active-slide {
+    overflow: hidden !important; 
+  }
+
+  .slide-wrapper > .hero-section {
+    min-height: 100dvh !important; 
+    width: 100vw !important; 
+    border-radius: 0 !important; 
+    padding: 64px 16px 80px 16px !important; 
+    margin: 0 !important;
+    background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
+  }
+
+  .hero-section::before {
+    top: 14px !important;
+    right: 14px !important;
+    bottom: 14px !important;
+    left: 14px !important;
+    border-radius: 24px !important;
+  }
+  
+  /* --- Arayüz ve Tipografi --- */
+  .intro-page { padding: 18px; }
+  .intro-card { padding: 46px 24px; border-radius: 32px; }
+  .couple-title { font-size: 58px; }
+  .couple-title em { display: block; margin: 4px 0; }
+  .intro-text, .rsvp-card > p { font-size: 19px; }
+  
+  .hero-section .couple-title {
+    color: #fff; font-size: clamp(68px, 8vw, 118px); line-height: 1.04;
+    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 24px rgba(255, 220, 230, 0.22);
+  }
+  .hero-section .couple-title em { margin: -4px 0 -6px; font-size: 0.45em; }
+  .hero-date { padding: 10px 20px; font-size: 21px; }
+  .hero-time { font-size: 20px; }
+
+  /* KAYDIR BUTONU MOBİL AYARI */
+  .scroll-indicator {
+    position: relative !important;
+    width: fit-content !important;
+    margin: 20px auto 0 auto !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+  }
+  
+  /* --- Kartlar ve Formlar --- */
+  .card, .countdown-section { padding: 36px 20px; border-radius: 30px; }
+  .rsvp-card h2 { font-size: 32px; }
+  .option-button, .rsvp-form input, .rsvp-form textarea, .wish-form input, .wish-form textarea { font-size: 16px; }
+  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
+  .guest-item, .info-row, .option-group { flex-direction: column; gap: 6px; text-align: center; }
+  .mini-map { border-radius: 22px; }
+  .option-button, .main-button, .secondary-button { width: 100%; min-width: unset; }
+
+  /* --- Galeri Modülü --- */
+  .gallery-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    align-content: start !important;
+  }
+
+  .gallery-grid .gallery-image,
+  .gallery-grid .lazy-image-wrapper,
+  .gallery-grid img, .mini-map {
+    width: 100% !important;
+    height: 300px !important;
+    object-fit: cover !important;
+    margin: 0 !important;
+    border-radius: 14px !important;
+  }
+  
+  /* --- Yüzen Menü (Floating Actions) --- */
+  .floating-actions.glass-dock {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    left: 50% !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    bottom: 24px !important;
+    width: max-content !important;
+  }
+
+  /* --- İnteraktif Hikaye Rotası Mobil Uyumu --- */
+  .story-line-bg, .story-line-progress { left: 32px; }
+  .story-traveler { left: 32px; }
+  .story-node { flex-direction: column !important; align-items: flex-start; }
+  .story-node .story-content-box { width: calc(100% - 64px); margin-left: 64px; }
+  .story-node.left .story-content-box::after, .story-node.right .story-content-box::after { top: 32px; left: -12px; right: auto; border-width: 12px 12px 12px 0; border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent; }
+  .story-map-marker { left: 32px; }
+
+  /* --- Modallar --- */
+  .app-modal-backdrop { padding: 24px !important; }
+  .app-modal-card { width: 100% !important; max-width: 380px !important; padding: 36px 24px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important; }
+}
+
+/* =================================================================
+   DOKUNMATİK EKRAN (HOVER OLMAYAN) CİHAZLAR İÇİN STICKY HOVER ÇÖZÜMÜ
+   ================================================================= */
+@media (hover: none) {
+  html[data-theme] .dock-btn:hover {
+    background: rgba(var(--theme-faint-rgb, 255, 255, 255), 0.85) !important;
+    color: var(--rose-dark) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    transform: none !important;
+  }
+  
+  html[data-theme="dark"] .dock-btn:hover {
+    background: rgba(36, 26, 33, 0.85) !important;
+    color: var(--rose-deep) !important;
+  }
+
+  html[data-theme] .dock-btn:active {
+    background: var(--amp-color) !important;
+    color: #fff !important;
+    transform: scale(0.92) !important;
+  }
+  
+  html[data-theme="dark"] .dock-btn:active {
+    background: var(--rose-light) !important;
+    color: #1a1a1a !important;
+  }
+  
+  html[data-theme] .dock-btn.music-on,
+  html[data-theme] .dock-btn.music-on:hover {
+    background: var(--amp-color) !important;
+    color: #fff !important;
   }
 }
 </file>
@@ -6108,111 +6109,6 @@ export function AdminPanelContent(props) {
     case "story": return <StoryTab {...props} isEn={isEn} />; 
     default: return null;
   }
-}
-</file>
-
-<file path="src/pages/AdminController.jsx">
-import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { useStore, useAdminStore } from '../store/useStore';
-import { useAdminSession } from '../hooks/useAdminSession';
-import { useDatabaseManager } from '../hooks/useDatabaseManager';
-import { useExportData } from '../hooks/useExportData';
-import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
-import '../styles/admin.css';
-
-const AdminView = lazy(() => import('./AdminView'));
-
-export default function AdminController() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const navigate = useNavigate();
-
-  // Zustand Store'lar
-  const siteData = useStore((state) => state.siteData);
-  const guests = useStore((state) => state.guests);
-  const setGuests = useStore((state) => state.setGuests);
-  const wishes = useStore((state) => state.wishes);
-  const setWishes = useStore((state) => state.setWishes);
-  const showAppConfirm = useStore((state) => state.showAppConfirm);
-  const showAppPrompt = useStore((state) => state.showAppPrompt);
-  
-  const adminDraft = useStore((state) => state.adminDraft);
-  const personalLinkName = useStore((state) => state.personalLinkName);
-  const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
-  const dataImportText = useStore((state) => state.dataImportText);
-  const setDataImportText = useStore((state) => state.setDataImportText);
-  
-  const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
-
-  // Lokal Form & Filtre Durumları
-  const [adminGuestSearch, setAdminGuestSearch] = useState("");
-  const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
-  const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
-  const [adminGuestChildFilter, setAdminGuestChildFilter] = useState("all");
-  const [adminWishSearch, setAdminWishSearch] = useState("");
-  const [adminWishStatusFilter, setAdminWishStatusFilter] = useState("all");
-
-  const currentShareLink = useMemo(() => adminDraft.invitation.shareLink || window.location.origin, [adminDraft.invitation.shareLink]);
-  const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
-  const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
-
-  // Auth Methodları
-  const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
-
-  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn } = useDatabaseManager({
-    guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
-  });
-
-  const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
-
-  const closeAdminPage = useCallback(() => navigate("/"), [navigate]);
-
-  const filteredGuests = useMemo(() => guests.filter((guest) => {
-    const searchMatch = normalizeText(`${guest.name} ${guest.phone}`).includes(normalizeText(adminGuestSearch));
-    const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
-    const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
-    const childMatch = adminGuestChildFilter === "all" || guest.hasChild === adminGuestChildFilter;
-    return searchMatch && attendanceMatch && sideMatch && childMatch;
-  }), [guests, adminGuestSearch, adminGuestAttendanceFilter, adminGuestSideFilter, adminGuestChildFilter]);
-
-  const filteredWishes = useMemo(() => wishes.filter((wish) => {
-    const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
-    const isApproved = wish.approved !== false;
-    const statusMatch = adminWishStatusFilter === "all" || (adminWishStatusFilter === "approved" && isApproved) || (adminWishStatusFilter === "pending" && !isApproved);
-    return searchMatch && statusMatch;
-  }), [wishes, adminWishSearch, adminWishStatusFilter]);
-
-  const copyAdminLink = useCallback(async (linkToCopy, msg) => { try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(msg); } catch {} }, [setAdminSaveMessage]);
-  const downloadQrCode = () => { window.open(qrImageUrl, "_blank"); };
-
-  return (
-    <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
-      <AdminView
-        submitAdminPassword={submitAdminPassword} 
-        completePasswordRecovery={completePasswordRecovery}
-        sendPasswordResetEmail={sendPasswordResetEmail} 
-        changeAdminPassword={changeAdminPassword} 
-        logoutAdmin={logoutAdmin} 
-        closeAdminPage={closeAdminPage} 
-        
-        guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
-        adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
-        adminGuestSideFilter={adminGuestSideFilter} setAdminGuestSideFilter={setAdminGuestSideFilter} adminGuestChildFilter={adminGuestChildFilter}
-        setAdminGuestChildFilter={setAdminGuestChildFilter} filteredGuests={filteredGuests} editGuest={editGuest} deleteGuest={deleteGuest}
-        clearGuests={clearGuests} wishes={wishes} adminWishSearch={adminWishSearch} setAdminWishSearch={setAdminWishSearch}
-        adminWishStatusFilter={adminWishStatusFilter} setAdminWishStatusFilter={setAdminWishStatusFilter} filteredWishes={filteredWishes}
-        toggleWishApproval={toggleWishApproval} editWish={editWish} deleteWish={deleteWish} clearWishes={clearWishes}
-        qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
-        personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
-        exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} dataImportText={dataImportText} setDataImportText={setDataImportText} 
-        exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
-        exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
-        toggleCheckIn={toggleCheckIn} 
-      />
-    </Suspense>
-  );
 }
 </file>
 
@@ -6644,6 +6540,111 @@ export function FooterSection({ coupleName, invitation, copy }) {
       <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
       <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
     </m.footer>
+  );
+}
+</file>
+
+<file path="src/pages/AdminController.jsx">
+import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useStore, useAdminStore } from '../store/useStore';
+import { useAdminSession } from '../hooks/useAdminSession';
+import { useDatabaseManager } from '../hooks/useDatabaseManager';
+import { useExportData } from '../hooks/useExportData';
+import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
+import '../styles/admin.css';
+
+const AdminView = lazy(() => import('./AdminView'));
+
+export default function AdminController() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const navigate = useNavigate();
+
+  // Zustand Store'lar
+  const siteData = useStore((state) => state.siteData);
+  const guests = useStore((state) => state.guests);
+  const setGuests = useStore((state) => state.setGuests);
+  const wishes = useStore((state) => state.wishes);
+  const setWishes = useStore((state) => state.setWishes);
+  const showAppConfirm = useStore((state) => state.showAppConfirm);
+  const showAppPrompt = useStore((state) => state.showAppPrompt);
+  
+  const adminDraft = useStore((state) => state.adminDraft);
+  const personalLinkName = useStore((state) => state.personalLinkName);
+  const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
+  const dataImportText = useStore((state) => state.dataImportText);
+  const setDataImportText = useStore((state) => state.setDataImportText);
+  
+  const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
+
+  // Lokal Form & Filtre Durumları
+  const [adminGuestSearch, setAdminGuestSearch] = useState("");
+  const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
+  const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
+  const [adminGuestChildFilter, setAdminGuestChildFilter] = useState("all");
+  const [adminWishSearch, setAdminWishSearch] = useState("");
+  const [adminWishStatusFilter, setAdminWishStatusFilter] = useState("all");
+
+  const currentShareLink = useMemo(() => adminDraft.invitation.shareLink || window.location.origin, [adminDraft.invitation.shareLink]);
+  const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
+  const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
+
+  // Auth Methodları
+  const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
+
+  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn } = useDatabaseManager({
+    guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
+  });
+
+  const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
+
+  const closeAdminPage = useCallback(() => navigate("/"), [navigate]);
+
+  const filteredGuests = useMemo(() => guests.filter((guest) => {
+    const searchMatch = normalizeText(`${guest.name} ${guest.phone}`).includes(normalizeText(adminGuestSearch));
+    const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
+    const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
+    const childMatch = adminGuestChildFilter === "all" || guest.hasChild === adminGuestChildFilter;
+    return searchMatch && attendanceMatch && sideMatch && childMatch;
+  }), [guests, adminGuestSearch, adminGuestAttendanceFilter, adminGuestSideFilter, adminGuestChildFilter]);
+
+  const filteredWishes = useMemo(() => wishes.filter((wish) => {
+    const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
+    const isApproved = wish.approved !== false;
+    const statusMatch = adminWishStatusFilter === "all" || (adminWishStatusFilter === "approved" && isApproved) || (adminWishStatusFilter === "pending" && !isApproved);
+    return searchMatch && statusMatch;
+  }), [wishes, adminWishSearch, adminWishStatusFilter]);
+
+  const copyAdminLink = useCallback(async (linkToCopy, msg) => { try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(msg); } catch {} }, [setAdminSaveMessage]);
+  const downloadQrCode = () => { window.open(qrImageUrl, "_blank"); };
+
+  return (
+    <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
+      <AdminView
+        submitAdminPassword={submitAdminPassword} 
+        completePasswordRecovery={completePasswordRecovery}
+        sendPasswordResetEmail={sendPasswordResetEmail} 
+        changeAdminPassword={changeAdminPassword} 
+        logoutAdmin={logoutAdmin} 
+        closeAdminPage={closeAdminPage} 
+        
+        guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
+        adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
+        adminGuestSideFilter={adminGuestSideFilter} setAdminGuestSideFilter={setAdminGuestSideFilter} adminGuestChildFilter={adminGuestChildFilter}
+        setAdminGuestChildFilter={setAdminGuestChildFilter} filteredGuests={filteredGuests} editGuest={editGuest} deleteGuest={deleteGuest}
+        clearGuests={clearGuests} wishes={wishes} adminWishSearch={adminWishSearch} setAdminWishSearch={setAdminWishSearch}
+        adminWishStatusFilter={adminWishStatusFilter} setAdminWishStatusFilter={setAdminWishStatusFilter} filteredWishes={filteredWishes}
+        toggleWishApproval={toggleWishApproval} editWish={editWish} deleteWish={deleteWish} clearWishes={clearWishes}
+        qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
+        personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
+        exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} dataImportText={dataImportText} setDataImportText={setDataImportText} 
+        exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
+        exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
+        toggleCheckIn={toggleCheckIn} 
+      />
+    </Suspense>
   );
 }
 </file>

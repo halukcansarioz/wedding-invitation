@@ -3,7 +3,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 export function useScrollNavigation(isAdminPage, opened) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(false);
+  // DÜZELTME: Başlangıçta sayfa her halükarda kaydırılabilir olduğu için varsayılan değeri true yaptık.
+  const [showScrollDown, setShowScrollDown] = useState(true); 
   const [isMobile, setIsMobile] = useState(false);
 
   const isScrollingRef = useRef(false);
@@ -124,20 +125,31 @@ export function useScrollNavigation(isAdminPage, opened) {
       } else {
         const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
         setShowScrollTop(scrollTop > 100);
+        // DÜZELTME: Masaüstü sayfa sonu hesaplaması
         const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
         setShowScrollDown(!isAtBottom);
       }
     };
 
+    let resizeObserver;
+
     if (!isMobile) {
       window.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // DÜZELTME: Sayfa içeriği sonradan yüklendiğinde (lazy load resimler, Suspense bileşenler)
+      // Body yüksekliği değişeceği için butonu duruma göre otomatik tekrar hesaplatıyoruz.
+      resizeObserver = new ResizeObserver(() => handleScroll());
+      resizeObserver.observe(document.body);
     }
     
     const revealTimer = window.setTimeout(handleScroll, 100);
     handleScroll();
     
     return () => {
-      if (!isMobile) window.removeEventListener('scroll', handleScroll);
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+        if (resizeObserver) resizeObserver.disconnect();
+      }
       window.clearTimeout(revealTimer);
     };
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
