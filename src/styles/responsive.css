@@ -1,147 +1,63 @@
-/* =================================================================
-   Masaüstü ve Tablet Kuralları (MIN 651PX)
-   ================================================================= */
-@media (min-width: 651px) {
-  html body .app .glass-dock .wa-btn { display: none !important; }
-  
-  html body .app .hero-section {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-  }
-
-  html body .app .hero-content {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-    padding-bottom: 60px !important;
-  }
-  
-  html body .app .invitation-page .scroll-indicator,
-  html body .app .scroll-indicator {
-    position: relative !important;
-    width: fit-content !important;
-    margin: 48px auto 32px auto !important;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto !important;
-    z-index: 10 !important;
-  }
-  
-  html body .app .card, html body .app .invitation-page > footer, html body .app .invitation-page > section { scroll-margin-top: 40px !important; }
-}
-
-/* =================================================================
-   Geniş Tablet (MAX 900PX)
-   ================================================================= */
-@media (max-width: 900px) {
-  .invitation-page { padding: 22px 16px 60px; }
-  .hero-section {
-    min-height: 560px; padding: 64px 18px;
-    background: radial-gradient(circle at center, rgba(120, 52, 78, 0.1) 0, rgba(120, 52, 78, 0.2) 48%, rgba(60, 24, 38, 0.3) 100%), var(--hero-image) center/cover no-repeat;
-  }
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-  .guest-stats { grid-template-columns: 1fr; }
-}
-
-/* =================================================================
-   MOBİL EKRAN KURALLARI (RESPONSIVE - MAX 650PX)
-   ================================================================= */
-@media (max-width: 650px) {
-  /* --- Admin Paneli --- */
-  .theme-option-card.active { transform: translateY(-3px) scale(1.01) !important; }
-  .theme-option-card.active::after { width: 30px; height: 30px; font-size: 17px; }
-  .admin-music-field .admin-upload-button, .admin-content input[type="search"], .admin-content input[placeholder*="ara" i], .admin-content input[placeholder*="Kayıtlarda" i], .admin-content .secondary-button, .admin-list .secondary-button, .admin-editor .secondary-button { width: 100%; }
-  .admin-custom-select { width: 100%; min-width: 100%; }
-  .admin-custom-select-button { min-height: 52px; }
-  .admin-custom-select-arrow { width: 28px; height: 28px; min-width: 28px; }
-  .admin-row-actions { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; width: 100% !important; }
-  .admin-row-actions button, .admin-list .small-admin-button { width: 100% !important; max-width: none !important; min-width: 0 !important; }
-
-  /* =========================================================
+/* =========================================================
      TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
      ========================================================= */
-  .invitation-page {
-    position: relative;
+  main.invitation-page {
+    position: relative !important;
     padding: 0 !important;
     margin: 0 !important;
     display: block !important;
-    width: 100vw;
+    width: 100vw !important;
     height: 100dvh !important;
     overflow: hidden !important; 
   }
 
-  .slide-wrapper {
+  main.invitation-page .slide-wrapper {
     position: absolute !important; 
-    top: 0; left: 0;
-    width: 100% !important;
+    top: 0 !important; 
+    left: 0 !important;
+    width: 100vw !important;
     height: 100dvh !important; 
     
     opacity: 0 !important; 
     pointer-events: none !important;
     visibility: hidden !important;
-    z-index: 1;
-    
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    
-    /* Üstten 24px boşluk (büyük kartlar için), Alttan butonlara değmesin diye 110px boşluk */
-    padding: 24px 16px 110px 16px !important;
-    box-sizing: border-box !important;
+    z-index: 1 !important;
     
     overflow-y: auto !important; 
     overflow-x: hidden !important;
-    
-    /* Kaydırma Çubuğunu Tamamen Gizle (Temiz Görünüm İçin) */
-    -ms-overflow-style: none !important;
-    scrollbar-width: none !important;
-    
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
     transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
-    transform: translateY(30px) scale(0.98); 
+    transform: translateY(30px) scale(0.98) !important; 
   }
 
-  /* Webkit tarayıcılarda (Chrome, Safari, iOS) scrollbar'ı gizle */
-  .invitation-page .slide-wrapper::-webkit-scrollbar,
-  .slide-wrapper::-webkit-scrollbar {
+  main.invitation-page .slide-wrapper::-webkit-scrollbar {
     display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
-    -webkit-appearance: none !important;
   }
 
-  .slide-wrapper.active-slide {
+  main.invitation-page .slide-wrapper.active-slide {
     opacity: 1 !important;
     pointer-events: auto !important;
     visibility: visible !important;
-    z-index: 2;
-    transform: translateY(0) scale(1);
+    z-index: 2 !important;
+    transform: translateY(0) scale(1) !important;
   }
 
-  /* SİHİRLİ KURAL: Küçük kartları ekranın ortasına çeker, Büyük kartları yukarıdan başlatır */
-  html body .app .invitation-page .slide-wrapper > section:not(.hero-section),
-  .invitation-page .slide-wrapper > section:not(.hero-section) { 
-    margin: auto 0 !important; 
-    width: 100% !important; 
-    flex-shrink: 0 !important;
-  }
-
-  /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
-  .slide-wrapper:first-child {
+  /* HERO (İlk Ekran) Ayarları */
+  main.invitation-page .slide-wrapper:first-child {
     display: flex !important; 
     flex-direction: column !important;
     justify-content: center !important;
     padding: 0 !important; 
-    background: transparent;
+    background: transparent !important;
   }
   
-  .slide-wrapper:first-child.active-slide {
+  main.invitation-page .slide-wrapper:first-child.active-slide {
     overflow: hidden !important; 
   }
 
-  .slide-wrapper > .hero-section {
+  main.invitation-page .slide-wrapper > .hero-section {
     min-height: 100dvh !important; 
     width: 100vw !important; 
     border-radius: 0 !important; 
@@ -150,123 +66,44 @@
     background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
   }
 
-  .hero-section::before {
+  main.invitation-page .hero-section::before {
     top: 14px !important;
     right: 14px !important;
     bottom: 14px !important;
     left: 14px !important;
     border-radius: 24px !important;
   }
-  
-  /* --- Arayüz ve Tipografi --- */
-  .intro-page { padding: 18px; }
-  .intro-card { padding: 46px 24px; border-radius: 32px; }
-  .couple-title { font-size: 58px; }
-  .couple-title em { display: block; margin: 4px 0; }
-  .intro-text, .rsvp-card > p { font-size: 19px; }
-  
-  .hero-section .couple-title {
-    color: #fff; font-size: clamp(68px, 8vw, 118px); line-height: 1.04;
-    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 24px rgba(255, 220, 230, 0.22);
-  }
-  .hero-section .couple-title em { margin: -4px 0 -6px; font-size: 0.45em; }
-  .hero-date { padding: 10px 20px; font-size: 21px; }
-  .hero-time { font-size: 20px; }
 
-  /* KAYDIR BUTONU MOBİL AYARI */
-  .scroll-indicator {
-    position: relative !important;
-    width: fit-content !important;
-    margin: 20px auto 0 auto !important;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto !important;
-  }
-  
-  /* --- Kartlar ve Formlar --- */
-  .card, .countdown-section { padding: 36px 20px; border-radius: 30px; }
-  .rsvp-card h2 { font-size: 32px; }
-  .option-button, .rsvp-form input, .rsvp-form textarea, .wish-form input, .wish-form textarea { font-size: 16px; }
-  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
-  .guest-item, .info-row, .option-group { flex-direction: column; gap: 6px; text-align: center; }
-  .mini-map { border-radius: 22px; }
-  .option-button, .main-button, .secondary-button { width: 100%; min-width: unset; }
-
-  /* --- Galeri Modülü --- */
-  .gallery-grid {
+  /* --- KESİN ÇÖZÜM: UZUN KARTLARDA ÜSTTEN KESİLMEYİ ÖNLEYEN GRID MİMARİSİ --- */
+  main.invitation-page .slide-wrapper:not(:first-child) {
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-    align-content: start !important;
+    grid-template-rows: 1fr auto 1fr !important; /* Ekranı 3'e böler: Esnek Yay - İçerik - Esnek Yay */
+    grid-template-columns: 100% !important;
+    padding: 0 16px !important; /* Dikey paddingleri before/after içine taşıdık */
+    align-items: center !important;
   }
 
-  .gallery-grid .gallery-image,
-  .gallery-grid .lazy-image-wrapper,
-  .gallery-grid img, .mini-map {
+  /* Üst Boşluk (Kart ekranı aşarsa en fazla 24px'e kadar küçülür, yazıların kesilmesini ENGELLER) */
+  main.invitation-page .slide-wrapper:not(:first-child)::before {
+    content: "" !important;
+    display: block !important;
+    min-height: 24px !important;
+    grid-row: 1 !important;
+  }
+
+  /* Alt Boşluk (Menünün altında kalmaması için en fazla 110px'e kadar küçülür) */
+  main.invitation-page .slide-wrapper:not(:first-child)::after {
+    content: "" !important;
+    display: block !important;
+    min-height: 110px !important;
+    grid-row: 3 !important;
+  }
+
+  /* Kartın Kendisi (Her zaman orta satırda kilitli kalır) */
+  main.invitation-page .slide-wrapper:not(:first-child) > section,
+  main.invitation-page .slide-wrapper:not(:first-child) > footer,
+  main.invitation-page .slide-wrapper:not(:first-child) > div {
+    grid-row: 2 !important;
     width: 100% !important;
-    height: 300px !important;
-    object-fit: cover !important;
     margin: 0 !important;
-    border-radius: 14px !important;
   }
-  
-  /* --- Yüzen Menü (Floating Actions) --- */
-  .floating-actions.glass-dock {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 8px !important;
-    justify-content: center !important;
-    left: 50% !important;
-    top: auto !important;
-    transform: translateX(-50%) !important;
-    bottom: 24px !important;
-    width: max-content !important;
-  }
-
-  /* --- İnteraktif Hikaye Rotası Mobil Uyumu --- */
-  .story-line-bg, .story-line-progress { left: 32px; }
-  .story-traveler { left: 32px; }
-  .story-node { flex-direction: column !important; align-items: flex-start; }
-  .story-node .story-content-box { width: calc(100% - 64px); margin-left: 64px; }
-  .story-node.left .story-content-box::after, .story-node.right .story-content-box::after { top: 32px; left: -12px; right: auto; border-width: 12px 12px 12px 0; border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent; }
-  .story-map-marker { left: 32px; }
-
-  /* --- Modallar --- */
-  .app-modal-backdrop { padding: 24px !important; }
-  .app-modal-card { width: 100% !important; max-width: 380px !important; padding: 36px 24px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important; }
-}
-
-/* =================================================================
-   DOKUNMATİK EKRAN (HOVER OLMAYAN) CİHAZLAR İÇİN STICKY HOVER ÇÖZÜMÜ
-   ================================================================= */
-@media (hover: none) {
-  html[data-theme] .dock-btn:hover {
-    background: rgba(var(--theme-faint-rgb, 255, 255, 255), 0.85) !important;
-    color: var(--rose-dark) !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
-    transform: none !important;
-  }
-  
-  html[data-theme="dark"] .dock-btn:hover {
-    background: rgba(36, 26, 33, 0.85) !important;
-    color: var(--rose-deep) !important;
-  }
-
-  html[data-theme] .dock-btn:active {
-    background: var(--amp-color) !important;
-    color: #fff !important;
-    transform: scale(0.92) !important;
-  }
-  
-  html[data-theme="dark"] .dock-btn:active {
-    background: var(--rose-light) !important;
-    color: #1a1a1a !important;
-  }
-  
-  html[data-theme] .dock-btn.music-on,
-  html[data-theme] .dock-btn.music-on:hover {
-    background: var(--amp-color) !important;
-    color: #fff !important;
-  }
-}

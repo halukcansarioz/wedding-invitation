@@ -2715,47 +2715,6 @@ export function ThemeTab({ isEn }) {
 }
 </file>
 
-<file path="src/components/common/ErrorBoundary.jsx">
-import React from 'react';
-// import * as Sentry from '@sentry/react'; // Canlıya çıkarken aktif edebilirsiniz
-
-export class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("React Error Boundary Yakaladı:", error, errorInfo);
-    
-    // SENTRY ENTEGRASYONU (ÖNERİ)
-    // Sentry.captureException(error, { extra: errorInfo });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="error-boundary-container" style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-          <h2 style={{ color: '#9f4f68', marginBottom: '14px' }}>Opps! Beklenmeyen bir hata oluştu.</h2>
-          <p style={{ color: '#666', marginBottom: '24px' }}>Lütfen sayfayı yenileyerek tekrar deneyin veya yöneticiyle iletişime geçin.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{ padding: '14px 28px', background: '#9f4f68', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            Sayfayı Yenile
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-</file>
-
 <file path="src/components/common/GlobalModals.jsx">
 import React, { memo } from "react";
 import "../../styles/modals.css"; 
@@ -4032,6 +3991,47 @@ export function WishesAdminPanel({
 }
 </file>
 
+<file path="src/components/common/ErrorBoundary.jsx">
+import React from 'react';
+// import * as Sentry from '@sentry/react'; // Şimdilik tekrar yoruma aldık
+
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("React Error Boundary Yakaladı:", error, errorInfo);
+    
+    // SENTRY ENTEGRASYONU ŞİMDİLİK İPTAL
+    // Sentry.captureException(error, { extra: errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary-container" style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <h2 style={{ color: '#9f4f68', marginBottom: '14px' }}>Opps! Beklenmeyen bir hata oluştu.</h2>
+          <p style={{ color: '#666', marginBottom: '24px' }}>Lütfen sayfayı yenileyerek tekrar deneyin veya yöneticiyle iletişime geçin.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ padding: '14px 28px', background: '#9f4f68', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Sayfayı Yenile
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+</file>
+
 <file path="src/components/invitation/sections/CeremonySection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -4865,79 +4865,6 @@ export const useAdminStore = create((set) => ({
 }));
 </file>
 
-<file path="src/components/invitation/sections/HeroSection.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const isPostWedding = settings?.isPostWedding;
-  
-  return (
-    <m.section 
-      initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
-    >
-      {invitation?.heroVideo ? (
-        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      ) : null}
-      
-      <div className="hero-content">
-        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
-        </p>
-
-        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-          <span>{invitation?.bride}</span>
-          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
-          <span>{invitation?.groom}</span>
-        </h1>
-        
-        {isPostWedding ? (
-          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
-          </p>
-        ) : (
-          <>
-            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              {invitation?.dateText}
-            </p>
-            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-              {t('ui.time')} {invitation?.timeText}
-            </p>
-          </>
-        )}
-
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <span>{t('ui.scroll')}</span>
-        </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
-        )}
-      </div>
-    </m.section>
-  );
-}
-</file>
-
 <file path="src/components/invitation/IntroPage.jsx">
 import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -5498,6 +5425,231 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 );
 </file>
 
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+// React.memo ile sarmalandı
+export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const isPostWedding = settings?.isPostWedding;
+  
+  return (
+    <m.section 
+      initial="hidden" animate="visible" variants={fadeUp}
+      className="hero-section" 
+    >
+      {invitation?.heroVideo ? (
+        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
+          <source src={invitation.heroVideo} type="video/mp4" />
+        </video>
+      ) : null}
+      
+      <div className="hero-content">
+        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
+        </p>
+
+        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <span>{invitation?.bride}</span>
+          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
+          <span>{invitation?.groom}</span>
+        </h1>
+        
+        {isPostWedding ? (
+          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
+          </p>
+        ) : (
+          <>
+            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {invitation?.dateText}
+            </p>
+            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {t('ui.time')} {invitation?.timeText}
+            </p>
+          </>
+        )}
+
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
+        
+        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
+      </div>
+    </m.section>
+  );
+});
+</file>
+
+<file path="src/components/AdminDashboard.jsx">
+import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { AdminLogin } from "./admin/auth/AdminLogin";
+import { useAdminStore, useStore } from "../store/useStore";
+
+function AdminDashboard(props) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  // Zustand
+  const { isAdminUnlocked, adminSaveMessage } = useAdminStore();
+  const { activeAdminTab, setActiveAdminTab, saveSiteContent } = useStore();
+
+  const {
+    closeAdminPage, toggleMusic, isMusicPlaying,
+    activeTabInfo, adminTabs, resetSiteContent, logoutAdmin,
+    renderAdminActivePanel, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
+  } = props;
+
+  const toggleLanguage = () => i18n.changeLanguage(isEn ? 'tr' : 'en');
+  const openAdminTab = (tabId) => setActiveAdminTab(tabId);
+
+  const enhancedAdminTabs = useMemo(() => {
+    const tabs = [];
+    (adminTabs || []).forEach(tab => {
+      tabs.push(tab);
+      if (tab.id === "theme") {
+        tabs.push({ id: "visibility", label: isEn ? "Section Visibility" : "Bölüm Görünürlüğü", description: isEn ? "Toggle sections on page" : "Sayfadaki alanları aç/kapat" });
+        tabs.push({ id: "gift", label: isEn ? "IBAN & Gift" : "IBAN & Hediye", description: isEn ? "Account and bank details" : "Hesap ve banka bilgileri" });
+      }
+    });
+    return tabs;
+  }, [adminTabs, isEn]);
+
+  const currentTabInfo = activeTabInfo || enhancedAdminTabs.find(t => t.id === activeAdminTab);
+
+  return (
+    <main className="admin-page">
+      <section className="card admin-card admin-page-card admin-shell-card">
+        <div className="admin-page-header">
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 120px', alignItems: 'center', marginBottom: '28px', paddingTop: '24px', width: '100%' }}>
+            <div />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button type="button" className="secondary-button admin-back-button" style={{ margin: 0 }} onClick={closeAdminPage}>
+                {isEn ? "Back to Invitation 🏠" : "Davetiyeye Dön 🏠"}
+              </button>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+                <button type="button" className="secondary-button" style={{ margin: 0, minHeight: '48px', padding: '0 24px' }} onClick={toggleLanguage}>
+                  {isEn ? "EN" : "TR"}
+                </button>
+                {toggleMusic && (
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    style={{ margin: 0, width: '48px', height: '48px', minHeight: '48px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+                    onClick={toggleMusic}
+                    title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
+                  >
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      {isMusicPlaying ? (
+                        <>
+                          <path d="M9 18V5l12-2v13" />
+                          <circle cx="6" cy="18" r="3" />
+                          <circle cx="18" cy="16" r="3" />
+                        </>
+                      ) : (
+                        <>
+                          <path d="M9 18V5l12-2v13" />
+                          <circle cx="6" cy="18" r="3" />
+                          <circle cx="18" cy="16" r="3" />
+                          <line x1="3" y1="3" x2="21" y2="21" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+          <p className="section-label">{isEn ? "Management" : "Yönetim"}</p>
+          <h2>{isEn ? "Admin Panel" : "Admin Panel"}</h2>
+        </div>
+
+        {!isAdminUnlocked ? (
+          <AdminLogin 
+            isEn={isEn} 
+            submitAdminPassword={submitAdminPassword} 
+            completePasswordRecovery={completePasswordRecovery} 
+            sendPasswordResetEmail={sendPasswordResetEmail} 
+          />
+        ) : (
+          <div className="admin-layout">
+            <aside className="admin-sidebar">
+              <div className="admin-sidebar-title">
+                <span>{isEn ? "Sections" : "Bölümler"}</span>
+                <small>{isEn ? "Select area to edit" : "Düzenlemek istediğin alanı seç"}</small>
+              </div>
+              <div className="admin-sidebar-menu">
+                {enhancedAdminTabs.map((tab) => (
+                  <button
+                    type="button"
+                    key={tab.id}
+                    className={activeAdminTab === tab.id ? "admin-nav-button active" : "admin-nav-button"}
+                    onClick={() => openAdminTab(tab.id)}
+                  >
+                    <span>{tab.label}</span>
+                    <small>{tab.description}</small>
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <div className="admin-main-panel">
+              <div className="admin-actions-sticky">
+                <div className="admin-actions-top-row">
+                  <div className="admin-current-section">
+                    <strong>{currentTabInfo?.label}</strong>
+                    <span>{currentTabInfo?.description}</span>
+                  </div>
+                  
+                  <div className="admin-actions-btn-group">
+                    <button type="button" className="main-button" onClick={() => saveSiteContent(isEn)}>
+                      {isEn ? "Save Changes 💾" : "Değişiklikleri Kaydet 💾"}
+                    </button>
+                    <button type="button" className="secondary-button" onClick={resetSiteContent}>
+                      {isEn ? "Reset Default 🔄" : "Varsayılana Döndür 🔄"}
+                    </button>
+                    <button type="button" className="secondary-button admin-logout-button" onClick={logoutAdmin}>
+                      {isEn ? "Logout 🚪" : "Çıkış Yap 🚪"}
+                    </button>
+                  </div>
+                </div>
+                {adminSaveMessage && <span className="admin-save-message">{adminSaveMessage}</span>}
+              </div>
+              <div className="admin-editor admin-editor-single">
+                {renderAdminActivePanel()}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}
+
+export default React.memo(AdminDashboard);
+</file>
+
 <file path="src/components/AdminUI.jsx">
 export * from "./admin/ui/AdminInputs";
 export * from "./admin/ui/AdminMediaFields";
@@ -5772,12 +5924,40 @@ export * from "./admin/ui/AdminLayout";
     transform: translateY(0) scale(1);
   }
 
-  /* SİHİRLİ KURAL: Küçük kartları ekranın ortasına çeker, Büyük kartları yukarıdan başlatır */
-  html body .app .invitation-page .slide-wrapper > section:not(.hero-section),
-  .invitation-page .slide-wrapper > section:not(.hero-section) { 
-    margin: auto 0 !important; 
-    width: 100% !important; 
-    flex-shrink: 0 !important;
+  html body .app .invitation-page .slide-wrapper:not(:first-child)::before,
+  html body .app .invitation-page .slide-wrapper:not(:first-child)::after {
+    content: "" !important;
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-height: 1px !important;
+  }
+
+  html body .app .invitation-page .slide-wrapper:not(:first-child) > * {
+    flex: 0 0 auto !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+  }
+
+  .invitation-page .slide-wrapper:not(:first-child) > * {
+    grid-row: 2 !important; /* Kartı zorla orta (2.) satıra oturturuz */
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .invitation-page .slide-wrapper:not(:first-child) {
+    display: grid !important;
+    grid-template-rows: 1fr auto 1fr !important; /* 3 satır: Esnek boşluk, İçerik, Esnek boşluk */
+    grid-template-columns: 100% !important;
+    justify-items: center !important;
+    align-items: center !important;
+  }
+
+  .invitation-page .slide-wrapper:not(:first-child)::before,
+  .invitation-page .slide-wrapper:not(:first-child)::after {
+    content: "" !important;
+    display: block !important;
+    min-height: 1px !important; /* İçerik çok uzunsa sıfırlanıp kaybolması için */
   }
 
   /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
@@ -5922,157 +6102,6 @@ export * from "./admin/ui/AdminLayout";
     color: #fff !important;
   }
 }
-</file>
-
-<file path="src/components/AdminDashboard.jsx">
-import React, { useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { AdminLogin } from "./admin/auth/AdminLogin";
-import { useAdminStore, useStore } from "../store/useStore";
-
-function AdminDashboard(props) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  // Zustand
-  const { isAdminUnlocked, adminSaveMessage } = useAdminStore();
-  const { activeAdminTab, setActiveAdminTab, saveSiteContent } = useStore();
-
-  const {
-    closeAdminPage, toggleMusic, isMusicPlaying,
-    activeTabInfo, adminTabs, resetSiteContent, logoutAdmin,
-    renderAdminActivePanel, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
-  } = props;
-
-  const toggleLanguage = () => i18n.changeLanguage(isEn ? 'tr' : 'en');
-  const openAdminTab = (tabId) => setActiveAdminTab(tabId);
-
-  const enhancedAdminTabs = useMemo(() => {
-    const tabs = [];
-    (adminTabs || []).forEach(tab => {
-      tabs.push(tab);
-      if (tab.id === "theme") {
-        tabs.push({ id: "visibility", label: isEn ? "Section Visibility" : "Bölüm Görünürlüğü", description: isEn ? "Toggle sections on page" : "Sayfadaki alanları aç/kapat" });
-        tabs.push({ id: "gift", label: isEn ? "IBAN & Gift" : "IBAN & Hediye", description: isEn ? "Account and bank details" : "Hesap ve banka bilgileri" });
-      }
-    });
-    return tabs;
-  }, [adminTabs, isEn]);
-
-  const currentTabInfo = activeTabInfo || enhancedAdminTabs.find(t => t.id === activeAdminTab);
-
-  return (
-    <main className="admin-page">
-      <section className="card admin-card admin-page-card admin-shell-card">
-        <div className="admin-page-header">
-          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 120px', alignItems: 'center', marginBottom: '28px', paddingTop: '24px', width: '100%' }}>
-            <div />
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <button type="button" className="secondary-button admin-back-button" style={{ margin: 0 }} onClick={closeAdminPage}>
-                {isEn ? "Back to Invitation 🏠" : "Davetiyeye Dön 🏠"}
-              </button>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-                <button type="button" className="secondary-button" style={{ margin: 0, minHeight: '48px', padding: '0 24px' }} onClick={toggleLanguage}>
-                  {isEn ? "EN" : "TR"}
-                </button>
-                {toggleMusic && (
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    style={{ margin: 0, width: '48px', height: '48px', minHeight: '48px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
-                    onClick={toggleMusic}
-                    title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-                  >
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      {isMusicPlaying ? (
-                        <>
-                          <path d="M9 18V5l12-2v13" />
-                          <circle cx="6" cy="18" r="3" />
-                          <circle cx="18" cy="16" r="3" />
-                        </>
-                      ) : (
-                        <>
-                          <path d="M9 18V5l12-2v13" />
-                          <circle cx="6" cy="18" r="3" />
-                          <circle cx="18" cy="16" r="3" />
-                          <line x1="3" y1="3" x2="21" y2="21" />
-                        </>
-                      )}
-                    </svg>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-          <p className="section-label">{isEn ? "Management" : "Yönetim"}</p>
-          <h2>{isEn ? "Admin Panel" : "Admin Panel"}</h2>
-        </div>
-
-        {!isAdminUnlocked ? (
-          <AdminLogin 
-            isEn={isEn} 
-            submitAdminPassword={submitAdminPassword} 
-            completePasswordRecovery={completePasswordRecovery} 
-            sendPasswordResetEmail={sendPasswordResetEmail} 
-          />
-        ) : (
-          <div className="admin-layout">
-            <aside className="admin-sidebar">
-              <div className="admin-sidebar-title">
-                <span>{isEn ? "Sections" : "Bölümler"}</span>
-                <small>{isEn ? "Select area to edit" : "Düzenlemek istediğin alanı seç"}</small>
-              </div>
-              <div className="admin-sidebar-menu">
-                {enhancedAdminTabs.map((tab) => (
-                  <button
-                    type="button"
-                    key={tab.id}
-                    className={activeAdminTab === tab.id ? "admin-nav-button active" : "admin-nav-button"}
-                    onClick={() => openAdminTab(tab.id)}
-                  >
-                    <span>{tab.label}</span>
-                    <small>{tab.description}</small>
-                  </button>
-                ))}
-              </div>
-            </aside>
-
-            <div className="admin-main-panel">
-              <div className="admin-actions-sticky">
-                <div className="admin-actions-top-row">
-                  <div className="admin-current-section">
-                    <strong>{currentTabInfo?.label}</strong>
-                    <span>{currentTabInfo?.description}</span>
-                  </div>
-                  
-                  <div className="admin-actions-btn-group">
-                    <button type="button" className="main-button" onClick={() => saveSiteContent(isEn)}>
-                      {isEn ? "Save Changes 💾" : "Değişiklikleri Kaydet 💾"}
-                    </button>
-                    <button type="button" className="secondary-button" onClick={resetSiteContent}>
-                      {isEn ? "Reset Default 🔄" : "Varsayılana Döndür 🔄"}
-                    </button>
-                    <button type="button" className="secondary-button admin-logout-button" onClick={logoutAdmin}>
-                      {isEn ? "Logout 🚪" : "Çıkış Yap 🚪"}
-                    </button>
-                  </div>
-                </div>
-                {adminSaveMessage && <span className="admin-save-message">{adminSaveMessage}</span>}
-              </div>
-              <div className="admin-editor admin-editor-single">
-                {renderAdminActivePanel()}
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
-    </main>
-  );
-}
-
-export default React.memo(AdminDashboard);
 </file>
 
 <file path="src/components/admin/AdminPanelComponents.jsx">
@@ -6801,7 +6830,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 export function useScrollNavigation(isAdminPage, opened) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(false);
+  // DÜZELTME: Başlangıçta sayfa her halükarda kaydırılabilir olduğu için varsayılan değeri true yaptık.
+  const [showScrollDown, setShowScrollDown] = useState(true); 
   const [isMobile, setIsMobile] = useState(false);
 
   const isScrollingRef = useRef(false);
@@ -6922,20 +6952,31 @@ export function useScrollNavigation(isAdminPage, opened) {
       } else {
         const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
         setShowScrollTop(scrollTop > 100);
+        // DÜZELTME: Masaüstü sayfa sonu hesaplaması
         const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
         setShowScrollDown(!isAtBottom);
       }
     };
 
+    let resizeObserver;
+
     if (!isMobile) {
       window.addEventListener('scroll', handleScroll, { passive: true });
+      
+      // DÜZELTME: Sayfa içeriği sonradan yüklendiğinde (lazy load resimler, Suspense bileşenler)
+      // Body yüksekliği değişeceği için butonu duruma göre otomatik tekrar hesaplatıyoruz.
+      resizeObserver = new ResizeObserver(() => handleScroll());
+      resizeObserver.observe(document.body);
     }
     
     const revealTimer = window.setTimeout(handleScroll, 100);
     handleScroll();
     
     return () => {
-      if (!isMobile) window.removeEventListener('scroll', handleScroll);
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+        if (resizeObserver) resizeObserver.disconnect();
+      }
       window.clearTimeout(revealTimer);
     };
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
@@ -7059,90 +7100,6 @@ export default function InvitationController() {
     </div>
   );
 }
-</file>
-
-<file path="src/components/common/FloatingMenu.jsx">
-import React, { memo } from "react";
-
-export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, 
-  toggleLanguage, 
-  shareText, 
-  toggleMusic, 
-  isMusicPlaying, 
-  showScrollDown, 
-  scrollToNext, 
-  showScrollTop, 
-  scrollToPrev 
-}) {
-  return (
-    <>
-      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v4" />
-            <path d="M12 16h.01" />
-          </svg>
-        </a>
-      </div>
-
-      {/* Menü bloğuna zIndex: 999999 ve pointerEvents: 'auto' eklenerek her zaman tıklanabilir yapıldı */}
-      <div 
-        className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}
-        style={{ zIndex: 999999, pointerEvents: 'auto' }}
-      >
-        
-        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
-          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
-        </button>
-
-        <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-        </a>
-
-        <button type="button" className={`dock-btn music-btn ${isMusicPlaying ? 'music-on' : ''}`} onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isMusicPlaying ? (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </>
-            ) : (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-                <line x1="3" y1="3" x2="21" y2="21" />
-              </>
-            )}
-          </svg>
-        </button>
-
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"></line>
-            <polyline points="5 12 12 5 19 12"></polyline>
-          </svg>
-        </button>
-        
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="19 12 12 19 5 12"></polyline>
-          </svg>
-        </button>
-      </div>
-    </>
-  );
-});
 </file>
 
 <file path="src/components/invitation/InteractiveSections.jsx">
@@ -7415,6 +7372,90 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
     </section>
   );
 }
+</file>
+
+<file path="src/components/common/FloatingMenu.jsx">
+import React, { memo } from "react";
+
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
+}) {
+  return (
+    <>
+      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
+      </div>
+
+      {/* Menü bloğuna zIndex: 999999 ve pointerEvents: 'auto' eklenerek her zaman tıklanabilir yapıldı */}
+      <div 
+        className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}
+        style={{ zIndex: 999999, pointerEvents: 'auto' }}
+      >
+        
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </a>
+
+        <button type="button" className={`dock-btn music-btn ${isMusicPlaying ? 'music-on' : ''}`} onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMusicPlaying ? (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+              </>
+            )}
+          </svg>
+        </button>
+
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+});
 </file>
 
 <file path="src/pages/InvitationView.jsx">
