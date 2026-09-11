@@ -20,6 +20,12 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
         if (payload.new) {
           setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
         }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
+        // YENİ: Başka bir cihazda veya kapıda check-in/update yapıldığında listeyi anında senkronize et
+        if (payload.new) {
+          setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
+        }
       }).subscribe();
 
     return () => {
@@ -119,9 +125,18 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
   const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
     const nextStatus = !currentStatus;
-    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
-    if (error) { setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); return; }
+    
+    // YENİ: Optimistic UI - Sunucuyu beklemeden arayüzü anında güncelle
     setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
+
+    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
+    
+    if (error) { 
+      // Hata olursa işlemi geri al
+      setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
+      setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
+      return; 
+    }
   }, [setGuests, setAdminSaveMessage, isEn]);
 
   return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn };

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, lazy, Suspense } from "react";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -6,14 +6,27 @@ import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
 
-import {
-  HeroSection, CountdownSection, InvitationMessageSection, FamilySection,
-  CeremonySection, ScheduleSection, LocationSection, GallerySection,
-  ShareSection, FooterSection, GiftSection, StorySection
-} from "../components/invitation/sections";
-import { RsvpSection } from "../components/invitation/sections/RsvpSection";
-import { GuestsListSection } from "../components/invitation/sections/GuestsListSection";
-import { WishesSection } from "../components/invitation/sections/WishesSection";
+// SADECE GÖRÜNÜR İLK COMPONENT STATİK İMPORT EDİLİR
+import { HeroSection } from "../components/invitation/sections";
+
+// DİĞERLERİ LAZY LOAD EDİLİR
+const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
+const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
+const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
+const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
+const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
+const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
+const GallerySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GallerySection })));
+const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
+const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
+const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
+const StorySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.StorySection })));
+const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSection").then(m => ({ default: m.RsvpSection })));
+const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
+const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
+
+// Skeleton Loader Component (Tembel yüklenen alanlar için)
+const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
 
 export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const { t, i18n } = useTranslation();
@@ -49,7 +62,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
     guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
   });
 
-  // Zarf açıldığında görünümün her zaman en üstten başlamasını garanti eder
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -66,7 +78,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const handlePageClick = (e) => {
     if (window.innerWidth > 768) return;
     
-    // Tıklanan hedefi güvenli bir şekilde yakala
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
 
@@ -106,59 +117,109 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
       </div>
       
       {settings.visibility?.countdown !== false && (
-        <div className="slide-wrapper"><CountdownSection copy={copy} timeLeft={timeLeft} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <CountdownSection copy={copy} timeLeft={timeLeft} />
+          </Suspense>
+        </div>
       )}
       
       <div className="slide-wrapper">
-        <InvitationMessageSection copy={copy} invitation={invitation} />
+        <Suspense fallback={<SectionLoader />}>
+          <InvitationMessageSection copy={copy} invitation={invitation} />
+        </Suspense>
       </div>
       
       {settings.visibility?.family !== false && (
-        <div className="slide-wrapper"><FamilySection copy={copy} familyInfo={familyInfo} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <FamilySection copy={copy} familyInfo={familyInfo} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.story !== false && (
-        <div className="slide-wrapper"><StorySection copy={copy} storyTimeline={storyTimeline} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <StorySection copy={copy} storyTimeline={storyTimeline} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.ceremony !== false && (
-        <div className="slide-wrapper"><CeremonySection copy={copy} eventDetails={eventDetails} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <CeremonySection copy={copy} eventDetails={eventDetails} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.schedule !== false && (
-        <div className="slide-wrapper"><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.location !== false && (
-        <div className="slide-wrapper"><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.gallery !== false && (
-        <div className="slide-wrapper"><GallerySection copy={copy} invitation={invitation} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <GallerySection copy={copy} invitation={invitation} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.rsvp !== false && (
-        <div className="slide-wrapper"><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.guests !== false && (
-        <div className="slide-wrapper"><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.wishes !== false && (
-        <div className="slide-wrapper"><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.iban !== false && (
-        <div className="slide-wrapper"><GiftSection giftData={giftRegistry} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <GiftSection giftData={giftRegistry} />
+          </Suspense>
+        </div>
       )}
       
       <div className="slide-wrapper">
-        <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
+        <Suspense fallback={<SectionLoader />}>
+          <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
+        </Suspense>
       </div>
       
       <div className="slide-wrapper">
-        <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+        <Suspense fallback={<SectionLoader />}>
+          <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+        </Suspense>
       </div>
     </main>
   );

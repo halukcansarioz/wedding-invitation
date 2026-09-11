@@ -21,9 +21,9 @@ export function OptionGroup({ value, options, onChange, disabled = false }) {
   );
 }
 
-// CustomDropdown ve ThemeDropdown birleştirilip daha esnek bir Dropdown bileşenine dönüştürüldü.
 export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef(null);
   const selectedOption = options.find((opt) => opt.value === value) || options[0];
 
@@ -33,7 +33,6 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" })
         setIsOpen(false);
       }
     };
-
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -42,8 +41,36 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" })
     };
   }, [isOpen]);
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (isOpen && focusedIndex >= 0) {
+        onChange(options[focusedIndex].value);
+        setIsOpen(false);
+      } else {
+        setIsOpen(!isOpen);
+      }
+    } else if (e.key === "ArrowDown" && isOpen) {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp" && isOpen) {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <div className={`admin-custom-select ${isOpen ? "open" : ""}`} ref={dropdownRef}>
+    <div 
+      className={`admin-custom-select ${isOpen ? "open" : ""}`} 
+      ref={dropdownRef}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="combobox"
+      aria-expanded={isOpen}
+      aria-haspopup="listbox"
+    >
       <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
         <span>{selectedOption?.label || placeholder}</span>
         <div className="admin-custom-select-arrow">
@@ -53,15 +80,19 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" })
         </div>
       </div>
       {isOpen && (
-        <div className="admin-custom-select-menu">
-          {options.map((option) => (
+        <div className="admin-custom-select-menu" role="listbox">
+          {options.map((option, index) => (
             <button
               type="button"
+              role="option"
+              aria-selected={value === option.value}
               key={option.value}
-              className={`admin-custom-select-option ${value === option.value ? "selected" : ""}`}
+              className={`admin-custom-select-option ${value === option.value ? "selected" : ""} ${focusedIndex === index ? "focused" : ""}`}
+              style={focusedIndex === index ? { backgroundColor: 'var(--theme-hero-mid)' } : {}}
               onClick={() => {
                 onChange(option.value);
                 setIsOpen(false);
+                setFocusedIndex(-1);
               }}
             >
               {option.label}
