@@ -68,35 +68,50 @@
     display: block !important;
     width: 100vw;
     height: 100dvh !important;
-    /* Mobilde aşağı kaydırmayı engelle, arka planı sabitle */
     overflow: hidden !important; 
   }
 
   .slide-wrapper {
     position: absolute !important; 
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     width: 100% !important;
     height: 100dvh !important; 
-    /* Gizli ve Tıklanamaz Başlangıç Durumu */
+    
     opacity: 0 !important; 
     pointer-events: none !important;
     visibility: hidden !important;
     z-index: 1;
-    padding: 24px 16px 110px 16px !important;
-    box-sizing: border-box !important;
+    
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
-    /* Kartların içi eğer ekrandan büyükse kaydırmaya izin ver */
+    justify-content: flex-start !important;
+    align-items: center !important;
+    
+    /* Üstten 24px boşluk (büyük kartlar için), Alttan butonlara değmesin diye 110px boşluk */
+    padding: 24px 16px 110px 16px !important;
+    box-sizing: border-box !important;
+    
     overflow-y: auto !important; 
     overflow-x: hidden !important;
-    /* Harika geçiş efekti: Yukarıdan aşağı hafifçe kayarak belirir */
+    
+    /* Kaydırma Çubuğunu Tamamen Gizle (Temiz Görünüm İçin) */
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+    
     transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
     transform: translateY(30px) scale(0.98); 
   }
 
-  /* Aktif Slaytın Ekrana Geliş Animasyonu */
+  /* Webkit tarayıcılarda (Chrome, Safari, iOS) scrollbar'ı gizle */
+  .invitation-page .slide-wrapper::-webkit-scrollbar,
+  .slide-wrapper::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    -webkit-appearance: none !important;
+  }
+
   .slide-wrapper.active-slide {
     opacity: 1 !important;
     pointer-events: auto !important;
@@ -105,15 +120,19 @@
     transform: translateY(0) scale(1);
   }
 
-  /* Kartı dikey olarak ekranın ortasına sabitler */
-  html body .app .invitation-page .slide-wrapper > section:not(.hero-section) { 
-    margin-top: auto !important; 
-    margin-bottom: auto !important; 
+  /* SİHİRLİ KURAL: Küçük kartları ekranın ortasına çeker, Büyük kartları yukarıdan başlatır */
+  html body .app .invitation-page .slide-wrapper > section:not(.hero-section),
+  .invitation-page .slide-wrapper > section:not(.hero-section) { 
+    margin: auto 0 !important; 
     width: 100% !important; 
+    flex-shrink: 0 !important;
   }
 
   /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
   .slide-wrapper:first-child {
+    display: flex !important; 
+    flex-direction: column !important;
+    justify-content: center !important;
     padding: 0 !important; 
     background: transparent;
   }
@@ -222,7 +241,6 @@
    DOKUNMATİK EKRAN (HOVER OLMAYAN) CİHAZLAR İÇİN STICKY HOVER ÇÖZÜMÜ
    ================================================================= */
 @media (hover: none) {
-  /* Mobilde tıklandıktan sonra butonun seçili/hover renginde takılı kalmasını engeller */
   html[data-theme] .dock-btn:hover {
     background: rgba(var(--theme-faint-rgb, 255, 255, 255), 0.85) !important;
     color: var(--rose-dark) !important;
@@ -235,7 +253,6 @@
     color: var(--rose-deep) !important;
   }
 
-  /* Butona sadece parmak basılıyken (anlık olarak) renk efekti verir */
   html[data-theme] .dock-btn:active {
     background: var(--amp-color) !important;
     color: #fff !important;

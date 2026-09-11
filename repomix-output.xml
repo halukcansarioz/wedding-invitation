@@ -1878,65 +1878,6 @@ export function StoryTab({ isEn }) {
 }
 </file>
 
-<file path="src/components/admin/tabs/ThemeTab.jsx">
-import React from "react";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { THEMES } from "../../../config/constants";
-import { useStore } from "../../../store/useStore";
-
-export function ThemeTab({ isEn }) {
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-
-  const handleThemeChange = (themeValue) => {
-    updateDraftObject("settings", "theme", themeValue);
-    document.documentElement.setAttribute('data-theme', themeValue);
-  };
-
-  if (!adminDraft?.settings) return null;
-
-  return (
-    <AdminSection title={isEn ? "Theme & Publishing Settings" : "Tema ve Yayın Ayarları"} onSave={() => saveSiteContent(isEn)}>
-      <p className="admin-help-text">
-        {isEn ? "When the theme changes, buttons, cards, text colors adjust accordingly." : "Tema değiştiğinde butonlar, kartlar, yazı renkleri aynı temaya göre değişir."}
-      </p>
-      <div className="theme-picker-grid">
-        {THEMES.map((theme) => (
-          <button 
-            type="button" 
-            key={theme.value} 
-            className={adminDraft.settings.theme === theme.value ? "theme-option-card active" : "theme-option-card"} 
-            data-theme-preview={theme.value} 
-            onClick={() => handleThemeChange(theme.value)}
-          >
-            <span className="theme-swatch" aria-hidden="true"></span>
-            <strong>{theme.label}</strong>
-            <small>{adminDraft.settings.theme === theme.value ? (isEn ? "Selected theme" : "Seçili tema") : (isEn ? "Use this theme" : "Bu temayı kullan")}</small>
-          </button>
-        ))}
-      </div>
-      <div className="admin-theme-check-row">
-        <AdminCheckbox 
-          checked={adminDraft.settings.requireWishApproval} 
-          label={isEn ? "Guestbook messages require admin approval" : "Anı defteri mesajları admin onayından sonra yayınlansın"} 
-          onChange={(value) => updateDraftObject("settings", "requireWishApproval", value)} 
-        />
-      </div>
-      <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-        <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>{isEn ? "Default Theme (For Reset)" : "Varsayılan Tema (Sıfırlama İçin)"}</h4>
-        <Dropdown 
-          value={adminDraft.settings.defaultTheme || "lavanta"} 
-          onChange={(value) => updateDraftObject("settings", "defaultTheme", value)} 
-          options={THEMES} 
-        />
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/VisibilityTab.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -2707,67 +2648,67 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, se
 }
 </file>
 
-<file path="src/components/admin/tabs/WishesAdminPanel.jsx">
+<file path="src/components/admin/tabs/ThemeTab.jsx">
 import React from "react";
-import { useTranslation } from "react-i18next";
-import { Virtuoso } from "react-virtuoso";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
+import { THEMES } from "../../../config/constants";
 import { useStore } from "../../../store/useStore";
 
-export function WishesAdminPanel({ 
-  wishes, filteredWishes, adminWishSearch, setAdminWishSearch, 
-  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
-  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
-}) {
-  const { t } = useTranslation();
-  
+export function ThemeTab({ isEn }) {
   const adminDraft = useStore((state) => state.adminDraft);
   const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  const handleThemeChange = (themeValue) => {
+    updateDraftObject("settings", "theme", themeValue);
+    document.documentElement.setAttribute('data-theme', themeValue);
+  };
 
   if (!adminDraft?.settings) return null;
 
   return (
-    <AdminSection title={isEn ? "Guestbook Messages" : "Anı Defteri Mesajları"}>
-      <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? true} label={t('visibility.wishes')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+    <AdminSection title={isEn ? "Theme & Publishing Settings" : "Tema ve Yayın Ayarları"} onSave={() => saveSiteContent(isEn)}>
+      <p className="admin-help-text">
+        {isEn ? "When the theme changes, buttons, cards, text colors adjust accordingly." : "Tema değiştiğinde butonlar, kartlar, yazı renkleri aynı temaya göre değişir."}
+      </p>
+      
+      <div className="theme-picker-grid">
+        {THEMES.map((theme) => (
+          <button 
+            type="button" 
+            key={theme.value} 
+            className={adminDraft.settings.theme === theme.value ? "theme-option-card active" : "theme-option-card"} 
+            data-theme-preview={theme.value} 
+            onClick={() => handleThemeChange(theme.value)}
+          >
+            <span className="theme-swatch" aria-hidden="true"></span>
+            <strong>{theme.label}</strong>
+            <small>{adminDraft.settings.theme === theme.value ? (isEn ? "Selected theme" : "Seçili tema") : (isEn ? "Use this theme" : "Bu temayı kullan")}</small>
+          </button>
+        ))}
       </div>
-      <div className="admin-toolbar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
-        <input style={{ flex: "1", minWidth: "160px", margin: 0 }} value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder={isEn ? "Search messages..." : "Mesajlarda ara..."} />
-        <div style={{ minWidth: "160px", margin: 0 }}>
-          <Dropdown value={adminWishStatusFilter} onChange={setAdminWishStatusFilter} options={[{ value: "all", label: isEn ? "All Status" : "Tümü" }, { value: "approved", label: isEn ? "Published" : "Yayında" }, { value: "pending", label: isEn ? "Pending" : "Onay Bekliyor" }]} />
-        </div>
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearWishes}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+
+      <div className="admin-theme-check-row">
+        <AdminCheckbox 
+          checked={adminDraft.settings.requireWishApproval} 
+          label={isEn ? "Guestbook messages require admin approval" : "Anı defteri mesajları admin onayından sonra yayınlansın"} 
+          onChange={(value) => updateDraftObject("settings", "requireWishApproval", value)} 
+        />
+        <AdminCheckbox 
+          checked={adminDraft.settings.isPostWedding || false} 
+          label={isEn ? "Post-Wedding Mode (Thanks & Memories)" : "Düğün Bitti Modu (Teşekkür & Anı Sitesi)"} 
+          onChange={(value) => updateDraftObject("settings", "isPostWedding", value)} 
+        />
       </div>
-      <div className="admin-list admin-list-full" style={{ height: "600px" }}>
-        {filteredWishes.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching messages found." : "Mesaj bulunamadı."}</p>
-        ) : (
-          <Virtuoso
-            style={{ height: '100%', width: '100%' }}
-            data={filteredWishes}
-            itemContent={(index, wish) => (
-              <div className="admin-row" style={{ marginBottom: "14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <strong>{wish.name}</strong>
-                  <span style={{ fontSize: "13px", padding: "4px 8px", borderRadius: "8px", background: wish.approved ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)", color: wish.approved ? "#27ae60" : "#d35400", fontWeight: "bold" }}>
-                    {wish.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}
-                  </span>
-                </div>
-                <p style={{ margin: "8px 0", fontStyle: "italic", fontSize: "16px" }}>"{wish.message}"</p>
-                <div className="admin-row-actions">
-                  <button type="button" className="secondary-button small-admin-button" onClick={() => toggleWishApproval(wish.id)}>
-                    {wish.approved ? (isEn ? "Hide 🙈" : "Yayından Kaldır 🙈") : (isEn ? "Publish 👁️" : "Yayınla 👁️")}
-                  </button>
-                  <button type="button" className="secondary-button small-admin-button" onClick={() => editWish(wish.id)}>{isEn ? "Edit ✏️" : "Düzenle ✏️"}</button>
-                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteWish(wish.id)}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
-                </div>
-              </div>
-            )}
-          />
-        )}
+
+      <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
+        <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>{isEn ? "Default Theme (For Reset)" : "Varsayılan Tema (Sıfırlama İçin)"}</h4>
+        <Dropdown 
+          value={adminDraft.settings.defaultTheme || "lavanta"} 
+          onChange={(value) => updateDraftObject("settings", "defaultTheme", value)} 
+          options={THEMES} 
+        />
       </div>
     </AdminSection>
   );
@@ -3981,6 +3922,116 @@ export async function optimizeImage(file) {
 }
 </file>
 
+<file path="src/components/admin/tabs/WishesAdminPanel.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import jsPDF from "jspdf";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
+
+// Türkçe karakterleri PDF için uyumlu hale getirir
+const normalizeTR = (text) => {
+  if (!text) return "";
+  return text.replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+             .replace(/ü/g, 'u').replace(/Ü/g, 'U')
+             .replace(/ş/g, 's').replace(/Ş/g, 'S')
+             .replace(/ı/g, 'i').replace(/İ/g, 'I')
+             .replace(/ö/g, 'o').replace(/Ö/g, 'O')
+             .replace(/ç/g, 'c').replace(/Ç/g, 'C');
+};
+
+export function WishesAdminPanel({ 
+  wishes, filteredWishes, adminWishSearch, setAdminWishSearch, 
+  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
+  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
+}) {
+  const { t } = useTranslation();
+  
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+
+  const exportWishesPDF = () => {
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(isEn ? "Our Guestbook" : "Ani Defterimiz", 20, 20);
+    
+    let yOffset = 35;
+    doc.setFont("helvetica", "normal");
+    
+    filteredWishes.filter(w => w.approved).forEach((wish) => {
+      if (yOffset > 270) { doc.addPage(); yOffset = 20; }
+      
+      const safeMessage = normalizeTR(wish.message);
+      const safeName = normalizeTR(wish.name);
+
+      doc.setFontSize(12);
+      const splitText = doc.splitTextToSize(`"${safeMessage}"`, 170);
+      doc.text(splitText, 20, yOffset);
+      
+      yOffset += (splitText.length * 6) + 5;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "italic");
+      doc.text(`- ${safeName}`, 20, yOffset);
+      doc.setFont("helvetica", "normal");
+      
+      yOffset += 15;
+    });
+    doc.save("ani-defteri.pdf");
+  };
+
+  if (!adminDraft?.settings) return null;
+
+  return (
+    <AdminSection title={isEn ? "Guestbook Messages" : "Anı Defteri Mesajları"}>
+      <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? true} label={t('visibility.wishes')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+      </div>
+      <div className="admin-toolbar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
+        <input style={{ flex: "1", minWidth: "160px", margin: 0 }} value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder={isEn ? "Search messages..." : "Mesajlarda ara..."} />
+        <div style={{ minWidth: "160px", margin: 0 }}>
+          <Dropdown value={adminWishStatusFilter} onChange={setAdminWishStatusFilter} options={[{ value: "all", label: isEn ? "All Status" : "Tümü" }, { value: "approved", label: isEn ? "Published" : "Yayında" }, { value: "pending", label: isEn ? "Pending" : "Onay Bekliyor" }]} />
+        </div>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesPDF}>{isEn ? "PDF Book 📖" : "Kitapçık (PDF) 📖"}</button>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearWishes}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
+      <div className="admin-list admin-list-full" style={{ height: "600px" }}>
+        {filteredWishes.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching messages found." : "Mesaj bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredWishes}
+            itemContent={(index, wish) => (
+              <div className="admin-row" style={{ marginBottom: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <strong>{wish.name}</strong>
+                  <span style={{ fontSize: "13px", padding: "4px 8px", borderRadius: "8px", background: wish.approved ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)", color: wish.approved ? "#27ae60" : "#d35400", fontWeight: "bold" }}>
+                    {wish.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}
+                  </span>
+                </div>
+                <p style={{ margin: "8px 0", fontStyle: "italic", fontSize: "16px" }}>"{wish.message}"</p>
+                <div className="admin-row-actions">
+                  <button type="button" className="secondary-button small-admin-button" onClick={() => toggleWishApproval(wish.id)}>
+                    {wish.approved ? (isEn ? "Hide 🙈" : "Yayından Kaldır 🙈") : (isEn ? "Publish 👁️" : "Yayınla 👁️")}
+                  </button>
+                  <button type="button" className="secondary-button small-admin-button" onClick={() => editWish(wish.id)}>{isEn ? "Edit ✏️" : "Düzenle ✏️"}</button>
+                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteWish(wish.id)}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
+                </div>
+              </div>
+            )}
+          />
+        )}
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
 <file path="src/components/invitation/sections/CeremonySection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -4093,97 +4144,6 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
 }
 .global-modal-input:focus {
   border-color: var(--rose-dark);
-}
-</file>
-
-<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { Virtuoso } from "react-virtuoso";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { useStore } from "../../../store/useStore";
-
-export function GuestsAdminPanel({ 
-  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
-  filteredGuests, editGuest, deleteGuest, clearGuests,
-  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
-  toggleCheckIn
-}) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-
-  if (!adminDraft?.settings) return null;
-
-  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
-  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-
-  return (
-    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
-      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-      </div>
-      
-      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%" }}>
-        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
-        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
-        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
-        <div className="admin-guest-badge arrived">
-          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
-          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
-        </div>
-      </div>
-
-      <div className="admin-toolbar-flex">
-        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
-        <div className="admin-toolbar-filter">
-          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
-        </div>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
-      </div>
-
-      <div className="admin-list admin-list-full admin-guest-list-container">
-        {filteredGuests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
-        ) : (
-          <Virtuoso
-            style={{ height: '100%', width: '100%' }}
-            data={filteredGuests}
-            itemContent={(index, guest) => {
-              const isAttending = guest.attendance === "Katılacağım";
-              return (
-                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined }}>
-                  <div className="admin-guest-header">
-                    <strong>{guest.name}</strong>
-                  </div>
-                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
-                  {guest.phone && <span>📞 {guest.phone}</span>}
-                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
-                  {guest.note && <em>Not: {guest.note}</em>}
-                  
-                  <div className="admin-row-actions admin-guest-actions">
-                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
-                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
-                    </button>
-                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
-                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        )}
-      </div>
-    </AdminSection>
-  );
 }
 </file>
 
@@ -4584,104 +4544,141 @@ export const triggerConfetti = () => {
 };
 </file>
 
-<file path="src/components/invitation/sections/HeroSection.jsx">
+<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
 
-export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext }) {
+const COLORS = ['#9f4f68', '#607244', '#c59a45', '#8f7fb8'];
+
+export function GuestsAdminPanel({ 
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+  filteredGuests, editGuest, deleteGuest, clearGuests,
+  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
+  toggleCheckIn
+}) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  
+  const isEn = i18n.language?.startsWith("en") || false;
+
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+
+  if (!adminDraft?.settings) return null;
+
+  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
+  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+
+  // Grafik verileri
+  const sideData = [
+    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
+  ].filter(d => d.value > 0);
+
+  const checkInData = [
+    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
+    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
+  ];
+
   return (
-    <section 
-      className="hero-section" 
-      style={{ 
-        position: "relative", 
-        overflow: "hidden",
-        minHeight: "100vh", /* KESİN ÇÖZÜM: Mobilde boyutu 0'a düşmesini engeller */
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        backgroundColor: "var(--paper)"
-      }}
-    >
-      {/* 1. KESİN ÇÖZÜM: Animasyonsuz doğrudan arka plan (Safari engellerini aşar) */}
-      {invitation?.heroImage && (
-        <div 
-          style={{
-            position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1,
-            backgroundImage: `url(${invitation.heroImage})`,
-            backgroundPosition: "center", backgroundSize: "cover", backgroundRepeat: "no-repeat",
-            pointerEvents: "none"
-          }} 
-        />
-      )}
-
-      {/* 2. Video (Varsa ve mobil izin veriyorsa üste biner) */}
-      {invitation?.heroVideo && (
-        <video 
-          key={invitation.heroVideo} 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          poster={invitation?.heroImage}
-          style={{
-            position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
-            objectFit: "cover", zIndex: 2, pointerEvents: "none"
-          }}
-        >
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      )}
-
-      {/* 3. Karartma Katmanı (Yazıların her fotoğrafta okunması için) */}
-      <div 
-        style={{
-          position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-          background: "linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 100%)",
-          zIndex: 3, pointerEvents: "none"
-        }} 
-      />
+    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
+      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+      </div>
       
-      {/* 4. İçerik ve Yazılar */}
-      <div className="hero-content" style={{ position: "relative", zIndex: 4, width: "100%", textAlign: "center" }}>
-        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {isEn ? t('invitation.heroLabel') : copy?.heroLabel}
-        </p>
-        
-        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-          <span>{invitation?.bride}</span>
-          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
-          <span>{invitation?.groom}</span>
-        </h1>
-        
-        <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-          {invitation?.dateText}
-        </p>
-        <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {t('ui.time')} {invitation?.timeText}
-        </p>
-        
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20, marginTop: "20px" }}>
-          <div className="mouse" style={{ borderColor: "#fff" }}>
-            <div className="wheel" style={{ background: "#fff" }}></div>
-          </div>
-          <span style={{ color: "#fff" }}>{t('ui.scroll')}</span>
+      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
+        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
+        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
+        <div className="admin-guest-badge arrived">
+          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
+          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
         </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting" style={{ color: "#fff", marginTop: "15px" }}>{guestGreeting}</p>}
-        
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
+      </div>
+
+      {/* İstatistik Grafikleri */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px', height: '260px' }}>
+        <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>{isEn ? "Guest Distribution" : "Misafir Dağılımı"}</h4>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={sideData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} fill="#8884d8" label>
+                {sideData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>{isEn ? "Check-in Status" : "Kapı Giriş Durumu"}</h4>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={checkInData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--rose-deep)' }} />
+              <YAxis tick={{ fill: 'var(--rose-deep)' }} />
+              <Tooltip />
+              <Bar dataKey="value" fill="var(--rose-dark)" radius={[6,6,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="admin-toolbar-flex">
+        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
+        <div className="admin-toolbar-filter">
+          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
+        </div>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
+
+      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px" }}>
+        {filteredGuests.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredGuests}
+            itemContent={(index, guest) => {
+              const isAttending = guest.attendance === "Katılacağım";
+              return (
+                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
+                  <div className="admin-guest-header">
+                    <strong>{guest.name}</strong>
+                  </div>
+                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
+                  {guest.phone && <span>📞 {guest.phone}</span>}
+                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
+                  {guest.note && <em>Not: {guest.note}</em>}
+                  
+                  <div className="admin-row-actions admin-guest-actions">
+                    <button 
+                      type="button" 
+                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
+                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
+                    >
+                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
+                    </button>
+                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
+                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
+                    </button>
+                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
+                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+          />
         )}
       </div>
-    </section>
+    </AdminSection>
   );
 }
 </file>
@@ -4868,206 +4865,76 @@ export const useAdminStore = create((set) => ({
 }));
 </file>
 
-<file path="src/styles/responsive.css">
-/* =================================================================
-   Masaüstü ve Tablet Kuralları (MIN 651PX)
-   ================================================================= */
-@media (min-width: 651px) {
-  html body .app .glass-dock .wa-btn { display: none !important; }
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const isPostWedding = settings?.isPostWedding;
   
-  html body .app .hero-section {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-  }
+  return (
+    <m.section 
+      initial="hidden" animate="visible" variants={fadeUp}
+      className="hero-section" 
+    >
+      {invitation?.heroVideo ? (
+        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
+          <source src={invitation.heroVideo} type="video/mp4" />
+        </video>
+      ) : null}
+      
+      <div className="hero-content">
+        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
+        </p>
 
-  html body .app .hero-content {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-    padding-bottom: 60px !important;
-  }
-  
-  html body .app .invitation-page .scroll-indicator,
-  html body .app .scroll-indicator {
-    position: relative !important;
-    width: fit-content !important;
-    margin: 48px auto 32px auto !important;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto !important;
-    z-index: 10 !important;
-  }
-  
-  html body .app .card, html body .app .invitation-page > footer, html body .app .invitation-page > section { scroll-margin-top: 40px !important; }
-}
+        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <span>{invitation?.bride}</span>
+          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
+          <span>{invitation?.groom}</span>
+        </h1>
+        
+        {isPostWedding ? (
+          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
+          </p>
+        ) : (
+          <>
+            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {invitation?.dateText}
+            </p>
+            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {t('ui.time')} {invitation?.timeText}
+            </p>
+          </>
+        )}
 
-/* =================================================================
-   Geniş Tablet (MAX 900PX)
-   ================================================================= */
-@media (max-width: 900px) {
-  .invitation-page { padding: 22px 16px 60px; }
-  .hero-section {
-    min-height: 560px; padding: 64px 18px;
-    background: radial-gradient(circle at center, rgba(120, 52, 78, 0.1) 0, rgba(120, 52, 78, 0.2) 48%, rgba(60, 24, 38, 0.3) 100%), var(--hero-image) center/cover no-repeat;
-  }
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-  .guest-stats { grid-template-columns: 1fr; }
-}
-
-/* =================================================================
-   MOBİL EKRAN KURALLARI (RESPONSIVE - MAX 650PX)
-   ================================================================= */
-@media (max-width: 650px) {
-  /* --- Admin Paneli --- */
-  .theme-option-card.active { transform: translateY(-3px) scale(1.01) !important; }
-  .theme-option-card.active::after { width: 30px; height: 30px; font-size: 17px; }
-  .admin-music-field .admin-upload-button, .admin-content input[type="search"], .admin-content input[placeholder*="ara" i], .admin-content input[placeholder*="Kayıtlarda" i], .admin-content .secondary-button, .admin-list .secondary-button, .admin-editor .secondary-button { width: 100%; }
-  .admin-custom-select { width: 100%; min-width: 100%; }
-  .admin-custom-select-button { min-height: 52px; }
-  .admin-custom-select-arrow { width: 28px; height: 28px; min-width: 28px; }
-  .admin-row-actions { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; width: 100% !important; }
-  .admin-row-actions button, .admin-list .small-admin-button { width: 100% !important; max-width: none !important; min-width: 0 !important; }
-
-  /* =========================================================
-     SLAYT/FADE GEÇİŞ EFEKTİ VE KART ORTALAMA (MOBİL İÇİN)
-     ========================================================= */
-  .invitation-page {
-    position: relative;
-    height: 100dvh !important;
-    overflow: hidden !important; 
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  .slide-wrapper {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100dvh !important;
-    opacity: 0;
-    pointer-events: none; 
-    visibility: hidden;
-    transition: opacity 0.7s ease-in-out, visibility 0.7s ease-in-out;
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    align-items: center !important;
-    z-index: 1;
-    padding: 24px 16px 110px 16px !important; 
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important; /* BURASI 'center' OLARAK GÜNCELLENDİ */
-  }
-
-  /* ÖNEMLİ DÜZELTME: Kartı ekranın tam dikey merkezine (ortasına) oturtur */
-  html body .app .invitation-page .slide-wrapper > section:not(.hero-section) { 
-    margin-top: auto !important; 
-    margin-bottom: auto !important; 
-    width: 100% !important; 
-  }
-
-  /* HERO (İlk Ekran) Tam Ekrana Sığdırma */
-  .slide-wrapper:first-child {
-    padding: 0 !important; 
-    background: transparent;
-  }
-  
-  .slide-wrapper > .hero-section {
-    min-height: 100dvh !important; 
-    width: 100vw !important; 
-    border-radius: 0 !important; 
-    padding: 64px 16px 80px 16px !important; 
-    margin: 0 !important;
-    background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
-  }
-
-  .hero-section::before {
-    top: 14px !important;
-    right: 14px !important;
-    bottom: 14px !important;
-    left: 14px !important;
-    border-radius: 24px !important;
-  }
-  
-  /* --- Arayüz ve Tipografi --- */
-  .intro-page { padding: 18px; }
-  .intro-card { padding: 46px 24px; border-radius: 32px; }
-  .couple-title { font-size: 58px; }
-  .couple-title em { display: block; margin: 4px 0; }
-  .intro-text, .rsvp-card > p { font-size: 19px; }
-  
-  .hero-section .couple-title {
-    color: #fff; font-size: clamp(68px, 8vw, 118px); line-height: 1.04;
-    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 24px rgba(255, 220, 230, 0.22);
-  }
-  .hero-section .couple-title em { margin: -4px 0 -6px; font-size: 0.45em; }
-  .hero-date { padding: 10px 20px; font-size: 21px; }
-  .hero-time { font-size: 20px; }
-
-  /* KAYDIR BUTONU MOBİL AYARI */
-  .scroll-indicator {
-    position: relative !important;
-    width: fit-content !important;
-    margin: 20px auto 0 auto !important;
-    transform: none !important;
-    left: auto !important;
-    bottom: auto !important;
-  }
-  
-  /* --- Kartlar ve Formlar --- */
-  .card, .countdown-section { padding: 36px 20px; border-radius: 30px; }
-  .rsvp-card h2 { font-size: 32px; }
-  .option-button, .rsvp-form input, .rsvp-form textarea, .wish-form input, .wish-form textarea { font-size: 16px; }
-  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
-  .guest-item, .info-row, .option-group { flex-direction: column; gap: 6px; text-align: center; }
-  .mini-map { border-radius: 22px; }
-  .option-button, .main-button, .secondary-button { width: 100%; min-width: unset; }
-
-  /* --- Galeri Modülü --- */
-  .gallery-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-    align-content: start !important;
-  }
-
-  .gallery-grid .gallery-image,
-  .gallery-grid .lazy-image-wrapper,
-  .gallery-grid img, .mini-map {
-    width: 100% !important;
-    height: 300px !important;
-    object-fit: cover !important;
-    margin: 0 !important;
-    border-radius: 14px !important;
-  }
-  
-  /* --- Yüzen Menü (Floating Actions) --- */
-  .floating-actions.glass-dock {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 8px !important;
-    justify-content: center !important;
-    left: 50% !important;
-    top: auto !important;
-    transform: translateX(-50%) !important;
-    bottom: 24px !important;
-    width: max-content !important;
-  }
-
-  /* --- İnteraktif Hikaye Rotası Mobil Uyumu --- */
-  .story-line-bg, .story-line-progress { left: 32px; }
-  .story-traveler { left: 32px; }
-  .story-node { flex-direction: column !important; align-items: flex-start; }
-  .story-node .story-content-box { width: calc(100% - 64px); margin-left: 64px; }
-  .story-node.left .story-content-box::after, .story-node.right .story-content-box::after { top: 32px; left: -12px; right: auto; border-width: 12px 12px 12px 0; border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent; }
-  .story-map-marker { left: 32px; }
-
-  /* --- Modallar --- */
-  .app-modal-backdrop { padding: 24px !important; }
-  .app-modal-card { width: 100% !important; max-width: 380px !important; padding: 36px 24px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important; }
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
+        
+        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
+      </div>
+    </m.section>
+  );
 }
 </file>
 
@@ -5176,6 +5043,458 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     </section>
   );
 }
+</file>
+
+<file path="src/i18n/locales/en.json">
+{
+  "invitation": {
+    "introLabel": "Wedding Invitation",
+    "introText": "You are invited to the most special day of our love story.",
+    "openButton": "Open Invitation 💌",
+    "heroLabel": "We Are Getting Married",
+    "countdownLabel": "Countdown",
+    "countdownTitle": "Time Left Until Our Wedding",
+    "invitationLabel": "Invitation",
+    "invitationTitle": "Will You Share Our Happiness?",
+    "familyLabel": "Our Families",
+    "familyTitle": "With the Joy of Our Families",
+    "ceremonyLabel": "Ceremony & Celebration",
+    "ceremonyTitle": "Details of the Day",
+    "scheduleLabel": "Wedding Schedule",
+    "locationLabel": "Date & Location",
+    "locationTitle": "Wedding Details",
+    "galleryLabel": "Photos",
+    "galleryTitle": "Outdoor Wedding Atmosphere",
+    "rsvpLabel": "RSVP",
+    "rsvpTitle": "RSVP Form",
+    "rsvpText": "Please let us know if you can attend to help us plan.",
+    "guestsLabel": "Guests",
+    "guestsTitle": "Guest List",
+    "wishesLabel": "Guestbook",
+    "wishesTitle": "Your Best Wishes",
+    "shareLabel": "Share",
+    "shareTitle": "Share the Invitation",
+    "shareDescription": "You can share our invitation with your loved ones.",
+    "thanksText": "Having you with us on this special day is the greatest gift.",
+    "footerSmall": "Made with love",
+    "declineTitle": "We'll Miss You! 😔",
+    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
+  },
+  "form": {
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Your Phone Number",
+    "notePlaceholder": "Please Specify The Number Of People",
+    "messagePlaceholder": "Your Message",
+    "submitRsvp": "Send RSVP 🕊️",
+    "submitWish": "Send Message 💌",
+    "whatsappRsvp": "RSVP via WhatsApp 💬",
+    "missingInfo": "Missing Info ⚠️",
+    "missingNameMessage": "Please enter your full name. ✍️",
+    "missingWishMessage": "Please enter your name and message. ✍️"
+  },
+  "ui": {
+    "time": "Time",
+    "scroll": "SCROLL",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "date": "Date",
+    "venue": "Venue",
+    "address": "Address",
+    "goToMap": "Go to Map 📍",
+    "addToCalendar": "Add to Calendar 📅",
+    "closeEsc": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "shareQr": "Share quickly via QR code.",
+    "shareWhatsapp": "Share via WhatsApp 💬",
+    "copyLink": "Copy Link 🔗",
+    "giftTitle": "Gift & Registry",
+    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
+    "copyIban": "Copy IBAN 📋",
+    "copied": "Copied! ✅",
+    "close": "OK 👍",
+    "closeBtn": "Close ❌",
+    "sendGift": "Would you like to send a gift? 🎁",    
+    "totalResponses": "Total Responses",
+    "attending": "Attending",
+    "notAttending": "Not Attending",
+    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
+    "noWishes": "No wishes yet.",
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save 💾",
+    "cancel": "Cancel 🚫",
+    "yes": "Yes ✔️",
+    "ok": "OK 👍"
+  },
+  "visibility": {
+    "countdown": "Countdown",
+    "family": "Family Info",
+    "ceremony": "Ceremony & Wedding",
+    "schedule": "Wedding Schedule",
+    "location": "Location (Map)",
+    "gallery": "Photo Gallery",
+    "rsvp": "RSVP Form",
+    "wishes": "Guestbook",
+    "iban": "Gift / IBAN Section",
+    "guests": "Guest List",
+    "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information ℹ️",
+    "errorTitle": "Error ❌",
+    "saveTitle": "Saved 🎉",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing 🔌",
+    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
+    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
+    "wishSaved": "Your wish has been saved. 💖",
+    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
+    "wishError": "Could not save message. Detail: {{message}} ❌",
+    "linkCopied": "Invitation link copied. 🔗",
+    "linkCopyError": "Could not copy link. ⚠️"
+  },
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status."
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
+  }
+}
+</file>
+
+<file path="src/styles/responsive.css">
+/* =================================================================
+   Masaüstü ve Tablet Kuralları (MIN 651PX)
+   ================================================================= */
+@media (min-width: 651px) {
+  html body .app .glass-dock .wa-btn { display: none !important; }
+  
+  html body .app .hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+
+  html body .app .hero-content {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    padding-bottom: 60px !important;
+  }
+  
+  html body .app .invitation-page .scroll-indicator,
+  html body .app .scroll-indicator {
+    position: relative !important;
+    width: fit-content !important;
+    margin: 48px auto 32px auto !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+    z-index: 10 !important;
+  }
+  
+  html body .app .card, html body .app .invitation-page > footer, html body .app .invitation-page > section { scroll-margin-top: 40px !important; }
+}
+
+/* =================================================================
+   Geniş Tablet (MAX 900PX)
+   ================================================================= */
+@media (max-width: 900px) {
+  .invitation-page { padding: 22px 16px 60px; }
+  .hero-section {
+    min-height: 560px; padding: 64px 18px;
+    background: radial-gradient(circle at center, rgba(120, 52, 78, 0.1) 0, rgba(120, 52, 78, 0.2) 48%, rgba(60, 24, 38, 0.3) 100%), var(--hero-image) center/cover no-repeat;
+  }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  .guest-stats { grid-template-columns: 1fr; }
+}
+
+/* =================================================================
+   MOBİL EKRAN KURALLARI (RESPONSIVE - MAX 650PX)
+   ================================================================= */
+@media (max-width: 650px) {
+  /* --- Admin Paneli --- */
+  .theme-option-card.active { transform: translateY(-3px) scale(1.01) !important; }
+  .theme-option-card.active::after { width: 30px; height: 30px; font-size: 17px; }
+  .admin-music-field .admin-upload-button, .admin-content input[type="search"], .admin-content input[placeholder*="ara" i], .admin-content input[placeholder*="Kayıtlarda" i], .admin-content .secondary-button, .admin-list .secondary-button, .admin-editor .secondary-button { width: 100%; }
+  .admin-custom-select { width: 100%; min-width: 100%; }
+  .admin-custom-select-button { min-height: 52px; }
+  .admin-custom-select-arrow { width: 28px; height: 28px; min-width: 28px; }
+  .admin-row-actions { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important; width: 100% !important; }
+  .admin-row-actions button, .admin-list .small-admin-button { width: 100% !important; max-width: none !important; min-width: 0 !important; }
+
+  /* =========================================================
+     TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
+     ========================================================= */
+  .invitation-page {
+    position: relative;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100vw;
+    height: 100dvh !important;
+    overflow: hidden !important; 
+  }
+
+  .slide-wrapper {
+    position: absolute !important; 
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100dvh !important; 
+    
+    opacity: 0 !important; 
+    pointer-events: none !important;
+    visibility: hidden !important;
+    z-index: 1;
+    
+    /* Gelişmiş GRID Sistemi: 
+       Büyük kartları 24px'ten başlatır, küçük kartları ise tam ekranın ortasına dengeler */
+    display: grid !important;
+    grid-template-columns: 100% !important;
+    grid-template-rows: 1.5fr auto 1fr !important;
+    align-items: start !important;
+    
+    /* Üstten 24px boşluk (büyük kartlar için), Alttan butonlara değmesin diye 110px boşluk */
+    padding: 24px 16px 110px 16px !important;
+    box-sizing: border-box !important;
+    
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    
+    /* Kaydırma Çubuğunu Gizle (Temiz Görünüm İçin) */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
+    transform: translateY(30px) scale(0.98); 
+  }
+  
+  /* Webkit tarayıcılarda (Chrome, Safari, iOS) scrollbar'ı gizle */
+  .slide-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide-wrapper.active-slide {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    z-index: 2;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Grid hücresine yerleşim */
+  html body .app .invitation-page .slide-wrapper > section:not(.hero-section),
+  .invitation-page .slide-wrapper > section:not(.hero-section) { 
+    grid-row: 2 !important; /* Ortadaki 'auto' satırına yerleşir */
+    margin: 0 !important; 
+    width: 100% !important; 
+  }
+
+  /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
+  .slide-wrapper:first-child {
+    display: flex !important; /* Hero özel olduğu için flex kalır */
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding: 0 !important; 
+    background: transparent;
+  }
+  
+  .slide-wrapper:first-child.active-slide {
+    overflow: hidden !important; 
+  }
+
+  .slide-wrapper > .hero-section {
+    min-height: 100dvh !important; 
+    width: 100vw !important; 
+    border-radius: 0 !important; 
+    padding: 64px 16px 80px 16px !important; 
+    margin: 0 !important;
+    background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
+  }
+
+  .hero-section::before {
+    top: 14px !important;
+    right: 14px !important;
+    bottom: 14px !important;
+    left: 14px !important;
+    border-radius: 24px !important;
+  }
+  
+  /* --- Arayüz ve Tipografi --- */
+  .intro-page { padding: 18px; }
+  .intro-card { padding: 46px 24px; border-radius: 32px; }
+  .couple-title { font-size: 58px; }
+  .couple-title em { display: block; margin: 4px 0; }
+  .intro-text, .rsvp-card > p { font-size: 19px; }
+  
+  .hero-section .couple-title {
+    color: #fff; font-size: clamp(68px, 8vw, 118px); line-height: 1.04;
+    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42), 0 0 24px rgba(255, 220, 230, 0.22);
+  }
+  .hero-section .couple-title em { margin: -4px 0 -6px; font-size: 0.45em; }
+  .hero-date { padding: 10px 20px; font-size: 21px; }
+  .hero-time { font-size: 20px; }
+
+  /* KAYDIR BUTONU MOBİL AYARI */
+  .scroll-indicator {
+    position: relative !important;
+    width: fit-content !important;
+    margin: 20px auto 0 auto !important;
+    transform: none !important;
+    left: auto !important;
+    bottom: auto !important;
+  }
+  
+  /* --- Kartlar ve Formlar --- */
+  .card, .countdown-section { padding: 36px 20px; border-radius: 30px; }
+  .rsvp-card h2 { font-size: 32px; }
+  .option-button, .rsvp-form input, .rsvp-form textarea, .wish-form input, .wish-form textarea { font-size: 16px; }
+  .countdown-grid { grid-template-columns: repeat(2, 1fr); }
+  .guest-item, .info-row, .option-group { flex-direction: column; gap: 6px; text-align: center; }
+  .mini-map { border-radius: 22px; }
+  .option-button, .main-button, .secondary-button { width: 100%; min-width: unset; }
+
+  /* --- Galeri Modülü --- */
+  .gallery-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    align-content: start !important;
+  }
+
+  .gallery-grid .gallery-image,
+  .gallery-grid .lazy-image-wrapper,
+  .gallery-grid img, .mini-map {
+    width: 100% !important;
+    height: 300px !important;
+    object-fit: cover !important;
+    margin: 0 !important;
+    border-radius: 14px !important;
+  }
+  
+  /* --- Yüzen Menü (Floating Actions) --- */
+  .floating-actions.glass-dock {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    left: 50% !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    bottom: 24px !important;
+    width: max-content !important;
+  }
+
+  /* --- İnteraktif Hikaye Rotası Mobil Uyumu --- */
+  .story-line-bg, .story-line-progress { left: 32px; }
+  .story-traveler { left: 32px; }
+  .story-node { flex-direction: column !important; align-items: flex-start; }
+  .story-node .story-content-box { width: calc(100% - 64px); margin-left: 64px; }
+  .story-node.left .story-content-box::after, .story-node.right .story-content-box::after { top: 32px; left: -12px; right: auto; border-width: 12px 12px 12px 0; border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent; }
+  .story-map-marker { left: 32px; }
+
+  /* --- Modallar --- */
+  .app-modal-backdrop { padding: 24px !important; }
+  .app-modal-card { width: 100% !important; max-width: 380px !important; padding: 36px 24px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important; }
+}
+
+/* =================================================================
+   DOKUNMATİK EKRAN (HOVER OLMAYAN) CİHAZLAR İÇİN STICKY HOVER ÇÖZÜMÜ
+   ================================================================= */
+@media (hover: none) {
+  /* Mobilde tıklandıktan sonra butonun seçili/hover renginde takılı kalmasını engeller */
+  html[data-theme] .dock-btn:hover {
+    background: rgba(var(--theme-faint-rgb, 255, 255, 255), 0.85) !important;
+    color: var(--rose-dark) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    transform: none !important;
+  }
+  
+  html[data-theme="dark"] .dock-btn:hover {
+    background: rgba(36, 26, 33, 0.85) !important;
+    color: var(--rose-deep) !important;
+  }
+
+  /* Butona sadece parmak basılıyken (anlık olarak) renk efekti verir */
+  html[data-theme] .dock-btn:active {
+    background: var(--amp-color) !important;
+    color: #fff !important;
+    transform: scale(0.92) !important;
+  }
+  
+  html[data-theme="dark"] .dock-btn:active {
+    background: var(--rose-light) !important;
+    color: #1a1a1a !important;
+  }
+  
+  html[data-theme] .dock-btn.music-on,
+  html[data-theme] .dock-btn.music-on:hover {
+    background: var(--amp-color) !important;
+    color: #fff !important;
+  }
+}
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register'; // Eklendi
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+registerSW({ immediate: true }); 
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <HelmetProvider>
+        <App />
+        <Analytics />
+        <SpeedInsights />
+      </HelmetProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+</file>
+
+<file path="src/components/AdminUI.jsx">
+export * from "./admin/ui/AdminInputs";
+export * from "./admin/ui/AdminMediaFields";
+export * from "./admin/ui/AdminLayout";
 </file>
 
 <file path="src/config/constants.js">
@@ -5308,6 +5627,7 @@ export const DEFAULT_SITE_DATA = {
     theme: "lavanta",
     defaultTheme: "lavanta",
     requireWishApproval: true,
+    isPostWedding: false, 
     visibility: {
       countdown: true,
       family: true,
@@ -5456,184 +5776,6 @@ export const CHILD_OPTIONS = [
   { label: "Çocuk Yok", value: "Hayır" },
   { label: "Çocuk Var", value: "Evet" },
 ];
-</file>
-
-<file path="src/i18n/locales/en.json">
-{
-  "invitation": {
-    "introLabel": "Wedding Invitation",
-    "introText": "You are invited to the most special day of our love story.",
-    "openButton": "Open Invitation 💌",
-    "heroLabel": "We Are Getting Married",
-    "countdownLabel": "Countdown",
-    "countdownTitle": "Time Left Until Our Wedding",
-    "invitationLabel": "Invitation",
-    "invitationTitle": "Will You Share Our Happiness?",
-    "familyLabel": "Our Families",
-    "familyTitle": "With the Joy of Our Families",
-    "ceremonyLabel": "Ceremony & Celebration",
-    "ceremonyTitle": "Details of the Day",
-    "scheduleLabel": "Wedding Schedule",
-    "locationLabel": "Date & Location",
-    "locationTitle": "Wedding Details",
-    "galleryLabel": "Photos",
-    "galleryTitle": "Outdoor Wedding Atmosphere",
-    "rsvpLabel": "RSVP",
-    "rsvpTitle": "RSVP Form",
-    "rsvpText": "Please let us know if you can attend to help us plan.",
-    "guestsLabel": "Guests",
-    "guestsTitle": "Guest List",
-    "wishesLabel": "Guestbook",
-    "wishesTitle": "Your Best Wishes",
-    "shareLabel": "Share",
-    "shareTitle": "Share the Invitation",
-    "shareDescription": "You can share our invitation with your loved ones.",
-    "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You! 😔",
-    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
-    "deadlineTitle": "RSVP Deadline Passed",
-    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
-  },
-  "form": {
-    "namePlaceholder": "Full Name",
-    "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Please Specify The Number Of People",
-    "messagePlaceholder": "Your Message",
-    "submitRsvp": "Send RSVP 🕊️",
-    "submitWish": "Send Message 💌",
-    "whatsappRsvp": "RSVP via WhatsApp 💬",
-    "missingInfo": "Missing Info ⚠️",
-    "missingNameMessage": "Please enter your full name. ✍️",
-    "missingWishMessage": "Please enter your name and message. ✍️"
-  },
-  "ui": {
-    "time": "Time",
-    "scroll": "SCROLL",
-    "days": "Days",
-    "hours": "Hours",
-    "mins": "Mins",
-    "secs": "Secs",
-    "date": "Date",
-    "venue": "Venue",
-    "address": "Address",
-    "goToMap": "Go to Map 📍",
-    "addToCalendar": "Add to Calendar 📅",
-    "closeEsc": "Close (Esc)",
-    "prev": "Previous (←)",
-    "next": "Next (→)",
-    "shareQr": "Share quickly via QR code.",
-    "shareWhatsapp": "Share via WhatsApp 💬",
-    "copyLink": "Copy Link 🔗",
-    "giftTitle": "Gift & Registry",
-    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
-    "copyIban": "Copy IBAN 📋",
-    "copied": "Copied! ✅",
-    "close": "OK 👍",
-    "closeBtn": "Close ❌",
-    "sendGift": "Would you like to send a gift? 🎁",    
-    "totalResponses": "Total Responses",
-    "attending": "Attending",
-    "notAttending": "Not Attending",
-    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
-    "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
-    "save": "Save 💾",
-    "cancel": "Cancel 🚫",
-    "yes": "Yes ✔️",
-    "ok": "OK 👍"
-  },
-  "visibility": {
-    "countdown": "Countdown",
-    "family": "Family Info",
-    "ceremony": "Ceremony & Wedding",
-    "schedule": "Wedding Schedule",
-    "location": "Location (Map)",
-    "gallery": "Photo Gallery",
-    "rsvp": "RSVP Form",
-    "wishes": "Guestbook",
-    "iban": "Gift / IBAN Section",
-    "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Information ℹ️",
-    "errorTitle": "Error ❌",
-    "saveTitle": "Saved 🎉",
-    "saveErrorTitle": "Save error 😔",
-    "supabaseMissingTitle": "Supabase connection missing 🔌",
-    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
-    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
-    "wishSaved": "Your wish has been saved. 💖",
-    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
-    "wishError": "Could not save message. Detail: {{message}} ❌",
-    "linkCopied": "Invitation link copied. 🔗",
-    "linkCopyError": "Could not copy link. ⚠️"
-  },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Delete all RSVP records?",
-    "clearGuestsTitle": "Clear Guests",
-    "clearWishesConfirm": "Delete all guestbook messages?",
-    "clearWishesTitle": "Clear Guestbook",
-    "deleteGuestConfirm": "Delete this RSVP record?",
-    "deleteGuestTitle": "Delete Record",
-    "editGuestTitle": "Edit RSVP",
-    "fullName": "Full Name",
-    "phone": "Phone",
-    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
-    "personCount": "Person Count",
-    "side": "Side",
-    "hasChild": "Has children? (Evet/Hayır)",
-    "songRequest": "Song Request",
-    "note": "Note",
-    "deleteWishConfirm": "Delete this message?",
-    "deleteWishTitle": "Delete Message",
-    "editWishTitle": "Edit Message",
-    "message": "Message",
-    "couldNotDelete": "Could not delete.",
-    "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
-  },
-    "navigation": {
-    "chooseApp": "Choose Navigation App",
-    "copyAddress": "Copy Full Address 📋",
-    "addressCopied": "Address Copied! ✅"
-  }
-}
-</file>
-
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register'; // Eklendi
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-registerSW({ immediate: true }); 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
-</file>
-
-<file path="src/components/AdminUI.jsx">
-export * from "./admin/ui/AdminInputs";
-export * from "./admin/ui/AdminMediaFields";
-export * from "./admin/ui/AdminLayout";
 </file>
 
 <file path="src/i18n/locales/tr.json">
@@ -5966,131 +6108,6 @@ export function AdminPanelContent(props) {
     case "story": return <StoryTab {...props} isEn={isEn} />; 
     default: return null;
   }
-}
-</file>
-
-<file path="src/hooks/useScrollNavigation.js">
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-
-  const OFFSET = 12; 
-  const BUFFER = 5;
-
-  const scrollToNext = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
-    const currentScroll = window.scrollY;
-    
-    const nextSection = sections.find(sec => {
-      const absoluteTop = sec.getBoundingClientRect().top + currentScroll;
-      return absoluteTop > currentScroll + OFFSET + BUFFER; 
-    });
-    
-    if (nextSection) {
-      const topPosition = (nextSection.getBoundingClientRect().top || 0) + window.scrollY - OFFSET;
-      if (!isNaN(topPosition)) window.scrollTo({ top: topPosition, behavior: 'smooth' });
-    } else if (sections.length > 0) {
-      const topPosition = (sections[sections.length - 1].getBoundingClientRect().top || 0) + window.scrollY - OFFSET;
-      if (!isNaN(topPosition)) window.scrollTo({ top: topPosition, behavior: 'smooth' });
-    }
-  }, []);
-
-  const scrollToPrev = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
-    const currentScroll = window.scrollY;
-    
-    const prevSection = [...sections].reverse().find(sec => {
-      const absoluteTop = sec.getBoundingClientRect().top + currentScroll;
-      return absoluteTop < currentScroll - BUFFER; 
-    });
-
-    if (prevSection) {
-      const topPosition = (prevSection.getBoundingClientRect().top || 0) + window.scrollY - OFFSET;
-      if (!isNaN(topPosition)) window.scrollTo({ top: Math.max(0, topPosition), behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, []);
-
-  const handleWheel = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current) return;
-    
-    if (window.innerWidth <= 650) {
-      if (e.deltaY > 0) scrollToNext();
-      else scrollToPrev();
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 600);
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0) return;
-
-    if (window.innerWidth <= 650) {
-      const target = e.target instanceof Element ? e.target : e.target.parentElement;
-      if (!target) return;
-      
-      if (target.closest('input, textarea, select, .wish-list, .guest-list, .gallery-lightbox-overlay')) {
-        return; 
-      }
-
-      const touchEndY = e.changedTouches[0].clientY;
-      const diff = touchStartYRef.current - touchEndY;
-
-      if (Math.abs(diff) > 60) {
-        if (diff > 0) scrollToNext(); 
-        else scrollToPrev(); 
-
-        isScrollingRef.current = true;
-        setTimeout(() => { isScrollingRef.current = false; }, 600);
-      }
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev]);
-
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    const handleScroll = () => {
-      const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
-      setShowScrollTop(scrollTop > 100);
-      
-      const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
-      setShowScrollDown(!isAtBottom);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    const revealTimer = window.setTimeout(() => setShowScrollDown(true), 900);
-    handleScroll();
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.clearTimeout(revealTimer);
-    };
-  }, [isAdminPage, opened]);
-
-  return {
-    currentSlideIndex,  
-    showScrollTop,
-    showScrollDown,
-    scrollToNext,
-    scrollToPrev,
-    handleWheel,
-    handleTouchStart,
-    handleTouchEnd
-  };
 }
 </file>
 
@@ -6777,6 +6794,164 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 }
 </file>
 
+<file path="src/hooks/useScrollNavigation.js">
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+
+  // Ekran boyutunu takip et
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 650);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const scrollToNext = useCallback(() => {
+    if (isMobile) {
+      // Mobilde: Slayt İndeksini artır (Animasyonlu Geçiş)
+      const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
+      setCurrentSlideIndex(prev => {
+        const next = prev + 1;
+        return next < sectionsCount ? next : prev;
+      });
+    } else {
+      // Masaüstünde: Eski usül aşağı kaydırma
+      const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+      const nextSection = sections.find(sec => sec.getBoundingClientRect().top > 50);
+      if (nextSection) {
+        const topPosition = nextSection.getBoundingClientRect().top + window.scrollY - 12;
+        if (!isNaN(topPosition)) window.scrollTo({ top: topPosition, behavior: 'smooth' });
+      } else if (sections.length > 0) {
+        const topPosition = sections[sections.length - 1].getBoundingClientRect().top + window.scrollY - 12;
+        if (!isNaN(topPosition)) window.scrollTo({ top: topPosition, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const scrollToPrev = useCallback(() => {
+    if (isMobile) {
+      // Mobilde: Slayt İndeksini azalt (Animasyonlu Geçiş)
+      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else {
+      // Masaüstünde: Eski usül yukarı kaydırma
+      const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+      const prevSection = [...sections].reverse().find(sec => sec.getBoundingClientRect().top < -50);
+      if (prevSection) {
+        const topPosition = prevSection.getBoundingClientRect().top + window.scrollY - 12;
+        if (!isNaN(topPosition)) window.scrollTo({ top: Math.max(0, topPosition), behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current) return;
+    
+    if (isMobile) {
+      if (e.deltaY > 0) scrollToNext();
+      else scrollToPrev();
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 600);
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0) return;
+
+    if (isMobile) {
+      const target = e.target instanceof Element ? e.target : e.target.parentElement;
+      if (!target) return;
+      
+      // İnteraktif elementlerde kaydırmayı engelle
+      if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) {
+        return; 
+      }
+
+      const touchEndY = e.changedTouches[0].clientY;
+      const diff = touchStartYRef.current - touchEndY;
+
+      // EĞER KART İÇERİĞİ UZUNSA VE KAYDIRILABİLİYORSA, KARTIN İÇİNDE KAYDIRMAYA İZİN VER
+      const slideWrapper = target.closest('.slide-wrapper');
+      if (slideWrapper) {
+         const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+         if (isScrollable) {
+             const atTop = slideWrapper.scrollTop <= 0;
+             const atBottom = slideWrapper.scrollHeight - slideWrapper.scrollTop <= slideWrapper.clientHeight + 2;
+             
+             if (diff > 0 && !atBottom) return; // Aşağı iniyorsa ve kartın dibinde değilse slaytı geçme
+             if (diff < 0 && !atTop) return;    // Yukarı çıkıyorsa ve kartın tepesinde değilse slaytı geçme
+         }
+      }
+
+      if (Math.abs(diff) > 40) { 
+        if (diff > 0) scrollToNext(); 
+        else scrollToPrev(); 
+
+        isScrollingRef.current = true;
+        setTimeout(() => { isScrollingRef.current = false; }, 500); 
+      }
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  // Buton durumlarını ve sayfa oklarını güncelle
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    const handleScroll = () => {
+      if (isMobile) {
+         setShowScrollTop(currentSlideIndex > 0);
+         const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
+         setShowScrollDown(currentSlideIndex < sectionsCount - 1);
+      } else {
+        const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
+        setShowScrollTop(scrollTop > 100);
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
+        setShowScrollDown(!isAtBottom);
+      }
+    };
+
+    if (!isMobile) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    
+    const revealTimer = window.setTimeout(handleScroll, 100);
+    handleScroll();
+    
+    return () => {
+      if (!isMobile) window.removeEventListener('scroll', handleScroll);
+      window.clearTimeout(revealTimer);
+    };
+  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
+
+  return {
+    currentSlideIndex,  
+    showScrollTop,
+    showScrollDown,
+    scrollToNext,
+    scrollToPrev,
+    handleWheel,
+    handleTouchStart,
+    handleTouchEnd
+  };
+}
+</file>
+
 <file path="src/pages/InvitationController.jsx">
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -6810,9 +6985,10 @@ export default function InvitationController() {
   const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
 
   const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
-  const { showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
+  
+  // DÜZELTME: currentSlideIndex eklendi
+  const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
 
-  // Event listener'ları DOM'a attach et
   useEffect(() => {
     if (!opened) return;
 
@@ -6877,7 +7053,7 @@ export default function InvitationController() {
         scrollToPrev={scrollToPrev} 
       />
       <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
-        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} />
+        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} currentSlideIndex={currentSlideIndex} />
       </Suspense>
     </div>
   );
@@ -7249,17 +7425,15 @@ import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
 
-// SADECE GÖRÜNÜR İLK COMPONENT STATİK İMPORT EDİLİR
-import { HeroSection } from "../components/invitation/sections";
+import { HeroSection } from "../components/invitation/sections/HeroSection";
 
-// DİĞERLERİ LAZY LOAD EDİLİR
 const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
 const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
 const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
 const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
 const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
 const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
-const GallerySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GallerySection })));
+const GallerySection = lazy(() => import("../components/invitation/sections/GallerySection").then(m => ({ default: m.GallerySection })));
 const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
 const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
 const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
@@ -7268,10 +7442,9 @@ const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSec
 const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
 const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
 
-// Skeleton Loader Component (Tembel yüklenen alanlar için)
 const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
 
-export default function InvitationView({ scrollToNext, scrollToPrev }) {
+export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
 
@@ -7320,21 +7493,39 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
 
   const handlePageClick = (e) => {
     if (window.innerWidth > 768) return;
-    
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
 
     if (target.closest('.floating-actions, .glass-dock, .dock-btn')) return;
-    
     const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
     if (isInteractive) return;
 
+    // Instagram Hikaye Mantığı (Sağa Tıkla İleri, Sola Tıkla Geri)
     if (e.clientX < window.innerWidth * 0.35) {
       if (typeof scrollToPrev === 'function') scrollToPrev();
     } else {
       if (typeof scrollToNext === 'function') scrollToNext();
     }
   };
+
+  // Tüm bölümleri dinamik ve temiz bir sıraya alıyoruz (Sadece görünür olanlar render edilecek)
+  const sections = [
+    <HeroSection settings={settings} invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />,
+    settings.visibility?.countdown !== false ? <Suspense fallback={<SectionLoader />}><CountdownSection copy={copy} timeLeft={timeLeft} /></Suspense> : null,
+    <Suspense fallback={<SectionLoader />}><InvitationMessageSection copy={copy} invitation={invitation} /></Suspense>,
+    settings.visibility?.family !== false ? <Suspense fallback={<SectionLoader />}><FamilySection copy={copy} familyInfo={familyInfo} /></Suspense> : null,
+    settings.visibility?.story !== false ? <Suspense fallback={<SectionLoader />}><StorySection copy={copy} storyTimeline={storyTimeline} /></Suspense> : null,
+    settings.visibility?.ceremony !== false ? <Suspense fallback={<SectionLoader />}><CeremonySection copy={copy} eventDetails={eventDetails} /></Suspense> : null,
+    settings.visibility?.schedule !== false ? <Suspense fallback={<SectionLoader />}><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></Suspense> : null,
+    settings.visibility?.location !== false ? <Suspense fallback={<SectionLoader />}><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></Suspense> : null,
+    settings.visibility?.gallery !== false ? <Suspense fallback={<SectionLoader />}><GallerySection copy={copy} invitation={invitation} /></Suspense> : null,
+    settings.visibility?.rsvp !== false ? <Suspense fallback={<SectionLoader />}><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></Suspense> : null,
+    settings.visibility?.guests !== false ? <Suspense fallback={<SectionLoader />}><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></Suspense> : null,
+    settings.visibility?.wishes !== false ? <Suspense fallback={<SectionLoader />}><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></Suspense> : null,
+    settings.visibility?.iban !== false ? <Suspense fallback={<SectionLoader />}><GiftSection giftData={giftRegistry} /></Suspense> : null,
+    <Suspense fallback={<SectionLoader />}><ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} /></Suspense>,
+    <Suspense fallback={<SectionLoader />}><FooterSection coupleName={coupleName} invitation={invitation} copy={copy} /></Suspense>
+  ].filter(Boolean);
 
   return (
     <main 
@@ -7355,115 +7546,15 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      <div className="slide-wrapper">
-        <HeroSection invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />
-      </div>
-      
-      {settings.visibility?.countdown !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <CountdownSection copy={copy} timeLeft={timeLeft} />
-          </Suspense>
+      {/* Dinamik Bölüm Render İşlemi ve Animasyon Sınıfları */}
+      {sections.map((Section, index) => (
+        <div 
+          key={index} 
+          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+        >
+          {Section}
         </div>
-      )}
-      
-      <div className="slide-wrapper">
-        <Suspense fallback={<SectionLoader />}>
-          <InvitationMessageSection copy={copy} invitation={invitation} />
-        </Suspense>
-      </div>
-      
-      {settings.visibility?.family !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <FamilySection copy={copy} familyInfo={familyInfo} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.story !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <StorySection copy={copy} storyTimeline={storyTimeline} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.ceremony !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <CeremonySection copy={copy} eventDetails={eventDetails} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.schedule !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.location !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.gallery !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <GallerySection copy={copy} invitation={invitation} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.rsvp !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.guests !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.wishes !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} />
-          </Suspense>
-        </div>
-      )}
-      
-      {settings.visibility?.iban !== false && (
-        <div className="slide-wrapper">
-          <Suspense fallback={<SectionLoader />}>
-            <GiftSection giftData={giftRegistry} />
-          </Suspense>
-        </div>
-      )}
-      
-      <div className="slide-wrapper">
-        <Suspense fallback={<SectionLoader />}>
-          <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
-        </Suspense>
-      </div>
-      
-      <div className="slide-wrapper">
-        <Suspense fallback={<SectionLoader />}>
-          <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
-        </Suspense>
-      </div>
+      ))}
     </main>
   );
 }
