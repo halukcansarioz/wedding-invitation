@@ -59,50 +59,69 @@
   .admin-row-actions button, .admin-list .small-admin-button { width: 100% !important; max-width: none !important; min-width: 0 !important; }
 
   /* =========================================================
-     SLAYT/FADE GEÇİŞ EFEKTİ VE KART ORTALAMA (MOBİL İÇİN)
+     TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
      ========================================================= */
   .invitation-page {
     position: relative;
-    height: 100dvh !important;
-    overflow: hidden !important; 
     padding: 0 !important;
     margin: 0 !important;
+    display: block !important;
+    width: 100vw;
+    height: 100dvh !important;
+    /* Mobilde aşağı kaydırmayı engelle, arka planı sabitle */
+    overflow: hidden !important; 
   }
 
   .slide-wrapper {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    position: absolute !important; 
+    top: 0;
+    left: 0;
     width: 100% !important;
-    height: 100dvh !important;
-    opacity: 0;
-    pointer-events: none; 
-    visibility: hidden;
-    transition: opacity 0.7s ease-in-out, visibility 0.7s ease-in-out;
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    align-items: center !important;
+    height: 100dvh !important; 
+    /* Gizli ve Tıklanamaz Başlangıç Durumu */
+    opacity: 0 !important; 
+    pointer-events: none !important;
+    visibility: hidden !important;
     z-index: 1;
-    padding: 24px 16px 110px 16px !important; 
+    padding: 24px 16px 110px 16px !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important; /* BURASI 'center' OLARAK GÜNCELLENDİ */
+    justify-content: center !important;
+    /* Kartların içi eğer ekrandan büyükse kaydırmaya izin ver */
+    overflow-y: auto !important; 
+    overflow-x: hidden !important;
+    /* Harika geçiş efekti: Yukarıdan aşağı hafifçe kayarak belirir */
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
+    transform: translateY(30px) scale(0.98); 
   }
 
-  /* ÖNEMLİ DÜZELTME: Kartı ekranın tam dikey merkezine (ortasına) oturtur */
+  /* Aktif Slaytın Ekrana Geliş Animasyonu */
+  .slide-wrapper.active-slide {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    z-index: 2;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Kartı dikey olarak ekranın ortasına sabitler */
   html body .app .invitation-page .slide-wrapper > section:not(.hero-section) { 
     margin-top: auto !important; 
     margin-bottom: auto !important; 
     width: 100% !important; 
   }
 
-  /* HERO (İlk Ekran) Tam Ekrana Sığdırma */
+  /* HERO (İlk Ekran) Tam Ekrana Sığdırma ve Kaydırmayı Bloke Etme */
   .slide-wrapper:first-child {
     padding: 0 !important; 
     background: transparent;
   }
   
+  .slide-wrapper:first-child.active-slide {
+    overflow: hidden !important; 
+  }
+
   .slide-wrapper > .hero-section {
     min-height: 100dvh !important; 
     width: 100vw !important; 
@@ -197,4 +216,40 @@
   /* --- Modallar --- */
   .app-modal-backdrop { padding: 24px !important; }
   .app-modal-card { width: 100% !important; max-width: 380px !important; padding: 36px 24px !important; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important; }
+}
+
+/* =================================================================
+   DOKUNMATİK EKRAN (HOVER OLMAYAN) CİHAZLAR İÇİN STICKY HOVER ÇÖZÜMÜ
+   ================================================================= */
+@media (hover: none) {
+  /* Mobilde tıklandıktan sonra butonun seçili/hover renginde takılı kalmasını engeller */
+  html[data-theme] .dock-btn:hover {
+    background: rgba(var(--theme-faint-rgb, 255, 255, 255), 0.85) !important;
+    color: var(--rose-dark) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    transform: none !important;
+  }
+  
+  html[data-theme="dark"] .dock-btn:hover {
+    background: rgba(36, 26, 33, 0.85) !important;
+    color: var(--rose-deep) !important;
+  }
+
+  /* Butona sadece parmak basılıyken (anlık olarak) renk efekti verir */
+  html[data-theme] .dock-btn:active {
+    background: var(--amp-color) !important;
+    color: #fff !important;
+    transform: scale(0.92) !important;
+  }
+  
+  html[data-theme="dark"] .dock-btn:active {
+    background: var(--rose-light) !important;
+    color: #1a1a1a !important;
+  }
+  
+  html[data-theme] .dock-btn.music-on,
+  html[data-theme] .dock-btn.music-on:hover {
+    background: var(--amp-color) !important;
+    color: #fff !important;
+  }
 }

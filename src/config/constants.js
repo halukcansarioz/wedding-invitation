@@ -127,6 +127,7 @@ export const DEFAULT_SITE_DATA = {
     theme: "lavanta",
     defaultTheme: "lavanta",
     requireWishApproval: true,
+    isPostWedding: false, 
     visibility: {
       countdown: true,
       family: true,

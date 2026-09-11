@@ -30,9 +30,10 @@ export default function InvitationController() {
   const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
 
   const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
-  const { showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
+  
+  // DÜZELTME: currentSlideIndex eklendi
+  const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
 
-  // Event listener'ları DOM'a attach et
   useEffect(() => {
     if (!opened) return;
 
@@ -97,7 +98,7 @@ export default function InvitationController() {
         scrollToPrev={scrollToPrev} 
       />
       <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
-        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} />
+        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} currentSlideIndex={currentSlideIndex} />
       </Suspense>
     </div>
   );

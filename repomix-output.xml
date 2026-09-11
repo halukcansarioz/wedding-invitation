@@ -625,83 +625,6 @@ export const LocalizedDate = ({ dateString = "2026-08-22T19:00:00" }) => {
 };
 </file>
 
-<file path="src/components/common/UIComponents.jsx">
-import { useEffect, useRef, useState } from "react";
-
-export function OptionGroup({ value, options, onChange, disabled = false }) {
-  return (
-    <div className={disabled ? "option-group disabled" : "option-group"}>
-      {options.map((option) => (
-        <button
-          type="button"
-          key={option.value}
-          disabled={disabled}
-          className={String(value) === String(option.value) ? "option-button active" : "option-button"}
-          onClick={() => {
-            if (disabled) return;
-            onChange(option.value);
-          }}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// CustomDropdown ve ThemeDropdown birleştirilip daha esnek bir Dropdown bileşenine dönüştürüldü.
-export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
-  return (
-    <div className={`admin-custom-select ${isOpen ? "open" : ""}`} ref={dropdownRef}>
-      <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
-        <span>{selectedOption?.label || placeholder}</span>
-        <div className="admin-custom-select-arrow">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-      </div>
-      {isOpen && (
-        <div className="admin-custom-select-menu">
-          {options.map((option) => (
-            <button
-              type="button"
-              key={option.value}
-              className={`admin-custom-select-option ${value === option.value ? "selected" : ""}`}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/invitation/sections/GuestsListSection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -2051,68 +1974,6 @@ export function VisibilityTab({ isEn }) {
 }
 </file>
 
-<file path="src/components/admin/tabs/WishesAdminPanel.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { useStore } from "../../../store/useStore";
-
-export function WishesAdminPanel({ 
-  wishes, filteredWishes, adminWishSearch, setAdminWishSearch, 
-  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
-  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
-}) {
-  const { t } = useTranslation();
-  
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-
-  if (!adminDraft?.settings) return null;
-
-  return (
-    <AdminSection title={isEn ? "Guestbook Messages" : "Anı Defteri Mesajları"}>
-      <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? true} label={t('visibility.wishes')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
-      </div>
-      <div className="admin-toolbar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
-        <input style={{ flex: "1", minWidth: "160px", margin: 0 }} value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder={isEn ? "Search messages..." : "Mesajlarda ara..."} />
-        <div style={{ minWidth: "160px", margin: 0 }}>
-          <Dropdown value={adminWishStatusFilter} onChange={setAdminWishStatusFilter} options={[{ value: "all", label: isEn ? "All Status" : "Tümü" }, { value: "approved", label: isEn ? "Published" : "Yayında" }, { value: "pending", label: isEn ? "Pending" : "Onay Bekliyor" }]} />
-        </div>
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearWishes}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
-      </div>
-      <div className="admin-list admin-list-full">
-        {filteredWishes.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching messages found." : "Mesaj bulunamadı."}</p>
-        ) : (
-          filteredWishes.map((wish) => (
-            <div className="admin-row" key={wish.id}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <strong>{wish.name}</strong>
-                <span style={{ fontSize: "13px", padding: "4px 8px", borderRadius: "8px", background: wish.approved ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)", color: wish.approved ? "#27ae60" : "#d35400", fontWeight: "bold" }}>
-                  {wish.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}
-                </span>
-              </div>
-              <p style={{ margin: "8px 0", fontStyle: "italic", fontSize: "16px" }}>"{wish.message}"</p>
-              <div className="admin-row-actions">
-                <button type="button" className="secondary-button small-admin-button" onClick={() => toggleWishApproval(wish.id)}>
-                  {wish.approved ? (isEn ? "Hide 🙈" : "Yayından Kaldır 🙈") : (isEn ? "Publish 👁️" : "Yayınla 👁️")}
-                </button>
-                <button type="button" className="secondary-button small-admin-button" onClick={() => editWish(wish.id)}>{isEn ? "Edit ✏️" : "Düzenle ✏️"}</button>
-                <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteWish(wish.id)}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/common/PwaInstallBanner.jsx">
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -2133,6 +1994,114 @@ export function PwaInstallBanner() {
       <button onClick={promptInstall} className="main-button pwa-banner-btn">
         {isEn ? "Install" : "Yükle"}
       </button>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/common/UIComponents.jsx">
+import { useEffect, useRef, useState } from "react";
+
+export function OptionGroup({ value, options, onChange, disabled = false }) {
+  return (
+    <div className={disabled ? "option-group disabled" : "option-group"}>
+      {options.map((option) => (
+        <button
+          type="button"
+          key={option.value}
+          disabled={disabled}
+          className={String(value) === String(option.value) ? "option-button active" : "option-button"}
+          onClick={() => {
+            if (disabled) return;
+            onChange(option.value);
+          }}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (isOpen && focusedIndex >= 0) {
+        onChange(options[focusedIndex].value);
+        setIsOpen(false);
+      } else {
+        setIsOpen(!isOpen);
+      }
+    } else if (e.key === "ArrowDown" && isOpen) {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp" && isOpen) {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div 
+      className={`admin-custom-select ${isOpen ? "open" : ""}`} 
+      ref={dropdownRef}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="combobox"
+      aria-expanded={isOpen}
+      aria-haspopup="listbox"
+    >
+      <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
+        <span>{selectedOption?.label || placeholder}</span>
+        <div className="admin-custom-select-arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="admin-custom-select-menu" role="listbox">
+          {options.map((option, index) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={value === option.value}
+              key={option.value}
+              className={`admin-custom-select-option ${value === option.value ? "selected" : ""} ${focusedIndex === index ? "focused" : ""}`}
+              style={focusedIndex === index ? { backgroundColor: 'var(--theme-hero-mid)' } : {}}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+                setFocusedIndex(-1);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2732,6 +2701,73 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, se
             {isEn ? "Import Backup ⬆️" : "Yedeği İçe Aktar ⬆️"}
           </button>
         </div>
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
+<file path="src/components/admin/tabs/WishesAdminPanel.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
+
+export function WishesAdminPanel({ 
+  wishes, filteredWishes, adminWishSearch, setAdminWishSearch, 
+  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
+  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
+}) {
+  const { t } = useTranslation();
+  
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+
+  if (!adminDraft?.settings) return null;
+
+  return (
+    <AdminSection title={isEn ? "Guestbook Messages" : "Anı Defteri Mesajları"}>
+      <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.wishes ?? true} label={t('visibility.wishes')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, wishes: v })} />
+      </div>
+      <div className="admin-toolbar" style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center", marginBottom: "20px" }}>
+        <input style={{ flex: "1", minWidth: "160px", margin: 0 }} value={adminWishSearch} onChange={(e) => setAdminWishSearch(e.target.value)} placeholder={isEn ? "Search messages..." : "Mesajlarda ara..."} />
+        <div style={{ minWidth: "160px", margin: 0 }}>
+          <Dropdown value={adminWishStatusFilter} onChange={setAdminWishStatusFilter} options={[{ value: "all", label: isEn ? "All Status" : "Tümü" }, { value: "approved", label: isEn ? "Published" : "Yayında" }, { value: "pending", label: isEn ? "Pending" : "Onay Bekliyor" }]} />
+        </div>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportWishesCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button" style={{ margin: 0 }} onClick={clearWishes}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
+      <div className="admin-list admin-list-full" style={{ height: "600px" }}>
+        {filteredWishes.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching messages found." : "Mesaj bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredWishes}
+            itemContent={(index, wish) => (
+              <div className="admin-row" style={{ marginBottom: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <strong>{wish.name}</strong>
+                  <span style={{ fontSize: "13px", padding: "4px 8px", borderRadius: "8px", background: wish.approved ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)", color: wish.approved ? "#27ae60" : "#d35400", fontWeight: "bold" }}>
+                    {wish.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}
+                  </span>
+                </div>
+                <p style={{ margin: "8px 0", fontStyle: "italic", fontSize: "16px" }}>"{wish.message}"</p>
+                <div className="admin-row-actions">
+                  <button type="button" className="secondary-button small-admin-button" onClick={() => toggleWishApproval(wish.id)}>
+                    {wish.approved ? (isEn ? "Hide 🙈" : "Yayından Kaldır 🙈") : (isEn ? "Publish 👁️" : "Yayınla 👁️")}
+                  </button>
+                  <button type="button" className="secondary-button small-admin-button" onClick={() => editWish(wish.id)}>{isEn ? "Edit ✏️" : "Düzenle ✏️"}</button>
+                  <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteWish(wish.id)}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
+                </div>
+              </div>
+            )}
+          />
+        )}
       </div>
     </AdminSection>
   );
@@ -4213,6 +4249,341 @@ export function useAudio(musicFile) {
 }
 </file>
 
+<file path="src/utils/helpers.js">
+import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
+
+export const getFaviconUrl = (theme = "lavanta") => {
+  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.lavanta;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="16" fill="${colors.bg}"/>
+    <circle cx="32" cy="32" r="22" fill="${colors.circle}"/>
+    <circle cx="32" cy="20" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="44" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="32" cy="44" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="20" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="8" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="1.5"/>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
+export const normalizeSiteData = (raw) => {
+  if (!raw) return DEFAULT_SITE_DATA;
+  return {
+    ...DEFAULT_SITE_DATA,
+    ...raw,
+    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) },
+    familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(raw.familyInfo || {}) },
+    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(raw.giftRegistry || {}) },
+    copy: { ...DEFAULT_SITE_DATA.copy, ...(raw.copy || {}) },
+    settings: {
+      ...DEFAULT_SITE_DATA.settings,
+      ...(raw.settings || {}),
+      visibility: {
+        ...DEFAULT_SITE_DATA.settings.visibility,
+        ...(raw.settings?.visibility || {}),
+      },
+    },
+    messages: { ...DEFAULT_SITE_DATA.messages, ...(raw.messages || {}) },
+    eventDetails: Array.isArray(raw.eventDetails) && raw.eventDetails.length > 0 ? raw.eventDetails : DEFAULT_SITE_DATA.eventDetails,
+    scheduleItems: Array.isArray(raw.scheduleItems) && raw.scheduleItems.length > 0 ? raw.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
+    storyTimeline: Array.isArray(raw.storyTimeline) && raw.storyTimeline.length > 0 ? raw.storyTimeline : DEFAULT_SITE_DATA.storyTimeline,
+  };
+};
+
+export const loadStoredSiteData = () => {
+  if (typeof window === "undefined") return DEFAULT_SITE_DATA;
+  try {
+    const local = localStorage.getItem(SITE_DATA_KEY);
+    return local ? normalizeSiteData(JSON.parse(local)) : DEFAULT_SITE_DATA;
+  } catch {
+    return DEFAULT_SITE_DATA;
+  }
+};
+
+export const getCurrentShareLink = () => {
+  if (typeof window === "undefined") return DEFAULT_SITE_DATA.invitation.shareLink;
+  return `${window.location.origin}${window.location.pathname}`;
+};
+
+export const getGuestNameFromUrl = () => {
+  if (typeof window === "undefined") return "";
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("guest") || params.get("davetli") || "").trim();
+};
+
+export const getTableFromUrl = () => {
+  if (typeof window === "undefined") return "";
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("table") || params.get("masa") || "").trim();
+};
+
+export const buildPersonalLink = (baseLink, guestName, tableNumber = "") => {
+  const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
+  const nameParam = encodeURIComponent((guestName || "").trim());
+  let url = `${cleanLink}/?guest=${nameParam}`;
+  if (tableNumber) {
+    url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
+  }
+  return url;
+};
+
+export const getQrImageUrl = (url) => {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url || "")}`;
+};
+
+export const formatMessageTemplate = (template, variables = {}) => {
+  let str = template || "";
+  Object.keys(variables).forEach((key) => {
+    str = str.replaceAll(`{${key}}`, variables[key] || "");
+  });
+  return str;
+};
+
+export const createGoogleCalendarLink = (siteData, coupleName) => {
+  const inv = siteData.invitation;
+  const start = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
+  const end = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
+  const title = encodeURIComponent(`${coupleName} | Düğün`);
+  const details = encodeURIComponent(inv.message || "");
+  const location = encodeURIComponent(`${inv.venue}, ${inv.address}`);
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+};
+
+export const handleAddToCalendar = (invitation, googleLink) => {
+  if (googleLink) {
+    window.open(googleLink, "_blank", "noopener,noreferrer");
+  }
+};
+
+export const getNavigationLinks = (invitation) => {
+  const query = encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`);
+  return {
+    google: invitation?.mapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
+    apple: `https://maps.apple.com/?q=${query}`,
+    yandex: `https://yandex.com.tr/harita/?text=${query}`,
+    waze: `https://waze.com/ul?q=${query}&navigate=yes`,
+  };
+};
+
+export const normalizeText = (text = "") => {
+  return text.toLocaleLowerCase("tr-TR").trim();
+};
+
+export const downloadTextFile = (filename, content, mimeType = "text/plain") => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const createCsv = (items, type = "guests", isEn = false) => {
+  if (!items || items.length === 0) return "";
+  let headers = [];
+  let rows = [];
+
+  if (type === "guests") {
+    headers = isEn 
+      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Song Request", "Note"]
+      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
+    rows = items.map(g => [
+      `"${g.name || ""}"`,
+      `"${g.attendance || ""}"`,
+      `"${g.phone || ""}"`,
+      `"${g.personCount || 1}"`,
+      `"${g.side || ""}"`,
+      `"${g.hasChild || ""}"`,
+      `"${g.songRequest || ""}"`,
+      `"${(g.note || "").replace(/"/g, '""')}"`
+    ]);
+  } else {
+    headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
+    rows = items.map(w => [
+      `"${w.name || ""}"`,
+      `"${(w.message || "").replace(/"/g, '""')}"`,
+      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`
+    ]);
+  }
+
+  return [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+};
+
+export const createExcelTable = (items, type = "guests", isEn = false) => {
+  const csvContent = createCsv(items, type, isEn);
+  const rows = csvContent.split("\n").map(r => r.split(","));
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1">`;
+  rows.forEach((row, i) => {
+    html += "<tr>";
+    row.forEach(cell => {
+      const clean = cell.replace(/^"|"$/g, "");
+      html += i === 0 ? `<th style="background:#f4f4f4;">${clean}</th>` : `<td>${clean}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</table></body></html>";
+  return html;
+};
+
+export const uiGuestToDb = (g) => ({
+  name: g.name,
+  attendance: g.attendance,
+  phone: g.phone || null,
+  person_count: g.personCount ? Number(g.personCount) : 1,
+  side: g.side || "Gelin Tarafı",
+  has_child: g.hasChild || "Hayır",
+  song_request: g.songRequest || null,
+  note: g.note || null,
+});
+
+export const dbGuestToUi = (g) => ({
+  id: g.id,
+  name: g.name,
+  attendance: g.attendance,
+  phone: g.phone || "",
+  personCount: String(g.person_count || 1),
+  side: g.side || "Gelin Tarafı",
+  hasChild: g.has_child || "Hayır",
+  songRequest: g.song_request || "",
+  note: g.note || "",
+  createdAt: g.created_at,
+});
+
+export const uiWishToDb = (w) => ({
+  name: w.name,
+  message: w.message,
+  approved: w.approved ?? true,
+});
+
+export const dbWishToUi = (w) => ({
+  id: w.id,
+  name: w.name,
+  message: w.message,
+  approved: w.approved,
+  createdAt: w.created_at,
+});
+
+export const touchAdminSession = () => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("wedding-admin-last-active", String(Date.now()));
+  }
+};
+
+export const clearAdminSessionTimestamp = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("wedding-admin-last-active");
+  }
+};
+
+export const isAdminSessionFresh = () => {
+  if (typeof window === "undefined") return false;
+  const lastActive = localStorage.getItem("wedding-admin-last-active");
+  if (!lastActive) return false;
+  return Date.now() - Number(lastActive) < 30 * 60 * 1000;
+};
+
+export const getAdminRedirectUrl = () => {
+  if (typeof window === "undefined") return "";
+  return `${window.location.origin}/admin`;
+};
+
+/**
+ * Harici paket gerektirmeyen saf JS / Canvas Gül Yaprağı & Konfeti Efekti
+ */
+export const triggerConfetti = () => {
+  if (typeof window === "undefined") return;
+
+  const canvas = document.createElement("canvas");
+  canvas.style.position = "fixed";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.width = "100vw";
+  canvas.style.height = "100vh";
+  canvas.style.pointerEvents = "none";
+  canvas.style.zIndex = "999999";
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // 1. Sitede o an seçili olan aktif temayı 'html' etiketinden alıyoruz
+  const activeTheme = document.documentElement.dataset.theme || "lavanta";
+  
+  // 2. Constants dosyasındaki ilgili temanın renk paletini buluyoruz
+  const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
+  
+  // 3. Kendi özel renkleriniz yerine, aktif temanın renklerini diziye atıyoruz
+  const colors = [
+    themeColors.petal, 
+    themeColors.stroke, 
+    themeColors.circle, 
+    themeColors.center, 
+    themeColors.bg
+  ];
+
+  const particles = Array.from({ length: 65 }).map(() => ({
+    x: canvas.width / 2 + (Math.random() - 0.5) * 80,
+    y: canvas.height / 2 + (Math.random() - 0.5) * 80,
+    vx: (Math.random() - 0.5) * 16,
+    vy: (Math.random() - 1.2) * 14 - 3,
+    size: Math.random() * 10 + 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rotation: Math.random() * 360,
+    rotationSpeed: (Math.random() - 0.5) * 10,
+    opacity: 1,
+    isPetal: Math.random() > 0.4
+  }));
+
+  let animationFrame;
+  const render = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let activeParticles = 0;
+
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.35; // Yerçekimi
+      p.vx *= 0.98;
+      p.rotation += p.rotationSpeed;
+      p.opacity -= 0.009;
+
+      if (p.opacity > 0) {
+        activeParticles++;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+
+        if (p.isPetal) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.size, p.size * 0.6, Math.PI / 4, 0, 2 * Math.PI);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        }
+        ctx.restore();
+      }
+    });
+
+    if (activeParticles > 0) {
+      animationFrame = requestAnimationFrame(render);
+    } else {
+      cancelAnimationFrame(animationFrame);
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+    }
+  };
+
+  render();
+};
+</file>
+
 <file path="src/components/invitation/sections/HeroSection.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -4700,365 +5071,6 @@ export const useAdminStore = create((set) => ({
 }
 </file>
 
-<file path="src/utils/helpers.js">
-import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
-
-export const getFaviconUrl = (theme = "lavanta") => {
-  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.lavanta;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <rect width="64" height="64" rx="16" fill="${colors.bg}"/>
-    <circle cx="32" cy="32" r="22" fill="${colors.circle}"/>
-    <circle cx="32" cy="20" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="44" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="32" cy="44" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="20" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="32" cy="32" r="8" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="1.5"/>
-  </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
-
-export const normalizeSiteData = (raw) => {
-  if (!raw) return DEFAULT_SITE_DATA;
-  return {
-    ...DEFAULT_SITE_DATA,
-    ...raw,
-    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) },
-    familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(raw.familyInfo || {}) },
-    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(raw.giftRegistry || {}) },
-    copy: { ...DEFAULT_SITE_DATA.copy, ...(raw.copy || {}) },
-    settings: {
-      ...DEFAULT_SITE_DATA.settings,
-      ...(raw.settings || {}),
-      visibility: {
-        ...DEFAULT_SITE_DATA.settings.visibility,
-        ...(raw.settings?.visibility || {}),
-      },
-    },
-    messages: { ...DEFAULT_SITE_DATA.messages, ...(raw.messages || {}) },
-    eventDetails: Array.isArray(raw.eventDetails) && raw.eventDetails.length > 0 ? raw.eventDetails : DEFAULT_SITE_DATA.eventDetails,
-    scheduleItems: Array.isArray(raw.scheduleItems) && raw.scheduleItems.length > 0 ? raw.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
-    storyTimeline: Array.isArray(raw.storyTimeline) && raw.storyTimeline.length > 0 ? raw.storyTimeline : DEFAULT_SITE_DATA.storyTimeline,
-  };
-};
-
-export const loadStoredSiteData = () => {
-  if (typeof window === "undefined") return DEFAULT_SITE_DATA;
-  try {
-    const local = localStorage.getItem(SITE_DATA_KEY);
-    return local ? normalizeSiteData(JSON.parse(local)) : DEFAULT_SITE_DATA;
-  } catch {
-    return DEFAULT_SITE_DATA;
-  }
-};
-
-export const getCurrentShareLink = () => {
-  if (typeof window === "undefined") return DEFAULT_SITE_DATA.invitation.shareLink;
-  return `${window.location.origin}${window.location.pathname}`;
-};
-
-export const getGuestNameFromUrl = () => {
-  if (typeof window === "undefined") return "";
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("guest") || params.get("davetli") || "").trim();
-};
-
-export const getTableFromUrl = () => {
-  if (typeof window === "undefined") return "";
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("table") || params.get("masa") || "").trim();
-};
-
-export const buildPersonalLink = (baseLink, guestName, tableNumber = "") => {
-  const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
-  const nameParam = encodeURIComponent((guestName || "").trim());
-  let url = `${cleanLink}/?guest=${nameParam}`;
-  if (tableNumber) {
-    url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
-  }
-  return url;
-};
-
-export const getQrImageUrl = (url) => {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url || "")}`;
-};
-
-export const formatMessageTemplate = (template, variables = {}) => {
-  let str = template || "";
-  Object.keys(variables).forEach((key) => {
-    str = str.replaceAll(`{${key}}`, variables[key] || "");
-  });
-  return str;
-};
-
-export const createGoogleCalendarLink = (siteData, coupleName) => {
-  const inv = siteData.invitation;
-  const start = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
-  const end = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
-  const title = encodeURIComponent(`${coupleName} | Düğün`);
-  const details = encodeURIComponent(inv.message || "");
-  const location = encodeURIComponent(`${inv.venue}, ${inv.address}`);
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
-};
-
-export const handleAddToCalendar = (invitation, googleLink) => {
-  if (googleLink) {
-    window.open(googleLink, "_blank", "noopener,noreferrer");
-  }
-};
-
-export const getNavigationLinks = (invitation) => {
-  const query = encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`);
-  return {
-    google: invitation?.mapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
-    apple: `https://maps.apple.com/?q=${query}`,
-    yandex: `https://yandex.com.tr/harita/?text=${query}`,
-    waze: `https://waze.com/ul?q=${query}&navigate=yes`,
-  };
-};
-
-export const normalizeText = (text = "") => {
-  return text.toLocaleLowerCase("tr-TR").trim();
-};
-
-export const downloadTextFile = (filename, content, mimeType = "text/plain") => {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-export const createCsv = (items, type = "guests", isEn = false) => {
-  if (!items || items.length === 0) return "";
-  let headers = [];
-  let rows = [];
-
-  if (type === "guests") {
-    headers = isEn 
-      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Song Request", "Note"]
-      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
-    rows = items.map(g => [
-      `"${g.name || ""}"`,
-      `"${g.attendance || ""}"`,
-      `"${g.phone || ""}"`,
-      `"${g.personCount || 1}"`,
-      `"${g.side || ""}"`,
-      `"${g.hasChild || ""}"`,
-      `"${g.songRequest || ""}"`,
-      `"${(g.note || "").replace(/"/g, '""')}"`
-    ]);
-  } else {
-    headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
-    rows = items.map(w => [
-      `"${w.name || ""}"`,
-      `"${(w.message || "").replace(/"/g, '""')}"`,
-      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`
-    ]);
-  }
-
-  return [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-};
-
-export const createExcelTable = (items, type = "guests", isEn = false) => {
-  const csvContent = createCsv(items, type, isEn);
-  const rows = csvContent.split("\n").map(r => r.split(","));
-  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1">`;
-  rows.forEach((row, i) => {
-    html += "<tr>";
-    row.forEach(cell => {
-      const clean = cell.replace(/^"|"$/g, "");
-      html += i === 0 ? `<th style="background:#f4f4f4;">${clean}</th>` : `<td>${clean}</td>`;
-    });
-    html += "</tr>";
-  });
-  html += "</table></body></html>";
-  return html;
-};
-
-export const uiGuestToDb = (g) => ({
-  name: g.name,
-  attendance: g.attendance,
-  phone: g.phone || null,
-  person_count: g.personCount ? Number(g.personCount) : 1,
-  side: g.side || "Gelin Tarafı",
-  has_child: g.hasChild || "Hayır",
-  song_request: g.songRequest || null,
-  note: g.note || null,
-});
-
-export const dbGuestToUi = (g) => ({
-  id: g.id,
-  name: g.name,
-  attendance: g.attendance,
-  phone: g.phone || "",
-  personCount: String(g.person_count || 1),
-  side: g.side || "Gelin Tarafı",
-  hasChild: g.has_child || "Hayır",
-  songRequest: g.song_request || "",
-  note: g.note || "",
-  createdAt: g.created_at,
-});
-
-export const uiWishToDb = (w) => ({
-  name: w.name,
-  message: w.message,
-  approved: w.approved ?? true,
-});
-
-export const dbWishToUi = (w) => ({
-  id: w.id,
-  name: w.name,
-  message: w.message,
-  approved: w.approved,
-  createdAt: w.created_at,
-});
-
-export const touchAdminSession = () => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("wedding-admin-last-active", String(Date.now()));
-  }
-};
-
-export const clearAdminSessionTimestamp = () => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("wedding-admin-last-active");
-  }
-};
-
-export const isAdminSessionFresh = () => {
-  if (typeof window === "undefined") return false;
-  const lastActive = localStorage.getItem("wedding-admin-last-active");
-  if (!lastActive) return false;
-  return Date.now() - Number(lastActive) < 30 * 60 * 1000;
-};
-
-export const getAdminRedirectUrl = () => {
-  if (typeof window === "undefined") return "";
-  return `${window.location.origin}/admin`;
-};
-
-/**
- * Harici paket gerektirmeyen saf JS / Canvas Gül Yaprağı & Konfeti Efekti
- */
-export const triggerConfetti = () => {
-  if (typeof window === "undefined") return;
-
-  const canvas = document.createElement("canvas");
-  canvas.style.position = "fixed";
-  canvas.style.top = "0";
-  canvas.style.left = "0";
-  canvas.style.width = "100vw";
-  canvas.style.height = "100vh";
-  canvas.style.pointerEvents = "none";
-  canvas.style.zIndex = "999999";
-  document.body.appendChild(canvas);
-
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  // 1. Sitede o an seçili olan aktif temayı 'html' etiketinden alıyoruz
-  const activeTheme = document.documentElement.dataset.theme || "lavanta";
-  
-  // 2. Constants dosyasındaki ilgili temanın renk paletini buluyoruz
-  const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
-  
-  // 3. Kendi özel renkleriniz yerine, aktif temanın renklerini diziye atıyoruz
-  const colors = [
-    themeColors.petal, 
-    themeColors.stroke, 
-    themeColors.circle, 
-    themeColors.center, 
-    themeColors.bg
-  ];
-
-  const particles = Array.from({ length: 65 }).map(() => ({
-    x: canvas.width / 2 + (Math.random() - 0.5) * 80,
-    y: canvas.height / 2 + (Math.random() - 0.5) * 80,
-    vx: (Math.random() - 0.5) * 16,
-    vy: (Math.random() - 1.2) * 14 - 3,
-    size: Math.random() * 10 + 6,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    rotation: Math.random() * 360,
-    rotationSpeed: (Math.random() - 0.5) * 10,
-    opacity: 1,
-    isPetal: Math.random() > 0.4
-  }));
-
-  let animationFrame;
-  const render = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let activeParticles = 0;
-
-    particles.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.35; // Yerçekimi
-      p.vx *= 0.98;
-      p.rotation += p.rotationSpeed;
-      p.opacity -= 0.009;
-
-      if (p.opacity > 0) {
-        activeParticles++;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        ctx.globalAlpha = Math.max(0, p.opacity);
-        ctx.fillStyle = p.color;
-
-        if (p.isPetal) {
-          ctx.beginPath();
-          ctx.ellipse(0, 0, p.size, p.size * 0.6, Math.PI / 4, 0, 2 * Math.PI);
-          ctx.fill();
-        } else {
-          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        }
-        ctx.restore();
-      }
-    });
-
-    if (activeParticles > 0) {
-      animationFrame = requestAnimationFrame(render);
-    } else {
-      cancelAnimationFrame(animationFrame);
-      if (canvas.parentNode) {
-        canvas.parentNode.removeChild(canvas);
-      }
-    }
-  };
-
-  render();
-};
-</file>
-
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
-</file>
-
 <file path="src/components/invitation/IntroPage.jsx">
 import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -5164,157 +5176,6 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     </section>
   );
 }
-</file>
-
-<file path="src/i18n/locales/en.json">
-{
-  "invitation": {
-    "introLabel": "Wedding Invitation",
-    "introText": "You are invited to the most special day of our love story.",
-    "openButton": "Open Invitation 💌",
-    "heroLabel": "We Are Getting Married",
-    "countdownLabel": "Countdown",
-    "countdownTitle": "Time Left Until Our Wedding",
-    "invitationLabel": "Invitation",
-    "invitationTitle": "Will You Share Our Happiness?",
-    "familyLabel": "Our Families",
-    "familyTitle": "With the Joy of Our Families",
-    "ceremonyLabel": "Ceremony & Celebration",
-    "ceremonyTitle": "Details of the Day",
-    "scheduleLabel": "Wedding Schedule",
-    "locationLabel": "Date & Location",
-    "locationTitle": "Wedding Details",
-    "galleryLabel": "Photos",
-    "galleryTitle": "Outdoor Wedding Atmosphere",
-    "rsvpLabel": "RSVP",
-    "rsvpTitle": "RSVP Form",
-    "rsvpText": "Please let us know if you can attend to help us plan.",
-    "guestsLabel": "Guests",
-    "guestsTitle": "Guest List",
-    "wishesLabel": "Guestbook",
-    "wishesTitle": "Your Best Wishes",
-    "shareLabel": "Share",
-    "shareTitle": "Share the Invitation",
-    "shareDescription": "You can share our invitation with your loved ones.",
-    "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You! 😔",
-    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
-    "deadlineTitle": "RSVP Deadline Passed",
-    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
-  },
-  "form": {
-    "namePlaceholder": "Full Name",
-    "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Please Specify The Number Of People",
-    "messagePlaceholder": "Your Message",
-    "submitRsvp": "Send RSVP 🕊️",
-    "submitWish": "Send Message 💌",
-    "whatsappRsvp": "RSVP via WhatsApp 💬",
-    "missingInfo": "Missing Info ⚠️",
-    "missingNameMessage": "Please enter your full name. ✍️",
-    "missingWishMessage": "Please enter your name and message. ✍️"
-  },
-  "ui": {
-    "time": "Time",
-    "scroll": "SCROLL",
-    "days": "Days",
-    "hours": "Hours",
-    "mins": "Mins",
-    "secs": "Secs",
-    "date": "Date",
-    "venue": "Venue",
-    "address": "Address",
-    "goToMap": "Go to Map 📍",
-    "addToCalendar": "Add to Calendar 📅",
-    "closeEsc": "Close (Esc)",
-    "prev": "Previous (←)",
-    "next": "Next (→)",
-    "shareQr": "Share quickly via QR code.",
-    "shareWhatsapp": "Share via WhatsApp 💬",
-    "copyLink": "Copy Link 🔗",
-    "giftTitle": "Gift & Registry",
-    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
-    "copyIban": "Copy IBAN 📋",
-    "copied": "Copied! ✅",
-    "close": "OK 👍",
-    "closeBtn": "Close ❌",
-    "sendGift": "Would you like to send a gift? 🎁",    
-    "totalResponses": "Total Responses",
-    "attending": "Attending",
-    "notAttending": "Not Attending",
-    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
-    "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
-    "save": "Save 💾",
-    "cancel": "Cancel 🚫",
-    "yes": "Yes ✔️",
-    "ok": "OK 👍"
-  },
-  "visibility": {
-    "countdown": "Countdown",
-    "family": "Family Info",
-    "ceremony": "Ceremony & Wedding",
-    "schedule": "Wedding Schedule",
-    "location": "Location (Map)",
-    "gallery": "Photo Gallery",
-    "rsvp": "RSVP Form",
-    "wishes": "Guestbook",
-    "iban": "Gift / IBAN Section",
-    "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Information ℹ️",
-    "errorTitle": "Error ❌",
-    "saveTitle": "Saved 🎉",
-    "saveErrorTitle": "Save error 😔",
-    "supabaseMissingTitle": "Supabase connection missing 🔌",
-    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
-    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
-    "wishSaved": "Your wish has been saved. 💖",
-    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
-    "wishError": "Could not save message. Detail: {{message}} ❌",
-    "linkCopied": "Invitation link copied. 🔗",
-    "linkCopyError": "Could not copy link. ⚠️"
-  },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Delete all RSVP records?",
-    "clearGuestsTitle": "Clear Guests",
-    "clearWishesConfirm": "Delete all guestbook messages?",
-    "clearWishesTitle": "Clear Guestbook",
-    "deleteGuestConfirm": "Delete this RSVP record?",
-    "deleteGuestTitle": "Delete Record",
-    "editGuestTitle": "Edit RSVP",
-    "fullName": "Full Name",
-    "phone": "Phone",
-    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
-    "personCount": "Person Count",
-    "side": "Side",
-    "hasChild": "Has children? (Evet/Hayır)",
-    "songRequest": "Song Request",
-    "note": "Note",
-    "deleteWishConfirm": "Delete this message?",
-    "deleteWishTitle": "Delete Message",
-    "editWishTitle": "Edit Message",
-    "message": "Message",
-    "couldNotDelete": "Could not delete.",
-    "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
-  },
-    "navigation": {
-    "chooseApp": "Choose Navigation App",
-    "copyAddress": "Copy Full Address 📋",
-    "addressCopied": "Address Copied! ✅"
-  }
-}
-</file>
-
-<file path="src/components/AdminUI.jsx">
-export * from "./admin/ui/AdminInputs";
-export * from "./admin/ui/AdminMediaFields";
-export * from "./admin/ui/AdminLayout";
 </file>
 
 <file path="src/config/constants.js">
@@ -5595,6 +5456,184 @@ export const CHILD_OPTIONS = [
   { label: "Çocuk Yok", value: "Hayır" },
   { label: "Çocuk Var", value: "Evet" },
 ];
+</file>
+
+<file path="src/i18n/locales/en.json">
+{
+  "invitation": {
+    "introLabel": "Wedding Invitation",
+    "introText": "You are invited to the most special day of our love story.",
+    "openButton": "Open Invitation 💌",
+    "heroLabel": "We Are Getting Married",
+    "countdownLabel": "Countdown",
+    "countdownTitle": "Time Left Until Our Wedding",
+    "invitationLabel": "Invitation",
+    "invitationTitle": "Will You Share Our Happiness?",
+    "familyLabel": "Our Families",
+    "familyTitle": "With the Joy of Our Families",
+    "ceremonyLabel": "Ceremony & Celebration",
+    "ceremonyTitle": "Details of the Day",
+    "scheduleLabel": "Wedding Schedule",
+    "locationLabel": "Date & Location",
+    "locationTitle": "Wedding Details",
+    "galleryLabel": "Photos",
+    "galleryTitle": "Outdoor Wedding Atmosphere",
+    "rsvpLabel": "RSVP",
+    "rsvpTitle": "RSVP Form",
+    "rsvpText": "Please let us know if you can attend to help us plan.",
+    "guestsLabel": "Guests",
+    "guestsTitle": "Guest List",
+    "wishesLabel": "Guestbook",
+    "wishesTitle": "Your Best Wishes",
+    "shareLabel": "Share",
+    "shareTitle": "Share the Invitation",
+    "shareDescription": "You can share our invitation with your loved ones.",
+    "thanksText": "Having you with us on this special day is the greatest gift.",
+    "footerSmall": "Made with love",
+    "declineTitle": "We'll Miss You! 😔",
+    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
+  },
+  "form": {
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Your Phone Number",
+    "notePlaceholder": "Please Specify The Number Of People",
+    "messagePlaceholder": "Your Message",
+    "submitRsvp": "Send RSVP 🕊️",
+    "submitWish": "Send Message 💌",
+    "whatsappRsvp": "RSVP via WhatsApp 💬",
+    "missingInfo": "Missing Info ⚠️",
+    "missingNameMessage": "Please enter your full name. ✍️",
+    "missingWishMessage": "Please enter your name and message. ✍️"
+  },
+  "ui": {
+    "time": "Time",
+    "scroll": "SCROLL",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "date": "Date",
+    "venue": "Venue",
+    "address": "Address",
+    "goToMap": "Go to Map 📍",
+    "addToCalendar": "Add to Calendar 📅",
+    "closeEsc": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "shareQr": "Share quickly via QR code.",
+    "shareWhatsapp": "Share via WhatsApp 💬",
+    "copyLink": "Copy Link 🔗",
+    "giftTitle": "Gift & Registry",
+    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
+    "copyIban": "Copy IBAN 📋",
+    "copied": "Copied! ✅",
+    "close": "OK 👍",
+    "closeBtn": "Close ❌",
+    "sendGift": "Would you like to send a gift? 🎁",    
+    "totalResponses": "Total Responses",
+    "attending": "Attending",
+    "notAttending": "Not Attending",
+    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
+    "noWishes": "No wishes yet.",
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save 💾",
+    "cancel": "Cancel 🚫",
+    "yes": "Yes ✔️",
+    "ok": "OK 👍"
+  },
+  "visibility": {
+    "countdown": "Countdown",
+    "family": "Family Info",
+    "ceremony": "Ceremony & Wedding",
+    "schedule": "Wedding Schedule",
+    "location": "Location (Map)",
+    "gallery": "Photo Gallery",
+    "rsvp": "RSVP Form",
+    "wishes": "Guestbook",
+    "iban": "Gift / IBAN Section",
+    "guests": "Guest List",
+    "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information ℹ️",
+    "errorTitle": "Error ❌",
+    "saveTitle": "Saved 🎉",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing 🔌",
+    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
+    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
+    "wishSaved": "Your wish has been saved. 💖",
+    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
+    "wishError": "Could not save message. Detail: {{message}} ❌",
+    "linkCopied": "Invitation link copied. 🔗",
+    "linkCopyError": "Could not copy link. ⚠️"
+  },
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status."
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
+  }
+}
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register'; // Eklendi
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+registerSW({ immediate: true }); 
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <HelmetProvider>
+        <App />
+        <Analytics />
+        <SpeedInsights />
+      </HelmetProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+</file>
+
+<file path="src/components/AdminUI.jsx">
+export * from "./admin/ui/AdminInputs";
+export * from "./admin/ui/AdminMediaFields";
+export * from "./admin/ui/AdminLayout";
 </file>
 
 <file path="src/i18n/locales/tr.json">
@@ -5927,137 +5966,6 @@ export function AdminPanelContent(props) {
     case "story": return <StoryTab {...props} isEn={isEn} />; 
     default: return null;
   }
-}
-</file>
-
-<file path="src/hooks/useDatabaseManager.js">
-import { useCallback, useEffect } from "react";
-import { supabase } from "../supabaseClient";
-import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
-import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
-
-export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
-  
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    const wishesChannel = supabase.channel("public:wishes")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "wishes" }, (payload) => {
-        if (payload.new && payload.new.approved) {
-          setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
-        }
-      }).subscribe();
-
-    const guestsChannel = supabase.channel("public:guests")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) {
-          setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
-        }
-      }).subscribe();
-
-    return () => {
-      supabase.removeChannel(wishesChannel);
-      supabase.removeChannel(guestsChannel);
-    };
-  }, [setWishes, setGuests]);
-
-  const submitGuest = useCallback(async (formData) => {
-    if (formData.honeypot) return;
-    
-    const lastRsvpTime = localStorage.getItem("last_rsvp_time");
-    if (lastRsvpTime && Date.now() - parseInt(lastRsvpTime, 10) < 60000) {
-      await showAppAlert?.(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.", { title: t('alerts.errorTitle') });
-      return;
-    }
-
-    if (!isSupabaseReady()) {
-      await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    
-    try {
-      const dbData = uiGuestToDb(formData);
-      let { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
-
-      if (error) {
-        if (error.message === 'RATE_LIMIT_EXCEEDED') {
-          throw new Error(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.");
-        }
-        // Fallback: RPC çalışmazsa normal insert dene
-        const fallback = await supabase.from("guests").insert(dbData).select("*").single();
-        if (fallback.error) throw fallback.error;
-        data = fallback.data;
-      }
-      
-      localStorage.setItem("last_rsvp_time", Date.now().toString());
-      setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...formData }, ...prev]);
-
-      if (formData.attendance === "Katılacağım") {
-        await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
-      }
-    } catch (error) {
-      console.error("Katılım kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert?.(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [setGuests, showAppAlert, t, isEn]);
-
-  const submitWish = useCallback(async (formData) => {
-    if (formData.honeypot) return;
-    
-    const lastWishTime = localStorage.getItem("last_wish_time");
-    if (lastWishTime && Date.now() - parseInt(lastWishTime, 10) < 60000) {
-      await showAppAlert?.(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir mesaj göndermeden önce 1 dakika bekleyin.", { title: t('alerts.errorTitle') });
-      return;
-    }
-
-    if (!isSupabaseReady()) {
-      await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    const shouldPublishNow = !settings?.requireWishApproval;
-    try {
-      let { data, error } = await supabase.from("wishes").insert({ 
-        name: formData.name.trim(), 
-        message: formData.message.trim(), 
-        approved: shouldPublishNow 
-      }).select("*").single();
-      
-      if (error) throw error;
-      
-      localStorage.setItem("last_wish_time", Date.now().toString());
-      if (shouldPublishNow) {
-        setWishes((prev) => {
-          if (data && prev.some(w => w.id === data.id)) return prev;
-          return [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...formData, approved: true }, ...prev];
-        });
-      }
-      await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { 
-        title: settings?.requireWishApproval ? t('alerts.saveTitle') : t('alerts.saveTitle') 
-      });
-    } catch (error) {
-      console.error("Mesaj kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert?.(t('alerts.wishError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
-
-  const clearGuests = useCallback(async () => { /* Supabase delete methods */ }, []);
-  const clearWishes = useCallback(async () => { /* Supabase delete methods */ }, []);
-  const deleteGuest = useCallback(async (guestId) => { /* Supabase delete methods */ }, []);
-  const editGuest = useCallback(async (guestId) => { /* Supabase update methods */ }, []);
-  const deleteWish = useCallback(async (wishId) => { /* Supabase delete methods */ }, []);
-  const editWish = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
-  const toggleWishApproval = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
-
-  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
-    const nextStatus = !currentStatus;
-    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
-    if (error) { setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); return; }
-    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
-  }, [setGuests, setAdminSaveMessage, isEn]);
-
-  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn };
 }
 </file>
 
@@ -6723,6 +6631,152 @@ export function FooterSection({ coupleName, invitation, copy }) {
 }
 </file>
 
+<file path="src/hooks/useDatabaseManager.js">
+import { useCallback, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
+import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+
+export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
+  
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    const wishesChannel = supabase.channel("public:wishes")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "wishes" }, (payload) => {
+        if (payload.new && payload.new.approved) {
+          setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
+        }
+      }).subscribe();
+
+    const guestsChannel = supabase.channel("public:guests")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
+        if (payload.new) {
+          setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
+        // YENİ: Başka bir cihazda veya kapıda check-in/update yapıldığında listeyi anında senkronize et
+        if (payload.new) {
+          setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
+        }
+      }).subscribe();
+
+    return () => {
+      supabase.removeChannel(wishesChannel);
+      supabase.removeChannel(guestsChannel);
+    };
+  }, [setWishes, setGuests]);
+
+  const submitGuest = useCallback(async (formData) => {
+    if (formData.honeypot) return;
+    
+    const lastRsvpTime = localStorage.getItem("last_rsvp_time");
+    if (lastRsvpTime && Date.now() - parseInt(lastRsvpTime, 10) < 60000) {
+      await showAppAlert?.(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.", { title: t('alerts.errorTitle') });
+      return;
+    }
+
+    if (!isSupabaseReady()) {
+      await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
+      return;
+    }
+    
+    try {
+      const dbData = uiGuestToDb(formData);
+      let { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
+
+      if (error) {
+        if (error.message === 'RATE_LIMIT_EXCEEDED') {
+          throw new Error(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.");
+        }
+        // Fallback: RPC çalışmazsa normal insert dene
+        const fallback = await supabase.from("guests").insert(dbData).select("*").single();
+        if (fallback.error) throw fallback.error;
+        data = fallback.data;
+      }
+      
+      localStorage.setItem("last_rsvp_time", Date.now().toString());
+      setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...formData }, ...prev]);
+
+      if (formData.attendance === "Katılacağım") {
+        await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
+      }
+    } catch (error) {
+      console.error("Katılım kaydedilemedi:", error);
+      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
+      await showAppAlert?.(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
+    }
+  }, [setGuests, showAppAlert, t, isEn]);
+
+  const submitWish = useCallback(async (formData) => {
+    if (formData.honeypot) return;
+    
+    const lastWishTime = localStorage.getItem("last_wish_time");
+    if (lastWishTime && Date.now() - parseInt(lastWishTime, 10) < 60000) {
+      await showAppAlert?.(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir mesaj göndermeden önce 1 dakika bekleyin.", { title: t('alerts.errorTitle') });
+      return;
+    }
+
+    if (!isSupabaseReady()) {
+      await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
+      return;
+    }
+    const shouldPublishNow = !settings?.requireWishApproval;
+    try {
+      let { data, error } = await supabase.from("wishes").insert({ 
+        name: formData.name.trim(), 
+        message: formData.message.trim(), 
+        approved: shouldPublishNow 
+      }).select("*").single();
+      
+      if (error) throw error;
+      
+      localStorage.setItem("last_wish_time", Date.now().toString());
+      if (shouldPublishNow) {
+        setWishes((prev) => {
+          if (data && prev.some(w => w.id === data.id)) return prev;
+          return [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...formData, approved: true }, ...prev];
+        });
+      }
+      await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { 
+        title: settings?.requireWishApproval ? t('alerts.saveTitle') : t('alerts.saveTitle') 
+      });
+    } catch (error) {
+      console.error("Mesaj kaydedilemedi:", error);
+      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
+      await showAppAlert?.(t('alerts.wishError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
+    }
+  }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
+
+  const clearGuests = useCallback(async () => { /* Supabase delete methods */ }, []);
+  const clearWishes = useCallback(async () => { /* Supabase delete methods */ }, []);
+  const deleteGuest = useCallback(async (guestId) => { /* Supabase delete methods */ }, []);
+  const editGuest = useCallback(async (guestId) => { /* Supabase update methods */ }, []);
+  const deleteWish = useCallback(async (wishId) => { /* Supabase delete methods */ }, []);
+  const editWish = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
+  const toggleWishApproval = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
+
+  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
+    const nextStatus = !currentStatus;
+    
+    // YENİ: Optimistic UI - Sunucuyu beklemeden arayüzü anında güncelle
+    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
+
+    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
+    
+    if (error) { 
+      // Hata olursa işlemi geri al
+      setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
+      setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
+      return; 
+    }
+  }, [setGuests, setAdminSaveMessage, isEn]);
+
+  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn };
+}
+</file>
+
 <file path="src/pages/InvitationController.jsx">
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -7187,7 +7241,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
 </file>
 
 <file path="src/pages/InvitationView.jsx">
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, lazy, Suspense } from "react";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -7195,14 +7249,27 @@ import { useCountdown } from "../hooks/useCountdown";
 import { useDatabaseManager } from "../hooks/useDatabaseManager";
 import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
 
-import {
-  HeroSection, CountdownSection, InvitationMessageSection, FamilySection,
-  CeremonySection, ScheduleSection, LocationSection, GallerySection,
-  ShareSection, FooterSection, GiftSection, StorySection
-} from "../components/invitation/sections";
-import { RsvpSection } from "../components/invitation/sections/RsvpSection";
-import { GuestsListSection } from "../components/invitation/sections/GuestsListSection";
-import { WishesSection } from "../components/invitation/sections/WishesSection";
+// SADECE GÖRÜNÜR İLK COMPONENT STATİK İMPORT EDİLİR
+import { HeroSection } from "../components/invitation/sections";
+
+// DİĞERLERİ LAZY LOAD EDİLİR
+const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
+const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
+const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
+const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
+const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
+const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
+const GallerySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GallerySection })));
+const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
+const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
+const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
+const StorySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.StorySection })));
+const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSection").then(m => ({ default: m.RsvpSection })));
+const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
+const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
+
+// Skeleton Loader Component (Tembel yüklenen alanlar için)
+const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
 
 export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const { t, i18n } = useTranslation();
@@ -7238,7 +7305,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
     guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
   });
 
-  // Zarf açıldığında görünümün her zaman en üstten başlamasını garanti eder
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -7255,7 +7321,6 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
   const handlePageClick = (e) => {
     if (window.innerWidth > 768) return;
     
-    // Tıklanan hedefi güvenli bir şekilde yakala
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
 
@@ -7295,59 +7360,109 @@ export default function InvitationView({ scrollToNext, scrollToPrev }) {
       </div>
       
       {settings.visibility?.countdown !== false && (
-        <div className="slide-wrapper"><CountdownSection copy={copy} timeLeft={timeLeft} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <CountdownSection copy={copy} timeLeft={timeLeft} />
+          </Suspense>
+        </div>
       )}
       
       <div className="slide-wrapper">
-        <InvitationMessageSection copy={copy} invitation={invitation} />
+        <Suspense fallback={<SectionLoader />}>
+          <InvitationMessageSection copy={copy} invitation={invitation} />
+        </Suspense>
       </div>
       
       {settings.visibility?.family !== false && (
-        <div className="slide-wrapper"><FamilySection copy={copy} familyInfo={familyInfo} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <FamilySection copy={copy} familyInfo={familyInfo} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.story !== false && (
-        <div className="slide-wrapper"><StorySection copy={copy} storyTimeline={storyTimeline} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <StorySection copy={copy} storyTimeline={storyTimeline} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.ceremony !== false && (
-        <div className="slide-wrapper"><CeremonySection copy={copy} eventDetails={eventDetails} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <CeremonySection copy={copy} eventDetails={eventDetails} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.schedule !== false && (
-        <div className="slide-wrapper"><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.location !== false && (
-        <div className="slide-wrapper"><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.gallery !== false && (
-        <div className="slide-wrapper"><GallerySection copy={copy} invitation={invitation} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <GallerySection copy={copy} invitation={invitation} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.rsvp !== false && (
-        <div className="slide-wrapper"><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.guests !== false && (
-        <div className="slide-wrapper"><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.wishes !== false && (
-        <div className="slide-wrapper"><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} />
+          </Suspense>
+        </div>
       )}
       
       {settings.visibility?.iban !== false && (
-        <div className="slide-wrapper"><GiftSection giftData={giftRegistry} /></div>
+        <div className="slide-wrapper">
+          <Suspense fallback={<SectionLoader />}>
+            <GiftSection giftData={giftRegistry} />
+          </Suspense>
+        </div>
       )}
       
       <div className="slide-wrapper">
-        <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
+        <Suspense fallback={<SectionLoader />}>
+          <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} />
+        </Suspense>
       </div>
       
       <div className="slide-wrapper">
-        <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+        <Suspense fallback={<SectionLoader />}>
+          <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
+        </Suspense>
       </div>
     </main>
   );
