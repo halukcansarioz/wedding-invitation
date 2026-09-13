@@ -1,12 +1,15 @@
+/* src/styles/responsive.css */
+
 /* =========================================================
-     TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
-     ========================================================= */
+   MOBİL İÇİN TAM EKRAN SLAYT GÖRÜNÜMÜ (768px ve altı)
+   ========================================================= */
+@media (max-width: 768px) {
   main.invitation-page {
     position: relative !important;
     padding: 0 !important;
     margin: 0 !important;
     display: block !important;
-    width: 100vw !important;
+    width: 100% !important; /* Yamukluk çözümü */
     height: 100dvh !important;
     overflow: hidden !important; 
   }
@@ -15,7 +18,7 @@
     position: absolute !important; 
     top: 0 !important; 
     left: 0 !important;
-    width: 100vw !important;
+    width: 100% !important;
     height: 100dvh !important; 
     
     opacity: 0 !important; 
@@ -44,7 +47,6 @@
     transform: translateY(0) scale(1) !important;
   }
 
-  /* HERO (İlk Ekran) Ayarları */
   main.invitation-page .slide-wrapper:first-child {
     display: flex !important; 
     flex-direction: column !important;
@@ -52,14 +54,15 @@
     padding: 0 !important; 
     background: transparent !important;
   }
-  
+
   main.invitation-page .slide-wrapper:first-child.active-slide {
     overflow: hidden !important; 
   }
 
   main.invitation-page .slide-wrapper > .hero-section {
     min-height: 100dvh !important; 
-    width: 100vw !important; 
+    width: 100% !important; 
+    box-sizing: border-box !important; 
     border-radius: 0 !important; 
     padding: 64px 16px 80px 16px !important; 
     margin: 0 !important;
@@ -74,16 +77,14 @@
     border-radius: 24px !important;
   }
 
-  /* --- KESİN ÇÖZÜM: UZUN KARTLARDA ÜSTTEN KESİLMEYİ ÖNLEYEN GRID MİMARİSİ --- */
   main.invitation-page .slide-wrapper:not(:first-child) {
     display: grid !important;
-    grid-template-rows: 1fr auto 1fr !important; /* Ekranı 3'e böler: Esnek Yay - İçerik - Esnek Yay */
+    grid-template-rows: 1fr auto 1fr !important;
     grid-template-columns: 100% !important;
-    padding: 0 16px !important; /* Dikey paddingleri before/after içine taşıdık */
+    padding: 0 16px !important; 
     align-items: center !important;
   }
 
-  /* Üst Boşluk (Kart ekranı aşarsa en fazla 24px'e kadar küçülür, yazıların kesilmesini ENGELLER) */
   main.invitation-page .slide-wrapper:not(:first-child)::before {
     content: "" !important;
     display: block !important;
@@ -91,7 +92,6 @@
     grid-row: 1 !important;
   }
 
-  /* Alt Boşluk (Menünün altında kalmaması için en fazla 110px'e kadar küçülür) */
   main.invitation-page .slide-wrapper:not(:first-child)::after {
     content: "" !important;
     display: block !important;
@@ -99,7 +99,6 @@
     grid-row: 3 !important;
   }
 
-  /* Kartın Kendisi (Her zaman orta satırda kilitli kalır) */
   main.invitation-page .slide-wrapper:not(:first-child) > section,
   main.invitation-page .slide-wrapper:not(:first-child) > footer,
   main.invitation-page .slide-wrapper:not(:first-child) > div {
@@ -107,3 +106,53 @@
     width: 100% !important;
     margin: 0 !important;
   }
+}
+
+
+/* =========================================================
+   MASAÜSTÜ (WEB) İÇİN KLASİK KAYDIRMALI SİTE YAPISI
+   ========================================================= */
+/* =========================================================
+   MASAÜSTÜ (WEB) İÇİN KLASİK KAYDIRMALI SİTE YAPISI
+   ========================================================= */
+@media (min-width: 769px) {
+  main.invitation-page {
+    display: flex;
+    flex-direction: column;
+    gap: 60px !important; /* Bölümler arası boşluk */
+    padding: 24px 0 100px 0 !important; /* İlk kartın yuvarlak köşesi tavana yapışmasın diye üstten 24px boşluk */
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  main.invitation-page .slide-wrapper {
+    position: relative !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    height: auto !important;
+    min-height: auto !important;
+    z-index: 1 !important;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* --- TÜM KARTLAR (HERO DAHİL) İÇİN ORTAK EN VE YUVARLAK KÖŞE --- */
+  main.invitation-page .slide-wrapper > section,
+  main.invitation-page .slide-wrapper > footer,
+  main.invitation-page .slide-wrapper > div {
+    width: calc(100% - 48px) !important; /* Ekranın sağından ve solundan 24px boşluk bırakır */
+    max-width: 1200px !important; /* Bütün bölümlerin maksimum genişliği 1. resimdeki ile eşitlendi */
+    margin: 0 auto !important;
+    border-radius: 32px !important; /* 1. resim dahil tüm bölümlerin köşeleri yuvarlatıldı */
+    border: none !important; /* Kenar çizgilerinde bozulma olmaması için eklendi */
+  }
+
+  /* --- ANA EKRAN (HERO) İÇİN YÜKSEKLİK AYARI --- */
+  main.invitation-page .slide-wrapper:first-child > .hero-section {
+    min-height: calc(100vh - 48px) !important; /* Üstteki 24px padding'i hesaba katarak ekrana tam oturmasını sağlar */
+    background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
+  }
+}

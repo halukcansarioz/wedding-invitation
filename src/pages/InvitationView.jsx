@@ -74,6 +74,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
 
   const handlePageClick = (e) => {
     if (window.innerWidth > 768) return;
+
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
 
@@ -81,7 +82,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
     const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
     if (isInteractive) return;
 
-    // Instagram Hikaye Mantığı (Sağa Tıkla İleri, Sola Tıkla Geri)
+    // Instagram Hikaye Mantığı (Sadece mobilde aktif kalacak)
     if (e.clientX < window.innerWidth * 0.35) {
       if (typeof scrollToPrev === 'function') scrollToPrev();
     } else {
