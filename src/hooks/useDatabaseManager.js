@@ -22,7 +22,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
         }
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
-        // YENİ: Başka bir cihazda veya kapıda check-in/update yapıldığında listeyi anında senkronize et
         if (payload.new) {
           setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
         }
@@ -50,17 +49,11 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     
     try {
       const dbData = uiGuestToDb(formData);
-      let { data, error } = await supabase.rpc('submit_guest_with_limit', { guest_data: dbData });
+      // GÜVENLİK GÜNCELLEMESİ: Tabloya insert yerine doğrudan korumalı fonksiyon (RPC) çağrılıyor.
+      const token = "DUMMY_CAPTCHA_TOKEN"; // Gelecekte Captcha eklendiğinde buraya yerleştirilecek.
+      const { data, error } = await supabase.rpc('submit_guest_secure', { guest_data: dbData, token: token });
 
-      if (error) {
-        if (error.message === 'RATE_LIMIT_EXCEEDED') {
-          throw new Error(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.");
-        }
-        // Fallback: RPC çalışmazsa normal insert dene
-        const fallback = await supabase.from("guests").insert(dbData).select("*").single();
-        if (fallback.error) throw fallback.error;
-        data = fallback.data;
-      }
+      if (error) throw error;
       
       localStorage.setItem("last_rsvp_time", Date.now().toString());
       setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...formData }, ...prev]);
@@ -90,11 +83,14 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     }
     const shouldPublishNow = !settings?.requireWishApproval;
     try {
-      let { data, error } = await supabase.from("wishes").insert({ 
-        name: formData.name.trim(), 
-        message: formData.message.trim(), 
-        approved: shouldPublishNow 
-      }).select("*").single();
+      // GÜVENLİK GÜNCELLEMESİ: Tabloya insert yerine doğrudan korumalı fonksiyon (RPC) çağrılıyor.
+      const token = "DUMMY_CAPTCHA_TOKEN"; 
+      const { data, error } = await supabase.rpc('submit_wish_secure', { 
+        wish_name: formData.name.trim(), 
+        wish_message: formData.message.trim(), 
+        is_approved: shouldPublishNow,
+        token: token
+      });
       
       if (error) throw error;
       
@@ -126,13 +122,11 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
     const nextStatus = !currentStatus;
     
-    // YENİ: Optimistic UI - Sunucuyu beklemeden arayüzü anında güncelle
     setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
 
     const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
     
     if (error) { 
-      // Hata olursa işlemi geri al
       setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
       setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
       return; 
