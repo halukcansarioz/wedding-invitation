@@ -13,8 +13,13 @@ export function GalleryTab({ isEn }) {
   // Medya yükleme işlemleri
   const handleMediaUpload = async (group, key, file, folder="media") => {
     if(!file) return;
-    const url = await uploadMediaFile(file, folder);
-    if(url) updateDraftObject(group, key, url);
+    setUploadingStates(prev => ({ ...prev, [key]: true }));
+    try {
+      const url = await uploadMediaFile(file, folder);
+      if(url) updateDraftObject(group, key, url);
+    } finally {
+      setUploadingStates(prev => ({ ...prev, [key]: false }));
+    }
   };
   
   const handleMusicUpload = async (file) => {

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FocusTrap from 'focus-trap-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { OptionGroup } from "../common/UIComponents";
 import { triggerConfetti } from "../../utils/helpers";
 import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../config/constants";
@@ -77,6 +78,10 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const [showDeclineGift, setShowDeclineGift] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlGuestName, setUrlGuestName] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  
+  // Turnstile form resetlendiğinde yeni token üretsin diye eklendi
+  const [formKey, setFormKey] = useState(0); 
 
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
@@ -104,14 +109,19 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
+    if (!turnstileToken) return;
+
     const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest(data);
+    await submitGuest({ ...data, turnstileToken });
     
     if (!isDeclining) {
       triggerConfetti();
     }
     
     reset();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1); // Turnstile widget'ını yenilemek için
+    
     if (isDeclining) setShowDeclineModal(true);
   };
 
@@ -142,7 +152,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
       {isDeadlinePassed ? (
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
-        <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
           {urlGuestName && (
@@ -164,7 +174,16 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
 
-          <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+          {/* Cloudflare Turnstile */}
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+            <Turnstile 
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
+              onSuccess={(token) => setTurnstileToken(token)} 
+              onExpire={() => setTurnstileToken("")}
+            />
+          </div>
+
+          <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
             {isSubmitting ? "..." : t('form.submitRsvp')}
           </button>
         </form>
@@ -211,6 +230,9 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
+  
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [formKey, setFormKey] = useState(0); 
 
   const wishSchema = useMemo(() => getWishSchema(t), [t]);
 
@@ -223,9 +245,13 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    await submitWish(data);
+    if (!turnstileToken) return;
+
+    await submitWish({ ...data, turnstileToken });
     triggerConfetti();
     reset();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1);
   };
 
   return (
@@ -233,7 +259,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
       <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
       
-      <form className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form key={`wish-form-${formKey}`} className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
         <div style={{ width: '100%' }}>
@@ -246,8 +272,17 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
           <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
           {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
         </div>
+
+        {/* Cloudflare Turnstile */}
+        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+          <Turnstile 
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
+            onSuccess={(token) => setTurnstileToken(token)} 
+            onExpire={() => setTurnstileToken("")}
+          />
+        </div>
         
-        <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+        <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
           {isSubmitting ? "..." : t('form.submitWish')}
         </button>
       </form>

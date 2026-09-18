@@ -35,6 +35,16 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
   const submitGuest = useCallback(async (formData) => {
     if (formData.honeypot) return;
+
+    // İnternet bağlantısı (Offline Fallback) Kontrolü
+    if (!navigator.onLine) {
+      await showAppAlert?.(
+        isEn ? "No internet connection. Please check your network and try again." 
+             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
+        { title: t('alerts.errorTitle') }
+      );
+      return;
+    }
     
     const lastRsvpTime = localStorage.getItem("last_rsvp_time");
     if (lastRsvpTime && Date.now() - parseInt(lastRsvpTime, 10) < 60000) {
@@ -49,9 +59,13 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     
     try {
       const dbData = uiGuestToDb(formData);
-      // GÜVENLİK GÜNCELLEMESİ: Tabloya insert yerine doğrudan korumalı fonksiyon (RPC) çağrılıyor.
-      const token = "DUMMY_CAPTCHA_TOKEN"; // Gelecekte Captcha eklendiğinde buraya yerleştirilecek.
-      const { data, error } = await supabase.rpc('submit_guest_secure', { guest_data: dbData, token: token });
+      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
+      const token = formData.turnstileToken || "MISSING_TOKEN";
+      
+      const { data, error } = await supabase.rpc('submit_guest_secure', { 
+        guest_data: dbData, 
+        token: token 
+      });
 
       if (error) throw error;
       
@@ -70,6 +84,16 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
   const submitWish = useCallback(async (formData) => {
     if (formData.honeypot) return;
+
+    // İnternet bağlantısı (Offline Fallback) Kontrolü
+    if (!navigator.onLine) {
+      await showAppAlert?.(
+        isEn ? "No internet connection. Please check your network and try again." 
+             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
+        { title: t('alerts.errorTitle') }
+      );
+      return;
+    }
     
     const lastWishTime = localStorage.getItem("last_wish_time");
     if (lastWishTime && Date.now() - parseInt(lastWishTime, 10) < 60000) {
@@ -83,8 +107,9 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     }
     const shouldPublishNow = !settings?.requireWishApproval;
     try {
-      // GÜVENLİK GÜNCELLEMESİ: Tabloya insert yerine doğrudan korumalı fonksiyon (RPC) çağrılıyor.
-      const token = "DUMMY_CAPTCHA_TOKEN"; 
+      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
+      const token = formData.turnstileToken || "MISSING_TOKEN";
+
       const { data, error } = await supabase.rpc('submit_wish_secure', { 
         wish_name: formData.name.trim(), 
         wish_message: formData.message.trim(), 

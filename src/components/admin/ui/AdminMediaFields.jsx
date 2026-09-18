@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-export function AdminImageField({ label, value, onFileSelect, onClear }) {
+export function AdminImageField({ label, value, onFileSelect, onClear, isUploading = false }) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
 
@@ -9,7 +9,7 @@ export function AdminImageField({ label, value, onFileSelect, onClear }) {
     <div className="admin-image-field admin-field-wide">
       <div className="admin-image-header">
         <span>{label}</span>
-        {value && (
+        {value && !isUploading && (
           <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
             {isEn ? "Remove Image 🗑️" : "Görseli Kaldır 🗑️"}
           </button>
@@ -17,20 +17,22 @@ export function AdminImageField({ label, value, onFileSelect, onClear }) {
       </div>
 
       {value ? (
-        <img className="admin-image-preview" src={value} alt={`${label} preview`} />
+        <img className="admin-image-preview" src={value} alt={`${label} preview`} style={{ opacity: isUploading ? 0.5 : 1 }} />
       ) : (
         <div className="admin-image-empty">{isEn ? "No image selected." : "Henüz görsel seçilmedi."}</div>
       )}
 
-      <label className="admin-upload-button">
-        {isEn ? "Select Image from PC 🖼️" : "Bilgisayardan Görsel Seç 🖼️"}
-        <input type="file" accept="image/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
+      <label className={`admin-upload-button ${isUploading ? 'disabled' : ''}`}>
+        {isUploading 
+          ? (isEn ? "Uploading... ⏳" : "Yükleniyor... ⏳") 
+          : (isEn ? "Select Image from PC 🖼️" : "Bilgisayardan Görsel Seç 🖼️")}
+        <input 
+          type="file" 
+          accept="image/*" 
+          disabled={isUploading}
+          onChange={(e) => { onFileSelect(e); e.target.value = ""; }} 
+        />
       </label>
-      <small>
-        {isEn 
-          ? "Images are auto-compressed and stored in your browser. Check live site after uploading large photos." 
-          : "Görsel otomatik küçültülür ve bu tarayıcıda saklanır. Büyük fotoğraf yüklerken kaydettikten sonra kontrol et."}
-      </small>
     </div>
   );
 }
