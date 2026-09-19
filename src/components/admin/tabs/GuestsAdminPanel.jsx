@@ -1,12 +1,12 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { Virtuoso } from "react-virtuoso";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
 
-const COLORS = ['#9f4f68', '#607244', '#c59a45', '#8f7fb8'];
+// Grafikler Bundle boyutunu şişirmemesi için asenkron yüklenecek
+const AdminCharts = lazy(() => import('./AdminCharts'));
 
 export function GuestsAdminPanel({ 
   guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
@@ -26,7 +26,6 @@ export function GuestsAdminPanel({
   const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
   const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
 
-  // Grafik verileri
   const sideData = [
     { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
     { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
@@ -55,31 +54,9 @@ export function GuestsAdminPanel({
         </div>
       </div>
 
-      {/* İstatistik Grafikleri */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px', height: '260px' }}>
-        <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>{isEn ? "Guest Distribution" : "Misafir Dağılımı"}</h4>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={sideData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} fill="#8884d8" label>
-                {sideData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>{isEn ? "Check-in Status" : "Kapı Giriş Durumu"}</h4>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={checkInData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--rose-deep)' }} />
-              <YAxis tick={{ fill: 'var(--rose-deep)' }} />
-              <Tooltip />
-              <Bar dataKey="value" fill="var(--rose-dark)" radius={[6,6,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
+        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
+      </Suspense>
 
       <div className="admin-toolbar-flex">
         <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />

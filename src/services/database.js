@@ -18,14 +18,12 @@ export const getReadableAuthError = (error) => {
   const status = error?.status || error?.code;
   const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
 
-  // HTTP ve Supabase özel durum kodlarına göre kesin yakalama
   if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğunuz admin e-posta/şifresiyle giriş yapmalısınız.";
   if (status === 429) return "Çok fazla deneme yapıldı. Güvenlik nedeniyle birkaç dakika bekleyip tekrar deneyin.";
   if (status === 401 && message.includes("email not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication kısmından hesabınızı doğrulayın.";
   if (status === 404 || message.includes("not found")) return "Kayıt bulunamadı. Silinmiş veya taşınmış olabilir.";
   if (error?.name === "AuthApiError" && message.includes("url")) return "Yönlendirme hatası. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisiniz.";
   
-  // Ağ (Network) Hataları
   if (message.includes("failed to fetch") || message.includes("network") || error?.name === "AuthRetryableFetchError") {
      return getSupabaseSetupMessage();
   }
@@ -42,7 +40,7 @@ export const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
       return result;
     } catch (error) {
       if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Giderek artan bekleme süresi
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); 
     }
   }
 };
@@ -64,21 +62,21 @@ export const saveSettingsToDatabase = async (settings) => {
 
 export const loadPublishedWishesFromDatabase = async () => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
   if (error) { console.error("Yayındaki anı defteri mesajları alınamadı:", error); return []; }
   return (data || []).map(dbWishToUi);
 };
 
 export const loadGuestsFromDatabase = async () => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
   if (error) { console.error("Katılım kayıtları alınamadı:", error); return []; }
   return (data || []).map(dbGuestToUi);
 };
 
 export const loadAllWishesFromDatabase = async () => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
   if (error) { console.error("Anı defteri mesajları alınamadı:", error); return []; }
   return (data || []).map(dbWishToUi);
 };
@@ -87,7 +85,7 @@ export const uploadMediaFile = async (file, folder = "media") => {
   if (!file) return null;
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
   const fileExt = file.name.split(".").pop() || "file";
-  const safeName = file.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+|-+$/g, "");
+  const safeName = file.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+\vert{}-+$/g, "");
   const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
   const { error } = await supabase.storage.from("wedding-media").upload(fileName, file, { cacheControl: "3600", upsert: true, contentType: file.type || undefined });
   if (error) {
@@ -108,7 +106,6 @@ export const deleteMediaFile = async (fileUrl) => {
     if (pathSegments.length < 2) return;
     const filePath = decodeURIComponent(pathSegments[1]);
 
-    // Temaların varsayılan medyalarını yanlışlıkla silmemek için koruma
     if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
 
     await supabase.storage.from("wedding-media").remove([filePath]);

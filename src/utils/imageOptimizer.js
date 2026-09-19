@@ -1,20 +1,40 @@
 import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
 
-/**
- * Yüklenen görseli maksimum boyutlara göre ölçekler ve WebP formatında sıkıştırır.
- * Tarayıcının kilitlenmemesi için işlemi bir Web Worker içinde gerçekleştirir.
- */
-export async function optimizeImage(file) {
-  if (!file || !file.type.startsWith("image/")) {
-    return file;
-  }
+// OffscreenCanvas desteklenmeyen tarayıcılar (Eski Safari vb.) için Main-Thread Fallback
+function fallbackOptimize(file, resolve) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    let { width, height } = img;
+    const maxDim = MAX_IMAGE_DIMENSION || 1400;
+    
+    if (width > maxDim || height > maxDim) {
+      if (width > height) { 
+        height = Math.round((height * maxDim) / width); 
+        width = maxDim; 
+      } else { 
+        width = Math.round((width * maxDim) / height); 
+        height = maxDim; 
+      }
+    }
+    
+    canvas.width = width; 
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+    
+    canvas.toBlob((blob) => {
+      resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
+    }, "image/webp", IMAGE_QUALITY || 0.8);
+  };
+  img.onerror = () => resolve(file);
+  img.src = URL.createObjectURL(file);
+}
 
-  if (file.type === "image/svg+xml" || file.type === "image/gif") {
-    return file;
-  }
+export async function optimizeImage(file) {
+  if (!file || !file.type.startsWith("image/")) return file;
+  if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
 
   return new Promise((resolve) => {
-    // Web Worker'ı başlatıyoruz
     const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
     
     worker.onmessage = (e) => {
@@ -25,14 +45,16 @@ export async function optimizeImage(file) {
           lastModified: Date.now(),
         });
         resolve(optimizedFile);
+      } else if (e.data.error === "OffscreenCanvas not supported") {
+        fallbackOptimize(file, resolve); // Desteklenmiyorsa fallback çalıştır
       } else {
-        resolve(file); // Hata durumunda orijinal dosyayı döndür
+        resolve(file); 
       }
       worker.terminate();
     };
 
     worker.onerror = () => {
-      resolve(file); // Hata durumunda kilitlenmeyi önle
+      fallbackOptimize(file, resolve); // Worker çökerse fallback çalıştır
       worker.terminate();
     };
 

@@ -91,16 +91,21 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   });
 
   const currentNote = watch("note") || "";
-  const currentAttendance = watch("attendance");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const guestName = params.get("guest") || params.get("davetli") || "";
+    const countParam = params.get("count") || params.get("kisi") || "";
 
     if (guestName) {
       setUrlGuestName(guestName);
       setValue("name", guestName);
+    }
+    
+    if (countParam) {
+      // Eğer backend'e person_count alanını gönderiyorsanız schema'ya da eklemeniz gerekebilir.
+      setValue("personCount", countParam); 
     }
   }, [setValue]);
 
@@ -109,7 +114,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    if (!turnstileToken) return;
+    if (!turnstileToken && navigator.onLine) return; // Sadece internet varken token zorunlu
 
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest({ ...data, turnstileToken });
@@ -183,7 +188,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
             />
           </div>
 
-          <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
+          <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
             {isSubmitting ? "..." : t('form.submitRsvp')}
           </button>
         </form>
@@ -245,7 +250,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    if (!turnstileToken) return;
+    if (!turnstileToken && navigator.onLine) return; // İnternet varsa token zorunlu
 
     await submitWish({ ...data, turnstileToken });
     triggerConfetti();
@@ -282,7 +287,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
           />
         </div>
         
-        <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
+        <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
           {isSubmitting ? "..." : t('form.submitWish')}
         </button>
       </form>

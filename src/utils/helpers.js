@@ -65,12 +65,15 @@ export const getTableFromUrl = () => {
   return (params.get("table") || params.get("masa") || "").trim();
 };
 
-export const buildPersonalLink = (baseLink, guestName, tableNumber = "") => {
+export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personCount = "") => {
   const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
   const nameParam = encodeURIComponent((guestName || "").trim());
   let url = `${cleanLink}/?guest=${nameParam}`;
   if (tableNumber) {
     url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
+  }
+  if (personCount) {
+    url += `&count=${encodeURIComponent(String(personCount).trim())}`; // Kişi Sayısı parametresi eklendi
   }
   return url;
 };

@@ -283,120 +283,6 @@ export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isE
 }
 </file>
 
-<file path="src/components/admin/ui/AdminMediaFields.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-
-export function AdminImageField({ label, value, onFileSelect, onClear }) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith("en");
-
-  return (
-    <div className="admin-image-field admin-field-wide">
-      <div className="admin-image-header">
-        <span>{label}</span>
-        {value && (
-          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            {isEn ? "Remove Image 🗑️" : "Görseli Kaldır 🗑️"}
-          </button>
-        )}
-      </div>
-
-      {value ? (
-        <img className="admin-image-preview" src={value} alt={`${label} preview`} />
-      ) : (
-        <div className="admin-image-empty">{isEn ? "No image selected." : "Henüz görsel seçilmedi."}</div>
-      )}
-
-      <label className="admin-upload-button">
-        {isEn ? "Select Image from PC 🖼️" : "Bilgisayardan Görsel Seç 🖼️"}
-        <input type="file" accept="image/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
-      </label>
-      <small>
-        {isEn 
-          ? "Images are auto-compressed and stored in your browser. Check live site after uploading large photos." 
-          : "Görsel otomatik küçültülür ve bu tarayıcıda saklanır. Büyük fotoğraf yüklerken kaydettikten sonra kontrol et."}
-      </small>
-    </div>
-  );
-}
-
-export function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith("en");
-
-  return (
-    <div className="admin-music-field admin-field-wide">
-      <div className="admin-image-header">
-        <span>{isEn ? "Invitation Background Music" : "Davetiyede çalacak müzik"}</span>
-        {value && (
-          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            {isEn ? "Remove Music 🗑️" : "Müziği Kaldır 🗑️"}
-          </button>
-        )}
-      </div>
-
-      {value ? (
-        <div className="admin-music-preview">
-          <strong>{fileName || (isEn ? "Uploaded music" : "Yüklenen müzik")}</strong>
-          <audio controls src={value}></audio>
-        </div>
-      ) : (
-        <div className="admin-image-empty">
-          {isEn 
-            ? "No custom music selected. Default wedding music will play." 
-            : "Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar."}
-        </div>
-      )}
-
-      <label className="admin-upload-button">
-        {isEn ? "Select Music from PC 🎵" : "Bilgisayardan Müzik Seç 🎵"}
-        <input type="file" accept="audio/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
-      </label>
-      <small>
-        {isEn 
-          ? "Select a short MP3/M4A file under 4 MB. It will play automatically on the invitation." 
-          : "MP3/M4A gibi kısa ve 4 MB altı bir dosya seç. Kaydettikten sonra davetiyede bu müzik çalar."}
-      </small>
-    </div>
-  );
-}
-
-export function AdminVideoField({ label, value, onFileSelect, onClear }) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith("en");
-
-  return (
-    <div className="admin-image-field admin-field-wide">
-      <div className="admin-image-header">
-        <span>{label}</span>
-        {value && (
-          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
-            {isEn ? "Remove Video 🗑️" : "Videoyu Kaldır 🗑️"}
-          </button>
-        )}
-      </div>
-
-      {value ? (
-        <video className="admin-image-preview" src={value} controls playsInline style={{ maxHeight: '280px', width: '100%', borderRadius: '14px', marginTop: '10px' }} />
-      ) : (
-        <div className="admin-image-empty">{isEn ? "No video selected." : "Henüz video seçilmedi."}</div>
-      )}
-
-      <label className="admin-upload-button">
-        {isEn ? "Select Video from PC 🎥" : "Bilgisayardan Video Seç 🎥"}
-        <input type="file" accept="video/mp4,video/webm" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
-      </label>
-      <small>
-        {isEn
-          ? "Select an MP4/WEBM file. It will play silently in the background of the hero section."
-          : "MP4/WEBM dosyası seç. Ana giriş ekranının arkasında sessiz ve otomatik olarak oynatılacaktır."}
-      </small>
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/common/LocalizedDate.jsx">
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -847,42 +733,6 @@ i18n
   });
 
 export default i18n;
-</file>
-
-<file path="src/store/useAdminStore.js">
-import { create } from 'zustand';
-
-export const useAdminStore = create((set) => ({
-  isAdminUnlocked: false,
-  adminUser: null,
-  adminEmail: "",
-  adminPassword: "",
-  adminAuthLoading: false,
-  showForgotPassword: false,
-  forgotPasswordEmail: "",
-  forgotPasswordMessage: "",
-  forgotPasswordLoading: false,
-  isPasswordRecovery: false,
-  recoveryPassword: "",
-  recoveryPasswordAgain: "",
-  recoveryMessage: "",
-  recoveryLoading: false,
-  adminError: "",
-  adminLoginNotice: "",
-  adminCurrentPassword: "",
-  adminNewPassword: "",
-  adminNewPasswordAgain: "",
-  adminPasswordMessage: "",
-  adminSaveMessage: "",
-  adminGuestSearch: "",
-  adminGuestAttendanceFilter: "all",
-  adminGuestSideFilter: "all",
-  adminGuestChildFilter: "all",
-  adminWishSearch: "",
-  adminWishStatusFilter: "all",
-
-  setAdminState: (updates) => set((state) => ({ ...state, ...updates })),
-}));
 </file>
 
 <file path="src/styles/index.css">
@@ -1383,91 +1233,6 @@ export function FamilyTab({ isEn }) {
 }
 </file>
 
-<file path="src/components/admin/tabs/GalleryTab.jsx">
-import React from "react";
-import { AdminSection, AdminCheckbox, AdminImageField, AdminVideoField, AdminMusicField, AdminActionButtons } from "../../AdminUI";
-import { useStore } from "../../../store/useStore";
-import { uploadMediaFile } from "../../../services/database";
-
-export function GalleryTab({ isEn }) {
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-
-  if (!adminDraft?.settings) return null;
-
-  // Medya yükleme işlemleri
-  const handleMediaUpload = async (group, key, file, folder="media") => {
-    if(!file) return;
-    const url = await uploadMediaFile(file, folder);
-    if(url) updateDraftObject(group, key, url);
-  };
-  
-  const handleMusicUpload = async (file) => {
-    if(!file) return;
-    const url = await uploadMediaFile(file, "music");
-    if(url) {
-      updateDraftObject("invitation", "musicFile", url);
-      updateDraftObject("invitation", "musicName", file.name);
-    }
-  };
-
-  const handleGalleryUpload = async (index, file) => {
-    if(!file) return;
-    const url = await uploadMediaFile(file, "images");
-    if(url) {
-      const newGallery = [...(adminDraft.invitation?.gallery || [])];
-      newGallery[index] = url;
-      updateDraftObject("invitation", "gallery", newGallery);
-    }
-  };
-
-  const removeGalleryItem = (index) => {
-    const newGallery = [...(adminDraft.invitation?.gallery || [])];
-    newGallery.splice(index, 1);
-    updateDraftObject("invitation", "gallery", newGallery);
-  };
-
-  const moveGalleryItem = (index, direction) => {
-    const newGallery = [...(adminDraft.invitation?.gallery || [])];
-    if (index + direction < 0 || index + direction >= newGallery.length) return;
-    const temp = newGallery[index];
-    newGallery[index] = newGallery[index + direction];
-    newGallery[index + direction] = temp;
-    updateDraftObject("invitation", "gallery", newGallery);
-  };
-
-  return (
-    <AdminSection title={isEn ? "Visuals and Music" : "Görsel ve Müzik"} onSave={() => saveSiteContent(isEn)}>
-      <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? true} label={isEn ? "Show Gallery Section" : "Galeri bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
-      </div>
-      <div className="admin-edit-grid">
-        <AdminImageField label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli"} value={adminDraft.invitation?.heroImage} onFileSelect={(e) => handleMediaUpload("invitation", "heroImage", e.target.files[0], "images")} onClear={() => updateDraftObject("invitation", "heroImage", "")} />
-        <AdminVideoField label={isEn ? "Hero Background Video" : "Karşılama Arka Plan Videosu"} value={adminDraft.invitation?.heroVideo} onFileSelect={(e) => handleMediaUpload("invitation", "heroVideo", e.target.files[0], "video")} onClear={() => updateDraftObject("invitation", "heroVideo", "")} />
-        <AdminMusicField label={isEn ? "Music File" : "Müzik dosyası"} value={adminDraft.invitation?.musicFile} fileName={adminDraft.invitation?.musicName} onFileSelect={(e) => handleMusicUpload(e.target.files[0])} onClear={() => { updateDraftObject("invitation", "musicFile", ""); updateDraftObject("invitation", "musicName", ""); }} />
-      </div>
-      <div style={{ marginTop: "32px" }}>
-        <h4 style={{ marginBottom: "16px", color: "var(--rose-deep)" }}>{isEn ? "Gallery Photos" : "Galeri Fotoğrafları"}</h4>
-        <div className="admin-gallery-list">
-          {(adminDraft.invitation?.gallery || []).map((imgUrl, index) => (
-            <div key={index} className="admin-gallery-upload-row">
-              <AdminImageField label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} value={imgUrl} onFileSelect={(e) => handleGalleryUpload(index, e.target.files[0])} onClear={() => removeGalleryItem(index)} />
-              <AdminActionButtons 
-                onMoveUp={index > 0 ? () => moveGalleryItem(index, -1) : null}
-                onMoveDown={index < (adminDraft.invitation?.gallery?.length || 0) - 1 ? () => moveGalleryItem(index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} onDelete={() => removeGalleryItem(index)} isEn={isEn} 
-              />
-            </div>
-          ))}
-          <button type="button" className="admin-add-button" onClick={() => updateDraftObject("invitation", "gallery", [...(adminDraft.invitation?.gallery || []), ""])}>{isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
-        </div>
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/GeneralTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
@@ -1822,6 +1587,122 @@ export function VisibilityTab({ isEn }) {
         <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={t('visibility.popupIban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />
       </div>
     </AdminSection>
+  );
+}
+</file>
+
+<file path="src/components/admin/ui/AdminMediaFields.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+
+export function AdminImageField({ label, value, onFileSelect, onClear, isUploading = false }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
+  return (
+    <div className="admin-image-field admin-field-wide">
+      <div className="admin-image-header">
+        <span>{label}</span>
+        {value && !isUploading && (
+          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
+            {isEn ? "Remove Image 🗑️" : "Görseli Kaldır 🗑️"}
+          </button>
+        )}
+      </div>
+
+      {value ? (
+        <img className="admin-image-preview" src={value} alt={`${label} preview`} style={{ opacity: isUploading ? 0.5 : 1 }} />
+      ) : (
+        <div className="admin-image-empty">{isEn ? "No image selected." : "Henüz görsel seçilmedi."}</div>
+      )}
+
+      <label className={`admin-upload-button ${isUploading ? 'disabled' : ''}`}>
+        {isUploading 
+          ? (isEn ? "Uploading... ⏳" : "Yükleniyor... ⏳") 
+          : (isEn ? "Select Image from PC 🖼️" : "Bilgisayardan Görsel Seç 🖼️")}
+        <input 
+          type="file" 
+          accept="image/*" 
+          disabled={isUploading}
+          onChange={(e) => { onFileSelect(e); e.target.value = ""; }} 
+        />
+      </label>
+    </div>
+  );
+}
+
+export function AdminMusicField({ value, fileName, onFileSelect, onClear }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
+  return (
+    <div className="admin-music-field admin-field-wide">
+      <div className="admin-image-header">
+        <span>{isEn ? "Invitation Background Music" : "Davetiyede çalacak müzik"}</span>
+        {value && (
+          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
+            {isEn ? "Remove Music 🗑️" : "Müziği Kaldır 🗑️"}
+          </button>
+        )}
+      </div>
+
+      {value ? (
+        <div className="admin-music-preview">
+          <strong>{fileName || (isEn ? "Uploaded music" : "Yüklenen müzik")}</strong>
+          <audio controls src={value}></audio>
+        </div>
+      ) : (
+        <div className="admin-image-empty">
+          {isEn 
+            ? "No custom music selected. Default wedding music will play." 
+            : "Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar."}
+        </div>
+      )}
+
+      <label className="admin-upload-button">
+        {isEn ? "Select Music from PC 🎵" : "Bilgisayardan Müzik Seç 🎵"}
+        <input type="file" accept="audio/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
+      </label>
+      <small>
+        {isEn 
+          ? "Select a short MP3/M4A file under 4 MB. It will play automatically on the invitation." 
+          : "MP3/M4A gibi kısa ve 4 MB altı bir dosya seç. Kaydettikten sonra davetiyede bu müzik çalar."}
+      </small>
+    </div>
+  );
+}
+
+export function AdminVideoField({ label, value, onFileSelect, onClear }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
+  return (
+    <div className="admin-image-field admin-field-wide">
+      <div className="admin-image-header">
+        <span>{label}</span>
+        {value && (
+          <button type="button" className="secondary-button small-admin-button" onClick={onClear}>
+            {isEn ? "Remove Video 🗑️" : "Videoyu Kaldır 🗑️"}
+          </button>
+        )}
+      </div>
+
+      {value ? (
+        <video className="admin-image-preview" src={value} controls playsInline style={{ maxHeight: '280px', width: '100%', borderRadius: '14px', marginTop: '10px' }} />
+      ) : (
+        <div className="admin-image-empty">{isEn ? "No video selected." : "Henüz video seçilmedi."}</div>
+      )}
+
+      <label className="admin-upload-button">
+        {isEn ? "Select Video from PC 🎥" : "Bilgisayardan Video Seç 🎥"}
+        <input type="file" accept="video/mp4,video/webm" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
+      </label>
+      <small>
+        {isEn
+          ? "Select an MP4/WEBM file. It will play silently in the background of the hero section."
+          : "MP4/WEBM dosyası seç. Ana giriş ekranının arkasında sessiz ve otomatik olarak oynatılacaktır."}
+      </small>
+    </div>
   );
 }
 </file>
@@ -2533,6 +2414,68 @@ export function useAdminSession({ isAdminPage, isEn }) {
 }
 </file>
 
+<file path="src/hooks/useAudio.js">
+import { useRef, useState, useEffect, useCallback } from "react";
+import { DEFAULT_WEDDING_MUSIC_FILE } from "../config/constants";
+
+export function useAudio(musicFile) {
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
+  }, [musicFile]);
+
+  const stopMusic = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsMusicPlaying(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wedding-music-muted", "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopMusic();
+    };
+  }, [stopMusic]);
+
+  const startMusic = useCallback(async (forcePlay = false) => {
+    if (forcePlay !== true && typeof window !== "undefined") {
+      if (localStorage.getItem("wedding-music-muted") === "true") {
+        return;
+      }
+    }
+
+    try {
+      if (musicFile && audioRef.current) {
+        audioRef.current.volume = 0.15;
+        await audioRef.current.play();
+        setIsMusicPlaying(true);
+        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
+      }
+    } catch (error) {
+      console.error("Müzik başlatılamadı:", error);
+      setIsMusicPlaying(false);
+    }
+  }, [musicFile]);
+
+  const toggleMusic = useCallback(async () => {
+    if (isMusicPlaying) {
+      stopMusic();
+    } else {
+      await startMusic(true);
+    }
+  }, [isMusicPlaying, stopMusic, startMusic]);
+
+  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
+}
+</file>
+
 <file path="src/pages/AdminView.jsx">
 import React from "react";
 import AdminDashboard from "../components/AdminDashboard";
@@ -2573,6 +2516,70 @@ export default function AdminView(props) {
 }
 </file>
 
+<file path="src/store/useAdminStore.js">
+// src/store/useAdminStore.js
+import { create } from 'zustand';
+
+export const useAdminStore = create((set) => ({
+  isAdminUnlocked: false,
+  adminUser: null,
+  adminEmail: "",
+  adminPassword: "",
+  adminError: "",
+  adminLoginNotice: "",
+  adminSaveMessage: "",
+  adminAuthLoading: false,
+  showForgotPassword: false,
+  forgotPasswordEmail: "",
+  forgotPasswordMessage: "",
+  forgotPasswordLoading: false,
+  isPasswordRecovery: false,
+  recoveryPassword: "",
+  recoveryPasswordAgain: "",
+  recoveryMessage: "",
+  recoveryLoading: false,
+  adminCurrentPassword: "",
+  adminNewPassword: "",
+  adminNewPasswordAgain: "",
+  adminPasswordMessage: "",
+
+  setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
+  setAdminUser: (user) => set({ adminUser: user }),
+  setAdminEmail: (email) => set({ adminEmail: email }),
+  setAdminPassword: (pass) => set({ adminPassword: pass }),
+  setAdminError: (error) => set({ adminError: error }),
+  setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
+  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
+  setAdminAuthLoading: (loading) => set({ adminAuthLoading: loading }),
+  setShowForgotPassword: (show) => set({ showForgotPassword: show }),
+  setForgotPasswordEmail: (email) => set({ forgotPasswordEmail: email }),
+  setForgotPasswordMessage: (msg) => set({ forgotPasswordMessage: msg }),
+  setForgotPasswordLoading: (loading) => set({ forgotPasswordLoading: loading }),
+  setIsPasswordRecovery: (isRec) => set({ isPasswordRecovery: isRec }),
+  setRecoveryPassword: (pass) => set({ recoveryPassword: pass }),
+  setRecoveryPasswordAgain: (pass) => set({ recoveryPasswordAgain: pass }),
+  setRecoveryMessage: (msg) => set({ recoveryMessage: msg }),
+  setRecoveryLoading: (loading) => set({ recoveryLoading: loading }),
+  setAdminCurrentPassword: (pass) => set({ adminCurrentPassword: pass }),
+  setAdminNewPassword: (pass) => set({ adminNewPassword: pass }),
+  setAdminNewPasswordAgain: (pass) => set({ adminNewPasswordAgain: pass }),
+  setAdminPasswordMessage: (msg) => set({ adminPasswordMessage: msg }),
+
+  clearAdminAuth: () => set({
+    isAdminUnlocked: false,
+    adminUser: null,
+    adminPassword: "",
+    adminError: "",
+    showForgotPassword: false,
+    forgotPasswordMessage: "",
+    adminPasswordMessage: "",
+    adminCurrentPassword: "",
+    adminNewPassword: "",
+    adminNewPasswordAgain: ""
+  })
+}));
+</file>
+
 <file path="src/components/admin/tabs/DataTab.jsx">
 import React from "react";
 import { AdminSection, AdminTextarea } from "../../AdminUI";
@@ -2592,6 +2599,96 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, se
           <button type="button" className="secondary-button danger-button admin-import-btn" onClick={importAllDataJson}>
             {isEn ? "Import Backup ⬆️" : "Yedeği İçe Aktar ⬆️"}
           </button>
+        </div>
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
+<file path="src/components/admin/tabs/GalleryTab.jsx">
+import React from "react";
+import { AdminSection, AdminCheckbox, AdminImageField, AdminVideoField, AdminMusicField, AdminActionButtons } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
+import { uploadMediaFile } from "../../../services/database";
+
+export function GalleryTab({ isEn }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+
+  if (!adminDraft?.settings) return null;
+
+  // Medya yükleme işlemleri
+  const handleMediaUpload = async (group, key, file, folder="media") => {
+    if(!file) return;
+    setUploadingStates(prev => ({ ...prev, [key]: true }));
+    try {
+      const url = await uploadMediaFile(file, folder);
+      if(url) updateDraftObject(group, key, url);
+    } finally {
+      setUploadingStates(prev => ({ ...prev, [key]: false }));
+    }
+  };
+  
+  const handleMusicUpload = async (file) => {
+    if(!file) return;
+    const url = await uploadMediaFile(file, "music");
+    if(url) {
+      updateDraftObject("invitation", "musicFile", url);
+      updateDraftObject("invitation", "musicName", file.name);
+    }
+  };
+
+  const handleGalleryUpload = async (index, file) => {
+    if(!file) return;
+    const url = await uploadMediaFile(file, "images");
+    if(url) {
+      const newGallery = [...(adminDraft.invitation?.gallery || [])];
+      newGallery[index] = url;
+      updateDraftObject("invitation", "gallery", newGallery);
+    }
+  };
+
+  const removeGalleryItem = (index) => {
+    const newGallery = [...(adminDraft.invitation?.gallery || [])];
+    newGallery.splice(index, 1);
+    updateDraftObject("invitation", "gallery", newGallery);
+  };
+
+  const moveGalleryItem = (index, direction) => {
+    const newGallery = [...(adminDraft.invitation?.gallery || [])];
+    if (index + direction < 0 || index + direction >= newGallery.length) return;
+    const temp = newGallery[index];
+    newGallery[index] = newGallery[index + direction];
+    newGallery[index + direction] = temp;
+    updateDraftObject("invitation", "gallery", newGallery);
+  };
+
+  return (
+    <AdminSection title={isEn ? "Visuals and Music" : "Görsel ve Müzik"} onSave={() => saveSiteContent(isEn)}>
+      <div className="admin-theme-check-row" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? true} label={isEn ? "Show Gallery Section" : "Galeri bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
+      </div>
+      <div className="admin-edit-grid">
+        <AdminImageField label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli"} value={adminDraft.invitation?.heroImage} onFileSelect={(e) => handleMediaUpload("invitation", "heroImage", e.target.files[0], "images")} onClear={() => updateDraftObject("invitation", "heroImage", "")} />
+        <AdminVideoField label={isEn ? "Hero Background Video" : "Karşılama Arka Plan Videosu"} value={adminDraft.invitation?.heroVideo} onFileSelect={(e) => handleMediaUpload("invitation", "heroVideo", e.target.files[0], "video")} onClear={() => updateDraftObject("invitation", "heroVideo", "")} />
+        <AdminMusicField label={isEn ? "Music File" : "Müzik dosyası"} value={adminDraft.invitation?.musicFile} fileName={adminDraft.invitation?.musicName} onFileSelect={(e) => handleMusicUpload(e.target.files[0])} onClear={() => { updateDraftObject("invitation", "musicFile", ""); updateDraftObject("invitation", "musicName", ""); }} />
+      </div>
+      <div style={{ marginTop: "32px" }}>
+        <h4 style={{ marginBottom: "16px", color: "var(--rose-deep)" }}>{isEn ? "Gallery Photos" : "Galeri Fotoğrafları"}</h4>
+        <div className="admin-gallery-list">
+          {(adminDraft.invitation?.gallery || []).map((imgUrl, index) => (
+            <div key={index} className="admin-gallery-upload-row">
+              <AdminImageField label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} value={imgUrl} onFileSelect={(e) => handleGalleryUpload(index, e.target.files[0])} onClear={() => removeGalleryItem(index)} />
+              <AdminActionButtons 
+                onMoveUp={index > 0 ? () => moveGalleryItem(index, -1) : null}
+                onMoveDown={index < (adminDraft.invitation?.gallery?.length || 0) - 1 ? () => moveGalleryItem(index, 1) : null}
+                onSave={() => saveSiteContent(isEn)} onDelete={() => removeGalleryItem(index)} isEn={isEn} 
+              />
+            </div>
+          ))}
+          <button type="button" className="admin-add-button" onClick={() => updateDraftObject("invitation", "gallery", [...(adminDraft.invitation?.gallery || []), ""])}>{isEn ? "Add New Photo" : "Yeni Fotoğraf Ekle"}</button>
         </div>
       </div>
     </AdminSection>
@@ -2994,68 +3091,6 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }) 
     </m.section>
   );
 });
-</file>
-
-<file path="src/hooks/useAudio.js">
-import { useRef, useState, useEffect, useCallback } from "react";
-import { DEFAULT_WEDDING_MUSIC_FILE } from "../config/constants";
-
-export function useAudio(musicFile) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
-    }
-  }, [musicFile]);
-
-  const stopMusic = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setIsMusicPlaying(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("wedding-music-muted", "true");
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      stopMusic();
-    };
-  }, [stopMusic]);
-
-  const startMusic = useCallback(async (forcePlay = false) => {
-    if (forcePlay !== true && typeof window !== "undefined") {
-      if (localStorage.getItem("wedding-music-muted") === "true") {
-        return;
-      }
-    }
-
-    try {
-      if (musicFile && audioRef.current) {
-        audioRef.current.volume = 0.15;
-        await audioRef.current.play();
-        setIsMusicPlaying(true);
-        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
-      }
-    } catch (error) {
-      console.error("Müzik başlatılamadı:", error);
-      setIsMusicPlaying(false);
-    }
-  }, [musicFile]);
-
-  const toggleMusic = useCallback(async () => {
-    if (isMusicPlaying) {
-      stopMusic();
-    } else {
-      await startMusic(true);
-    }
-  }, [isMusicPlaying, stopMusic, startMusic]);
-
-  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
-}
 </file>
 
 <file path="src/services/database.js">
@@ -4875,295 +4910,6 @@ export function GuestsAdminPanel({
 }
 </file>
 
-<file path="src/store/useStore.js">
-import { create } from 'zustand';
-import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
-import toast from 'react-hot-toast';
-import { supabase } from '../supabaseClient';
-import { saveSettingsToDatabase } from '../services/database';
-
-export const useStore = create((set, get) => ({
-  siteData: loadStoredSiteData(),
-  setSiteData: (data) => set({ siteData: data }),
-  guests: [],
-  setGuests: (guests) => set({ guests }),
-  wishes: [],
-  setWishes: (wishes) => set({ wishes }),
-
-  opened: false,
-  setOpened: (opened) => set({ opened }),
-  isOpening: false,
-  setIsOpening: (isOpening) => set({ isOpening }),
-
-  customAlert: null,
-  setCustomAlert: (alert) => set({ customAlert: alert }),
-  showAppAlert: (message, options = {}) => new Promise((resolve) => {
-    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
-    if (isError) toast.error(message);
-    else toast.success(message);
-    resolve(true);
-  }),
-
-  customConfirm: null,
-  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
-  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
-    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
-  }),
-
-  customPrompt: null,
-  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
-  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
-    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
-  }),
-
-  adminDraft: loadStoredSiteData(),
-  setAdminDraft: (draftOrUpdater) => set((state) => ({
-    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
-  })),
-  activeAdminTab: "general",
-  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
-  personalLinkName: "",
-  setPersonalLinkName: (name) => set({ personalLinkName: name }),
-  dataImportText: "",
-  setDataImportText: (text) => set({ dataImportText: text }),
-
-  updateDraftObject: (group, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [group]: {
-        ...state.adminDraft[group],
-        [key]: value
-      }
-    }
-  })),
-
-  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
-    }
-  })),
-
-  addDraftArrayItem: (arrayKey, item) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: [...state.adminDraft[arrayKey], item]
-    }
-  })),
-
-  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
-    }
-  })),
-
-  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
-    const newArray = [...(state.adminDraft[arrayKey] || [])];
-    if (index + direction < 0 || index + direction >= newArray.length) return state;
-    const temp = newArray[index];
-    newArray[index] = newArray[index + direction];
-    newArray[index + direction] = temp;
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: newArray
-      }
-    };
-  }),
-
-  saveSiteContent: async (isEn) => {
-    const { adminDraft, setSiteData, setAdminDraft } = get();
-    // Use useAdminStore for saving messages
-    const { setAdminSaveMessage } = useAdminStore.getState();
-    const cleanedData = normalizeSiteData({ 
-      ...adminDraft, 
-      invitation: { 
-        ...adminDraft.invitation, 
-        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
-      } 
-    });
-    try {
-      await saveSettingsToDatabase(cleanedData);
-      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
-      setSiteData(cleanedData); 
-      setAdminDraft(cleanedData);
-      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
-    } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
-    }
-  }
-}));
-
-// PROP DRILLING ÇÖZÜMÜ: Yalnızca Admin Authentication ve form State'ini tutan bağımsız bir store.
-export const useAdminStore = create((set) => ({
-  isAdminUnlocked: false,
-  adminUser: null,
-  adminEmail: "",
-  adminPassword: "",
-  adminError: "",
-  adminLoginNotice: "",
-  adminSaveMessage: "",
-  adminAuthLoading: false,
-  showForgotPassword: false,
-  forgotPasswordEmail: "",
-  forgotPasswordMessage: "",
-  forgotPasswordLoading: false,
-  isPasswordRecovery: false,
-  recoveryPassword: "",
-  recoveryPasswordAgain: "",
-  recoveryMessage: "",
-  recoveryLoading: false,
-  adminCurrentPassword: "",
-  adminNewPassword: "",
-  adminNewPasswordAgain: "",
-  adminPasswordMessage: "",
-
-  setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
-  setAdminUser: (user) => set({ adminUser: user }),
-  setAdminEmail: (email) => set({ adminEmail: email }),
-  setAdminPassword: (pass) => set({ adminPassword: pass }),
-  setAdminError: (error) => set({ adminError: error }),
-  setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
-  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
-  setAdminAuthLoading: (loading) => set({ adminAuthLoading: loading }),
-  setShowForgotPassword: (show) => set({ showForgotPassword: show }),
-  setForgotPasswordEmail: (email) => set({ forgotPasswordEmail: email }),
-  setForgotPasswordMessage: (msg) => set({ forgotPasswordMessage: msg }),
-  setForgotPasswordLoading: (loading) => set({ forgotPasswordLoading: loading }),
-  setIsPasswordRecovery: (isRec) => set({ isPasswordRecovery: isRec }),
-  setRecoveryPassword: (pass) => set({ recoveryPassword: pass }),
-  setRecoveryPasswordAgain: (pass) => set({ recoveryPasswordAgain: pass }),
-  setRecoveryMessage: (msg) => set({ recoveryMessage: msg }),
-  setRecoveryLoading: (loading) => set({ recoveryLoading: loading }),
-  setAdminCurrentPassword: (pass) => set({ adminCurrentPassword: pass }),
-  setAdminNewPassword: (pass) => set({ adminNewPassword: pass }),
-  setAdminNewPasswordAgain: (pass) => set({ adminNewPasswordAgain: pass }),
-  setAdminPasswordMessage: (msg) => set({ adminPasswordMessage: msg }),
-
-  clearAdminAuth: () => set({
-    isAdminUnlocked: false,
-    adminUser: null,
-    adminPassword: "",
-    adminError: "",
-    showForgotPassword: false,
-    forgotPasswordMessage: "",
-    adminPasswordMessage: "",
-    adminCurrentPassword: "",
-    adminNewPassword: "",
-    adminNewPasswordAgain: ""
-  })
-}));
-</file>
-
-<file path="src/components/invitation/IntroPage.jsx">
-import React, { useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { triggerConfetti } from "../../utils/helpers";
-
-export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const openText = isEn 
-    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
-    : copy.openButton;
-
-  const handleOpen = useCallback(() => {
-    if (!isHeroLoaded) return;
-    triggerConfetti();
-    openInvitation();
-  }, [openInvitation, isHeroLoaded]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isOpening || !isHeroLoaded) return;
-      if (e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        handleOpen();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpening, handleOpen, isHeroLoaded]);
-
-  return (
-    <section className={`intro-page ${isOpening ? "opening" : ""}`}>
-      <div className="petal-layer" aria-hidden="true">
-        {Array.from({ length: 16 }).map((_, index) => (
-          <span key={index}></span>
-        ))}
-      </div>
-
-      <div className="envelope-container">
-        <div className="envelope-back"></div>
-
-        <div className="intro-card">
-          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
-            ❀
-          </div>
-          
-          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
-
-          <h1 className="couple-title">
-            <span>{invitation.bride}</span>
-            <em>&</em>
-            <span>{invitation.groom}</span>
-          </h1>
-
-          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
-        </div>
-
-        <div className="envelope-front"></div>
-        <div className="envelope-flap"></div>
-
-        {personalGuestName && (
-          <div className="envelope-guest-badge">
-            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
-            {personalTableNumber && (
-              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
-                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
-              </span>
-            )}
-          </div>
-        )}
-
-        <button 
-          className="envelope-seal" 
-          onClick={handleOpen}
-          style={{ 
-            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
-            pointerEvents: isOpening ? "none" : "auto",
-            cursor: isHeroLoaded ? "pointer" : "wait",
-            transition: "opacity 0.4s ease"
-          }}
-        >
-          <span 
-            style={{ 
-              display: 'block', 
-              textAlign: 'center', 
-              lineHeight: '1.2',
-              color: '#ffffff', 
-              WebkitTextFillColor: '#ffffff',
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
-              fontWeight: '900',
-              fontSize: isHeroLoaded ? '18px' : '15px',
-              letterSpacing: '0.5px'
-            }}
-          >
-            {!isHeroLoaded ? (isEn ? "Loading..." : "Yükleniyor...") : openText}
-          </span>
-        </button>
-      </div>
-    </section>
-  );
-}
-</file>
-
 <file path="src/components/AdminDashboard.jsx">
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -5460,78 +5206,293 @@ export default React.memo(AdminDashboard);
 }
 </file>
 
-<file path="src/components/invitation/sections/HeroSection.jsx">
-import React, { memo } from "react";
+<file path="src/store/useStore.js">
+import { create } from 'zustand';
+import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
+import toast from 'react-hot-toast';
+import { supabase } from '../supabaseClient';
+import { saveSettingsToDatabase } from '../services/database';
+
+export const useStore = create((set, get) => ({
+  siteData: loadStoredSiteData(),
+  setSiteData: (data) => set({ siteData: data }),
+  guests: [],
+  setGuests: (guests) => set({ guests }),
+  wishes: [],
+  setWishes: (wishes) => set({ wishes }),
+
+  opened: false,
+  setOpened: (opened) => set({ opened }),
+  isOpening: false,
+  setIsOpening: (isOpening) => set({ isOpening }),
+
+  customAlert: null,
+  setCustomAlert: (alert) => set({ customAlert: alert }),
+  showAppAlert: (message, options = {}) => new Promise((resolve) => {
+    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
+    if (isError) toast.error(message);
+    else toast.success(message);
+    resolve(true);
+  }),
+
+  customConfirm: null,
+  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
+  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
+    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
+  }),
+
+  customPrompt: null,
+  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
+  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
+    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
+  }),
+
+  adminDraft: loadStoredSiteData(),
+  setAdminDraft: (draftOrUpdater) => set((state) => ({
+    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
+  })),
+  activeAdminTab: "general",
+  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
+  personalLinkName: "",
+  setPersonalLinkName: (name) => set({ personalLinkName: name }),
+  dataImportText: "",
+  setDataImportText: (text) => set({ dataImportText: text }),
+
+  updateDraftObject: (group, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [group]: {
+        ...state.adminDraft[group],
+        [key]: value
+      }
+    }
+  })),
+
+  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
+    }
+  })),
+
+  addDraftArrayItem: (arrayKey, item) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: [...state.adminDraft[arrayKey], item]
+    }
+  })),
+
+  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
+    }
+  })),
+
+  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
+    const newArray = [...(state.adminDraft[arrayKey] || [])];
+    if (index + direction < 0 || index + direction >= newArray.length) return state;
+    const temp = newArray[index];
+    newArray[index] = newArray[index + direction];
+    newArray[index + direction] = temp;
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: newArray
+      }
+    };
+  }),
+
+  saveSiteContent: async (isEn) => {
+    const { adminDraft, setSiteData, setAdminDraft } = get();
+    // Use useAdminStore for saving messages
+    const { setAdminSaveMessage } = useAdminStore.getState();
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    });
+    try {
+      await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
+      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    } catch (error) {
+      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+    }
+  }
+}));
+
+// PROP DRILLING ÇÖZÜMÜ: Yalnızca Admin Authentication ve form State'ini tutan bağımsız bir store.
+export const useAdminStore = create((set) => ({
+  isAdminUnlocked: false,
+  adminUser: null,
+  adminEmail: "",
+  adminPassword: "",
+  adminError: "",
+  adminLoginNotice: "",
+  adminSaveMessage: "",
+  adminAuthLoading: false,
+  showForgotPassword: false,
+  forgotPasswordEmail: "",
+  forgotPasswordMessage: "",
+  forgotPasswordLoading: false,
+  isPasswordRecovery: false,
+  recoveryPassword: "",
+  recoveryPasswordAgain: "",
+  recoveryMessage: "",
+  recoveryLoading: false,
+  adminCurrentPassword: "",
+  adminNewPassword: "",
+  adminNewPasswordAgain: "",
+  adminPasswordMessage: "",
+
+  setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
+  setAdminUser: (user) => set({ adminUser: user }),
+  setAdminEmail: (email) => set({ adminEmail: email }),
+  setAdminPassword: (pass) => set({ adminPassword: pass }),
+  setAdminError: (error) => set({ adminError: error }),
+  setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
+  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
+  setAdminAuthLoading: (loading) => set({ adminAuthLoading: loading }),
+  setShowForgotPassword: (show) => set({ showForgotPassword: show }),
+  setForgotPasswordEmail: (email) => set({ forgotPasswordEmail: email }),
+  setForgotPasswordMessage: (msg) => set({ forgotPasswordMessage: msg }),
+  setForgotPasswordLoading: (loading) => set({ forgotPasswordLoading: loading }),
+  setIsPasswordRecovery: (isRec) => set({ isPasswordRecovery: isRec }),
+  setRecoveryPassword: (pass) => set({ recoveryPassword: pass }),
+  setRecoveryPasswordAgain: (pass) => set({ recoveryPasswordAgain: pass }),
+  setRecoveryMessage: (msg) => set({ recoveryMessage: msg }),
+  setRecoveryLoading: (loading) => set({ recoveryLoading: loading }),
+  setAdminCurrentPassword: (pass) => set({ adminCurrentPassword: pass }),
+  setAdminNewPassword: (pass) => set({ adminNewPassword: pass }),
+  setAdminNewPasswordAgain: (pass) => set({ adminNewPasswordAgain: pass }),
+  setAdminPasswordMessage: (msg) => set({ adminPasswordMessage: msg }),
+
+  clearAdminAuth: () => set({
+    isAdminUnlocked: false,
+    adminUser: null,
+    adminPassword: "",
+    adminError: "",
+    showForgotPassword: false,
+    forgotPasswordMessage: "",
+    adminPasswordMessage: "",
+    adminCurrentPassword: "",
+    adminNewPassword: "",
+    adminNewPasswordAgain: ""
+  })
+}));
+</file>
+
+<file path="src/components/invitation/IntroPage.jsx">
+import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
+import { triggerConfetti } from "../../utils/helpers";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-// React.memo ile sarmalandı
-export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const isPostWedding = settings?.isPostWedding;
-  
+  const isEn = i18n.language.startsWith('en');
+
+  const openText = isEn 
+    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
+    : copy.openButton;
+
+  const handleOpen = useCallback(() => {
+    if (!isHeroLoaded) return;
+    triggerConfetti();
+    openInvitation();
+  }, [openInvitation, isHeroLoaded]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isOpening || !isHeroLoaded) return;
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        handleOpen();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpening, handleOpen, isHeroLoaded]);
+
   return (
-    <m.section 
-      initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
-    >
-      {invitation?.heroVideo ? (
-        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      ) : null}
-      
-      <div className="hero-content">
-        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
-        </p>
-
-        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-          <span>{invitation?.bride}</span>
-          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
-          <span>{invitation?.groom}</span>
-        </h1>
-        
-        {isPostWedding ? (
-          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
-          </p>
-        ) : (
-          <>
-            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              {invitation?.dateText}
-            </p>
-            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-              {t('ui.time')} {invitation?.timeText}
-            </p>
-          </>
-        )}
-
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <span>{t('ui.scroll')}</span>
-        </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
-        )}
+    <section className={`intro-page ${isOpening ? "opening" : ""}`}>
+      <div className="petal-layer" aria-hidden="true">
+        {Array.from({ length: 16 }).map((_, index) => (
+          <span key={index}></span>
+        ))}
       </div>
-    </m.section>
+
+      <div className="envelope-container">
+        <div className="envelope-back"></div>
+
+        <div className="intro-card">
+          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
+            ❀
+          </div>
+          
+          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
+
+          <h1 className="couple-title">
+            <span>{invitation.bride}</span>
+            <em>&</em>
+            <span>{invitation.groom}</span>
+          </h1>
+
+          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
+        </div>
+
+        <div className="envelope-front"></div>
+        <div className="envelope-flap"></div>
+
+        {personalGuestName && (
+          <div className="envelope-guest-badge">
+            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
+            {personalTableNumber && (
+              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
+                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
+              </span>
+            )}
+          </div>
+        )}
+
+        <button 
+          className="envelope-seal" 
+          onClick={handleOpen}
+          style={{ 
+            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
+            pointerEvents: isOpening ? "none" : "auto",
+            cursor: isHeroLoaded ? "pointer" : "wait",
+            transition: "opacity 0.4s ease"
+          }}
+        >
+          <span 
+            style={{ 
+              display: 'block', 
+              textAlign: 'center', 
+              lineHeight: '1.2',
+              color: '#ffffff', 
+              WebkitTextFillColor: '#ffffff',
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
+              fontWeight: '900',
+              fontSize: isHeroLoaded ? '18px' : '15px',
+              letterSpacing: '0.5px'
+            }}
+          >
+            {!isHeroLoaded ? (isEn ? "Loading..." : "Yükleniyor...") : openText}
+          </span>
+        </button>
+      </div>
+    </section>
   );
-});
+}
 </file>
 
 <file path="src/components/AdminUI.jsx">
@@ -5685,44 +5646,78 @@ export * from "./admin/ui/AdminLayout";
 }
 </file>
 
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register';
-import * as Sentry from '@sentry/react'; // Sentry entegrasyonu eklendi
-import './i18n/config';
-import App from './App';
-import './index.css';
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
 
-// Sentry konfigürasyonu (Kendi DSN adresinle güncellemelisin)
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN || "",
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  tracesSampleRate: 1.0, 
-  replaysSessionSampleRate: 0.1, 
-  replaysOnErrorSampleRate: 1.0, 
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+// React.memo ile sarmalandı
+export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const isPostWedding = settings?.isPostWedding;
+  
+  return (
+    <m.section 
+      initial="hidden" animate="visible" variants={fadeUp}
+      className="hero-section" 
+    >
+      {invitation?.heroVideo ? (
+        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
+          <source src={invitation.heroVideo} type="video/mp4" />
+        </video>
+      ) : null}
+      
+      <div className="hero-content">
+        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
+        </p>
+
+        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <span>{invitation?.bride}</span>
+          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
+          <span>{invitation?.groom}</span>
+        </h1>
+        
+        {isPostWedding ? (
+          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
+          </p>
+        ) : (
+          <>
+            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {invitation?.dateText}
+            </p>
+            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {t('ui.time')} {invitation?.timeText}
+            </p>
+          </>
+        )}
+
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
+        
+        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
+      </div>
+    </m.section>
+  );
 });
-
-registerSW({ immediate: true }); 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
 </file>
 
 <file path="src/components/invitation/PublicSections.jsx">
@@ -6157,6 +6152,46 @@ export function FooterSection({ coupleName, invitation, copy }) {
 }
 </file>
 
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register';
+import * as Sentry from '@sentry/react'; // Sentry entegrasyonu eklendi
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+// Sentry konfigürasyonu (Kendi DSN adresinle güncellemelisin)
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN || "",
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 1.0, 
+  replaysSessionSampleRate: 0.1, 
+  replaysOnErrorSampleRate: 1.0, 
+});
+
+registerSW({ immediate: true }); 
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <HelmetProvider>
+        <App />
+        <Analytics />
+        <SpeedInsights />
+      </HelmetProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+</file>
+
 <file path="src/components/admin/AdminPanelComponents.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -6420,6 +6455,7 @@ import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import FocusTrap from 'focus-trap-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { OptionGroup } from "../common/UIComponents";
 import { triggerConfetti } from "../../utils/helpers";
 import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../config/constants";
@@ -6493,6 +6529,10 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const [showDeclineGift, setShowDeclineGift] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlGuestName, setUrlGuestName] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  
+  // Turnstile form resetlendiğinde yeni token üretsin diye eklendi
+  const [formKey, setFormKey] = useState(0); 
 
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
@@ -6520,14 +6560,19 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
+    if (!turnstileToken) return;
+
     const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest(data);
+    await submitGuest({ ...data, turnstileToken });
     
     if (!isDeclining) {
       triggerConfetti();
     }
     
     reset();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1); // Turnstile widget'ını yenilemek için
+    
     if (isDeclining) setShowDeclineModal(true);
   };
 
@@ -6558,7 +6603,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
       {isDeadlinePassed ? (
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
-        <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
           {urlGuestName && (
@@ -6580,7 +6625,16 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
 
-          <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+          {/* Cloudflare Turnstile */}
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+            <Turnstile 
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
+              onSuccess={(token) => setTurnstileToken(token)} 
+              onExpire={() => setTurnstileToken("")}
+            />
+          </div>
+
+          <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
             {isSubmitting ? "..." : t('form.submitRsvp')}
           </button>
         </form>
@@ -6627,6 +6681,9 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
+  
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [formKey, setFormKey] = useState(0); 
 
   const wishSchema = useMemo(() => getWishSchema(t), [t]);
 
@@ -6639,9 +6696,13 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    await submitWish(data);
+    if (!turnstileToken) return;
+
+    await submitWish({ ...data, turnstileToken });
     triggerConfetti();
     reset();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1);
   };
 
   return (
@@ -6649,7 +6710,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
       <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
       
-      <form className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <form key={`wish-form-${formKey}`} className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
         <div style={{ width: '100%' }}>
@@ -6662,8 +6723,17 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
           <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
           {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
         </div>
+
+        {/* Cloudflare Turnstile */}
+        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+          <Turnstile 
+            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
+            onSuccess={(token) => setTurnstileToken(token)} 
+            onExpire={() => setTurnstileToken("")}
+          />
+        </div>
         
-        <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+        <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
           {isSubmitting ? "..." : t('form.submitWish')}
         </button>
       </form>
@@ -6723,6 +6793,16 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
   const submitGuest = useCallback(async (formData) => {
     if (formData.honeypot) return;
+
+    // İnternet bağlantısı (Offline Fallback) Kontrolü
+    if (!navigator.onLine) {
+      await showAppAlert?.(
+        isEn ? "No internet connection. Please check your network and try again." 
+             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
+        { title: t('alerts.errorTitle') }
+      );
+      return;
+    }
     
     const lastRsvpTime = localStorage.getItem("last_rsvp_time");
     if (lastRsvpTime && Date.now() - parseInt(lastRsvpTime, 10) < 60000) {
@@ -6737,9 +6817,13 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     
     try {
       const dbData = uiGuestToDb(formData);
-      // GÜVENLİK GÜNCELLEMESİ: Tabloya insert yerine doğrudan korumalı fonksiyon (RPC) çağrılıyor.
-      const token = "DUMMY_CAPTCHA_TOKEN"; // Gelecekte Captcha eklendiğinde buraya yerleştirilecek.
-      const { data, error } = await supabase.rpc('submit_guest_secure', { guest_data: dbData, token: token });
+      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
+      const token = formData.turnstileToken || "MISSING_TOKEN";
+      
+      const { data, error } = await supabase.rpc('submit_guest_secure', { 
+        guest_data: dbData, 
+        token: token 
+      });
 
       if (error) throw error;
       
@@ -6758,6 +6842,16 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
   const submitWish = useCallback(async (formData) => {
     if (formData.honeypot) return;
+
+    // İnternet bağlantısı (Offline Fallback) Kontrolü
+    if (!navigator.onLine) {
+      await showAppAlert?.(
+        isEn ? "No internet connection. Please check your network and try again." 
+             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
+        { title: t('alerts.errorTitle') }
+      );
+      return;
+    }
     
     const lastWishTime = localStorage.getItem("last_wish_time");
     if (lastWishTime && Date.now() - parseInt(lastWishTime, 10) < 60000) {
@@ -6771,8 +6865,9 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     }
     const shouldPublishNow = !settings?.requireWishApproval;
     try {
-      // GÜVENLİK GÜNCELLEMESİ: Tabloya insert yerine doğrudan korumalı fonksiyon (RPC) çağrılıyor.
-      const token = "DUMMY_CAPTCHA_TOKEN"; 
+      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
+      const token = formData.turnstileToken || "MISSING_TOKEN";
+
       const { data, error } = await supabase.rpc('submit_wish_secure', { 
         wish_name: formData.name.trim(), 
         wish_message: formData.message.trim(), 

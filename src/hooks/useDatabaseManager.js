@@ -5,6 +5,7 @@ import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 
 export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
   
+  // Supabase Gerçek Zamanlı Dinleyiciler
   useEffect(() => {
     if (!isSupabaseReady()) return;
 
@@ -33,15 +34,54 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     };
   }, [setWishes, setGuests]);
 
+  // OFFLINE SENKRONİZASYON (Background Sync)
+  useEffect(() => {
+    const syncOfflineData = async () => {
+      if (!navigator.onLine || !isSupabaseReady()) return;
+      
+      // Çevrimdışı LCV'leri eşitle
+      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
+      if (offlineGuests.length > 0) {
+        for (const guest of offlineGuests) {
+          await supabase.rpc('submit_guest_secure', { guest_data: guest, token: guest.token || "OFFLINE_SYNC" });
+        }
+        localStorage.removeItem('offline_guests');
+        showAppAlert?.(isEn ? "Offline responses synced!" : "Çevrimdışı kayıtlar eşitlendi!", { title: "Senkronizasyon ✅" });
+      }
+
+      // Çevrimdışı Mesajları eşitle
+      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
+      if (offlineWishes.length > 0) {
+        for (const wish of offlineWishes) {
+          await supabase.rpc('submit_wish_secure', { 
+            wish_name: wish.name, 
+            wish_message: wish.message, 
+            is_approved: wish.approved,
+            token: wish.token || "OFFLINE_SYNC"
+          });
+        }
+        localStorage.removeItem('offline_wishes');
+      }
+    };
+
+    window.addEventListener('online', syncOfflineData);
+    return () => window.removeEventListener('online', syncOfflineData);
+  }, [isEn, showAppAlert]);
+
   const submitGuest = useCallback(async (formData) => {
     if (formData.honeypot) return;
 
-    // İnternet bağlantısı (Offline Fallback) Kontrolü
+    // İnternet bağlantısı koptuğunda IndexedDB/LocalStorage yedeğine yaz
     if (!navigator.onLine) {
+      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
+      const dbData = uiGuestToDb(formData);
+      offlineGuests.push({ ...dbData, token: formData.turnstileToken || "OFFLINE_TOKEN" });
+      localStorage.setItem('offline_guests', JSON.stringify(offlineGuests));
+      
+      setGuests((prev) => [{ id: `local-${Date.now()}`, ...formData }, ...prev]);
       await showAppAlert?.(
-        isEn ? "No internet connection. Please check your network and try again." 
-             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
-        { title: t('alerts.errorTitle') }
+        isEn ? "Saved offline. Will sync automatically." : "İnternet yok. Bağlantı geldiğinde form otomatik gönderilecek.", 
+        { title: "Çevrimdışı Kayıt 📶" }
       );
       return;
     }
@@ -59,7 +99,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     
     try {
       const dbData = uiGuestToDb(formData);
-      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
       const token = formData.turnstileToken || "MISSING_TOKEN";
       
       const { data, error } = await supabase.rpc('submit_guest_secure', { 
@@ -85,12 +124,25 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   const submitWish = useCallback(async (formData) => {
     if (formData.honeypot) return;
 
-    // İnternet bağlantısı (Offline Fallback) Kontrolü
+    const shouldPublishNow = !settings?.requireWishApproval;
+
+    // İnternet bağlantısı (Offline Fallback)
     if (!navigator.onLine) {
+      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
+      offlineWishes.push({ 
+        name: formData.name.trim(), 
+        message: formData.message.trim(), 
+        approved: shouldPublishNow,
+        token: formData.turnstileToken || "OFFLINE_TOKEN" 
+      });
+      localStorage.setItem('offline_wishes', JSON.stringify(offlineWishes));
+      
+      if (shouldPublishNow) {
+        setWishes((prev) => [{ id: `local-${Date.now()}`, ...formData, approved: true }, ...prev]);
+      }
       await showAppAlert?.(
-        isEn ? "No internet connection. Please check your network and try again." 
-             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
-        { title: t('alerts.errorTitle') }
+        isEn ? "Saved offline. Will sync automatically." : "İnternet yok. Bağlantı geldiğinde mesajınız otomatik gönderilecek.", 
+        { title: "Çevrimdışı Kayıt 📶" }
       );
       return;
     }
@@ -105,9 +157,8 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
       await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
       return;
     }
-    const shouldPublishNow = !settings?.requireWishApproval;
+    
     try {
-      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
       const token = formData.turnstileToken || "MISSING_TOKEN";
 
       const { data, error } = await supabase.rpc('submit_wish_secure', { 

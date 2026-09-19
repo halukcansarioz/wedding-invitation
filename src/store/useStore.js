@@ -3,6 +3,7 @@ import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { supabase } from '../supabaseClient';
 import { saveSettingsToDatabase } from '../services/database';
+import { useAdminStore } from './useAdminStore'; // Doğru Store referansı eklendi
 
 export const useStore = create((set, get) => ({
   siteData: loadStoredSiteData(),
@@ -96,7 +97,6 @@ export const useStore = create((set, get) => ({
 
   saveSiteContent: async (isEn) => {
     const { adminDraft, setSiteData, setAdminDraft } = get();
-    // Use useAdminStore for saving messages
     const { setAdminSaveMessage } = useAdminStore.getState();
     const cleanedData = normalizeSiteData({ 
       ...adminDraft, 
@@ -116,64 +116,4 @@ export const useStore = create((set, get) => ({
       setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
     }
   }
-}));
-
-// PROP DRILLING ÇÖZÜMÜ: Yalnızca Admin Authentication ve form State'ini tutan bağımsız bir store.
-export const useAdminStore = create((set) => ({
-  isAdminUnlocked: false,
-  adminUser: null,
-  adminEmail: "",
-  adminPassword: "",
-  adminError: "",
-  adminLoginNotice: "",
-  adminSaveMessage: "",
-  adminAuthLoading: false,
-  showForgotPassword: false,
-  forgotPasswordEmail: "",
-  forgotPasswordMessage: "",
-  forgotPasswordLoading: false,
-  isPasswordRecovery: false,
-  recoveryPassword: "",
-  recoveryPasswordAgain: "",
-  recoveryMessage: "",
-  recoveryLoading: false,
-  adminCurrentPassword: "",
-  adminNewPassword: "",
-  adminNewPasswordAgain: "",
-  adminPasswordMessage: "",
-
-  setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
-  setAdminUser: (user) => set({ adminUser: user }),
-  setAdminEmail: (email) => set({ adminEmail: email }),
-  setAdminPassword: (pass) => set({ adminPassword: pass }),
-  setAdminError: (error) => set({ adminError: error }),
-  setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
-  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
-  setAdminAuthLoading: (loading) => set({ adminAuthLoading: loading }),
-  setShowForgotPassword: (show) => set({ showForgotPassword: show }),
-  setForgotPasswordEmail: (email) => set({ forgotPasswordEmail: email }),
-  setForgotPasswordMessage: (msg) => set({ forgotPasswordMessage: msg }),
-  setForgotPasswordLoading: (loading) => set({ forgotPasswordLoading: loading }),
-  setIsPasswordRecovery: (isRec) => set({ isPasswordRecovery: isRec }),
-  setRecoveryPassword: (pass) => set({ recoveryPassword: pass }),
-  setRecoveryPasswordAgain: (pass) => set({ recoveryPasswordAgain: pass }),
-  setRecoveryMessage: (msg) => set({ recoveryMessage: msg }),
-  setRecoveryLoading: (loading) => set({ recoveryLoading: loading }),
-  setAdminCurrentPassword: (pass) => set({ adminCurrentPassword: pass }),
-  setAdminNewPassword: (pass) => set({ adminNewPassword: pass }),
-  setAdminNewPasswordAgain: (pass) => set({ adminNewPasswordAgain: pass }),
-  setAdminPasswordMessage: (msg) => set({ adminPasswordMessage: msg }),
-
-  clearAdminAuth: () => set({
-    isAdminUnlocked: false,
-    adminUser: null,
-    adminPassword: "",
-    adminError: "",
-    showForgotPassword: false,
-    forgotPasswordMessage: "",
-    adminPasswordMessage: "",
-    adminCurrentPassword: "",
-    adminNewPassword: "",
-    adminNewPasswordAgain: ""
-  })
 }));
