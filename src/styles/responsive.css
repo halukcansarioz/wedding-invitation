@@ -2,7 +2,6 @@
 
 /* =========================================================
    MOBİL: TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
-   Bu kodlar masaüstü (web) görünümünü etkilemez!
    ========================================================= */
 main.invitation-page.mobile-mode {
   position: relative !important;
@@ -50,17 +49,25 @@ main.invitation-page.mobile-mode .slide-wrapper.active-slide {
   transform: translateY(0) scale(1) !important;
 }
 
-/* HERO (İlk Ekran) Ayarları */
+/* HERO (İlk Ekran) Ayarları ve Güvenli Ortalama */
 main.invitation-page.mobile-mode .slide-wrapper:first-child {
   display: flex !important; 
   flex-direction: column !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   padding: 0 !important; 
   background: transparent !important;
 }
 
 main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
   overflow: hidden !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper:first-child::before,
+main.invitation-page.mobile-mode .slide-wrapper:first-child::after {
+  content: "" !important;
+  display: block !important;
+  margin: auto !important; 
+  flex: 0 0 auto !important; 
 }
 
 main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
@@ -80,7 +87,7 @@ main.invitation-page.mobile-mode .hero-section::before {
   border-radius: 24px !important;
 }
 
-/* --- KESİN ÇÖZÜM: GÜVENLİ ORTALAMA YAYLARI (SAFE CENTERING SPRINGS) --- */
+/* KARTLAR İÇİN GÜVENLİ ORTALAMA YAYLARI (SAFE CENTERING) */
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
   display: flex !important;
   flex-direction: column !important;
@@ -90,7 +97,6 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
   padding-right: clamp(12px, 4vw, 20px) !important;
 }
 
-/* Sihirli Yaylar: Kart ekrana sığıyorsa genişleyip ortalar, sığmıyorsa 0'a inip kesilmeyi engeller */
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
   content: "" !important;
@@ -99,13 +105,116 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
   flex: 0 0 auto !important; 
 }
 
-/* KART (SECTION) KESİNLİKLE MARGIN AUTO ALMAMALI! AUTO OLURSA KART YUKARI KAÇAR VE BAŞLIKLAR KESİLİR */
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
   flex: 0 0 auto !important; 
   width: 100% !important;
   margin: 0 !important; 
+}
+
+/* =========================================================
+   MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
+   ========================================================= */
+
+/* 1. UZUN METİNLERİN EKRANDAN TAŞMASINI ENGELLE */
+h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+}
+
+/* 2. KAYDIRILABİLİR ALANLAR (İÇERİĞİ TAŞAN KARTLAR İÇİN) */
+@media (max-width: 768px) {
+  
+  /* Kartların içindeki uzun listeler (Hikaye, Program, Yorumlar) */
+  .story-timeline-container, 
+  .schedule-list, 
+  .wish-list, 
+  .guest-list,
+  .ceremony-grid,
+  .info-list {
+    max-height: 48vh !important; /* Ekranın %48'i kadar uzayabilir, sonra kaydırma çıkar */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 8px !important; /* Scrollbar için boşluk */
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important; /* İç scroll bitince sayfayı kaydırmayı engeller */
+  }
+
+  /* Form alanlarının taşmasını önle */
+  .rsvp-form, .wish-form {
+    max-height: 55vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 8px !important;
+    padding-bottom: 20px !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Kart içi kaydırma çubuğu (Scrollbar) stili */
+  .story-timeline-container::-webkit-scrollbar, 
+  .schedule-list::-webkit-scrollbar, 
+  .wish-list::-webkit-scrollbar,
+  .guest-list::-webkit-scrollbar,
+  .ceremony-grid::-webkit-scrollbar,
+  .info-list::-webkit-scrollbar,
+  .rsvp-form::-webkit-scrollbar,
+  .wish-form::-webkit-scrollbar {
+    width: 5px !important;
+  }
+  
+  .story-timeline-container::-webkit-scrollbar-thumb, 
+  .schedule-list::-webkit-scrollbar-thumb, 
+  .wish-list::-webkit-scrollbar-thumb,
+  .guest-list::-webkit-scrollbar-thumb,
+  .ceremony-grid::-webkit-scrollbar-thumb,
+  .info-list::-webkit-scrollbar-thumb,
+  .rsvp-form::-webkit-scrollbar-thumb,
+  .wish-form::-webkit-scrollbar-thumb {
+    background: rgba(159, 79, 104, 0.3) !important;
+    border-radius: 10px !important;
+  }
+
+  /* Admin panelindeki tablolar ve istatistikler yatay/dikey kaydırılabilir olsun */
+  .admin-main-panel, 
+  .admin-editor, 
+  .admin-list, 
+  .admin-guest-list-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Admin panel yan yana duran (Grid) yapıların taşmasını engelle */
+  .admin-edit-grid, .theme-picker-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  .admin-edit-grid > *, .theme-picker-grid > * {
+    flex: 1 1 100% !important; /* Mobilde her eleman tam satır kaplasın */
+  }
+  
+  /* İstatistik kartları yana doğru kaysın */
+  .admin-stats {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .admin-stats > div {
+    flex: 0 0 140px !important; 
+  }
+
+  /* Modal pencerelerinin ekrandan taşmasını engelle */
+  .app-modal-card {
+    max-height: 85dvh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
 }
 
 /* =========================================================
@@ -156,16 +265,22 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
   .rsvp-card > p {
     font-size: clamp(16px, 4.5vw, 19px);
   }
+  
+  /* Hero alanındaki sabit yüksekliği kaldırıp içeriğe göre esnetiyoruz */
   .hero-section {
-    min-height: 560px;
-    padding: 64px 16px;
+    min-height: max-content !important;
+    height: auto !important;
+    padding-top: calc(100px + env(safe-area-inset-top)) !important;
+    padding-bottom: 100px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
     background: radial-gradient(
         circle at center,
         rgba(70, 24, 40, 0.24) 0,
         rgba(70, 24, 40, 0.42) 46%,
         rgba(35, 14, 22, 0.66) 100%
       ),
-      var(--hero-image) center/cover no-repeat;
+      var(--hero-image) center/cover no-repeat !important;
   }
   .hero-section .couple-title {
     color: #fff;
@@ -281,8 +396,6 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
     max-width: 380px !important;
     height: auto !important;
     min-height: 0 !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
     background: var(--paper, #fff) !important;
     border-radius: 24px !important;
     padding: 24px 16px !important;
@@ -293,5 +406,46 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
     margin-top: 20px !important;
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
+  }
+}
+
+/* 3. ÇOK KÜÇÜK EKRANLAR İÇİN (iPhone SE, Galaxy Fold Dış Ekran vb. < 400px) */
+@media (max-width: 400px) {
+  .intro-card {
+    padding: 30px 16px !important;
+    width: 92vw !important;
+  }
+  .couple-title {
+    font-size: clamp(32px, 11vw, 44px) !important; 
+  }
+  .card, .countdown-section, .rsvp-card {
+    padding: 24px 16px !important;
+  }
+  .hero-date, .hero-time {
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+  }
+  .count-box {
+    padding: 16px 8px !important;
+  }
+  .count-box strong {
+    font-size: 26px !important; 
+  }
+  .info-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 16px !important;
+  }
+  .info-row strong {
+    font-size: 18px !important;
+  }
+  .guest-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .story-content-box {
+    padding: 16px 12px !important;
   }
 }
