@@ -1,18 +1,12 @@
 import { create } from 'zustand';
 import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
 import toast from 'react-hot-toast';
-import { supabase } from '../supabaseClient';
 import { saveSettingsToDatabase } from '../services/database';
-import { useAdminStore } from './useAdminStore'; // Doğru Store referansı eklendi
+import { useAdminStore } from './useAdminStore';
 
-export const useStore = create((set, get) => ({
-  siteData: loadStoredSiteData(),
-  setSiteData: (data) => set({ siteData: data }),
-  guests: [],
-  setGuests: (guests) => set({ guests }),
-  wishes: [],
-  setWishes: (wishes) => set({ wishes }),
-
+// --- 1. UI (ARAYÜZ) MODÜLÜ ---
+// Modallar, uyarılar ve ekran açılış durumlarını yönetir.
+const createUISlice = (set) => ({
   opened: false,
   setOpened: (opened) => set({ opened }),
   isOpening: false,
@@ -38,7 +32,22 @@ export const useStore = create((set, get) => ({
   showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
     set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
   }),
+});
 
+// --- 2. DATA (VERİ) MODÜLÜ ---
+// Misafir listesi, anı defteri ve canlı sitenin içerik verilerini yönetir.
+const createDataSlice = (set) => ({
+  siteData: loadStoredSiteData(),
+  setSiteData: (data) => set({ siteData: data }),
+  guests: [],
+  setGuests: (guests) => set({ guests }),
+  wishes: [],
+  setWishes: (wishes) => set({ wishes }),
+});
+
+// --- 3. ADMIN DRAFT (TASLAK) MODÜLÜ ---
+// Yönetici panelindeki henüz kaydedilmemiş değişiklikleri ve sekmeleri yönetir.
+const createAdminDraftSlice = (set, get) => ({
   adminDraft: loadStoredSiteData(),
   setAdminDraft: (draftOrUpdater) => set((state) => ({
     adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
@@ -116,4 +125,12 @@ export const useStore = create((set, get) => ({
       setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
     }
   }
+});
+
+// === ANA STORE BİRLEŞTİRME ===
+// Bu yapı sayesinde projedeki diğer hiçbir dosyadaki importları değiştirmenize gerek kalmaz!
+export const useStore = create((...a) => ({
+  ...createUISlice(...a),
+  ...createDataSlice(...a),
+  ...createAdminDraftSlice(...a)
 }));

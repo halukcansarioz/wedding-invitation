@@ -1,6 +1,7 @@
 import React from "react";
 import { AdminSection, AdminField } from "../../AdminUI";
-import { useStore, useAdminStore } from "../../../store/useStore";
+import { useStore } from "../../../store/useStore";
+import { useAdminStore } from "../../../store/useAdminStore";
 
 export function SecurityTab({ changeAdminPassword, isEn }) {
   const saveSiteContent = useStore((state) => state.saveSiteContent);

@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AdminLogin } from "./admin/auth/AdminLogin";
-import { useAdminStore, useStore } from "../store/useStore";
+import { useStore } from "../store/useStore";
+import { useAdminStore } from "../store/useAdminStore";
 
 function AdminDashboard(props) {
   const { i18n } = useTranslation();

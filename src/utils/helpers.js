@@ -73,7 +73,7 @@ export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personC
     url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
   }
   if (personCount) {
-    url += `&count=${encodeURIComponent(String(personCount).trim())}`; // Kişi Sayısı parametresi eklendi
+    url += `&count=${encodeURIComponent(String(personCount).trim())}`; 
   }
   return url;
 };
@@ -139,8 +139,8 @@ export const createCsv = (items, type = "guests", isEn = false) => {
 
   if (type === "guests") {
     headers = isEn 
-      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Song Request", "Note"]
-      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
+      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Table No", "Song Request", "Note"]
+      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Masa No", "Müzik İsteği", "Not"];
     rows = items.map(g => [
       `"${g.name || ""}"`,
       `"${g.attendance || ""}"`,
@@ -148,6 +148,7 @@ export const createCsv = (items, type = "guests", isEn = false) => {
       `"${g.personCount || 1}"`,
       `"${g.side || ""}"`,
       `"${g.hasChild || ""}"`,
+      `"${g.tableNumber || ""}"`,
       `"${g.songRequest || ""}"`,
       `"${(g.note || "").replace(/"/g, '""')}"`
     ]);
@@ -188,6 +189,7 @@ export const uiGuestToDb = (g) => ({
   has_child: g.hasChild || "Hayır",
   song_request: g.songRequest || null,
   note: g.note || null,
+  table_number: g.tableNumber || null,
 });
 
 export const dbGuestToUi = (g) => ({
@@ -200,6 +202,8 @@ export const dbGuestToUi = (g) => ({
   hasChild: g.has_child || "Hayır",
   songRequest: g.song_request || "",
   note: g.note || "",
+  tableNumber: g.table_number || "",
+  has_arrived: g.has_arrived || false,
   createdAt: g.created_at,
 });
 
@@ -241,9 +245,6 @@ export const getAdminRedirectUrl = () => {
   return `${window.location.origin}/admin`;
 };
 
-/**
- * Harici paket gerektirmeyen saf JS / Canvas Gül Yaprağı & Konfeti Efekti
- */
 export const triggerConfetti = () => {
   if (typeof window === "undefined") return;
 
@@ -261,13 +262,9 @@ export const triggerConfetti = () => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  // 1. Sitede o an seçili olan aktif temayı 'html' etiketinden alıyoruz
   const activeTheme = document.documentElement.dataset.theme || "lavanta";
-  
-  // 2. Constants dosyasındaki ilgili temanın renk paletini buluyoruz
   const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
   
-  // 3. Kendi özel renkleriniz yerine, aktif temanın renklerini diziye atıyoruz
   const colors = [
     themeColors.petal, 
     themeColors.stroke, 
@@ -297,7 +294,7 @@ export const triggerConfetti = () => {
     particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.35; // Yerçekimi
+      p.vy += 0.35; 
       p.vx *= 0.98;
       p.rotation += p.rotationSpeed;
       p.opacity -= 0.009;

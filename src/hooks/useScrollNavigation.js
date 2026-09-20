@@ -17,82 +17,102 @@ export function useScrollNavigation(isAdminPage, opened) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Masaüstü için hangi bölümde olduğumuzu hesaplayan yardımcı fonksiyon
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      // Eğer bölüm ekranın ortasından daha yukarıdaysa, okuduğumuz/odaklandığımız bölüm odur
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
   const scrollToNext = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    if (sections.length === 0) return;
+
     if (isMobile) {
       // Mobilde Slayt Geçişi
-      const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
       setCurrentSlideIndex(prev => {
         const next = prev + 1;
-        return next < sectionsCount ? next : prev;
+        return next < sections.length ? next : prev;
       });
     } else {
-      // Masaüstünde Akıllı Ortalama ve Aşağı Kaydırma
-      const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+      // Masaüstü için Endeks (Index) Tabanlı Hedefleme
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
       
-      // Ekranın orta noktasından daha aşağıda olan ilk bölümü bul
-      const nextSection = sections.find(sec => sec.getBoundingClientRect().top > window.innerHeight * 0.45);
-      
-      if (nextSection) {
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
         const rect = nextSection.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        let topPosition;
-        
-        if (rect.height <= windowHeight) {
-          // Bölüm ekrana sığıyorsa -> Tam ortaya hizala (Üst ve alt boşluklar eşitlenir)
-          topPosition = window.scrollY + rect.top - (windowHeight - rect.height) / 2;
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          // Kart ekrana sığıyorsa kusursuz ortala
+          window.scrollTo({ 
+            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
+            behavior: 'smooth' 
+          });
         } else {
-          // Bölüm ekrandan büyükse -> Okunabilirlik için üstten 24px boşluk bırakarak hizala
-          topPosition = window.scrollY + rect.top - 24;
+          // Kart çok uzunsa en tepesinden başlat (okumak için 40px boşluk)
+          window.scrollTo({ 
+            top: absoluteTop - 40, 
+            behavior: 'smooth' 
+          });
         }
-        
-        window.scrollTo({ top: topPosition, behavior: 'smooth' });
+      } else {
+        // En sondayken hala buton görünüyorsa manuel kaydır
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
       }
     }
   }, [isMobile]);
 
   const scrollToPrev = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    if (sections.length === 0) return;
+
     if (isMobile) {
-      // Mobilde Slayt Geçişi
       setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
     } else {
-      // Masaüstünde Akıllı Ortalama ve Yukarı Kaydırma
-      const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+      const activeIdx = getActiveDesktopIndex(sections);
+      const prevIdx = activeIdx - 1;
       
-      // Ekranın orta noktasından daha yukarıda biten ilk bölümü bul (sondan başa arayarak)
-      const prevSection = [...sections].reverse().find(sec => sec.getBoundingClientRect().bottom < window.innerHeight * 0.55);
-      
-      if (prevSection) {
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
         const rect = prevSection.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        let topPosition;
-        
-        if (rect.height <= windowHeight) {
-          // Bölüm ekrana sığıyorsa -> Tam ortaya hizala
-          topPosition = window.scrollY + rect.top - (windowHeight - rect.height) / 2;
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ 
+            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
+            behavior: 'smooth' 
+          });
         } else {
-          // Bölüm ekrandan büyükse -> Üstten hizala
-          topPosition = window.scrollY + rect.top - 24;
+          window.scrollTo({ 
+            top: absoluteTop - 40, 
+            behavior: 'smooth' 
+          });
         }
-        
-        window.scrollTo({ top: Math.max(0, topPosition), behavior: 'smooth' });
       } else {
-        // En yukarıdaysa direkt tepeye sıfırla
+        // Zaten 1. karttaysak en tepeye dön
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [isMobile]);
 
   const handleWheel = useCallback((e) => {
-    // Masaüstünde farenin doğal tekerlek kaydırmasına asla müdahale etme
+    // Masaüstünde tekerlekle kaydırmaya müdahale etmiyoruz
     if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
     
-    // Yalnızca Mobildeki Slayt Kartı İçi Kaydırmalar İçin
     const slideWrapper = e.target.closest('.slide-wrapper');
     if (slideWrapper) {
       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
       if (isScrollable) {
         const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = slideWrapper.scrollHeight - slideWrapper.scrollTop <= slideWrapper.clientHeight + 2;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
 
         if (e.deltaY > 0 && !atBottom) return; 
         if (e.deltaY < 0 && !atTop) return;    
@@ -113,7 +133,6 @@ export function useScrollNavigation(isAdminPage, opened) {
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
-    // Sadece mobilde parmak kaydırmayı dinle
     if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
 
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
@@ -131,7 +150,7 @@ export function useScrollNavigation(isAdminPage, opened) {
        const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
        if (isScrollable) {
            const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = slideWrapper.scrollHeight - slideWrapper.scrollTop <= slideWrapper.clientHeight + 2;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
            if (diff > 0 && !atBottom) return;
            if (diff < 0 && !atTop) return;
        }
@@ -146,7 +165,6 @@ export function useScrollNavigation(isAdminPage, opened) {
     }
   }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
 
-  // Butonları aktif / deaktif et
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
@@ -156,7 +174,7 @@ export function useScrollNavigation(isAdminPage, opened) {
          const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
          setShowScrollDown(currentSlideIndex < sectionsCount - 1);
       } else {
-        const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
         setShowScrollTop(scrollTop > 100);
         
         const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;

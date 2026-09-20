@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { 
   GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
   VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
 } from "./tabs";
 
 export function AdminPanelContent(props) {
@@ -16,6 +16,7 @@ export function AdminPanelContent(props) {
     case "theme": return <ThemeTab {...props} isEn={isEn} />;
     case "gallery": return <GalleryTab {...props} isEn={isEn} />;
     case "guests": return <GuestsAdminPanel {...props} />;
+    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
     case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
     case "personalLink": return <PersonalLinkPanel {...props} />;
     case "visibility": return <VisibilityTab {...props} isEn={isEn} />;

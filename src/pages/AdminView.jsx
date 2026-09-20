@@ -8,20 +8,21 @@ export default function AdminView(props) {
   
   const adminTabs = [
     { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
-    { id: "theme", label: "Tema", description: "Renk teması ve anı defteri onayı" },
-    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresini değiştir" },
-    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım, katılım ve özel davetli metinleri" },
+    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
+    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
+    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
     { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
     { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
     { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
-    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat akış" },
-    { id: "gallery", label: "Görsel / Müzik", description: "Ana ekran görselleri, galeri ve müzik" },
-    { id: "guests", label: "Katılım Formu Kayıtları", description: "Ad, telefon, kişi, çocuk ve not bilgileri" },
-    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve mesaj kayıtları" },
-    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve genel paylaşım linki" },
-    { id: "personalLink", label: "Özel Link", description: "Davetliye özel isimli link oluşturma" },
-    { id: "data", label: "Veri Yedeği", description: "Excel / CSV ve JSON yedek alma" },
+    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
+    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
+    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
+    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
+    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
+    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
+    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
   ];
 
   const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];

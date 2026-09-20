@@ -51,6 +51,7 @@ src/
       auth/
         AdminLogin.jsx
       tabs/
+        AdminCharts.jsx
         CeremonyTab.jsx
         CopyTab.jsx
         DataTab.jsx
@@ -66,6 +67,7 @@ src/
         ScheduleTab.jsx
         SecurityTab.jsx
         StoryTab.jsx
+        TablePlanTab.jsx
         ThemeTab.jsx
         VisibilityTab.jsx
         WishesAdminPanel.jsx
@@ -140,6 +142,9 @@ src/
     responsive.css
     variables.css
   supabase/
+    functions/
+      verify-submission/
+        index.ts
     supabase-setup.sql
   utils/
     exportUtils.js
@@ -166,6 +171,223 @@ This section contains the contents of the repository's files.
 <svg xmlns="http://www.w3.org/2000/svg" width="77" height="47" fill="none" aria-labelledby="vite-logo-title" viewBox="0 0 77 47"><title id="vite-logo-title">Vite</title><style>.parenthesis{fill:#000}@media (prefers-color-scheme:dark){.parenthesis{fill:#fff}}</style><path fill="#9135ff" d="M40.151 45.71c-.663.844-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.493c-.92 0-1.457-1.04-.92-1.788l7.479-10.471c1.07-1.498 0-3.578-1.842-3.578H15.443c-.92 0-1.456-1.04-.92-1.788l9.696-13.576c.213-.297.556-.474.92-.474h28.894c.92 0 1.456 1.04.92 1.788l-7.48 10.472c-1.07 1.497 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.087.89 1.83L40.153 45.712z"/><mask id="a" width="48" height="47" x="14" y="0" maskUnits="userSpaceOnUse" style="mask-type:alpha"><path fill="#000" d="M40.047 45.71c-.663.843-2.02.374-2.02-.699V34.708a2.26 2.26 0 0 0-2.262-2.262H24.389c-.92 0-1.457-1.04-.92-1.788l7.479-10.472c1.07-1.497 0-3.578-1.842-3.578H15.34c-.92 0-1.456-1.04-.92-1.788l9.696-13.575c.213-.297.556-.474.92-.474H53.93c.92 0 1.456 1.04.92 1.788L47.37 13.03c-1.07 1.498 0 3.578 1.842 3.578h11.376c.944 0 1.474 1.088.89 1.831L40.049 45.712z"/></mask><g mask="url(#a)"><g filter="url(#b)"><ellipse cx="5.508" cy="14.704" fill="#eee6ff" rx="5.508" ry="14.704" transform="rotate(269.814 20.96 11.29)scale(-1 1)"/></g><g filter="url(#c)"><ellipse cx="10.399" cy="29.851" fill="#eee6ff" rx="10.399" ry="29.851" transform="rotate(89.814 -16.902 -8.275)scale(1 -1)"/></g><g filter="url(#d)"><ellipse cx="5.508" cy="30.487" fill="#8900ff" rx="5.508" ry="30.487" transform="rotate(89.814 -19.197 -7.127)scale(1 -1)"/></g><g filter="url(#e)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.928 4.177)scale(1 -1)"/></g><g filter="url(#f)"><ellipse cx="5.508" cy="30.599" fill="#8900ff" rx="5.508" ry="30.599" transform="rotate(89.814 -25.738 5.52)scale(1 -1)"/></g><g filter="url(#g)"><ellipse cx="14.072" cy="22.078" fill="#eee6ff" rx="14.072" ry="22.078" transform="rotate(93.35 31.245 55.578)scale(-1 1)"/></g><g filter="url(#h)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#i)"><ellipse cx="3.47" cy="21.501" fill="#8900ff" rx="3.47" ry="21.501" transform="rotate(89.009 35.419 55.202)scale(-1 1)"/></g><g filter="url(#j)"><ellipse cx="14.592" cy="9.743" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(39.51 14.592 9.743)"/></g><g filter="url(#k)"><ellipse cx="61.728" cy="-5.321" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 61.728 -5.32)"/></g><g filter="url(#l)"><ellipse cx="55.618" cy="7.104" fill="#00c2ff" rx="5.971" ry="9.665" transform="rotate(37.892 55.618 7.104)"/></g><g filter="url(#m)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#n)"><ellipse cx="12.326" cy="39.103" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 12.326 39.103)"/></g><g filter="url(#o)"><ellipse cx="49.857" cy="30.678" fill="#8900ff" rx="4.407" ry="29.108" transform="rotate(37.892 49.857 30.678)"/></g><g filter="url(#p)"><ellipse cx="52.623" cy="33.171" fill="#00c2ff" rx="5.971" ry="15.297" transform="rotate(37.892 52.623 33.17)"/></g></g><path d="M6.919 0c-9.198 13.166-9.252 33.575 0 46.789h6.215c-9.25-13.214-9.196-33.623 0-46.789zm62.424 0h-6.215c9.198 13.166 9.252 33.575 0 46.789h6.215c9.25-13.214 9.196-33.623 0-46.789" class="parenthesis"/><defs><filter id="b" width="60.045" height="41.654" x="-5.564" y="16.92" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="c" width="90.34" height="51.437" x="-40.407" y="-6.762" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="d" width="79.355" height="29.4" x="-35.435" y="2.801" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="e" width="79.579" height="29.4" x="-30.84" y="20.8" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="f" width="79.579" height="29.4" x="-29.307" y="21.949" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="g" width="74.749" height="58.852" x="29.961" y="-17.13" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="7.659"/></filter><filter id="h" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="i" width="61.377" height="25.362" x="37.754" y="3.055" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="j" width="56.045" height="63.649" x="-13.43" y="-22.082" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="k" width="54.814" height="64.646" x="34.321" y="-37.644" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="l" width="33.541" height="35.313" x="38.847" y="-10.552" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="m" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="n" width="54.814" height="64.646" x="-15.081" y="6.78" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="o" width="54.814" height="64.646" x="22.45" y="-1.645" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter><filter id="p" width="39.409" height="43.623" x="32.919" y="11.36" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feBlend in="SourceGraphic" in2="BackgroundImageFix" result="shape"/><feGaussianBlur result="effect1_foregroundBlur_2002_17286" stdDeviation="4.596"/></filter></defs></svg>
 </file>
 
+<file path="src/components/admin/tabs/TablePlanTab.jsx">
+import React, { useState, useMemo } from "react";
+import { AdminSection } from "../../AdminUI";
+
+export function TablePlanTab({ guests, assignTable, isEn }) {
+  const [search, setSearch] = useState("");
+
+  const attendingGuests = useMemo(() =>
+    guests.filter(g => g.attendance === "Katılacağım" && g.name.toLowerCase().includes(search.toLowerCase())),
+  [guests, search]);
+
+  const tables = useMemo(() => {
+    const groups = {};
+    attendingGuests.forEach(g => {
+      const t = g.tableNumber ? String(g.tableNumber).trim() : "";
+      if (t) {
+        if (!groups[t]) groups[t] = [];
+        groups[t].push(g);
+      }
+    });
+    return groups;
+  }, [attendingGuests]);
+
+  const unassigned = attendingGuests.filter(g => !g.tableNumber || String(g.tableNumber).trim() === "");
+
+  return (
+    <AdminSection title={isEn ? "Seating Chart" : "Oturma Planı"}>
+      <p className="admin-help-text" style={{ marginBottom: "20px" }}>
+        {isEn 
+          ? "Assign tables to your attending guests. (e.g., 1, 2, A, VIP)" 
+          : "Katılacak misafirlerinizi masalara yerleştirin. (Örn: 1, 2, A, VIP, Aile)"}
+      </p>
+
+      <input
+        type="text"
+        className="admin-toolbar-search"
+        style={{ width: "100%", marginBottom: "24px" }}
+        placeholder={isEn ? "Search guest..." : "Misafir ara..."}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
+         
+         {/* SOL: Atanmamış Misafirler */}
+         <div className="admin-card" style={{ padding: "16px", background: "var(--paper-soft)", borderRadius: "16px" }}>
+            <h4 style={{ color: "var(--rose-deep)", marginTop: 0 }}>
+              {isEn ? "Unassigned Guests" : "Atanmamış Misafirler"} ({unassigned.length})
+            </h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "550px", overflowY: "auto" }}>
+              {unassigned.length === 0 && (
+                <p className="admin-help-text" style={{ textAlign: "center", marginTop: "20px" }}>
+                  {isEn ? "All found guests assigned." : "Listelenen tüm misafirler masalara atanmış."}
+                </p>
+              )}
+              {unassigned.map(g => (
+                <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "var(--paper)", borderRadius: "12px", border: "1px solid var(--admin-border-color)" }}>
+                  <div>
+                    <strong style={{ display: "block", color: "var(--admin-text-main)" }}>{g.name}</strong>
+                    <div style={{ fontSize: "12px", color: "var(--admin-text-muted)" }}>{g.personCount} {isEn ? "Person" : "Kişi"} - {g.side}</div>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Masa"
+                    style={{ width: "70px", padding: "8px", borderRadius: "8px", border: "1px solid var(--admin-border-color)", textAlign: "center", background: "var(--admin-input-bg)" }}
+                    onBlur={(e) => {
+                      if (e.target.value.trim()) assignTable(g.id, e.target.value.trim());
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target.value.trim()) {
+                        assignTable(g.id, e.target.value.trim());
+                        e.target.value = "";
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+         </div>
+
+         {/* SAĞ: Masalar */}
+         <div style={{ display: "flex", flexDirection: "column", gap: "16px", maxHeight: "600px", overflowY: "auto", paddingRight: "8px" }}>
+           {Object.keys(tables).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})).map(tableNum => {
+             const tableGuests = tables[tableNum];
+             const tableTotal = tableGuests.reduce((acc, g) => acc + Number(g.personCount || 1), 0);
+
+             return (
+               <div key={tableNum} style={{ padding: "16px", background: "var(--paper-soft)", borderRadius: "16px", border: "2px solid color-mix(in srgb, var(--amp-color) 30%, transparent)" }}>
+                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                   <h4 style={{ margin: 0, color: "var(--rose-deep)", fontSize: "18px" }}>{isEn ? "Table" : "Masa"} {tableNum}</h4>
+                   <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--admin-text-muted)" }}>Toplam: {tableTotal} {isEn ? "Person" : "Kişi"}</span>
+                 </div>
+                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                   {tableGuests.map(g => (
+                     <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "var(--paper)", borderRadius: "8px", fontSize: "14px", border: "1px solid var(--admin-border-color)" }}>
+                       <span style={{ color: "var(--admin-text-main)", fontWeight: "600" }}>{g.name} <small style={{ opacity: 0.7 }}>({g.personCount})</small></span>
+                       <button
+                         type="button"
+                         className="secondary-button"
+                         style={{ padding: "4px 8px", fontSize: "12px", minWidth: "auto", minHeight: "auto", margin: 0, border: "none", color: "#d35400" }}
+                         onClick={() => assignTable(g.id, "")}
+                       >
+                         {isEn ? "Remove" : "Kaldır"}
+                       </button>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )
+           })}
+           {Object.keys(tables).length === 0 && (
+             <p className="admin-help-text" style={{ textAlign: "center", marginTop: "40px" }}>
+               {isEn ? "No tables assigned yet." : "Henüz oluşturulmuş bir masa yok."}
+             </p>
+           )}
+         </div>
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
+<file path="src/supabase/functions/verify-submission/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+// E-posta gönderimi için ücretsiz Resend.com API'sini kullanacağız
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+
+serve(async (req) => {
+  try {
+    const payload = await req.json()
+    
+    // Supabase Webhook payload'ı (yeni eklenen misafir 'record' içinde gelir)
+    const guest = payload.record;
+
+    // Sadece "Katılacağım" diyenler için mail atsın
+    if (!guest || guest.attendance !== "Katılacağım") {
+      return new Response("Email gönderilmedi (Katılmıyor veya test isteği).", { status: 200 })
+    }
+
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Düğün Davetiyesi <onboarding@resend.dev>', // Resend'in varsayılan test adresi
+        to: ['senin-kendi-epostan@gmail.com'], // KENDI MAIL ADRESINI YAZ
+        subject: `Yeni LCV: ${guest.name} Düğüne Katılıyor! 🎉`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; background: #fffafb; border: 1px solid #9f4f68; border-radius: 12px;">
+            <h2 style="color: #9f4f68;">Yeni Bir Misafir Katılımı Onayladı!</h2>
+            <p><strong>Ad Soyad:</strong> ${guest.name}</p>
+            <p><strong>Telefon:</strong> ${guest.phone || 'Belirtilmedi'}</p>
+            <p><strong>Kişi Sayısı:</strong> ${guest.person_count}</p>
+            <p><strong>Taraf:</strong> ${guest.side}</p>
+            <p><strong>Not:</strong> ${guest.note || '-'}</p>
+            <hr style="border: none; border-top: 1px solid #eee;" />
+            <a href="https://senin-site-linkin.com/admin" style="display:inline-block; margin-top: 10px; padding: 10px 20px; background: #9f4f68; color: white; text-decoration: none; border-radius: 8px;">Admin Paneline Git</a>
+          </div>
+        `
+      })
+    })
+
+    if (res.ok) {
+      return new Response(JSON.stringify({ success: true, message: "E-posta başarıyla gönderildi" }), { status: 200 })
+    } else {
+      const errorInfo = await res.text()
+      return new Response(`Resend API Hatası: ${errorInfo}`, { status: 400 })
+    }
+  } catch (err) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 })
+  }
+})
+</file>
+
+<file path="src/components/admin/tabs/AdminCharts.jsx">
+import React from "react";
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+
+const COLORS = ['#9f4f68', '#607244', '#c59a45', '#8f7fb8'];
+
+export default function AdminCharts({ sideData, checkInData, isEn }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px', height: '260px' }}>
+      <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>
+          {isEn ? "Guest Distribution" : "Misafir Dağılımı"}
+        </h4>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie data={sideData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} fill="#8884d8" label>
+              {sideData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>
+          {isEn ? "Check-in Status" : "Kapı Giriş Durumu"}
+        </h4>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={checkInData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+            <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--rose-deep)' }} />
+            <YAxis tick={{ fill: 'var(--rose-deep)' }} />
+            <Tooltip />
+            <Bar dataKey="value" fill="var(--rose-dark)" radius={[6,6,0,0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/admin/tabs/index.js">
 export { GuestsAdminPanel } from './GuestsAdminPanel';
 export { WishesAdminPanel } from './WishesAdminPanel';
@@ -184,6 +406,7 @@ export { QrTab } from './QrTab';
 export { DataTab } from './DataTab';
 export { GiftTab } from './GiftTab';
 export { StoryTab } from './StoryTab';
+export { TablePlanTab } from './TablePlanTab';
 </file>
 
 <file path="src/components/admin/ui/AdminInputs.jsx">
@@ -1046,7 +1269,7 @@ export const supabase = createClient(
 
 <file path="src/components/admin/auth/AdminLogin.jsx">
 import React from "react";
-import { useAdminStore } from "../../../store/useStore";
+import { useAdminStore } from "../../../store/useAdminStore";
 
 export function AdminLogin({
   isEn, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
@@ -1471,7 +1694,8 @@ export function ScheduleTab({ isEn }) {
 <file path="src/components/admin/tabs/SecurityTab.jsx">
 import React from "react";
 import { AdminSection, AdminField } from "../../AdminUI";
-import { useStore, useAdminStore } from "../../../store/useStore";
+import { useStore } from "../../../store/useStore";
+import { useAdminStore } from "../../../store/useAdminStore";
 
 export function SecurityTab({ changeAdminPassword, isEn }) {
   const saveSiteContent = useStore((state) => state.saveSiteContent);
@@ -2135,7 +2359,8 @@ import { supabase } from "../supabaseClient";
 import { getReadableAuthError, getSupabaseSetupMessage, isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadAllWishesFromDatabase } from "../services/database";
 import { normalizeSiteData, touchAdminSession, clearAdminSessionTimestamp, isAdminSessionFresh, getAdminRedirectUrl } from "../utils/helpers";
 import { ADMIN_ACTIVITY_EVENTS, SITE_DATA_KEY } from "../config/constants";
-import { useStore, useAdminStore } from "../store/useStore";
+import { useStore } from "../store/useStore";
+import { useAdminStore } from "../store/useAdminStore";
 
 export function useAdminSession({ isAdminPage, isEn }) {
   const adminStore = useAdminStore();
@@ -2487,20 +2712,21 @@ export default function AdminView(props) {
   
   const adminTabs = [
     { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
-    { id: "theme", label: "Tema", description: "Renk teması ve anı defteri onayı" },
-    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresini değiştir" },
-    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım, katılım ve özel davetli metinleri" },
+    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
+    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
+    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
     { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
     { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
     { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
-    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat akış" },
-    { id: "gallery", label: "Görsel / Müzik", description: "Ana ekran görselleri, galeri ve müzik" },
-    { id: "guests", label: "Katılım Formu Kayıtları", description: "Ad, telefon, kişi, çocuk ve not bilgileri" },
-    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve mesaj kayıtları" },
-    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve genel paylaşım linki" },
-    { id: "personalLink", label: "Özel Link", description: "Davetliye özel isimli link oluşturma" },
-    { id: "data", label: "Veri Yedeği", description: "Excel / CSV ve JSON yedek alma" },
+    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
+    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
+    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
+    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
+    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
+    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
+    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
   ];
 
   const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
@@ -2840,16 +3066,26 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
   return (
     <div 
       className={`lazy-image-wrapper ${className || ''}`} 
-      style={{ position: 'relative', overflow: 'hidden', aspectRatio, ...style }}
+      style={{ 
+        position: 'relative', 
+        overflow: 'hidden', 
+        aspectRatio, 
+        backgroundColor: 'var(--paper-soft)', 
+        ...style 
+      }}
       onClick={onClick}
     >
+      {/* İskelet Arka Planı ve Animasyonu */}
       {!isLoaded && (
         <div 
           className="image-skeleton" 
           style={{ 
-            position: 'absolute', inset: 0, 
-            background: 'linear-gradient(90deg, rgba(217, 140, 161, 0.1) 25%, rgba(217, 140, 161, 0.2) 50%, rgba(217, 140, 161, 0.1) 75%)', 
-            backgroundSize: '200% 100%', animation: 'skeleton-loading 1.5s infinite' 
+            position: 'absolute', 
+            inset: 0, 
+            background: 'linear-gradient(110deg, var(--paper-soft) 8%, var(--rose-light) 18%, var(--paper-soft) 33%)', 
+            backgroundSize: '200% 100%', 
+            animation: 'skeleton-loading 1.8s linear infinite',
+            zIndex: 1
           }} 
         />
       )}
@@ -2859,8 +3095,15 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
         loading="lazy"
         onLoad={() => setIsLoaded(true)}
         style={{ 
-          width: '100%', height: '100%', objectFit: 'cover', 
-          opacity: isLoaded ? 1 : 0, transition: 'opacity 0.4s ease' 
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'cover', 
+          opacity: isLoaded ? 1 : 0, 
+          filter: isLoaded ? 'blur(0)' : 'blur(10px)',
+          transform: isLoaded ? 'scale(1)' : 'scale(1.05)',
+          transition: 'opacity 0.6s ease-out, filter 0.6s ease-out, transform 0.6s ease-out',
+          position: 'relative',
+          zIndex: 2
         }}
       />
     </div>
@@ -3091,147 +3334,6 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }) 
     </m.section>
   );
 });
-</file>
-
-<file path="src/services/database.js">
-import { supabase } from "../supabaseClient";
-import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
-
-export const getSupabaseUrl = () => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-export const getSupabaseKey = () => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
-
-export const getSupabaseSetupMessage = () => {
-  const url = getSupabaseUrl();
-  const key = getSupabaseKey();
-  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı. Dosyayı değiştirdikten sonra npm run dev sunucusunu kapatıp yeniden aç.";
-  if (!url.startsWith("https://") || !url.includes(".supabase.co")) return "Supabase URL hatalı görünüyor. Dashboard linki değil, Project Settings > API kısmındaki Project URL kullanılmalı.";
-  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini, internet bağlantını ve Supabase projesinin aktif olduğunu kontrol et.";
-};
-
-export const getReadableAuthError = (error) => {
-  if (!error) return "Bilinmeyen bir hata oluştu.";
-
-  const status = error?.status || error?.code;
-  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
-
-  // HTTP ve Supabase özel durum kodlarına göre kesin yakalama
-  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğunuz admin e-posta/şifresiyle giriş yapmalısınız.";
-  if (status === 429) return "Çok fazla deneme yapıldı. Güvenlik nedeniyle birkaç dakika bekleyip tekrar deneyin.";
-  if (status === 401 && message.includes("email not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication kısmından hesabınızı doğrulayın.";
-  if (status === 404 || message.includes("not found")) return "Kayıt bulunamadı. Silinmiş veya taşınmış olabilir.";
-  if (error?.name === "AuthApiError" && message.includes("url")) return "Yönlendirme hatası. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisiniz.";
-  
-  // Ağ (Network) Hataları
-  if (message.includes("failed to fetch") || message.includes("network") || error?.name === "AuthRetryableFetchError") {
-     return getSupabaseSetupMessage();
-  }
-
-  return error?.message || "İşlem tamamlanamadı. Lütfen internet bağlantınızı ve Supabase ayarlarını kontrol edin.";
-};
-
-export const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());
-
-export const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const result = await fetchFn();
-      return result;
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); // Giderek artan bekleme süresi
-    }
-  }
-};
-
-export const loadSettingsFromDatabase = async () => {
-  if (!isSupabaseReady()) return null;
-  return fetchWithRetry(async () => {
-    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
-    if (error) throw error;
-    return normalizeSiteData(data?.content || null);
-  });
-};
-
-export const saveSettingsToDatabase = async (settings) => {
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. .env.local dosyasını kontrol et.");
-  const { error } = await supabase.from("invitation_settings").upsert({ id: "main", content: settings, updated_at: new Date().toISOString() }, { onConflict: "id" });
-  if (error) throw error;
-};
-
-export const loadPublishedWishesFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false });
-  if (error) { console.error("Yayındaki anı defteri mesajları alınamadı:", error); return []; }
-  return (data || []).map(dbWishToUi);
-};
-
-export const loadGuestsFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false });
-  if (error) { console.error("Katılım kayıtları alınamadı:", error); return []; }
-  return (data || []).map(dbGuestToUi);
-};
-
-export const loadAllWishesFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false });
-  if (error) { console.error("Anı defteri mesajları alınamadı:", error); return []; }
-  return (data || []).map(dbWishToUi);
-};
-
-export const uploadMediaFile = async (file, folder = "media") => {
-  if (!file) return null;
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
-  const fileExt = file.name.split(".").pop() || "file";
-  const safeName = file.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+|-+$/g, "");
-  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
-  const { error } = await supabase.storage.from("wedding-media").upload(fileName, file, { cacheControl: "3600", upsert: true, contentType: file.type || undefined });
-  if (error) {
-    const message = String(error.message || "").toLocaleLowerCase("tr-TR");
-    if (message.includes("bucket") || message.includes("not found")) throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");
-    if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) throw new Error("Görsel/müzik yüklenemedi. wedding-media Storage bucket için authenticated policy eksik.");
-    throw error;
-  }
-  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
-  return data.publicUrl;
-};
-
-export const deleteMediaFile = async (fileUrl) => {
-  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
-  try {
-    const urlObj = new URL(fileUrl);
-    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
-    if (pathSegments.length < 2) return;
-    const filePath = decodeURIComponent(pathSegments[1]);
-
-    // Temaların varsayılan medyalarını yanlışlıkla silmemek için koruma
-    if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
-
-    await supabase.storage.from("wedding-media").remove([filePath]);
-  } catch (error) {
-    console.error("Dosya silinirken hata:", error);
-  }
-};
-
-export const restoreBackupToDatabase = async (parsedData) => {
-  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
-  
-  if (parsedData.siteData) {
-     await saveSettingsToDatabase(parsedData.siteData);
-  }
-  
-  if (parsedData.guests && parsedData.guests.length > 0) {
-     await supabase.from("guests").delete().not("id", "is", null);
-     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }) => rest);
-     await supabase.from("guests").insert(guestsToInsert);
-  }
-  
-  if (parsedData.wishes && parsedData.wishes.length > 0) {
-     await supabase.from("wishes").delete().not("id", "is", null);
-     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }) => rest);
-     await supabase.from("wishes").insert(wishesToInsert);
-  }
-};
 </file>
 
 <file path="src/styles/variables.css">
@@ -3841,389 +3943,6 @@ html[data-theme="dark"] .gallery-grid img {
 }
 </file>
 
-<file path="src/utils/helpers.js">
-import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
-
-export const getFaviconUrl = (theme = "lavanta") => {
-  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.lavanta;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-    <rect width="64" height="64" rx="16" fill="${colors.bg}"/>
-    <circle cx="32" cy="32" r="22" fill="${colors.circle}"/>
-    <circle cx="32" cy="20" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="44" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="32" cy="44" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="20" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
-    <circle cx="32" cy="32" r="8" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="1.5"/>
-  </svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-};
-
-export const normalizeSiteData = (raw) => {
-  if (!raw) return DEFAULT_SITE_DATA;
-  return {
-    ...DEFAULT_SITE_DATA,
-    ...raw,
-    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) },
-    familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(raw.familyInfo || {}) },
-    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(raw.giftRegistry || {}) },
-    copy: { ...DEFAULT_SITE_DATA.copy, ...(raw.copy || {}) },
-    settings: {
-      ...DEFAULT_SITE_DATA.settings,
-      ...(raw.settings || {}),
-      visibility: {
-        ...DEFAULT_SITE_DATA.settings.visibility,
-        ...(raw.settings?.visibility || {}),
-      },
-    },
-    messages: { ...DEFAULT_SITE_DATA.messages, ...(raw.messages || {}) },
-    eventDetails: Array.isArray(raw.eventDetails) && raw.eventDetails.length > 0 ? raw.eventDetails : DEFAULT_SITE_DATA.eventDetails,
-    scheduleItems: Array.isArray(raw.scheduleItems) && raw.scheduleItems.length > 0 ? raw.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
-    storyTimeline: Array.isArray(raw.storyTimeline) && raw.storyTimeline.length > 0 ? raw.storyTimeline : DEFAULT_SITE_DATA.storyTimeline,
-  };
-};
-
-export const loadStoredSiteData = () => {
-  if (typeof window === "undefined") return DEFAULT_SITE_DATA;
-  try {
-    const local = localStorage.getItem(SITE_DATA_KEY);
-    return local ? normalizeSiteData(JSON.parse(local)) : DEFAULT_SITE_DATA;
-  } catch {
-    return DEFAULT_SITE_DATA;
-  }
-};
-
-export const getCurrentShareLink = () => {
-  if (typeof window === "undefined") return DEFAULT_SITE_DATA.invitation.shareLink;
-  return `${window.location.origin}${window.location.pathname}`;
-};
-
-export const getGuestNameFromUrl = () => {
-  if (typeof window === "undefined") return "";
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("guest") || params.get("davetli") || "").trim();
-};
-
-export const getTableFromUrl = () => {
-  if (typeof window === "undefined") return "";
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("table") || params.get("masa") || "").trim();
-};
-
-export const buildPersonalLink = (baseLink, guestName, tableNumber = "") => {
-  const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
-  const nameParam = encodeURIComponent((guestName || "").trim());
-  let url = `${cleanLink}/?guest=${nameParam}`;
-  if (tableNumber) {
-    url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
-  }
-  return url;
-};
-
-export const getQrImageUrl = (url) => {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url || "")}`;
-};
-
-export const formatMessageTemplate = (template, variables = {}) => {
-  let str = template || "";
-  Object.keys(variables).forEach((key) => {
-    str = str.replaceAll(`{${key}}`, variables[key] || "");
-  });
-  return str;
-};
-
-export const createGoogleCalendarLink = (siteData, coupleName) => {
-  const inv = siteData.invitation;
-  const start = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
-  const end = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
-  const title = encodeURIComponent(`${coupleName} | Düğün`);
-  const details = encodeURIComponent(inv.message || "");
-  const location = encodeURIComponent(`${inv.venue}, ${inv.address}`);
-  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
-};
-
-export const handleAddToCalendar = (invitation, googleLink) => {
-  if (googleLink) {
-    window.open(googleLink, "_blank", "noopener,noreferrer");
-  }
-};
-
-export const getNavigationLinks = (invitation) => {
-  const query = encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`);
-  return {
-    google: invitation?.mapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
-    apple: `https://maps.apple.com/?q=${query}`,
-    yandex: `https://yandex.com.tr/harita/?text=${query}`,
-    waze: `https://waze.com/ul?q=${query}&navigate=yes`,
-  };
-};
-
-export const normalizeText = (text = "") => {
-  return text.toLocaleLowerCase("tr-TR").trim();
-};
-
-export const downloadTextFile = (filename, content, mimeType = "text/plain") => {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-export const createCsv = (items, type = "guests", isEn = false) => {
-  if (!items || items.length === 0) return "";
-  let headers = [];
-  let rows = [];
-
-  if (type === "guests") {
-    headers = isEn 
-      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Song Request", "Note"]
-      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Müzik İsteği", "Not"];
-    rows = items.map(g => [
-      `"${g.name || ""}"`,
-      `"${g.attendance || ""}"`,
-      `"${g.phone || ""}"`,
-      `"${g.personCount || 1}"`,
-      `"${g.side || ""}"`,
-      `"${g.hasChild || ""}"`,
-      `"${g.songRequest || ""}"`,
-      `"${(g.note || "").replace(/"/g, '""')}"`
-    ]);
-  } else {
-    headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
-    rows = items.map(w => [
-      `"${w.name || ""}"`,
-      `"${(w.message || "").replace(/"/g, '""')}"`,
-      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`
-    ]);
-  }
-
-  return [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
-};
-
-export const createExcelTable = (items, type = "guests", isEn = false) => {
-  const csvContent = createCsv(items, type, isEn);
-  const rows = csvContent.split("\n").map(r => r.split(","));
-  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1">`;
-  rows.forEach((row, i) => {
-    html += "<tr>";
-    row.forEach(cell => {
-      const clean = cell.replace(/^"|"$/g, "");
-      html += i === 0 ? `<th style="background:#f4f4f4;">${clean}</th>` : `<td>${clean}</td>`;
-    });
-    html += "</tr>";
-  });
-  html += "</table></body></html>";
-  return html;
-};
-
-export const uiGuestToDb = (g) => ({
-  name: g.name,
-  attendance: g.attendance,
-  phone: g.phone || null,
-  person_count: g.personCount ? Number(g.personCount) : 1,
-  side: g.side || "Gelin Tarafı",
-  has_child: g.hasChild || "Hayır",
-  song_request: g.songRequest || null,
-  note: g.note || null,
-});
-
-export const dbGuestToUi = (g) => ({
-  id: g.id,
-  name: g.name,
-  attendance: g.attendance,
-  phone: g.phone || "",
-  personCount: String(g.person_count || 1),
-  side: g.side || "Gelin Tarafı",
-  hasChild: g.has_child || "Hayır",
-  songRequest: g.song_request || "",
-  note: g.note || "",
-  createdAt: g.created_at,
-});
-
-export const uiWishToDb = (w) => ({
-  name: w.name,
-  message: w.message,
-  approved: w.approved ?? true,
-});
-
-export const dbWishToUi = (w) => ({
-  id: w.id,
-  name: w.name,
-  message: w.message,
-  approved: w.approved,
-  createdAt: w.created_at,
-});
-
-export const touchAdminSession = () => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("wedding-admin-last-active", String(Date.now()));
-  }
-};
-
-export const clearAdminSessionTimestamp = () => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("wedding-admin-last-active");
-  }
-};
-
-export const isAdminSessionFresh = () => {
-  if (typeof window === "undefined") return false;
-  const lastActive = localStorage.getItem("wedding-admin-last-active");
-  if (!lastActive) return false;
-  return Date.now() - Number(lastActive) < 30 * 60 * 1000;
-};
-
-export const getAdminRedirectUrl = () => {
-  if (typeof window === "undefined") return "";
-  return `${window.location.origin}/admin`;
-};
-
-/**
- * Harici paket gerektirmeyen saf JS / Canvas Gül Yaprağı & Konfeti Efekti
- */
-export const triggerConfetti = () => {
-  if (typeof window === "undefined") return;
-
-  const canvas = document.createElement("canvas");
-  canvas.style.position = "fixed";
-  canvas.style.top = "0";
-  canvas.style.left = "0";
-  canvas.style.width = "100vw";
-  canvas.style.height = "100vh";
-  canvas.style.pointerEvents = "none";
-  canvas.style.zIndex = "999999";
-  document.body.appendChild(canvas);
-
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  // 1. Sitede o an seçili olan aktif temayı 'html' etiketinden alıyoruz
-  const activeTheme = document.documentElement.dataset.theme || "lavanta";
-  
-  // 2. Constants dosyasındaki ilgili temanın renk paletini buluyoruz
-  const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
-  
-  // 3. Kendi özel renkleriniz yerine, aktif temanın renklerini diziye atıyoruz
-  const colors = [
-    themeColors.petal, 
-    themeColors.stroke, 
-    themeColors.circle, 
-    themeColors.center, 
-    themeColors.bg
-  ];
-
-  const particles = Array.from({ length: 65 }).map(() => ({
-    x: canvas.width / 2 + (Math.random() - 0.5) * 80,
-    y: canvas.height / 2 + (Math.random() - 0.5) * 80,
-    vx: (Math.random() - 0.5) * 16,
-    vy: (Math.random() - 1.2) * 14 - 3,
-    size: Math.random() * 10 + 6,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    rotation: Math.random() * 360,
-    rotationSpeed: (Math.random() - 0.5) * 10,
-    opacity: 1,
-    isPetal: Math.random() > 0.4
-  }));
-
-  let animationFrame;
-  const render = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    let activeParticles = 0;
-
-    particles.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.35; // Yerçekimi
-      p.vx *= 0.98;
-      p.rotation += p.rotationSpeed;
-      p.opacity -= 0.009;
-
-      if (p.opacity > 0) {
-        activeParticles++;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate((p.rotation * Math.PI) / 180);
-        ctx.globalAlpha = Math.max(0, p.opacity);
-        ctx.fillStyle = p.color;
-
-        if (p.isPetal) {
-          ctx.beginPath();
-          ctx.ellipse(0, 0, p.size, p.size * 0.6, Math.PI / 4, 0, 2 * Math.PI);
-          ctx.fill();
-        } else {
-          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-        }
-        ctx.restore();
-      }
-    });
-
-    if (activeParticles > 0) {
-      animationFrame = requestAnimationFrame(render);
-    } else {
-      cancelAnimationFrame(animationFrame);
-      if (canvas.parentNode) {
-        canvas.parentNode.removeChild(canvas);
-      }
-    }
-  };
-
-  render();
-};
-</file>
-
-<file path="src/utils/imageOptimizer.js">
-import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
-
-/**
- * Yüklenen görseli maksimum boyutlara göre ölçekler ve WebP formatında sıkıştırır.
- * Tarayıcının kilitlenmemesi için işlemi bir Web Worker içinde gerçekleştirir.
- */
-export async function optimizeImage(file) {
-  if (!file || !file.type.startsWith("image/")) {
-    return file;
-  }
-
-  if (file.type === "image/svg+xml" || file.type === "image/gif") {
-    return file;
-  }
-
-  return new Promise((resolve) => {
-    // Web Worker'ı başlatıyoruz
-    const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
-    
-    worker.onmessage = (e) => {
-      if (e.data.blob) {
-        const cleanName = file.name.replace(/\.[^/.]+$/, "");
-        const optimizedFile = new File([e.data.blob], `${cleanName}.webp`, {
-          type: "image/webp",
-          lastModified: Date.now(),
-        });
-        resolve(optimizedFile);
-      } else {
-        resolve(file); // Hata durumunda orijinal dosyayı döndür
-      }
-      worker.terminate();
-    };
-
-    worker.onerror = () => {
-      resolve(file); // Hata durumunda kilitlenmeyi önle
-      worker.terminate();
-    };
-
-    worker.postMessage({ 
-      file, 
-      maxDim: MAX_IMAGE_DIMENSION || 1400, 
-      quality: IMAGE_QUALITY || 0.8 
-    });
-  });
-}
-</file>
-
 <file path="src/components/admin/tabs/WishesAdminPanel.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -4369,125 +4088,6 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
     </m.section>
   );
 });
-</file>
-
-<file path="src/styles/modals.css">
-.global-modal-input,
-.global-modal-text,
-.global-modal-title {
-  font-family: "Playfair Display", serif;
-}
-.global-modal-overlay {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 999999;
-  background-color: rgba(0, 0, 0, 0.65);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-}
-.global-modal-container {
-  background-color: var(--bg, #fff);
-  border-radius: 24px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  padding: 34px 24px;
-  border: 2px solid var(--rose-dark, #b56c83);
-}
-.prompt-modal {
-  max-width: 440px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.global-modal-title {
-  color: var(--rose-dark, #9f4f68);
-  margin: 0 0 12px;
-  font-size: 22px;
-  font-weight: 800;
-}
-.global-modal-text {
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--text, #55303b);
-  margin-bottom: 24px;
-  font-weight: 600;
-}
-.global-modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.global-modal-btn {
-  margin: 0;
-  min-width: 120px;
-}
-.global-modal-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1.5px solid var(--rose, #d98ca1);
-  outline: 0;
-  font-size: 16px;
-  background-color: var(--paper, #fff);
-  color: var(--text);
-}
-.global-modal-input.textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-.global-modal-input:focus {
-  border-color: var(--rose-dark);
-}
-</file>
-
-<file path="src/components/common/ErrorBoundary.jsx">
-import React from 'react';
-import * as Sentry from '@sentry/react';
-
-export class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("React Error Boundary Yakaladı:", error, errorInfo);
-    
-    // Sentry hata fırlatma aktif edildi
-    Sentry.captureException(error, { extra: errorInfo });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="error-boundary-container" style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-          <h2 style={{ color: '#9f4f68', marginBottom: '14px' }}>Opps! Beklenmeyen bir hata oluştu.</h2>
-          <p style={{ color: '#666', marginBottom: '24px' }}>Lütfen sayfayı yenileyerek tekrar deneyin veya yöneticiyle iletişime geçin.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{ padding: '14px 28px', background: '#9f4f68', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
-          >
-            Sayfayı Yenile
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 </file>
 
 <file path="src/config/constants.js">
@@ -4771,142 +4371,665 @@ export const CHILD_OPTIONS = [
 ];
 </file>
 
-<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { Virtuoso } from "react-virtuoso";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { useStore } from "../../../store/useStore";
+<file path="src/services/database.js">
+import { supabase } from "../supabaseClient";
+import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 
-const COLORS = ['#9f4f68', '#607244', '#c59a45', '#8f7fb8'];
+export const getSupabaseUrl = () => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+export const getSupabaseKey = () => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
 
-export function GuestsAdminPanel({ 
-  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
-  filteredGuests, editGuest, deleteGuest, clearGuests,
-  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
-  toggleCheckIn
-}) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
+export const getSupabaseSetupMessage = () => {
+  const url = getSupabaseUrl();
+  const key = getSupabaseKey();
+  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı. Dosyayı değiştirdikten sonra npm run dev sunucusunu kapatıp yeniden aç.";
+  if (!url.startsWith("https://") || !url.includes(".supabase.co")) return "Supabase URL hatalı görünüyor. Dashboard linki değil, Project Settings > API kısmındaki Project URL kullanılmalı.";
+  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini, internet bağlantını ve Supabase projesinin aktif olduğunu kontrol et.";
+};
 
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
+export const getReadableAuthError = (error) => {
+  if (!error) return "Bilinmeyen bir hata oluştu.";
 
-  if (!adminDraft?.settings) return null;
+  const status = error?.status || error?.code;
+  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
 
-  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
-  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğunuz admin e-posta/şifresiyle giriş yapmalısınız.";
+  if (status === 429) return "Çok fazla deneme yapıldı. Güvenlik nedeniyle birkaç dakika bekleyip tekrar deneyin.";
+  if (status === 401 && message.includes("email not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication kısmından hesabınızı doğrulayın.";
+  if (status === 404 || message.includes("not found")) return "Kayıt bulunamadı. Silinmiş veya taşınmış olabilir.";
+  if (error?.name === "AuthApiError" && message.includes("url")) return "Yönlendirme hatası. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisiniz.";
+  
+  if (message.includes("failed to fetch") || message.includes("network") || error?.name === "AuthRetryableFetchError") {
+     return getSupabaseSetupMessage();
+  }
 
-  // Grafik verileri
-  const sideData = [
-    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
-  ].filter(d => d.value > 0);
+  return error?.message || "İşlem tamamlanamadı. Lütfen internet bağlantınızı ve Supabase ayarlarını kontrol edin.";
+};
 
-  const checkInData = [
-    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
-    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
+export const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());
+
+export const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const result = await fetchFn();
+      return result;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); 
+    }
+  }
+};
+
+export const loadSettingsFromDatabase = async () => {
+  if (!isSupabaseReady()) return null;
+  return fetchWithRetry(async () => {
+    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
+    if (error) throw error;
+    return normalizeSiteData(data?.content || null);
+  });
+};
+
+export const saveSettingsToDatabase = async (settings) => {
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. .env.local dosyasını kontrol et.");
+  const { error } = await supabase.from("invitation_settings").upsert({ id: "main", content: settings, updated_at: new Date().toISOString() }, { onConflict: "id" });
+  if (error) throw error;
+};
+
+export const loadPublishedWishesFromDatabase = async () => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("Yayındaki anı defteri mesajları alınamadı:", error); return []; }
+  return (data || []).map(dbWishToUi);
+};
+
+export const loadGuestsFromDatabase = async () => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("Katılım kayıtları alınamadı:", error); return []; }
+  return (data || []).map(dbGuestToUi);
+};
+
+export const loadAllWishesFromDatabase = async () => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("Anı defteri mesajları alınamadı:", error); return []; }
+  return (data || []).map(dbWishToUi);
+};
+
+export const uploadMediaFile = async (file, folder = "media") => {
+  if (!file) return null;
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
+  const fileExt = file.name.split(".").pop() || "file";
+  const safeName = file.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+\vert{}-+$/g, "");
+  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
+  const { error } = await supabase.storage.from("wedding-media").upload(fileName, file, { cacheControl: "3600", upsert: true, contentType: file.type || undefined });
+  if (error) {
+    const message = String(error.message || "").toLocaleLowerCase("tr-TR");
+    if (message.includes("bucket") || message.includes("not found")) throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");
+    if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) throw new Error("Görsel/müzik yüklenemedi. wedding-media Storage bucket için authenticated policy eksik.");
+    throw error;
+  }
+  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
+  return data.publicUrl;
+};
+
+export const deleteMediaFile = async (fileUrl) => {
+  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
+  try {
+    const urlObj = new URL(fileUrl);
+    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
+    if (pathSegments.length < 2) return;
+    const filePath = decodeURIComponent(pathSegments[1]);
+
+    if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
+
+    await supabase.storage.from("wedding-media").remove([filePath]);
+  } catch (error) {
+    console.error("Dosya silinirken hata:", error);
+  }
+};
+
+export const restoreBackupToDatabase = async (parsedData) => {
+  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
+  
+  if (parsedData.siteData) {
+     await saveSettingsToDatabase(parsedData.siteData);
+  }
+  
+  if (parsedData.guests && parsedData.guests.length > 0) {
+     await supabase.from("guests").delete().not("id", "is", null);
+     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }) => rest);
+     await supabase.from("guests").insert(guestsToInsert);
+  }
+  
+  if (parsedData.wishes && parsedData.wishes.length > 0) {
+     await supabase.from("wishes").delete().not("id", "is", null);
+     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }) => rest);
+     await supabase.from("wishes").insert(wishesToInsert);
+  }
+};
+</file>
+
+<file path="src/styles/modals.css">
+.global-modal-input,
+.global-modal-text,
+.global-modal-title {
+  font-family: "Playfair Display", serif;
+}
+.global-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999999;
+  background-color: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.global-modal-container {
+  background-color: var(--bg, #fff);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  padding: 34px 24px;
+  border: 2px solid var(--rose-dark, #b56c83);
+}
+.prompt-modal {
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.global-modal-title {
+  color: var(--rose-dark, #9f4f68);
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+}
+.global-modal-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text, #55303b);
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+.global-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.global-modal-btn {
+  margin: 0;
+  min-width: 120px;
+}
+.global-modal-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--rose, #d98ca1);
+  outline: 0;
+  font-size: 16px;
+  background-color: var(--paper, #fff);
+  color: var(--text);
+}
+.global-modal-input.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.global-modal-input:focus {
+  border-color: var(--rose-dark);
+}
+</file>
+
+<file path="src/utils/helpers.js">
+import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
+
+export const getFaviconUrl = (theme = "lavanta") => {
+  const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.lavanta;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="16" fill="${colors.bg}"/>
+    <circle cx="32" cy="32" r="22" fill="${colors.circle}"/>
+    <circle cx="32" cy="20" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="44" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="32" cy="44" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="20" cy="32" r="10" fill="${colors.petal}" stroke="${colors.stroke}" stroke-width="1.5"/>
+    <circle cx="32" cy="32" r="8" fill="${colors.center}" stroke="${colors.stroke}" stroke-width="1.5"/>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
+export const normalizeSiteData = (raw) => {
+  if (!raw) return DEFAULT_SITE_DATA;
+  return {
+    ...DEFAULT_SITE_DATA,
+    ...raw,
+    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) },
+    familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(raw.familyInfo || {}) },
+    giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(raw.giftRegistry || {}) },
+    copy: { ...DEFAULT_SITE_DATA.copy, ...(raw.copy || {}) },
+    settings: {
+      ...DEFAULT_SITE_DATA.settings,
+      ...(raw.settings || {}),
+      visibility: {
+        ...DEFAULT_SITE_DATA.settings.visibility,
+        ...(raw.settings?.visibility || {}),
+      },
+    },
+    messages: { ...DEFAULT_SITE_DATA.messages, ...(raw.messages || {}) },
+    eventDetails: Array.isArray(raw.eventDetails) && raw.eventDetails.length > 0 ? raw.eventDetails : DEFAULT_SITE_DATA.eventDetails,
+    scheduleItems: Array.isArray(raw.scheduleItems) && raw.scheduleItems.length > 0 ? raw.scheduleItems : DEFAULT_SITE_DATA.scheduleItems,
+    storyTimeline: Array.isArray(raw.storyTimeline) && raw.storyTimeline.length > 0 ? raw.storyTimeline : DEFAULT_SITE_DATA.storyTimeline,
+  };
+};
+
+export const loadStoredSiteData = () => {
+  if (typeof window === "undefined") return DEFAULT_SITE_DATA;
+  try {
+    const local = localStorage.getItem(SITE_DATA_KEY);
+    return local ? normalizeSiteData(JSON.parse(local)) : DEFAULT_SITE_DATA;
+  } catch {
+    return DEFAULT_SITE_DATA;
+  }
+};
+
+export const getCurrentShareLink = () => {
+  if (typeof window === "undefined") return DEFAULT_SITE_DATA.invitation.shareLink;
+  return `${window.location.origin}${window.location.pathname}`;
+};
+
+export const getGuestNameFromUrl = () => {
+  if (typeof window === "undefined") return "";
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("guest") || params.get("davetli") || "").trim();
+};
+
+export const getTableFromUrl = () => {
+  if (typeof window === "undefined") return "";
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("table") || params.get("masa") || "").trim();
+};
+
+export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personCount = "") => {
+  const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
+  const nameParam = encodeURIComponent((guestName || "").trim());
+  let url = `${cleanLink}/?guest=${nameParam}`;
+  if (tableNumber) {
+    url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
+  }
+  if (personCount) {
+    url += `&count=${encodeURIComponent(String(personCount).trim())}`; 
+  }
+  return url;
+};
+
+export const getQrImageUrl = (url) => {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url || "")}`;
+};
+
+export const formatMessageTemplate = (template, variables = {}) => {
+  let str = template || "";
+  Object.keys(variables).forEach((key) => {
+    str = str.replaceAll(`{${key}}`, variables[key] || "");
+  });
+  return str;
+};
+
+export const createGoogleCalendarLink = (siteData, coupleName) => {
+  const inv = siteData.invitation;
+  const start = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
+  const end = (inv.weddingDate || "2027-07-07T19:00:00").replace(/[-:]/g, "").split(".")[0];
+  const title = encodeURIComponent(`${coupleName} | Düğün`);
+  const details = encodeURIComponent(inv.message || "");
+  const location = encodeURIComponent(`${inv.venue}, ${inv.address}`);
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+};
+
+export const handleAddToCalendar = (invitation, googleLink) => {
+  if (googleLink) {
+    window.open(googleLink, "_blank", "noopener,noreferrer");
+  }
+};
+
+export const getNavigationLinks = (invitation) => {
+  const query = encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`);
+  return {
+    google: invitation?.mapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
+    apple: `https://maps.apple.com/?q=${query}`,
+    yandex: `https://yandex.com.tr/harita/?text=${query}`,
+    waze: `https://waze.com/ul?q=${query}&navigate=yes`,
+  };
+};
+
+export const normalizeText = (text = "") => {
+  return text.toLocaleLowerCase("tr-TR").trim();
+};
+
+export const downloadTextFile = (filename, content, mimeType = "text/plain") => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+export const createCsv = (items, type = "guests", isEn = false) => {
+  if (!items || items.length === 0) return "";
+  let headers = [];
+  let rows = [];
+
+  if (type === "guests") {
+    headers = isEn 
+      ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Table No", "Song Request", "Note"]
+      : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Masa No", "Müzik İsteği", "Not"];
+    rows = items.map(g => [
+      `"${g.name || ""}"`,
+      `"${g.attendance || ""}"`,
+      `"${g.phone || ""}"`,
+      `"${g.personCount || 1}"`,
+      `"${g.side || ""}"`,
+      `"${g.hasChild || ""}"`,
+      `"${g.tableNumber || ""}"`,
+      `"${g.songRequest || ""}"`,
+      `"${(g.note || "").replace(/"/g, '""')}"`
+    ]);
+  } else {
+    headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
+    rows = items.map(w => [
+      `"${w.name || ""}"`,
+      `"${(w.message || "").replace(/"/g, '""')}"`,
+      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`
+    ]);
+  }
+
+  return [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+};
+
+export const createExcelTable = (items, type = "guests", isEn = false) => {
+  const csvContent = createCsv(items, type, isEn);
+  const rows = csvContent.split("\n").map(r => r.split(","));
+  let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1">`;
+  rows.forEach((row, i) => {
+    html += "<tr>";
+    row.forEach(cell => {
+      const clean = cell.replace(/^"|"$/g, "");
+      html += i === 0 ? `<th style="background:#f4f4f4;">${clean}</th>` : `<td>${clean}</td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</table></body></html>";
+  return html;
+};
+
+export const uiGuestToDb = (g) => ({
+  name: g.name,
+  attendance: g.attendance,
+  phone: g.phone || null,
+  person_count: g.personCount ? Number(g.personCount) : 1,
+  side: g.side || "Gelin Tarafı",
+  has_child: g.hasChild || "Hayır",
+  song_request: g.songRequest || null,
+  note: g.note || null,
+  table_number: g.tableNumber || null,
+});
+
+export const dbGuestToUi = (g) => ({
+  id: g.id,
+  name: g.name,
+  attendance: g.attendance,
+  phone: g.phone || "",
+  personCount: String(g.person_count || 1),
+  side: g.side || "Gelin Tarafı",
+  hasChild: g.has_child || "Hayır",
+  songRequest: g.song_request || "",
+  note: g.note || "",
+  tableNumber: g.table_number || "",
+  has_arrived: g.has_arrived || false,
+  createdAt: g.created_at,
+});
+
+export const uiWishToDb = (w) => ({
+  name: w.name,
+  message: w.message,
+  approved: w.approved ?? true,
+});
+
+export const dbWishToUi = (w) => ({
+  id: w.id,
+  name: w.name,
+  message: w.message,
+  approved: w.approved,
+  createdAt: w.created_at,
+});
+
+export const touchAdminSession = () => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("wedding-admin-last-active", String(Date.now()));
+  }
+};
+
+export const clearAdminSessionTimestamp = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("wedding-admin-last-active");
+  }
+};
+
+export const isAdminSessionFresh = () => {
+  if (typeof window === "undefined") return false;
+  const lastActive = localStorage.getItem("wedding-admin-last-active");
+  if (!lastActive) return false;
+  return Date.now() - Number(lastActive) < 30 * 60 * 1000;
+};
+
+export const getAdminRedirectUrl = () => {
+  if (typeof window === "undefined") return "";
+  return `${window.location.origin}/admin`;
+};
+
+export const triggerConfetti = () => {
+  if (typeof window === "undefined") return;
+
+  const canvas = document.createElement("canvas");
+  canvas.style.position = "fixed";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  canvas.style.width = "100vw";
+  canvas.style.height = "100vh";
+  canvas.style.pointerEvents = "none";
+  canvas.style.zIndex = "999999";
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const activeTheme = document.documentElement.dataset.theme || "lavanta";
+  const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
+  
+  const colors = [
+    themeColors.petal, 
+    themeColors.stroke, 
+    themeColors.circle, 
+    themeColors.center, 
+    themeColors.bg
   ];
 
-  return (
-    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
-      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-      </div>
-      
-      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
-        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
-        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
-        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
-        <div className="admin-guest-badge arrived">
-          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
-          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
-        </div>
-      </div>
+  const particles = Array.from({ length: 65 }).map(() => ({
+    x: canvas.width / 2 + (Math.random() - 0.5) * 80,
+    y: canvas.height / 2 + (Math.random() - 0.5) * 80,
+    vx: (Math.random() - 0.5) * 16,
+    vy: (Math.random() - 1.2) * 14 - 3,
+    size: Math.random() * 10 + 6,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rotation: Math.random() * 360,
+    rotationSpeed: (Math.random() - 0.5) * 10,
+    opacity: 1,
+    isPetal: Math.random() > 0.4
+  }));
 
-      {/* İstatistik Grafikleri */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px', height: '260px' }}>
-        <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>{isEn ? "Guest Distribution" : "Misafir Dağılımı"}</h4>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={sideData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={65} fill="#8884d8" label>
-                {sideData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="admin-row" style={{ padding: '10px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <h4 style={{ textAlign: 'center', margin: '10px 0', color: 'var(--rose-deep)' }}>{isEn ? "Check-in Status" : "Kapı Giriş Durumu"}</h4>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={checkInData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--rose-deep)' }} />
-              <YAxis tick={{ fill: 'var(--rose-deep)' }} />
-              <Tooltip />
-              <Bar dataKey="value" fill="var(--rose-dark)" radius={[6,6,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+  let animationFrame;
+  const render = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let activeParticles = 0;
 
-      <div className="admin-toolbar-flex">
-        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
-        <div className="admin-toolbar-filter">
-          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
-        </div>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
-      </div>
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.35; 
+      p.vx *= 0.98;
+      p.rotation += p.rotationSpeed;
+      p.opacity -= 0.009;
 
-      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px" }}>
-        {filteredGuests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
-        ) : (
-          <Virtuoso
-            style={{ height: '100%', width: '100%' }}
-            data={filteredGuests}
-            itemContent={(index, guest) => {
-              const isAttending = guest.attendance === "Katılacağım";
-              return (
-                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
-                  <div className="admin-guest-header">
-                    <strong>{guest.name}</strong>
-                  </div>
-                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
-                  {guest.phone && <span>📞 {guest.phone}</span>}
-                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
-                  {guest.note && <em>Not: {guest.note}</em>}
-                  
-                  <div className="admin-row-actions admin-guest-actions">
-                    <button 
-                      type="button" 
-                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
-                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
-                    >
-                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
-                    </button>
-                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
-                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
-                    </button>
-                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
-                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        )}
-      </div>
-    </AdminSection>
-  );
+      if (p.opacity > 0) {
+        activeParticles++;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+
+        if (p.isPetal) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.size, p.size * 0.6, Math.PI / 4, 0, 2 * Math.PI);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+        }
+        ctx.restore();
+      }
+    });
+
+    if (activeParticles > 0) {
+      animationFrame = requestAnimationFrame(render);
+    } else {
+      cancelAnimationFrame(animationFrame);
+      if (canvas.parentNode) {
+        canvas.parentNode.removeChild(canvas);
+      }
+    }
+  };
+
+  render();
+};
+</file>
+
+<file path="src/utils/imageOptimizer.js">
+import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
+
+// OffscreenCanvas desteklenmeyen tarayıcılar (Eski Safari vb.) için Main-Thread Fallback
+function fallbackOptimize(file, resolve) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    let { width, height } = img;
+    const maxDim = MAX_IMAGE_DIMENSION || 1400;
+    
+    if (width > maxDim || height > maxDim) {
+      if (width > height) { 
+        height = Math.round((height * maxDim) / width); 
+        width = maxDim; 
+      } else { 
+        width = Math.round((width * maxDim) / height); 
+        height = maxDim; 
+      }
+    }
+    
+    canvas.width = width; 
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+    
+    canvas.toBlob((blob) => {
+      resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
+    }, "image/webp", IMAGE_QUALITY || 0.8);
+  };
+  img.onerror = () => resolve(file);
+  img.src = URL.createObjectURL(file);
+}
+
+export async function optimizeImage(file) {
+  if (!file || !file.type.startsWith("image/")) return file;
+  if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
+
+  return new Promise((resolve) => {
+    const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
+    
+    worker.onmessage = (e) => {
+      if (e.data.blob) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+        const optimizedFile = new File([e.data.blob], `${cleanName}.webp`, {
+          type: "image/webp",
+          lastModified: Date.now(),
+        });
+        resolve(optimizedFile);
+      } else if (e.data.error === "OffscreenCanvas not supported") {
+        fallbackOptimize(file, resolve); // Desteklenmiyorsa fallback çalıştır
+      } else {
+        resolve(file); 
+      }
+      worker.terminate();
+    };
+
+    worker.onerror = () => {
+      fallbackOptimize(file, resolve); // Worker çökerse fallback çalıştır
+      worker.terminate();
+    };
+
+    worker.postMessage({ 
+      file, 
+      maxDim: MAX_IMAGE_DIMENSION || 1400, 
+      quality: IMAGE_QUALITY || 0.8 
+    });
+  });
+}
+</file>
+
+<file path="src/components/common/ErrorBoundary.jsx">
+import React from 'react';
+import * as Sentry from '@sentry/react';
+
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("React Error Boundary Yakaladı:", error, errorInfo);
+    
+    // Sentry hata fırlatma aktif edildi
+    Sentry.captureException(error, { extra: errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary-container" style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <h2 style={{ color: '#9f4f68', marginBottom: '14px' }}>Opps! Beklenmeyen bir hata oluştu.</h2>
+          <p style={{ color: '#666', marginBottom: '24px' }}>Lütfen sayfayı yenileyerek tekrar deneyin veya yöneticiyle iletişime geçin.</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ padding: '14px 28px', background: '#9f4f68', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Sayfayı Yenile
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 </file>
 
@@ -4914,7 +5037,8 @@ export function GuestsAdminPanel({
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AdminLogin } from "./admin/auth/AdminLogin";
-import { useAdminStore, useStore } from "../store/useStore";
+import { useStore } from "../store/useStore";
+import { useAdminStore } from "../store/useAdminStore";
 
 function AdminDashboard(props) {
   const { i18n } = useTranslation();
@@ -5206,186 +5330,120 @@ export default React.memo(AdminDashboard);
 }
 </file>
 
-<file path="src/store/useStore.js">
-import { create } from 'zustand';
-import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
-import toast from 'react-hot-toast';
-import { supabase } from '../supabaseClient';
-import { saveSettingsToDatabase } from '../services/database';
+<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
+import React, { Suspense, lazy } from "react";
+import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
 
-export const useStore = create((set, get) => ({
-  siteData: loadStoredSiteData(),
-  setSiteData: (data) => set({ siteData: data }),
-  guests: [],
-  setGuests: (guests) => set({ guests }),
-  wishes: [],
-  setWishes: (wishes) => set({ wishes }),
+// Grafikler Bundle boyutunu şişirmemesi için asenkron yüklenecek
+const AdminCharts = lazy(() => import('./AdminCharts'));
 
-  opened: false,
-  setOpened: (opened) => set({ opened }),
-  isOpening: false,
-  setIsOpening: (isOpening) => set({ isOpening }),
+export function GuestsAdminPanel({ 
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+  filteredGuests, editGuest, deleteGuest, clearGuests,
+  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
+  toggleCheckIn
+}) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
 
-  customAlert: null,
-  setCustomAlert: (alert) => set({ customAlert: alert }),
-  showAppAlert: (message, options = {}) => new Promise((resolve) => {
-    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
-    if (isError) toast.error(message);
-    else toast.success(message);
-    resolve(true);
-  }),
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
 
-  customConfirm: null,
-  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
-  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
-    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
-  }),
+  if (!adminDraft?.settings) return null;
 
-  customPrompt: null,
-  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
-  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
-    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
-  }),
+  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
+  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
 
-  adminDraft: loadStoredSiteData(),
-  setAdminDraft: (draftOrUpdater) => set((state) => ({
-    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
-  })),
-  activeAdminTab: "general",
-  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
-  personalLinkName: "",
-  setPersonalLinkName: (name) => set({ personalLinkName: name }),
-  dataImportText: "",
-  setDataImportText: (text) => set({ dataImportText: text }),
+  const sideData = [
+    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
+  ].filter(d => d.value > 0);
 
-  updateDraftObject: (group, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [group]: {
-        ...state.adminDraft[group],
-        [key]: value
-      }
-    }
-  })),
+  const checkInData = [
+    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
+    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
+  ];
 
-  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
-    }
-  })),
+  return (
+    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
+      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+      </div>
+      
+      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
+        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
+        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
+        <div className="admin-guest-badge arrived">
+          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
+          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
+        </div>
+      </div>
 
-  addDraftArrayItem: (arrayKey, item) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: [...state.adminDraft[arrayKey], item]
-    }
-  })),
+      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
+        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
+      </Suspense>
 
-  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
-    }
-  })),
+      <div className="admin-toolbar-flex">
+        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
+        <div className="admin-toolbar-filter">
+          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
+        </div>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
 
-  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
-    const newArray = [...(state.adminDraft[arrayKey] || [])];
-    if (index + direction < 0 || index + direction >= newArray.length) return state;
-    const temp = newArray[index];
-    newArray[index] = newArray[index + direction];
-    newArray[index + direction] = temp;
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: newArray
-      }
-    };
-  }),
-
-  saveSiteContent: async (isEn) => {
-    const { adminDraft, setSiteData, setAdminDraft } = get();
-    // Use useAdminStore for saving messages
-    const { setAdminSaveMessage } = useAdminStore.getState();
-    const cleanedData = normalizeSiteData({ 
-      ...adminDraft, 
-      invitation: { 
-        ...adminDraft.invitation, 
-        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
-      } 
-    });
-    try {
-      await saveSettingsToDatabase(cleanedData);
-      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
-      setSiteData(cleanedData); 
-      setAdminDraft(cleanedData);
-      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
-    } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
-    }
-  }
-}));
-
-// PROP DRILLING ÇÖZÜMÜ: Yalnızca Admin Authentication ve form State'ini tutan bağımsız bir store.
-export const useAdminStore = create((set) => ({
-  isAdminUnlocked: false,
-  adminUser: null,
-  adminEmail: "",
-  adminPassword: "",
-  adminError: "",
-  adminLoginNotice: "",
-  adminSaveMessage: "",
-  adminAuthLoading: false,
-  showForgotPassword: false,
-  forgotPasswordEmail: "",
-  forgotPasswordMessage: "",
-  forgotPasswordLoading: false,
-  isPasswordRecovery: false,
-  recoveryPassword: "",
-  recoveryPasswordAgain: "",
-  recoveryMessage: "",
-  recoveryLoading: false,
-  adminCurrentPassword: "",
-  adminNewPassword: "",
-  adminNewPasswordAgain: "",
-  adminPasswordMessage: "",
-
-  setIsAdminUnlocked: (status) => set({ isAdminUnlocked: status }),
-  setAdminUser: (user) => set({ adminUser: user }),
-  setAdminEmail: (email) => set({ adminEmail: email }),
-  setAdminPassword: (pass) => set({ adminPassword: pass }),
-  setAdminError: (error) => set({ adminError: error }),
-  setAdminLoginNotice: (notice) => set({ adminLoginNotice: notice }),
-  setAdminSaveMessage: (msg) => set({ adminSaveMessage: msg }),
-  setAdminAuthLoading: (loading) => set({ adminAuthLoading: loading }),
-  setShowForgotPassword: (show) => set({ showForgotPassword: show }),
-  setForgotPasswordEmail: (email) => set({ forgotPasswordEmail: email }),
-  setForgotPasswordMessage: (msg) => set({ forgotPasswordMessage: msg }),
-  setForgotPasswordLoading: (loading) => set({ forgotPasswordLoading: loading }),
-  setIsPasswordRecovery: (isRec) => set({ isPasswordRecovery: isRec }),
-  setRecoveryPassword: (pass) => set({ recoveryPassword: pass }),
-  setRecoveryPasswordAgain: (pass) => set({ recoveryPasswordAgain: pass }),
-  setRecoveryMessage: (msg) => set({ recoveryMessage: msg }),
-  setRecoveryLoading: (loading) => set({ recoveryLoading: loading }),
-  setAdminCurrentPassword: (pass) => set({ adminCurrentPassword: pass }),
-  setAdminNewPassword: (pass) => set({ adminNewPassword: pass }),
-  setAdminNewPasswordAgain: (pass) => set({ adminNewPasswordAgain: pass }),
-  setAdminPasswordMessage: (msg) => set({ adminPasswordMessage: msg }),
-
-  clearAdminAuth: () => set({
-    isAdminUnlocked: false,
-    adminUser: null,
-    adminPassword: "",
-    adminError: "",
-    showForgotPassword: false,
-    forgotPasswordMessage: "",
-    adminPasswordMessage: "",
-    adminCurrentPassword: "",
-    adminNewPassword: "",
-    adminNewPasswordAgain: ""
-  })
-}));
+      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px" }}>
+        {filteredGuests.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredGuests}
+            itemContent={(index, guest) => {
+              const isAttending = guest.attendance === "Katılacağım";
+              return (
+                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
+                  <div className="admin-guest-header">
+                    <strong>{guest.name}</strong>
+                  </div>
+                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
+                  {guest.phone && <span>📞 {guest.phone}</span>}
+                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
+                  {guest.note && <em>Not: {guest.note}</em>}
+                  
+                  <div className="admin-row-actions admin-guest-actions">
+                    <button 
+                      type="button" 
+                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
+                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
+                    >
+                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
+                    </button>
+                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
+                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
+                    </button>
+                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
+                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </AdminSection>
+  );
+}
 </file>
 
 <file path="src/components/invitation/IntroPage.jsx">
@@ -5644,6 +5702,145 @@ export * from "./admin/ui/AdminLayout";
     "addressCopied": "Adres Kopyalandı! ✅"
   }
 }
+</file>
+
+<file path="src/store/useStore.js">
+import { create } from 'zustand';
+import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
+import toast from 'react-hot-toast';
+import { saveSettingsToDatabase } from '../services/database';
+import { useAdminStore } from './useAdminStore';
+
+// --- 1. UI (ARAYÜZ) MODÜLÜ ---
+// Modallar, uyarılar ve ekran açılış durumlarını yönetir.
+const createUISlice = (set) => ({
+  opened: false,
+  setOpened: (opened) => set({ opened }),
+  isOpening: false,
+  setIsOpening: (isOpening) => set({ isOpening }),
+
+  customAlert: null,
+  setCustomAlert: (alert) => set({ customAlert: alert }),
+  showAppAlert: (message, options = {}) => new Promise((resolve) => {
+    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
+    if (isError) toast.error(message);
+    else toast.success(message);
+    resolve(true);
+  }),
+
+  customConfirm: null,
+  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
+  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
+    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
+  }),
+
+  customPrompt: null,
+  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
+  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
+    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
+  }),
+});
+
+// --- 2. DATA (VERİ) MODÜLÜ ---
+// Misafir listesi, anı defteri ve canlı sitenin içerik verilerini yönetir.
+const createDataSlice = (set) => ({
+  siteData: loadStoredSiteData(),
+  setSiteData: (data) => set({ siteData: data }),
+  guests: [],
+  setGuests: (guests) => set({ guests }),
+  wishes: [],
+  setWishes: (wishes) => set({ wishes }),
+});
+
+// --- 3. ADMIN DRAFT (TASLAK) MODÜLÜ ---
+// Yönetici panelindeki henüz kaydedilmemiş değişiklikleri ve sekmeleri yönetir.
+const createAdminDraftSlice = (set, get) => ({
+  adminDraft: loadStoredSiteData(),
+  setAdminDraft: (draftOrUpdater) => set((state) => ({
+    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
+  })),
+  activeAdminTab: "general",
+  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
+  personalLinkName: "",
+  setPersonalLinkName: (name) => set({ personalLinkName: name }),
+  dataImportText: "",
+  setDataImportText: (text) => set({ dataImportText: text }),
+
+  updateDraftObject: (group, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [group]: {
+        ...state.adminDraft[group],
+        [key]: value
+      }
+    }
+  })),
+
+  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
+    }
+  })),
+
+  addDraftArrayItem: (arrayKey, item) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: [...state.adminDraft[arrayKey], item]
+    }
+  })),
+
+  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
+    }
+  })),
+
+  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
+    const newArray = [...(state.adminDraft[arrayKey] || [])];
+    if (index + direction < 0 || index + direction >= newArray.length) return state;
+    const temp = newArray[index];
+    newArray[index] = newArray[index + direction];
+    newArray[index + direction] = temp;
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: newArray
+      }
+    };
+  }),
+
+  saveSiteContent: async (isEn) => {
+    const { adminDraft, setSiteData, setAdminDraft } = get();
+    const { setAdminSaveMessage } = useAdminStore.getState();
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    });
+    try {
+      await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
+      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    } catch (error) {
+      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+    }
+  }
+});
+
+// === ANA STORE BİRLEŞTİRME ===
+// Bu yapı sayesinde projedeki diğer hiçbir dosyadaki importları değiştirmenize gerek kalmaz!
+export const useStore = create((...a) => ({
+  ...createUISlice(...a),
+  ...createDataSlice(...a),
+  ...createAdminDraftSlice(...a)
+}));
 </file>
 
 <file path="src/components/invitation/sections/HeroSection.jsx">
@@ -6198,7 +6395,7 @@ import { useTranslation } from "react-i18next";
 import { 
   GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
   VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
 } from "./tabs";
 
 export function AdminPanelContent(props) {
@@ -6211,6 +6408,7 @@ export function AdminPanelContent(props) {
     case "theme": return <ThemeTab {...props} isEn={isEn} />;
     case "gallery": return <GalleryTab {...props} isEn={isEn} />;
     case "guests": return <GuestsAdminPanel {...props} />;
+    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
     case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
     case "personalLink": return <PersonalLinkPanel {...props} />;
     case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
@@ -6233,7 +6431,8 @@ export function AdminPanelContent(props) {
 import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useStore, useAdminStore } from '../store/useStore';
+import { useStore } from '../store/useStore';
+import { useAdminStore } from '../store/useAdminStore';
 import { useAdminSession } from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
@@ -6247,7 +6446,6 @@ export default function AdminController() {
   const isEn = i18n.language?.startsWith('en') || false;
   const navigate = useNavigate();
 
-  // Zustand Store'lar
   const siteData = useStore((state) => state.siteData);
   const guests = useStore((state) => state.guests);
   const setGuests = useStore((state) => state.setGuests);
@@ -6264,7 +6462,6 @@ export default function AdminController() {
   
   const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
 
-  // Lokal Form & Filtre Durumları
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
   const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
   const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
@@ -6276,10 +6473,9 @@ export default function AdminController() {
   const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
   const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
 
-  // Auth Methodları
   const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
 
-  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn } = useDatabaseManager({
+  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable } = useDatabaseManager({
     guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
   });
 
@@ -6327,7 +6523,7 @@ export default function AdminController() {
         exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} dataImportText={dataImportText} setDataImportText={setDataImportText} 
         exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
         exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
-        toggleCheckIn={toggleCheckIn} 
+        toggleCheckIn={toggleCheckIn} assignTable={assignTable}
       />
     </Suspense>
   );
@@ -6338,44 +6534,48 @@ export default function AdminController() {
 /* src/styles/responsive.css */
 
 /* =========================================================
-     TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
-     ========================================================= */
-  main.invitation-page {
-    position: relative !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    overflow: hidden !important; 
-  }
+   MOBİL: TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
+   Bu kodlar masaüstü (web) görünümünü etkilemez!
+   ========================================================= */
+main.invitation-page.mobile-mode {
+  position: relative !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  overflow: hidden !important; 
+}
 
-  main.invitation-page .slide-wrapper {
-    position: absolute !important; 
-    top: 0 !important; 
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important; 
-    
-    opacity: 0 !important; 
-    pointer-events: none !important;
-    visibility: hidden !important;
-    z-index: 1 !important;
-    
-    overflow-y: auto !important; 
-    overflow-x: hidden !important;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+main.invitation-page.mobile-mode .slide-wrapper {
+  position: absolute !important; 
+  top: 0 !important; 
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; 
+  
+  opacity: 0 !important; 
+  pointer-events: none !important;
+  visibility: hidden !important;
+  z-index: 1 !important;
+  
+  overflow-y: auto !important; 
+  overflow-x: hidden !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  padding-top: env(safe-area-inset-top) !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
 
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
   transform: translateY(30px) scale(0.98) !important; 
 }
 
-main.invitation-page .slide-wrapper::-webkit-scrollbar {
-  display: none !important; /* Chrome/Safari/Edge/Opera */
+main.invitation-page.mobile-mode .slide-wrapper::-webkit-scrollbar {
+  display: none !important;
 }
 
-main.invitation-page .slide-wrapper.active-slide {
+main.invitation-page.mobile-mode .slide-wrapper.active-slide {
   opacity: 1 !important;
   pointer-events: auto !important;
   visibility: visible !important;
@@ -6383,29 +6583,29 @@ main.invitation-page .slide-wrapper.active-slide {
   transform: translateY(0) scale(1) !important;
 }
 
-  /* HERO (İlk Ekran) Ayarları */
-  main.invitation-page .slide-wrapper:first-child {
-    display: flex !important; 
-    flex-direction: column !important;
-    justify-content: center !important;
-    padding: 0 !important; 
-    background: transparent !important;
-  }
-  
-  main.invitation-page .slide-wrapper:first-child.active-slide {
-    overflow: hidden !important; 
-  }
+/* HERO (İlk Ekran) Ayarları */
+main.invitation-page.mobile-mode .slide-wrapper:first-child {
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 0 !important; 
+  background: transparent !important;
+}
 
-  main.invitation-page .slide-wrapper > .hero-section {
-    min-height: 100dvh !important; 
-    width: 100vw !important; 
-    border-radius: 0 !important; 
-    padding: 64px 16px 80px 16px !important; 
-    margin: 0 !important;
-    background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
-  }
+main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
+  overflow: hidden !important; 
+}
 
-main.invitation-page .hero-section::before {
+main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
+  min-height: 100dvh !important; 
+  width: 100vw !important; 
+  border-radius: 0 !important; 
+  padding: max(64px, env(safe-area-inset-top)) 16px max(80px, env(safe-area-inset-bottom)) 16px !important; 
+  margin: 0 !important;
+  background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
+}
+
+main.invitation-page.mobile-mode .hero-section::before {
   top: 14px !important;
   right: 14px !important;
   bottom: 14px !important;
@@ -6413,39 +6613,221 @@ main.invitation-page .hero-section::before {
   border-radius: 24px !important;
 }
 
-  /* --- KESİN ÇÖZÜM: UZUN KARTLARDA ÜSTTEN KESİLMEYİ ÖNLEYEN GRID MİMARİSİ --- */
-  main.invitation-page .slide-wrapper:not(:first-child) {
-    display: grid !important;
-    grid-template-rows: 1fr auto 1fr !important; /* Ekranı 3'e böler: Esnek Yay - İçerik - Esnek Yay */
-    grid-template-columns: 100% !important;
-    padding: 0 16px !important; /* Dikey paddingleri before/after içine taşıdık */
+/* --- KESİN ÇÖZÜM: GÜVENLİ ORTALAMA YAYLARI (SAFE CENTERING SPRINGS) --- */
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
+  display: flex !important;
+  flex-direction: column !important;
+  padding-top: calc(24px + env(safe-area-inset-top)) !important;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+  padding-left: clamp(12px, 4vw, 20px) !important;
+  padding-right: clamp(12px, 4vw, 20px) !important;
+}
+
+/* Sihirli Yaylar: Kart ekrana sığıyorsa genişleyip ortalar, sığmıyorsa 0'a inip kesilmeyi engeller */
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
+  content: "" !important;
+  display: block !important;
+  margin: auto !important; 
+  flex: 0 0 auto !important; 
+}
+
+/* KART (SECTION) KESİNLİKLE MARGIN AUTO ALMAMALI! AUTO OLURSA KART YUKARI KAÇAR VE BAŞLIKLAR KESİLİR */
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
+  flex: 0 0 auto !important; 
+  width: 100% !important;
+  margin: 0 !important; 
+}
+
+/* =========================================================
+   GENEL MOBİL TWEAKS (Tüm küçük ekranlar için)
+   ========================================================= */
+@media (max-width: 650px) {
+  .gallery-grid .gallery-image,
+  .mini-map {
+    height: 300px !important; 
+  }
+  .gallery-grid .gallery-image img,
+  .gallery-grid > img {
+    height: 100% !important; 
+  }
+  
+  .glass-dock {
+    top: auto !important;
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+    right: 50% !important;
+    transform: translateX(50%) !important;
+    flex-direction: row !important;
+    padding: 8px 14px !important;
+    gap: 14px !important;
+  }
+  .guest-item,
+  .info-row,
+  .option-group {
+    flex-direction: column;
+  }
+  .scroll-indicator {
+    bottom: calc(5px + env(safe-area-inset-bottom)); 
+  }
+  .intro-page {
+    padding: clamp(12px, 4vw, 24px); 
+  }
+  .intro-card {
+    padding: clamp(30px, 8vw, 46px) clamp(16px, 5vw, 24px);
+    border-radius: 32px;
+  }
+  .couple-title {
+    font-size: clamp(48px, 12vw, 68px); 
+  }
+  .couple-title em {
+    display: block;
+    margin: 4px 0;
+  }
+  .intro-text,
+  .rsvp-card > p {
+    font-size: clamp(16px, 4.5vw, 19px);
+  }
+  .hero-section {
+    min-height: 560px;
+    padding: 64px 16px;
+    background: radial-gradient(
+        circle at center,
+        rgba(70, 24, 40, 0.24) 0,
+        rgba(70, 24, 40, 0.42) 46%,
+        rgba(35, 14, 22, 0.66) 100%
+      ),
+      var(--hero-image) center/cover no-repeat;
+  }
+  .hero-section .couple-title {
+    color: #fff;
+    line-height: 1.04;
+    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42),
+      0 0 24px rgba(255, 220, 230, 0.22);
+  }
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+  .hero-date {
+    padding: 8px 16px;
+    font-size: clamp(16px, 5vw, 21px);
+  }
+  .hero-time {
+    font-size: clamp(16px, 5vw, 20px);
+  }
+  .card,
+  .countdown-section {
+    padding: clamp(24px, 6vw, 36px) clamp(14px, 5vw, 20px); 
+    border-radius: 24px;
+  }
+  .rsvp-card h2 {
+    font-size: clamp(26px, 8vw, 32px);
+  }
+  
+  input, textarea, select, .option-button, .form-button {
+    font-size: 16px !important; 
+  }
+  
+  .countdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .gallery-grid,
+  .timeline-item {
+    grid-template-columns: 1fr;
+  }
+  .guest-item,
+  .info-row {
+    gap: 6px;
+    text-align: center;
+  }
+  .mini-map {
+    border-radius: 22px;
+  }
+  .timeline::before {
+    display: none;
+  }
+  .timeline-item {
+    gap: 8px;
+    text-align: center;
+  }
+  .option-button {
+    width: 100%;
+    min-width: unset;
+  }
+  .main-button,
+  .secondary-button {
+    width: 100%;
+    padding: 14px 20px; 
+  }
+  .floating-actions {
+    top: auto;
+    right: 14px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    left: auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .floating-actions .share-button {
+    width: 120px;
+    height: 54px;
+    font-size: 16px;
+  }
+  .floating-actions .music-toggle-button {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    align-self: flex-end;
+  }
+  .floating-actions .music-toggle-button svg {
+    width: 24px;
+    height: 24px;
+  }
+  .app-modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100dvh !important;
+    display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
   }
-
-  /* Üst Boşluk (Kart ekranı aşarsa en fazla 24px'e kadar küçülür, yazıların kesilmesini ENGELLER) */
-  main.invitation-page .slide-wrapper:not(:first-child)::before {
-    content: "" !important;
-    display: block !important;
-    min-height: 24px !important;
-    grid-row: 1 !important;
-  }
-
-  /* Alt Boşluk (Menünün altında kalmaması için en fazla 110px'e kadar küçülür) */
-  main.invitation-page .slide-wrapper:not(:first-child)::after {
-    content: "" !important;
-    display: block !important;
-    min-height: 110px !important;
-    grid-row: 3 !important;
-  }
-
-  /* Kartın Kendisi (Her zaman orta satırda kilitli kalır) */
-  main.invitation-page .slide-wrapper:not(:first-child) > section,
-  main.invitation-page .slide-wrapper:not(:first-child) > footer,
-  main.invitation-page .slide-wrapper:not(:first-child) > div {
-    grid-row: 2 !important;
-    width: 100% !important;
+  .app-modal-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     margin: 0 !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    background: var(--paper, #fff) !important;
+    border-radius: 24px !important;
+    padding: 24px 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    box-sizing: border-box !important;
   }
+  .app-modal-actions {
+    margin-top: 20px !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
 </file>
 
 <file path="src/components/invitation/InteractiveSections.jsx">
@@ -6542,16 +6924,21 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   });
 
   const currentNote = watch("note") || "";
-  const currentAttendance = watch("attendance");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const guestName = params.get("guest") || params.get("davetli") || "";
+    const countParam = params.get("count") || params.get("kisi") || "";
 
     if (guestName) {
       setUrlGuestName(guestName);
       setValue("name", guestName);
+    }
+    
+    if (countParam) {
+      // Eğer backend'e person_count alanını gönderiyorsanız schema'ya da eklemeniz gerekebilir.
+      setValue("personCount", countParam); 
     }
   }, [setValue]);
 
@@ -6560,7 +6947,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    if (!turnstileToken) return;
+    if (!turnstileToken && navigator.onLine) return; // Sadece internet varken token zorunlu
 
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest({ ...data, turnstileToken });
@@ -6634,7 +7021,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
             />
           </div>
 
-          <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
+          <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
             {isSubmitting ? "..." : t('form.submitRsvp')}
           </button>
         </form>
@@ -6696,7 +7083,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    if (!turnstileToken) return;
+    if (!turnstileToken && navigator.onLine) return; // İnternet varsa token zorunlu
 
     await submitWish({ ...data, turnstileToken });
     triggerConfetti();
@@ -6733,7 +7120,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
           />
         </div>
         
-        <button type="submit" className="main-button form-button" disabled={isSubmitting || !turnstileToken}>
+        <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
           {isSubmitting ? "..." : t('form.submitWish')}
         </button>
       </form>
@@ -6752,171 +7139,6 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
       </div>
     </section>
   );
-}
-</file>
-
-<file path="src/hooks/useDatabaseManager.js">
-import { useCallback, useEffect } from "react";
-import { supabase } from "../supabaseClient";
-import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
-import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
-
-export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
-  
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    const wishesChannel = supabase.channel("public:wishes")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "wishes" }, (payload) => {
-        if (payload.new && payload.new.approved) {
-          setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
-        }
-      }).subscribe();
-
-    const guestsChannel = supabase.channel("public:guests")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) {
-          setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
-        }
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) {
-          setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
-        }
-      }).subscribe();
-
-    return () => {
-      supabase.removeChannel(wishesChannel);
-      supabase.removeChannel(guestsChannel);
-    };
-  }, [setWishes, setGuests]);
-
-  const submitGuest = useCallback(async (formData) => {
-    if (formData.honeypot) return;
-
-    // İnternet bağlantısı (Offline Fallback) Kontrolü
-    if (!navigator.onLine) {
-      await showAppAlert?.(
-        isEn ? "No internet connection. Please check your network and try again." 
-             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
-        { title: t('alerts.errorTitle') }
-      );
-      return;
-    }
-    
-    const lastRsvpTime = localStorage.getItem("last_rsvp_time");
-    if (lastRsvpTime && Date.now() - parseInt(lastRsvpTime, 10) < 60000) {
-      await showAppAlert?.(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir form göndermeden önce 1 dakika bekleyin.", { title: t('alerts.errorTitle') });
-      return;
-    }
-
-    if (!isSupabaseReady()) {
-      await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    
-    try {
-      const dbData = uiGuestToDb(formData);
-      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
-      const token = formData.turnstileToken || "MISSING_TOKEN";
-      
-      const { data, error } = await supabase.rpc('submit_guest_secure', { 
-        guest_data: dbData, 
-        token: token 
-      });
-
-      if (error) throw error;
-      
-      localStorage.setItem("last_rsvp_time", Date.now().toString());
-      setGuests((prev) => [data ? dbGuestToUi(data) : { id: `local-${Date.now()}`, ...formData }, ...prev]);
-
-      if (formData.attendance === "Katılacağım") {
-        await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
-      }
-    } catch (error) {
-      console.error("Katılım kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert?.(t('alerts.rsvpError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [setGuests, showAppAlert, t, isEn]);
-
-  const submitWish = useCallback(async (formData) => {
-    if (formData.honeypot) return;
-
-    // İnternet bağlantısı (Offline Fallback) Kontrolü
-    if (!navigator.onLine) {
-      await showAppAlert?.(
-        isEn ? "No internet connection. Please check your network and try again." 
-             : "İnternet bağlantınız yok. Lütfen bağlantınızı kontrol edip tekrar deneyin.", 
-        { title: t('alerts.errorTitle') }
-      );
-      return;
-    }
-    
-    const lastWishTime = localStorage.getItem("last_wish_time");
-    if (lastWishTime && Date.now() - parseInt(lastWishTime, 10) < 60000) {
-      await showAppAlert?.(isEn ? "Please wait a minute before submitting again." : "Lütfen yeni bir mesaj göndermeden önce 1 dakika bekleyin.", { title: t('alerts.errorTitle') });
-      return;
-    }
-
-    if (!isSupabaseReady()) {
-      await showAppAlert?.(getSupabaseSetupMessage(), { title: t('alerts.supabaseMissingTitle') });
-      return;
-    }
-    const shouldPublishNow = !settings?.requireWishApproval;
-    try {
-      // GÜVENLİK GÜNCELLEMESİ: Formdan gelen gerçek Turnstile Token'ı kullanıyoruz
-      const token = formData.turnstileToken || "MISSING_TOKEN";
-
-      const { data, error } = await supabase.rpc('submit_wish_secure', { 
-        wish_name: formData.name.trim(), 
-        wish_message: formData.message.trim(), 
-        is_approved: shouldPublishNow,
-        token: token
-      });
-      
-      if (error) throw error;
-      
-      localStorage.setItem("last_wish_time", Date.now().toString());
-      if (shouldPublishNow) {
-        setWishes((prev) => {
-          if (data && prev.some(w => w.id === data.id)) return prev;
-          return [data ? dbWishToUi(data) : { id: `local-${Date.now()}`, ...formData, approved: true }, ...prev];
-        });
-      }
-      await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { 
-        title: settings?.requireWishApproval ? t('alerts.saveTitle') : t('alerts.saveTitle') 
-      });
-    } catch (error) {
-      console.error("Mesaj kaydedilemedi:", error);
-      const errorMsg = error?.message || (isEn ? "Unknown error" : "Bilinmeyen hata");
-      await showAppAlert?.(t('alerts.wishError', { message: errorMsg }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
-
-  const clearGuests = useCallback(async () => { /* Supabase delete methods */ }, []);
-  const clearWishes = useCallback(async () => { /* Supabase delete methods */ }, []);
-  const deleteGuest = useCallback(async (guestId) => { /* Supabase delete methods */ }, []);
-  const editGuest = useCallback(async (guestId) => { /* Supabase update methods */ }, []);
-  const deleteWish = useCallback(async (wishId) => { /* Supabase delete methods */ }, []);
-  const editWish = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
-  const toggleWishApproval = useCallback(async (wishId) => { /* Supabase update methods */ }, []);
-
-  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
-    const nextStatus = !currentStatus;
-    
-    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
-
-    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
-    
-    if (error) { 
-      setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
-      setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
-      return; 
-    }
-  }, [setGuests, setAdminSaveMessage, isEn]);
-
-  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn };
 }
 </file>
 
@@ -6940,82 +7162,102 @@ export function useScrollNavigation(isAdminPage, opened) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Masaüstü için hangi bölümde olduğumuzu hesaplayan yardımcı fonksiyon
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      // Eğer bölüm ekranın ortasından daha yukarıdaysa, okuduğumuz/odaklandığımız bölüm odur
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
   const scrollToNext = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    if (sections.length === 0) return;
+
     if (isMobile) {
       // Mobilde Slayt Geçişi
-      const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
       setCurrentSlideIndex(prev => {
         const next = prev + 1;
-        return next < sectionsCount ? next : prev;
+        return next < sections.length ? next : prev;
       });
     } else {
-      // Masaüstünde Akıllı Ortalama ve Aşağı Kaydırma
-      const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+      // Masaüstü için Endeks (Index) Tabanlı Hedefleme
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
       
-      // Ekranın orta noktasından daha aşağıda olan ilk bölümü bul
-      const nextSection = sections.find(sec => sec.getBoundingClientRect().top > window.innerHeight * 0.45);
-      
-      if (nextSection) {
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
         const rect = nextSection.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        let topPosition;
-        
-        if (rect.height <= windowHeight) {
-          // Bölüm ekrana sığıyorsa -> Tam ortaya hizala (Üst ve alt boşluklar eşitlenir)
-          topPosition = window.scrollY + rect.top - (windowHeight - rect.height) / 2;
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          // Kart ekrana sığıyorsa kusursuz ortala
+          window.scrollTo({ 
+            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
+            behavior: 'smooth' 
+          });
         } else {
-          // Bölüm ekrandan büyükse -> Okunabilirlik için üstten 24px boşluk bırakarak hizala
-          topPosition = window.scrollY + rect.top - 24;
+          // Kart çok uzunsa en tepesinden başlat (okumak için 40px boşluk)
+          window.scrollTo({ 
+            top: absoluteTop - 40, 
+            behavior: 'smooth' 
+          });
         }
-        
-        window.scrollTo({ top: topPosition, behavior: 'smooth' });
+      } else {
+        // En sondayken hala buton görünüyorsa manuel kaydır
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
       }
     }
   }, [isMobile]);
 
   const scrollToPrev = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+    if (sections.length === 0) return;
+
     if (isMobile) {
-      // Mobilde Slayt Geçişi
       setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
     } else {
-      // Masaüstünde Akıllı Ortalama ve Yukarı Kaydırma
-      const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
+      const activeIdx = getActiveDesktopIndex(sections);
+      const prevIdx = activeIdx - 1;
       
-      // Ekranın orta noktasından daha yukarıda biten ilk bölümü bul (sondan başa arayarak)
-      const prevSection = [...sections].reverse().find(sec => sec.getBoundingClientRect().bottom < window.innerHeight * 0.55);
-      
-      if (prevSection) {
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
         const rect = prevSection.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        let topPosition;
-        
-        if (rect.height <= windowHeight) {
-          // Bölüm ekrana sığıyorsa -> Tam ortaya hizala
-          topPosition = window.scrollY + rect.top - (windowHeight - rect.height) / 2;
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ 
+            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
+            behavior: 'smooth' 
+          });
         } else {
-          // Bölüm ekrandan büyükse -> Üstten hizala
-          topPosition = window.scrollY + rect.top - 24;
+          window.scrollTo({ 
+            top: absoluteTop - 40, 
+            behavior: 'smooth' 
+          });
         }
-        
-        window.scrollTo({ top: Math.max(0, topPosition), behavior: 'smooth' });
       } else {
-        // En yukarıdaysa direkt tepeye sıfırla
+        // Zaten 1. karttaysak en tepeye dön
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [isMobile]);
 
   const handleWheel = useCallback((e) => {
-    // Masaüstünde farenin doğal tekerlek kaydırmasına asla müdahale etme
+    // Masaüstünde tekerlekle kaydırmaya müdahale etmiyoruz
     if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
     
-    // Yalnızca Mobildeki Slayt Kartı İçi Kaydırmalar İçin
     const slideWrapper = e.target.closest('.slide-wrapper');
     if (slideWrapper) {
       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
       if (isScrollable) {
         const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = slideWrapper.scrollHeight - slideWrapper.scrollTop <= slideWrapper.clientHeight + 2;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
 
         if (e.deltaY > 0 && !atBottom) return; 
         if (e.deltaY < 0 && !atTop) return;    
@@ -7036,7 +7278,6 @@ export function useScrollNavigation(isAdminPage, opened) {
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
-    // Sadece mobilde parmak kaydırmayı dinle
     if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
 
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
@@ -7054,7 +7295,7 @@ export function useScrollNavigation(isAdminPage, opened) {
        const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
        if (isScrollable) {
            const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = slideWrapper.scrollHeight - slideWrapper.scrollTop <= slideWrapper.clientHeight + 2;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
            if (diff > 0 && !atBottom) return;
            if (diff < 0 && !atTop) return;
        }
@@ -7069,7 +7310,6 @@ export function useScrollNavigation(isAdminPage, opened) {
     }
   }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
 
-  // Butonları aktif / deaktif et
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
@@ -7079,7 +7319,7 @@ export function useScrollNavigation(isAdminPage, opened) {
          const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
          setShowScrollDown(currentSlideIndex < sectionsCount - 1);
       } else {
-        const scrollTop = (document.scrollingElement || document.documentElement).scrollTop;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
         setShowScrollTop(scrollTop > 100);
         
         const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
@@ -7218,6 +7458,184 @@ export default function InvitationController() {
 }
 </file>
 
+<file path="src/hooks/useDatabaseManager.js">
+import { useCallback, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
+import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+
+export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
+  
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    const wishesChannel = supabase.channel("public:wishes")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "wishes" }, (payload) => {
+        if (payload.new && payload.new.approved) {
+          setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
+        }
+      }).subscribe();
+
+    const guestsChannel = supabase.channel("public:guests")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
+        if (payload.new) {
+          setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
+        if (payload.new) {
+          setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
+        }
+      }).subscribe();
+
+    return () => {
+      supabase.removeChannel(wishesChannel);
+      supabase.removeChannel(guestsChannel);
+    };
+  }, [setWishes, setGuests]);
+
+  useEffect(() => {
+    const syncOfflineData = async () => {
+      if (!navigator.onLine || !isSupabaseReady()) return;
+      
+      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
+      if (offlineGuests.length > 0) {
+        for (const guest of offlineGuests) {
+          await supabase.rpc('submit_guest_secure', { guest_data: guest, token: guest.token || "OFFLINE_SYNC" });
+        }
+        localStorage.removeItem('offline_guests');
+      }
+
+      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
+      if (offlineWishes.length > 0) {
+        for (const wish of offlineWishes) {
+          await supabase.rpc('submit_wish_secure', { 
+            wish_name: wish.name, wish_message: wish.message, is_approved: wish.approved, token: wish.token || "OFFLINE_SYNC"
+          });
+        }
+        localStorage.removeItem('offline_wishes');
+      }
+
+      const offlineCheckins = JSON.parse(localStorage.getItem('offline_checkins') || '[]');
+      if (offlineCheckins.length > 0) {
+        for (const checkin of offlineCheckins) {
+          await supabase.from("guests").update({ has_arrived: checkin.status }).eq("id", checkin.id);
+        }
+        localStorage.removeItem('offline_checkins');
+        setAdminSaveMessage?.(isEn ? "Offline check-ins synced!" : "Çevrimdışı kapı girişleri senkronize edildi!");
+      }
+    };
+
+    window.addEventListener('online', syncOfflineData);
+    return () => window.removeEventListener('online', syncOfflineData);
+  }, [isEn, setAdminSaveMessage]);
+
+  const submitGuest = useCallback(async (formData) => {
+    if (formData.honeypot) return;
+    
+    const tempId = `temp-${Date.now()}`;
+    setGuests((prev) => [{ id: tempId, ...formData }, ...prev]);
+
+    if (!navigator.onLine) {
+      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
+      offlineGuests.push({ ...uiGuestToDb(formData), token: formData.turnstileToken || "OFFLINE_TOKEN" });
+      localStorage.setItem('offline_guests', JSON.stringify(offlineGuests));
+      await showAppAlert?.(isEn ? "Saved offline. Will sync automatically." : "İnternet yok. Bağlantı geldiğinde form otomatik gönderilecek.", { title: "Çevrimdışı 📶" });
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.rpc('submit_guest_secure', { guest_data: uiGuestToDb(formData), token: formData.turnstileToken || "MISSING_TOKEN" });
+      if (error) throw error;
+      
+      setGuests((prev) => prev.map(g => g.id === tempId ? dbGuestToUi(data) : g));
+      if (formData.attendance === "Katılacağım") await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
+    } catch (error) {
+      setGuests((prev) => prev.filter(g => g.id !== tempId));
+      await showAppAlert?.(t('alerts.rsvpError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
+    }
+  }, [setGuests, showAppAlert, t, isEn]);
+
+  const submitWish = useCallback(async (formData) => {
+    if (formData.honeypot) return;
+    const shouldPublishNow = !settings?.requireWishApproval;
+    const tempId = `temp-${Date.now()}`;
+
+    if (shouldPublishNow) {
+      setWishes((prev) => [{ id: tempId, ...formData, approved: true }, ...prev]);
+    }
+
+    if (!navigator.onLine) {
+      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
+      offlineWishes.push({ name: formData.name, message: formData.message, approved: shouldPublishNow, token: formData.turnstileToken || "OFFLINE_TOKEN" });
+      localStorage.setItem('offline_wishes', JSON.stringify(offlineWishes));
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.rpc('submit_wish_secure', { wish_name: formData.name, wish_message: formData.message, is_approved: shouldPublishNow, token: formData.turnstileToken || "MISSING_TOKEN" });
+      if (error) throw error;
+      
+      if (shouldPublishNow) {
+        setWishes((prev) => prev.map(w => w.id === tempId ? dbWishToUi(data) : w));
+      }
+      await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: t('alerts.saveTitle') });
+    } catch (error) {
+      if (shouldPublishNow) setWishes((prev) => prev.filter(w => w.id !== tempId));
+      await showAppAlert?.(t('alerts.wishError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
+    }
+  }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
+
+  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
+    const nextStatus = !currentStatus;
+    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
+
+    if (!navigator.onLine) {
+      const offlineCheckins = JSON.parse(localStorage.getItem('offline_checkins') || '[]');
+      const filtered = offlineCheckins.filter(c => c.id !== guestId);
+      filtered.push({ id: guestId, status: nextStatus });
+      localStorage.setItem('offline_checkins', JSON.stringify(filtered));
+      setAdminSaveMessage?.(isEn ? "Saved offline." : "Giriş cihaza kaydedildi (Çevrimdışı).");
+      return;
+    }
+
+    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
+    if (error) { 
+      setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
+      setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
+    }
+  }, [setGuests, setAdminSaveMessage, isEn]);
+
+  const assignTable = useCallback(async (guestId, tableNumber) => {
+    const currentGuest = guests.find(g => g.id === guestId);
+    const prevTable = currentGuest?.tableNumber;
+
+    setGuests(prev => prev.map(g => g.id === guestId ? { ...g, tableNumber } : g));
+
+    if (!navigator.onLine) {
+      setAdminSaveMessage?.(isEn ? "Table assigned offline." : "Masa çevrimdışı atandı.");
+      return;
+    }
+
+    const { error } = await supabase.from('guests').update({ table_number: tableNumber || null }).eq('id', guestId);
+    if (error) {
+      setGuests(prev => prev.map(g => g.id === guestId ? { ...g, tableNumber: prevTable } : g));
+      setAdminSaveMessage?.(isEn ? "Error assigning table." : "Masa atanamadı.");
+    }
+  }, [guests, setGuests, setAdminSaveMessage, isEn]);
+
+  const clearGuests = useCallback(async () => {}, []);
+  const clearWishes = useCallback(async () => {}, []);
+  const deleteGuest = useCallback(async (guestId) => {}, []);
+  const editGuest = useCallback(async (guestId) => {}, []);
+  const deleteWish = useCallback(async (wishId) => {}, []);
+  const editWish = useCallback(async (wishId) => {}, []);
+  const toggleWishApproval = useCallback(async (wishId) => {}, []);
+
+  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
+}
+</file>
+
 <file path="src/components/common/FloatingMenu.jsx">
 import React, { memo } from "react";
 
@@ -7303,7 +7721,7 @@ export const FloatingMenu = memo(function FloatingMenu({
 </file>
 
 <file path="src/pages/InvitationView.jsx">
-import React, { useMemo, useEffect, lazy, Suspense } from "react";
+import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -7330,9 +7748,56 @@ const WishesSection = lazy(() => import("../components/invitation/sections/Wishe
 
 const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
 
+// ==========================================
+// 💻 MASAÜSTÜ GÖRÜNÜMÜ (DESKTOP VIEW)
+// İleride web'e özel bir tasarım yapacaksanız 
+// değişiklikleri bu bileşen içinde yapabilirsiniz.
+// ==========================================
+function DesktopInvitationView({ sections, currentSlideIndex }) {
+  return (
+    <div className="desktop-layout">
+      {sections.map((Section, index) => (
+        <div 
+          key={`desktop-${index}`} 
+          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+        >
+          {Section}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ==========================================
+// 📱 MOBİL GÖRÜNÜMÜ (MOBILE VIEW)
+// İleride mobile özel dikey kaydırma veya 
+// farklı bir tasarım akışı kuracaksanız 
+// değişiklikleri bu bileşen içinde yapabilirsiniz.
+// ==========================================
+function MobileInvitationView({ sections, currentSlideIndex }) {
+  return (
+    <div className="mobile-layout">
+      {sections.map((Section, index) => (
+        <div 
+          key={`mobile-${index}`} 
+          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+        >
+          {Section}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ==========================================
+// ANA KONTROL BİLEŞENİ
+// ==========================================
 export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
+
+  // Ekran boyutuna göre mobil/masaüstü durumunu tutan State
+  const [isMobile, setIsMobile] = useState(false);
 
   const siteData = useStore((state) => state.siteData);
   const guests = useStore((state) => state.guests);
@@ -7366,6 +7831,13 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Uygulama yüklendiğinde ve ekran boyutu değiştiğinde Mobil/Web ayrımını kontrol et
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile(); // İlk render'da çalıştır
+    
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const copyInvitationLink = async () => {
@@ -7378,7 +7850,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
   };
 
   const handlePageClick = (e) => {
-    if (window.innerWidth > 768) return;
+    if (!isMobile) return; // Tıklama ile sayfa geçişi Instagram Hikaye mantığıdır, sadece mobilde çalışır.
 
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
@@ -7387,7 +7859,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
     const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
     if (isInteractive) return;
 
-    // Instagram Hikaye Mantığı (Sadece mobilde aktif kalacak)
+    // Instagram Hikaye Mantığı
     if (e.clientX < window.innerWidth * 0.35) {
       if (typeof scrollToPrev === 'function') scrollToPrev();
     } else {
@@ -7416,7 +7888,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
 
   return (
     <main 
-      className="invitation-page" 
+      className={`invitation-page ${isMobile ? 'mobile-mode' : 'desktop-mode'}`} 
       onClick={handlePageClick}
       style={{ 
         '--hero-image': `url(${invitation.heroImage})`, 
@@ -7433,15 +7905,13 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      {/* Dinamik Bölüm Render İşlemi ve Animasyon Sınıfları */}
-      {sections.map((Section, index) => (
-        <div 
-          key={index} 
-          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
-        >
-          {Section}
-        </div>
-      ))}
+      {/* EKRAN BOYUTUNA GÖRE BİLEŞEN YÖNLENDİRMESİ */}
+      {isMobile ? (
+        <MobileInvitationView sections={sections} currentSlideIndex={currentSlideIndex} />
+      ) : (
+        <DesktopInvitationView sections={sections} currentSlideIndex={currentSlideIndex} />
+      )}
+      
     </main>
   );
 }
@@ -7699,6 +8169,20 @@ button {
       transparent 12%
     );
 }
+
+/* YENİ: Hero Video Arka Planı için Eksik CSS Eklendi */
+.hero-video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
 .hero-section {
   position: relative;
   min-height: 760px;
@@ -7715,6 +8199,7 @@ button {
     ),
     var(--hero-image) center/cover no-repeat;
   box-shadow: var(--shadow);
+  overflow: hidden; /* Videonun köşelerden taşmasını engeller */
 }
 .hero-section::before {
   content: "";
@@ -7725,6 +8210,8 @@ button {
   left: 18px;
   border: 1px solid rgba(255, 238, 243, 0.55);
   border-radius: 34px;
+  z-index: 2;
+  pointer-events: none;
 }
 .hero-section::after {
   content: "❀";
@@ -7734,10 +8221,11 @@ button {
   transform: translateX(-50%);
   color: #d8b5be;
   font-size: 28px;
+  z-index: 2;
 }
 .hero-content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 .hero-date {
   display: inline-block;
@@ -7989,19 +8477,41 @@ button {
   border-radius: 20px;
   font-size: 21px;
 }
+
+/* ==============================================================
+   GALERİ İÇİN KESİN ÇÖZÜM
+   ============================================================== */
 .gallery-grid {
   grid-template-columns: repeat(4, 1fr);
   gap: 18px;
   margin-top: 34px;
 }
-.gallery-grid img {
+
+/* Çerçeve (Taşıyıcı Kutu) Ayarları */
+.gallery-grid .gallery-image {
   width: 100%;
   height: 260px;
-  object-fit: cover;
   border: 1px solid rgba(255, 230, 237, 0.7);
-  border-radius: 28px;
+  border-radius: 28px !important; /* Çerçeveyi yumuşatır */
   box-shadow: 0 18px 42px rgba(111, 47, 67, 0.18);
+  aspect-ratio: unset !important;
+  overflow: hidden !important; /* YENİ: Kırpmayı %100 zorlar */
+  position: relative;
 }
+
+/* YENİ: İçteki asıl resim zorla çerçeveyi doldurur */
+.gallery-grid .gallery-image img,
+.gallery-grid > img { 
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 28px !important;
+  display: block !important;
+  position: absolute !important;
+  top: 0;
+  left: 0;
+}
+
 .rsvp-card {
   overflow: visible;
   border: 1px solid rgba(217, 140, 161, 0.42);
@@ -8498,883 +9008,6 @@ button {
   html body .app .invitation-page > footer,
   html body .app .invitation-page > section {
     scroll-margin-top: 40px !important;
-  }
-}
-
-@media (max-width: 650px) {
-  .gallery-grid img,
-  .mini-map {
-    height: 300px;
-  }
-  .glass-dock {
-    top: auto !important;
-    bottom: 24px !important;
-    right: 50% !important;
-    transform: translateX(50%) !important;
-    flex-direction: row !important;
-    padding: 8px 14px !important;
-    gap: 14px !important;
-  }
-  .guest-item,
-  .info-row,
-  .option-group {
-    flex-direction: column;
-  }
-  .scroll-indicator {
-    bottom: 5px; 
-  }
-  .intro-page {
-    padding: 18px;
-  }
-  .intro-card {
-    padding: 46px 24px;
-    border-radius: 32px;
-  }
-  .couple-title {
-    font-size: 58px;
-  }
-  .couple-title em {
-    display: block;
-    margin: 4px 0;
-  }
-  .intro-text,
-  .rsvp-card > p {
-    font-size: 19px;
-  }
-  .hero-section {
-    min-height: 560px;
-    padding: 64px 18px;
-    background: radial-gradient(
-        circle at center,
-        rgba(70, 24, 40, 0.24) 0,
-        rgba(70, 24, 40, 0.42) 46%,
-        rgba(35, 14, 22, 0.66) 100%
-      ),
-      var(--hero-image) center/cover no-repeat;
-  }
-  .hero-section .couple-title {
-    color: #fff;
-    font-size: clamp(68px, 8vw, 118px);
-    line-height: 1.04;
-    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42),
-      0 0 24px rgba(255, 220, 230, 0.22);
-  }
-  .hero-section .couple-title em {
-    margin: -4px 0 -6px;
-    font-size: 0.45em;
-  }
-  .hero-date {
-    padding: 10px 20px;
-    font-size: 21px;
-  }
-  .hero-time {
-    font-size: 20px;
-  }
-  .card,
-  .countdown-section {
-    padding: 36px 20px;
-    border-radius: 30px;
-  }
-  .rsvp-card h2 {
-    font-size: 32px;
-  }
-  .option-button,
-  .rsvp-form input,
-  .rsvp-form textarea,
-  .wish-form input,
-  .wish-form textarea {
-    font-size: 16px;
-  }
-  .countdown-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .gallery-grid,
-  .timeline-item {
-    grid-template-columns: 1fr;
-  }
-  .guest-item,
-  .info-row {
-    gap: 6px;
-    text-align: center;
-  }
-  .mini-map {
-    border-radius: 22px;
-  }
-  .timeline::before {
-    display: none;
-  }
-  .timeline-item {
-    gap: 8px;
-    text-align: center;
-  }
-  .option-button {
-    width: 100%;
-    min-width: unset;
-  }
-  .main-button,
-  .secondary-button {
-    width: 100%;
-  }
-  .floating-actions {
-    top: auto;
-    right: 14px;
-    bottom: 16px;
-    left: auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  .floating-actions .share-button {
-    width: 132px;
-    height: 58px;
-    font-size: 17px;
-  }
-  .floating-actions .music-toggle-button {
-    width: 52px !important;
-    height: 52px !important;
-    min-width: 52px !important;
-    align-self: flex-end;
-  }
-  .floating-actions .music-toggle-button svg {
-    width: 28px;
-    height: 28px;
-  }
-  .app-modal-backdrop {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    height: 100dvh !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 24px !important;
-  }
-  .app-modal-card {
-    position: relative !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    transform: none !important;
-    width: 100% !important;
-    max-width: 380px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow-y: visible !important;
-    background: var(--paper, #fff) !important;
-    border-radius: 28px !important;
-    padding: 36px 24px !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
-    box-sizing: border-box !important;
-  }
-  .app-modal-actions {
-    margin-top: 24px !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-}
-
-.glass-dock,
-.glass-dock .dock-btn {
-  display: flex !important;
-  padding: 0 !important;
-}
-.glass-dock {
-  position: fixed !important;
-  top: 50% !important;
-  right: 20px !important;
-  transform: translateY(-50%) !important;
-  z-index: 9999 !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  gap: 12px !important;
-  background: 0 0 !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-.glass-dock .dock-btn,
-.lightbox-control-btn {
-  cursor: pointer !important;
-  align-items: center !important;
-}
-.glass-dock .dock-btn {
-  width: 46px !important;
-  height: 46px !important;
-  min-width: 46px !important;
-  border-radius: 50% !important;
-  justify-content: center !important;
-  margin: 0 !important;
-  background: rgba(255, 255, 255, 0.4) !important;
-  color: var(--text-soft, #777) !important;
-  border: 1px solid rgba(255, 255, 255, 0.7) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
-  transition: 0.3s !important;
-  text-decoration: none !important;
-  font-family: "Playfair Display", serif !important;
-  font-size: 14px !important;
-  font-weight: 800 !important;
-}
-.gift-card .gift-card-bank,
-.modal-gift-card .modal-gift-bank {
-  text-align: center !important;
-  font-family: var(--sans) !important;
-}
-.glass-dock .dock-btn:hover {
-  transform: translateY(-3px) scale(1.05) !important;
-  background: #fff !important;
-  color: var(--rose-dark, #9f4f68) !important;
-  border-color: #fff !important;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08) !important;
-}
-.glass-dock .dock-btn svg {
-  width: 20px !important;
-  height: 20px !important;
-  stroke: currentColor !important;
-  fill: none !important;
-  transition: stroke 0.3s !important;
-}
-[data-theme="dark"] .glass-dock {
-  background: 0 0 !important;
-  border: none !important;
-}
-[data-theme="dark"] .glass-dock .dock-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-[data-theme="dark"] .glass-dock .dock-btn:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: var(--rose-light, #f8d7df) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-.hero-content > * {
-  animation: 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both heroFadeUp;
-}
-.hero-content .small-title {
-  animation-delay: 0.2s;
-}
-.hero-content .couple-title {
-  animation-delay: 0.4s;
-}
-.hero-content .hero-date {
-  animation-delay: 0.6s;
-}
-.hero-content .hero-time {
-  animation-delay: 0.8s;
-}
-.hero-content .hero-guest-greeting {
-  animation-delay: 1s;
-}
-@keyframes heroFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.admin-shell-card {
-  animation: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both adminScaleUp;
-}
-.admin-page-header {
-  animation: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both adminFadeUp;
-}
-.admin-login {
-  animation: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both adminFadeUp;
-}
-.admin-sidebar {
-  animation: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s both adminFadeRight;
-}
-.admin-main-panel {
-  animation: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.45s both adminFadeUp;
-}
-@keyframes adminScaleUp {
-  from {
-    opacity: 0;
-    transform: scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes adminFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes adminFadeRight {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-body .app .floating-actions button.music-toggle-button.music-on,
-body .app .glass-dock .dock-btn.music-on {
-  animation: 1.8s ease-in-out infinite musicPulseGlow !important;
-  border-color: var(--amp-color, #9f4f68) !important;
-}
-@keyframes musicPulseGlow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0.45);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 12px rgba(159, 79, 104, 0);
-    transform: scale(1.04);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(159, 79, 104, 0);
-    transform: scale(1);
-  }
-}
-.lightbox-control-btn {
-  position: absolute !important;
-  background: rgba(30, 30, 35, 0.78) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #fff !important;
-  width: 52px !important;
-  height: 52px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  justify-content: center !important;
-  line-height: 1 !important;
-  z-index: 20 !important;
-  -webkit-backdrop-filter: blur(6px) !important;
-  backdrop-filter: blur(6px) !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
-  transition: 0.2s !important;
-}
-.lightbox-control-btn:hover {
-  background: rgba(45, 45, 52, 0.95) !important;
-  transform: scale(1.06) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
-}
-.admin-link-button,
-.admin-nav-button,
-.admin-upload-button,
-.form-button,
-.gift-copy-button,
-.main-button,
-.rsvp-whatsapp-button,
-.secondary-button,
-.small-admin-button,
-button {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1.15 !important;
-  gap: 8px !important;
-}
-.form-button,
-.gift-copy-button,
-.rsvp-whatsapp-button {
-  width: fit-content !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-.app-modal-actions {
-  display: flex !important;
-  flex-direction: column-reverse !important;
-}
-.app-modal-content h3 {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  gap: 10px !important;
-  margin: 0;
-  color: var(--rose-deep);
-  font-weight: 900;
-  line-height: 1.15;
-  font-size: clamp(23px, 3.2vw, 29px);
-}
-.app-modal-actions,
-.app-modal-content .modal-gift-card {
-  flex-direction: column !important;
-  display: flex !important;
-}
-.app-modal-actions,
-.app-modal-content {
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-.app-modal-content h3::before {
-  content: "😔";
-  font-size: 1.1em;
-}
-.app-modal-content .modal-message,
-.app-modal-content p {
-  text-align: center !important;
-}
-.app-modal-content .modal-gift-card {
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  margin: 20px auto 0 !important;
-  padding: 18px !important;
-  background: var(--paper-soft) !important;
-  border: 1.5px dashed color-mix(in srgb, var(--amp-color) 40%, transparent) !important;
-  border-radius: 16px !important;
-  width: 100% !important;
-}
-.modal-gift-card .modal-gift-receiver {
-  font-size: 20px !important;
-  color: var(--rose-deep) !important;
-  text-align: center !important;
-  line-height: 1.2 !important;
-  margin: 0 !important;
-}
-.modal-gift-card .modal-gift-bank {
-  font-size: 15px !important;
-  color: var(--text-soft) !important;
-  margin-bottom: 8px !important;
-}
-.modal-gift-card .modal-gift-iban {
-  font-size: 15px !important;
-  text-align: center !important;
-  width: 100% !important;
-  padding: 12px 8px !important;
-  letter-spacing: 1px !important;
-}
-.gift-card code,
-.modal-gift-iban code {
-  letter-spacing: 0 !important;
-}
-.app-modal-content .modal-gift-card .modal-gift-iban,
-.gift-card .gift-card-iban,
-.gift-card code,
-.modal-gift-iban code {
-  background: var(--paper, #fff) !important;
-  color: var(--rose-deep, #393545) !important;
-  border: 1.5px solid color-mix(in srgb, var(--amp-color) 35%, transparent) !important;
-  border-radius: 12px !important;
-  padding: 14px 10px !important;
-  font-size: 16px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px !important;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03) !important;
-  display: block !important;
-  word-break: normal !important;
-  white-space: pre-wrap !important;
-}
-.app-modal-backdrop {
-  position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(0, 0, 0, 0.65) !important;
-  z-index: 99999 !important;
-  padding: 24px !important;
-}
-.app-modal-actions {
-  gap: 12px !important;
-  margin: 24px 0 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
-}
-.app-modal-actions .main-button {
-  order: 1 !important;
-  width: 100% !important;
-  margin: 0 !important;
-  min-height: 52px !important;
-}
-.app-modal-actions .secondary-button {
-  order: 2 !important;
-  width: 100% !important;
-  margin: 0 !important;
-  min-height: 52px !important;
-}
-.gift-card {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  margin: 20px auto 0 !important;
-  padding: 24px !important;
-  background: var(--paper-soft) !important;
-  border: 1.5px dashed color-mix(in srgb, var(--amp-color) 40%, transparent) !important;
-  border-radius: 20px !important;
-  width: 100% !important;
-  max-width: 420px !important;
-}
-.envelope-flap::before,
-.envelope-front::before {
-  background-color: var(--amp-color);
-  -webkit-mask-image: var(--theme-flower-svg);
-  mask-image: var(--theme-flower-svg);
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-}
-.gift-card .gift-card-receiver {
-  font-size: 22px !important;
-  color: var(--rose-deep) !important;
-  text-align: center !important;
-  margin: 0 !important;
-  line-height: 1.2 !important;
-}
-.gift-card .gift-card-bank {
-  font-size: 16px !important;
-  color: var(--text-soft) !important;
-  margin-bottom: 8px !important;
-}
-.gift-card .gift-card-iban {
-  width: 100% !important;
-  margin: 0 !important;
-}
-.envelope-flap::before,
-.envelope-front::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  -webkit-mask-image: var(--theme-flower-svg);
-  mask-image: var(--theme-flower-svg);
-  -webkit-mask-size: 85px 85px;
-  mask-size: 85px 85px;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  opacity: 0.08;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 1;
-}
-.leaf-mark {
-  width: 24px;
-  height: 24px;
-  -webkit-mask-image: var(--theme-flower-svg);
-  mask-image: var(--theme-flower-svg);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  display: inline-block;
-  margin: 0 auto;
-}
-.card::after,
-.countdown-section::after {
-  content: "";
-  width: 26px;
-  height: 26px;
-  background-color: var(--theme-strong);
-  -webkit-mask-image: var(--theme-flower-svg);
-  mask-image: var(--theme-flower-svg);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  position: absolute;
-  top: 26px;
-  left: 30px;
-  z-index: 1;
-  pointer-events: none;
-}
-.field-with-counter {
-  position: relative;
-  width: 100%;
-}
-.field-with-counter textarea {
-  padding-bottom: 35px !important;
-}
-.field-with-counter span {
-  position: absolute;
-  bottom: 16px;
-  right: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  opacity: 0.6;
-  pointer-events: none;
-}
-.invitation-page > footer,
-.invitation-page > section:not(.hero-section) {
-  min-height: unset !important;
-  height: max-content !important;
-  margin: 32px 16px !important;
-  padding: 48px 24px !important;
-  border-radius: 32px !important;
-  scroll-snap-align: none !important;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-.force-scroll-bottom {
-  position: absolute !important;
-  bottom: 25px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  margin-top: 0 !important;
-  z-index: 50 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-}
-.gift-card button,
-.gift-section button,
-.iban-container button {
-  margin-top: 24px !important;
-  position: relative;
-  z-index: 2;
-}
-.gift-details,
-.iban-container {
-  padding-bottom: 20px;
-}
-.flower-icon,
-.hero-icon,
-.intro-icon,
-.section-icon {
-  background: 0 0 !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-.btn,
-.floating-menu-btn,
-button {
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    box-shadow 0.3s !important;
-  will-change: transform;
-}
-.btn:hover,
-button:hover {
-  transform: translateY(-5px) !important;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
-}
-.btn:active,
-button:active {
-  transform: translateY(2px) !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-/* =========================================
-   INTERAKTIF HİKAYE HARİTASI
-   ========================================= */
-.story-timeline-container {
-  position: relative;
-  width: 100%;
-  max-width: 860px;
-  margin: 40px auto 0;
-  padding: 20px 0;
-}
-
-.story-line-bg {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 0px;
-  border-left: 3px dashed rgba(217, 140, 161, 0.4);
-  transform: translateX(-50%);
-  z-index: 1;
-}
-
-.story-line-progress {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(to bottom, var(--rose-light), var(--rose-dark));
-  transform: translateX(-50%);
-  transform-origin: top;
-  z-index: 2;
-  border-radius: 4px;
-}
-
-.story-traveler {
-  position: absolute;
-  left: 50%;
-  width: 38px;
-  height: 38px;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-  background: var(--paper);
-  border-radius: 50%;
-  box-shadow: 0 4px 14px rgba(159, 79, 104, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid rgba(217, 140, 161, 0.3);
-}
-
-.story-node {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 50px;
-  position: relative;
-  z-index: 3;
-}
-.story-node:last-child {
-  margin-bottom: 0;
-}
-
-.story-node.left {
-  flex-direction: row-reverse;
-}
-
-.story-content-box {
-  width: 45%;
-  padding: 28px;
-  border: 1px solid rgba(217, 140, 161, 0.25);
-  border-radius: 24px;
-  background: var(--paper-soft);
-  box-shadow: 0 12px 30px rgba(111, 47, 67, 0.06);
-  position: relative;
-  text-align: left;
-  transition: transform 0.3s;
-}
-
-.story-content-box:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 38px rgba(111, 47, 67, 0.1);
-}
-
-.story-node.left .story-content-box::after,
-.story-node.right .story-content-box::after {
-  content: "";
-  position: absolute;
-  top: 32px;
-  border-style: solid;
-}
-.story-node.left .story-content-box::after {
-  right: -12px;
-  border-width: 12px 0 12px 12px;
-  border-color: transparent transparent transparent rgba(217, 140, 161, 0.25);
-}
-.story-node.right .story-content-box::after {
-  left: -12px;
-  border-width: 12px 12px 12px 0;
-  border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent;
-}
-
-.story-map-marker {
-  width: 24px;
-  height: 24px;
-  background: var(--paper);
-  border: 3px solid var(--rose);
-  border-radius: 50%;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 4;
-}
-.story-map-marker-inner {
-  width: 10px;
-  height: 10px;
-  background: var(--rose-dark);
-  border-radius: 50%;
-  transition: 0.3s;
-}
-.story-node:hover .story-map-marker-inner {
-  transform: scale(1.4);
-  background: var(--amp-color);
-}
-
-.story-date {
-  display: inline-block;
-  padding: 6px 14px;
-  background: color-mix(in srgb, var(--rose-dark) 8%, transparent);
-  color: var(--rose-deep);
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 800;
-  margin-bottom: 14px;
-  letter-spacing: 1px;
-}
-
-.story-heading {
-  margin: 0 0 10px 0;
-  color: var(--rose-deep);
-  font-size: 24px;
-  font-family: "Playfair Display", serif;
-  font-weight: 800;
-}
-
-.story-desc {
-  margin: 0;
-  color: var(--text-soft);
-  font-size: 17px;
-  line-height: 1.7;
-}
-
-.story-image {
-  width: 100%;
-  border-radius: 14px;
-  margin-top: 18px;
-  border: 1px solid rgba(217, 140, 161, 0.3);
-  box-shadow: 0 8px 20px rgba(111, 47, 67, 0.08);
-  object-fit: cover;
-}
-
-@media (max-width: 650px) {
-  .story-line-bg, .story-line-progress {
-    left: 32px;
-  }
-  .story-traveler {
-    left: 32px;
-  }
-  .story-node {
-    flex-direction: column !important;
-    align-items: flex-start;
-  }
-  .story-node .story-content-box {
-    width: calc(100% - 64px);
-    margin-left: 64px;
-  }
-  .story-node.left .story-content-box::after,
-  .story-node.right .story-content-box::after {
-    top: 32px;
-    left: -12px;
-    right: auto;
-    border-width: 12px 12px 12px 0;
-    border-color: transparent rgba(217, 140, 161, 0.25) transparent transparent;
-  }
-  .story-map-marker {
-    left: 32px;
   }
 }
 </file>

@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, lazy, Suspense } from "react";
+import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "../store/useStore";
 import { useTranslation } from "react-i18next";
 import { Helmet } from "react-helmet-async";
@@ -25,9 +25,56 @@ const WishesSection = lazy(() => import("../components/invitation/sections/Wishe
 
 const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
 
+// ==========================================
+// 💻 MASAÜSTÜ GÖRÜNÜMÜ (DESKTOP VIEW)
+// İleride web'e özel bir tasarım yapacaksanız 
+// değişiklikleri bu bileşen içinde yapabilirsiniz.
+// ==========================================
+function DesktopInvitationView({ sections, currentSlideIndex }) {
+  return (
+    <div className="desktop-layout">
+      {sections.map((Section, index) => (
+        <div 
+          key={`desktop-${index}`} 
+          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+        >
+          {Section}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ==========================================
+// 📱 MOBİL GÖRÜNÜMÜ (MOBILE VIEW)
+// İleride mobile özel dikey kaydırma veya 
+// farklı bir tasarım akışı kuracaksanız 
+// değişiklikleri bu bileşen içinde yapabilirsiniz.
+// ==========================================
+function MobileInvitationView({ sections, currentSlideIndex }) {
+  return (
+    <div className="mobile-layout">
+      {sections.map((Section, index) => (
+        <div 
+          key={`mobile-${index}`} 
+          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+        >
+          {Section}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ==========================================
+// ANA KONTROL BİLEŞENİ
+// ==========================================
 export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
+
+  // Ekran boyutuna göre mobil/masaüstü durumunu tutan State
+  const [isMobile, setIsMobile] = useState(false);
 
   const siteData = useStore((state) => state.siteData);
   const guests = useStore((state) => state.guests);
@@ -61,6 +108,13 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Uygulama yüklendiğinde ve ekran boyutu değiştiğinde Mobil/Web ayrımını kontrol et
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile(); // İlk render'da çalıştır
+    
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const copyInvitationLink = async () => {
@@ -73,7 +127,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
   };
 
   const handlePageClick = (e) => {
-    if (window.innerWidth > 768) return;
+    if (!isMobile) return; // Tıklama ile sayfa geçişi Instagram Hikaye mantığıdır, sadece mobilde çalışır.
 
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
@@ -82,7 +136,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
     const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
     if (isInteractive) return;
 
-    // Instagram Hikaye Mantığı (Sadece mobilde aktif kalacak)
+    // Instagram Hikaye Mantığı
     if (e.clientX < window.innerWidth * 0.35) {
       if (typeof scrollToPrev === 'function') scrollToPrev();
     } else {
@@ -111,7 +165,7 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
 
   return (
     <main 
-      className="invitation-page" 
+      className={`invitation-page ${isMobile ? 'mobile-mode' : 'desktop-mode'}`} 
       onClick={handlePageClick}
       style={{ 
         '--hero-image': `url(${invitation.heroImage})`, 
@@ -128,15 +182,13 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      {/* Dinamik Bölüm Render İşlemi ve Animasyon Sınıfları */}
-      {sections.map((Section, index) => (
-        <div 
-          key={index} 
-          className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
-        >
-          {Section}
-        </div>
-      ))}
+      {/* EKRAN BOYUTUNA GÖRE BİLEŞEN YÖNLENDİRMESİ */}
+      {isMobile ? (
+        <MobileInvitationView sections={sections} currentSlideIndex={currentSlideIndex} />
+      ) : (
+        <DesktopInvitationView sections={sections} currentSlideIndex={currentSlideIndex} />
+      )}
+      
     </main>
   );
 }

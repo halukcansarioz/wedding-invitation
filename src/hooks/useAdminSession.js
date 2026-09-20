@@ -3,7 +3,8 @@ import { supabase } from "../supabaseClient";
 import { getReadableAuthError, getSupabaseSetupMessage, isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadAllWishesFromDatabase } from "../services/database";
 import { normalizeSiteData, touchAdminSession, clearAdminSessionTimestamp, isAdminSessionFresh, getAdminRedirectUrl } from "../utils/helpers";
 import { ADMIN_ACTIVITY_EVENTS, SITE_DATA_KEY } from "../config/constants";
-import { useStore, useAdminStore } from "../store/useStore";
+import { useStore } from "../store/useStore";
+import { useAdminStore } from "../store/useAdminStore";
 
 export function useAdminSession({ isAdminPage, isEn }) {
   const adminStore = useAdminStore();

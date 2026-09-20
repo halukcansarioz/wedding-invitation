@@ -15,3 +15,4 @@ export { QrTab } from './QrTab';
 export { DataTab } from './DataTab';
 export { GiftTab } from './GiftTab';
 export { StoryTab } from './StoryTab';
+export { TablePlanTab } from './TablePlanTab';

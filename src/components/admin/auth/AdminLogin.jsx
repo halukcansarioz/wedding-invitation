@@ -1,5 +1,5 @@
 import React from "react";
-import { useAdminStore } from "../../../store/useStore";
+import { useAdminStore } from "../../../store/useAdminStore";
 
 export function AdminLogin({
   isEn, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail

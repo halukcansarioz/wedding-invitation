@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useStore, useAdminStore } from '../store/useStore';
+import { useStore } from '../store/useStore';
+import { useAdminStore } from '../store/useAdminStore';
 import { useAdminSession } from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
@@ -15,7 +16,6 @@ export default function AdminController() {
   const isEn = i18n.language?.startsWith('en') || false;
   const navigate = useNavigate();
 
-  // Zustand Store'lar
   const siteData = useStore((state) => state.siteData);
   const guests = useStore((state) => state.guests);
   const setGuests = useStore((state) => state.setGuests);
@@ -32,7 +32,6 @@ export default function AdminController() {
   
   const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
 
-  // Lokal Form & Filtre Durumları
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
   const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
   const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
@@ -44,10 +43,9 @@ export default function AdminController() {
   const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
   const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
 
-  // Auth Methodları
   const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
 
-  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn } = useDatabaseManager({
+  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable } = useDatabaseManager({
     guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert: null, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
   });
 
@@ -95,7 +93,7 @@ export default function AdminController() {
         exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} dataImportText={dataImportText} setDataImportText={setDataImportText} 
         exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
         exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
-        toggleCheckIn={toggleCheckIn} 
+        toggleCheckIn={toggleCheckIn} assignTable={assignTable}
       />
     </Suspense>
   );
