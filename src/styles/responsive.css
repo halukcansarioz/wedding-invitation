@@ -30,9 +30,6 @@ main.invitation-page.mobile-mode .slide-wrapper {
   -ms-overflow-style: none;
   scrollbar-width: none;
   
-  padding-top: env(safe-area-inset-top) !important;
-  padding-bottom: env(safe-area-inset-bottom) !important;
-
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
   transform: translateY(30px) scale(0.98) !important; 
 }
@@ -81,11 +78,14 @@ main.invitation-page.mobile-mode .hero-section::before {
 
 /* =========================================================
    DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
-   İçeriğin kesilmesini (cut-off) önlemek için blok yapıya geçildi
+   Kesilme (Cut-off) sorunlarını tamamen engeller
    ========================================================= */
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
-  display: block !important; 
-  padding-top: calc(6vh + env(safe-area-inset-top)) !important;
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: flex-start !important; /* İçerik uzunsa üstten başlar, üstte kesilme yapmaz */
+  align-items: center !important;
+  padding-top: calc(8vh + env(safe-area-inset-top)) !important;
   padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
   padding-left: clamp(12px, 4vw, 20px) !important;
   padding-right: clamp(12px, 4vw, 20px) !important;
@@ -96,13 +96,29 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
   display: none !important;
 }
 
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
+main.invitation-page.mobile-mode .card,
+main.invitation-page.mobile-mode .countdown-section,
+main.invitation-page.mobile-mode .rsvp-card,
+main.invitation-page.mobile-mode .story-card {
+  height: max-content !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
   width: 100% !important;
   margin: 0 auto !important; 
 }
 
+
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
+  width: 100% !important;
+  margin: auto 0 !important; /* Kısa kartları dikeyde ortalar, uzun kartları ise üstte hizalar */
+  flex-shrink: 0 !important; /* Kartın sıkışıp içindeki yazıları kırpmasını/gizlemesini kesin olarak engeller */
+}
 
 /* =========================================================
    MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
@@ -125,6 +141,11 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     max-height: none !important; 
     height: auto !important;
     overflow: visible !important;
+  }
+
+  .card h2, .countdown-section h2, .section-label {
+    line-height: 1.35 !important;
+    padding-bottom: 2px !important;
   }
 
   .admin-main-panel, 
@@ -183,16 +204,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   .mini-map {
     height: 250px !important;
     border-radius: 16px !important;
-  }
-  
-  .glass-dock {
-    top: auto !important;
-    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-    right: 50% !important;
-    transform: translateX(50%) !important;
-    flex-direction: row !important;
-    padding: 8px 14px !important;
-    gap: 14px !important;
   }
   
   .guest-item,
@@ -295,30 +306,7 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     width: 100%;
     padding: 14px 20px; 
   }
-  .floating-actions {
-    top: auto;
-    right: 14px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    left: auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  .floating-actions .share-button {
-    width: 120px;
-    height: 54px;
-    font-size: 16px;
-  }
-  .floating-actions .music-toggle-button {
-    width: 48px !important;
-    height: 48px !important;
-    min-width: 48px !important;
-    align-self: flex-end;
-  }
-  .floating-actions .music-toggle-button svg {
-    width: 24px;
-    height: 24px;
-  }
+  
   .app-modal-backdrop {
     position: fixed !important;
     top: 0 !important;
@@ -360,7 +348,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   }
 }
 
-/* 3. ÇOK KÜÇÜK EKRANLAR İÇİN (iPhone SE, vb. < 400px) */
 @media (max-width: 400px) {
   .intro-card {
     padding: 30px 16px !important;
@@ -398,5 +385,19 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   }
   .story-content-box {
     padding: 16px 12px !important;
+  }
+}
+
+@media (min-width: 651px) {
+  .floating-actions,
+  .glass-dock {
+    height: auto !important;
+    max-height: none !important;
+    top: auto !important;
+    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
+    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
+  }
+  html body .app .glass-dock .wa-btn {
+    display: none !important;
   }
 }

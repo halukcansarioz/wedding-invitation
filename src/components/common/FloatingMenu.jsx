@@ -14,8 +14,8 @@ export const FloatingMenu = memo(function FloatingMenu({
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
-        /* DÜZELTME: Tüm dock butonları tek bir boyutta ve stilde eşitlendi */
-        .floating-actions {
+        /* Mobil Görünüm (Varsayılan) */
+        #main-dock {
           display: flex !important;
           gap: 12px !important;
           align-items: center !important;
@@ -26,15 +26,12 @@ export const FloatingMenu = memo(function FloatingMenu({
           right: 50% !important;
           transform: translateX(50%) !important;
           padding: 8px 14px !important;
+          flex-direction: row !important;
         }
-        .floating-actions .dock-btn {
+
+        #main-dock .dock-btn {
           position: relative !important;
           margin: 0 !important;
-          top: auto !important;
-          bottom: auto !important;
-          left: auto !important;
-          right: auto !important;
-          transform: none !important;
           transition: all 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55) !important;
           width: 48px !important;
           height: 48px !important;
@@ -50,10 +47,12 @@ export const FloatingMenu = memo(function FloatingMenu({
           box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
           cursor: pointer !important;
         }
-        .floating-actions .dock-btn svg {
+
+        #main-dock .dock-btn svg {
           width: 22px !important;
           height: 22px !important;
         }
+
         .hidden-btn {
           opacity: 0 !important;
           transform: scale(0.4) translateY(20px) !important;
@@ -61,17 +60,15 @@ export const FloatingMenu = memo(function FloatingMenu({
           position: absolute !important;
           visibility: hidden !important;
         }
+
+        /* Masaüstü Görünüm */
         @media (min-width: 651px) {
-          .floating-actions {
+          #main-dock {
             flex-direction: column !important;
-            right: 24px !important;
-            bottom: 24px !important;
-            transform: none !important;
-          }
-        }
-        @media (max-width: 650px) {
-          .floating-actions {
-            flex-direction: row !important;
+            right: 32px !important;          /* Sağ kenara sabitler */
+            top: 50% !important;             /* Dikeyde ekranın ortasına alır */
+            bottom: auto !important;         /* Eski alttan hizalamayı iptal eder */
+            transform: translateY(-50%) !important; /* Kusursuz dikey ortalama sağlar */
           }
         }
       `}} />
@@ -87,14 +84,15 @@ export const FloatingMenu = memo(function FloatingMenu({
       </div>
 
       <div 
+        id="main-dock"
         className="floating-actions glass-dock"
-        style={{ zIndex: 999999, pointerEvents: 'auto' }}
+        style={{ zIndex: 999999, pointerEvents: 'auto', position: 'fixed' }}
       >
         <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
         </button>
 
-        <button type="button" className="dock-btn music-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
+        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {isMusicPlaying ? (
               <>

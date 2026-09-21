@@ -140,26 +140,24 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
 
-          {/* DÜZELTME: İki butonun genişliklerinin (width) %100 oranında tam eşleşmesi sağlandı */}
-          <button type="submit" className="main-button form-button" disabled={isSubmitting} style={{ width: '100%', marginTop: '16px' }}>
-            {isSubmitting ? "..." : t('form.submitRsvp')}
-          </button>
-        </form>
-      )}
+          <button type="submit" className="main-button form-button" disabled={isSubmitting} style={{ marginTop: '16px' }}>
+                  {isSubmitting ? "..." : t('form.submitRsvp')}
+                </button>
+              </form>
+            )}
 
-      {/* WhatsApp butonu da submit butonuyla tamamen aynı genişlikte (100%) olacak */}
-      <div className="rsvp-actions" style={{ width: '100%', marginTop: '12px' }}>
-        <a 
-          className="secondary-button rsvp-whatsapp-button" 
-          style={{ width: '100%', margin: 0, display: 'inline-flex' }} 
-          href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} 
-          target="_blank" 
-          rel="noreferrer"
-        >
-          {t('form.whatsappRsvp')}
-        </a>
-      </div>
-      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
+            <div className="rsvp-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+              <a 
+                className="secondary-button rsvp-whatsapp-button" 
+                style={{ margin: 0, display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }} 
+                href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} 
+                target="_blank" 
+                rel="noreferrer"
+              >
+                {t('form.whatsappRsvp')}
+              </a>
+            </div>
+          <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
     </section>
   );
 });
