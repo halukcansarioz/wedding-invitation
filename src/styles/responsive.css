@@ -495,3 +495,43 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     padding-bottom: 60px !important;
   }
 }
+.guest-stats {
+  display: flex !important;
+  flex-direction: row !important; /* Alt alta yerine yan yana diz */
+  justify-content: space-between !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  gap: 8px !important;
+  margin: 16px 0 !important;
+}
+
+.guest-stats > div {
+  flex: 1 !important; /* 3 kutuyu da ekrana eşit böl */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 16px 4px !important;
+  border-radius: 16px !important; /* Köşeleri daha estetik yap */
+  box-sizing: border-box !important;
+}
+
+.guest-stats > div strong {
+  font-size: 22px !important;
+  margin-bottom: 6px !important;
+  line-height: 1 !important;
+}
+
+.guest-stats > div span {
+  font-size: 11px !important; /* "Katılmayacak" gibi uzun kelimelerin taşmaması için */
+  text-align: center !important;
+  line-height: 1.2 !important;
+  word-wrap: break-word !important;
+}
+
+/* Altındaki gizlilik notunun da karta tam oturması için */
+.private-note-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}

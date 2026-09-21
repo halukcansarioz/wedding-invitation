@@ -1368,8 +1368,55 @@ body .app .glass-dock .dock-btn.music-on {
   }
   .rsvp-form,
   .wish-form {
-    margin-top: 1vh !important;
-    gap: clamp(6px, 1vh, 16px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important; /* Formun kendisi kartı tam doldursun */
+    gap: 12px !important;   /* Elemanlar arası dengeli boşluk */
+  }
+  .rsvp-form > div,
+  .wish-form > div,
+  .field-with-counter {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea,
+  .option-group .option-button,
+  .form-button,
+  .rsvp-whatsapp-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 16px !important; /* Tüm alanlar aynı zarif köşe ovalliğine sahip olsun */
+    margin: 0 !important;
+    min-height: 54px !important;    /* Tüm form elemanları aynı yükseklikte olsun */
+    padding: 14px 16px !important;  /* Aynı iç boşluk */
+    font-size: 15px !important;
+  }
+  .option-group {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+  .option-button,
+  .form-button,
+  .rsvp-whatsapp-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .rsvp-actions {
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
   }
   .rsvp-form textarea,
   .wish-form textarea {
@@ -1657,4 +1704,30 @@ body .app .glass-dock .dock-btn.music-on {
 }
 .btn:active, button:active, .main-button:active, .secondary-button:active, .option-button:active { 
   transform: translateY(2px) !important; 
+}
+/* Yüzen menü buton animasyonları */
+.floating-actions button,
+.floating-actions a,
+.glass-dock button,
+.glass-dock a {
+  /* floatAnim isimli kendi süzülme animasyonunun adını buraya yazmalısın */
+  animation: floatAnim 3s ease-in-out infinite;
+}
+
+/* Butonların aynı anda değil, dalgalı şekilde hareket etmesi için ufak gecikmeler */
+.floating-actions button:nth-child(1),
+.glass-dock button:nth-child(1) { animation-delay: 0s; }
+
+.floating-actions button:nth-child(2),
+.glass-dock button:nth-child(2) { animation-delay: 0.4s; }
+
+.floating-actions button:nth-child(3),
+.glass-dock button:nth-child(3) { animation-delay: 0.8s; }
+
+/* SADECE fare ile üzerine gelinen butonu durdurur */
+.floating-actions button:hover,
+.floating-actions a:hover,
+.glass-dock button:hover,
+.glass-dock a:hover {
+  animation-play-state: paused !important;
 }
