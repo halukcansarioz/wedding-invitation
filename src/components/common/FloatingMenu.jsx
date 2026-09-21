@@ -14,25 +14,52 @@ export const FloatingMenu = memo(function FloatingMenu({
   return (
     <>
       <style dangerouslySetInnerHTML={{__html: `
-        /* Mobil Görünüm (Varsayılan) */
-        #main-dock {
-          display: flex !important;
-          gap: 12px !important;
-          align-items: center !important;
-          justify-content: center !important;
-          height: auto !important;
-          top: auto !important;
-          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-          right: 50% !important;
-          transform: translateX(50%) !important;
-          padding: 8px 14px !important;
-          flex-direction: row !important;
+        /* ZIPLAMA ANİMASYONLARI */
+        @keyframes syncContainerBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
         }
 
+        @keyframes syncDesktopBounce {
+          0%, 100% { transform: translateY(-50%); }
+          50% { transform: translateY(calc(-50% - 8px)); }
+        }
+
+        /* ANA MENÜ ÇERÇEVESİ */
+        #main-dock {
+          position: fixed !important;
+          z-index: 999999 !important;
+          pointer-events: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 8px !important;
+          
+          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
+          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
+          
+          flex-direction: row !important;
+          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+          top: auto !important;
+          left: 0 !important;
+          right: 0 !important;
+          margin: 0 auto !important;
+          width: fit-content !important;
+          height: auto !important;
+        }
+
+        #main-dock:hover {
+          animation-play-state: paused !important;
+        }
+
+        /* TEKİL BUTONLAR VE ANİMASYONLARI */
         #main-dock .dock-btn {
-          position: relative !important;
-          margin: 0 !important;
-          transition: all 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55) !important;
+          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+          
+          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
+          margin: 0 6px !important; 
+          
           width: 48px !important;
           height: 48px !important;
           min-width: 48px !important;
@@ -41,34 +68,76 @@ export const FloatingMenu = memo(function FloatingMenu({
           align-items: center !important;
           justify-content: center !important;
           padding: 0 !important;
-          background: var(--paper, #fff) !important;
-          color: var(--rose-dark, #9f4f68) !important;
-          border: 1.5px solid rgba(159, 79, 104, 0.3) !important;
+          
+          background: var(--theme-surface, #ffffff) !important;
+          color: var(--amp-color, #9f4f68) !important;
+          border: 1.5px solid var(--amp-color, #9f4f68) !important;
+          
           box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
           cursor: pointer !important;
+          overflow: hidden !important; 
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: scale(1) !important;
+        }
+
+        #main-dock .dock-btn:hover,
+        #main-dock .dock-btn:active {
+          transform: scale(1.08) !important;
+          background: var(--amp-color, #9f4f68) !important;
+          color: var(--theme-surface, #ffffff) !important;
         }
 
         #main-dock .dock-btn svg {
           width: 22px !important;
           height: 22px !important;
+          flex-shrink: 0 !important;
+          transition: all 0.5s ease !important;
         }
 
-        .hidden-btn {
+        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
+        #main-dock .hidden-btn {
           opacity: 0 !important;
-          transform: scale(0.4) translateY(20px) !important;
-          pointer-events: none !important;
-          position: absolute !important;
           visibility: hidden !important;
+          width: 0 !important;
+          min-width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          border-width: 0 !important;
+          
+          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
+          margin: 0 0 !important; 
+          
+          transform: scale(0) !important; 
         }
 
-        /* Masaüstü Görünüm */
+        #main-dock .hidden-btn svg {
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        /* MASAÜSTÜ GÖRÜNÜM */
         @media (min-width: 651px) {
           #main-dock {
             flex-direction: column !important;
-            right: 32px !important;          /* Sağ kenara sabitler */
-            top: 50% !important;             /* Dikeyde ekranın ortasına alır */
-            bottom: auto !important;         /* Eski alttan hizalamayı iptal eder */
-            transform: translateY(-50%) !important; /* Kusursuz dikey ortalama sağlar */
+            right: 32px !important;          
+            left: auto !important;
+            top: 50% !important;             
+            bottom: auto !important;         
+            margin: 0 !important; 
+            height: fit-content !important;
+            width: auto !important;
+            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
+          }
+          
+          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
+          #main-dock .dock-btn {
+            margin: 6px 0 !important;
+          }
+
+          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
+          #main-dock .hidden-btn {
+             margin: 0 0 !important;
           }
         }
       `}} />
@@ -83,11 +152,7 @@ export const FloatingMenu = memo(function FloatingMenu({
         </a>
       </div>
 
-      <div 
-        id="main-dock"
-        className="floating-actions glass-dock"
-        style={{ zIndex: 999999, pointerEvents: 'auto', position: 'fixed' }}
-      >
+      <div id="main-dock">
         <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
         </button>
@@ -111,14 +176,15 @@ export const FloatingMenu = memo(function FloatingMenu({
           </svg>
         </button>
 
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
+        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="19" x2="12" y2="5"></line>
             <polyline points="5 12 12 5 19 12"></polyline>
           </svg>
         </button>
         
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <polyline points="19 12 12 19 5 12"></polyline>

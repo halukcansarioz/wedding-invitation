@@ -9,7 +9,7 @@ export function useScrollNavigation(isAdminPage, opened) {
   const isScrollingRef = useRef(false);
   const touchStartYRef = useRef(0);
 
-  // Cihazın mobil olup olmadığını kontrol et (768px sınırı)
+  // Ekran boyutunu izle
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
@@ -17,12 +17,13 @@ export function useScrollNavigation(isAdminPage, opened) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Masaüstü için hangi bölümde olduğumuzu hesaplayan yardımcı fonksiyon
+  // Masaüstünde kartların birbirine karışmasını engellemek için sadece top-level elementler seçilir
+  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
+
   const getActiveDesktopIndex = (sections) => {
     let activeIdx = 0;
     sections.forEach((sec, idx) => {
       const rect = sec.getBoundingClientRect();
-      // Eğer bölüm ekranın ortasından daha yukarıdaysa, okuduğumuz/odaklandığımız bölüm odur
       if (rect.top < window.innerHeight * 0.55) {
         activeIdx = idx;
       }
@@ -31,17 +32,18 @@ export function useScrollNavigation(isAdminPage, opened) {
   };
 
   const scrollToNext = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
-    if (sections.length === 0) return;
-
     if (isMobile) {
-      // Mobilde Slayt Geçişi
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
       setCurrentSlideIndex(prev => {
         const next = prev + 1;
-        return next < sections.length ? next : prev;
+        return next < wrappers.length ? next : prev;
       });
     } else {
-      // Masaüstü için Endeks (Index) Tabanlı Hedefleme
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
       const activeIdx = getActiveDesktopIndex(sections);
       const nextIdx = activeIdx + 1;
       
@@ -51,60 +53,66 @@ export function useScrollNavigation(isAdminPage, opened) {
         const absoluteTop = window.scrollY + rect.top;
 
         if (rect.height <= window.innerHeight) {
-          // Kart ekrana sığıyorsa kusursuz ortala
-          window.scrollTo({ 
-            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
-            behavior: 'smooth' 
-          });
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
         } else {
-          // Kart çok uzunsa en tepesinden başlat (okumak için 40px boşluk)
-          window.scrollTo({ 
-            top: absoluteTop - 40, 
-            behavior: 'smooth' 
-          });
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
         }
       } else {
-        // En sondayken hala buton görünüyorsa manuel kaydır
         window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
       }
     }
   }, [isMobile]);
 
   const scrollToPrev = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
-    if (sections.length === 0) return;
-
     if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      const currentWrapper = wrappers[currentSlideIndex];
+      
+      // AKILLI KAYDIRMA: Slaytın içerisinde çok aşağı inildiyse, önce nazikçe o slaytın en tepesine çıkar.
+      if (currentWrapper && currentWrapper.scrollTop > 150) {
+        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      // Zaten slaytın en üstündeyse bir önceki slayta/bölüme geçer.
       setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
     } else {
-      const activeIdx = getActiveDesktopIndex(sections);
-      const prevIdx = activeIdx - 1;
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
       
+      const activeIdx = getActiveDesktopIndex(sections);
+      const currentSection = sections[activeIdx];
+      
+      // AKILLI KAYDIRMA: Masaüstünde uzun bir kartın sonlarındaysa, önceki karta atlamak yerine bulunduğu kartın en üstüne çıkar.
+      if (currentSection) {
+        const currentRect = currentSection.getBoundingClientRect();
+        if (currentRect.top < -150) {
+           const absoluteTop = window.scrollY + currentRect.top;
+           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+           return;
+        }
+      }
+
+      const prevIdx = activeIdx - 1;
       if (prevIdx >= 0) {
         const prevSection = sections[prevIdx];
         const rect = prevSection.getBoundingClientRect();
         const absoluteTop = window.scrollY + rect.top;
 
         if (rect.height <= window.innerHeight) {
-          window.scrollTo({ 
-            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
-            behavior: 'smooth' 
-          });
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
         } else {
-          window.scrollTo({ 
-            top: absoluteTop - 40, 
-            behavior: 'smooth' 
-          });
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
         }
       } else {
-        // Zaten 1. karttaysak en tepeye dön
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
-  }, [isMobile]);
+  }, [isMobile, currentSlideIndex]);
 
   const handleWheel = useCallback((e) => {
-    // Masaüstünde tekerlekle kaydırmaya müdahale etmiyoruz
     if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
     
     const slideWrapper = e.target.closest('.slide-wrapper');
@@ -138,9 +146,7 @@ export function useScrollNavigation(isAdminPage, opened) {
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
 
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) {
-      return; 
-    }
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
 
     const touchEndY = e.changedTouches[0].clientY;
     const diff = touchStartYRef.current - touchEndY;
@@ -165,41 +171,56 @@ export function useScrollNavigation(isAdminPage, opened) {
     }
   }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
 
-  useEffect(() => {
+  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
+useEffect(() => {
     if (isAdminPage || !opened) return;
 
     const handleScroll = () => {
       if (isMobile) {
-         setShowScrollTop(currentSlideIndex > 0);
-         const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
-         setShowScrollDown(currentSlideIndex < sectionsCount - 1);
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         const currentWrapper = wrappers[currentSlideIndex];
+         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
+         
+         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
+         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
       } else {
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        
+        // GÜNCELLEME: Sayfanın en tepesindeyken bile aşağı butonunun hemen görünmesi sağlanır
         setShowScrollTop(scrollTop > 100);
         
-        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
+        // Sadece sayfanın en sonuna (footer'a) ulaşıldığında aşağı butonu gizlenir
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
         setShowScrollDown(!isAtBottom);
       }
     };
 
-    let resizeObserver;
     if (!isMobile) {
       window.addEventListener('scroll', handleScroll, { passive: true });
-      resizeObserver = new ResizeObserver(() => handleScroll());
-      resizeObserver.observe(document.body);
     }
     
+    let activeWrapper = null;
+    if (isMobile) {
+       const wrappers = document.querySelectorAll('.slide-wrapper');
+       activeWrapper = wrappers[currentSlideIndex];
+       if (activeWrapper) {
+          activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+       }
+    }
+
     const revealTimer = window.setTimeout(handleScroll, 100);
     handleScroll();
     
     return () => {
       if (!isMobile) {
         window.removeEventListener('scroll', handleScroll);
-        if (resizeObserver) resizeObserver.disconnect();
+      }
+      if (activeWrapper) {
+        activeWrapper.removeEventListener('scroll', handleScroll);
       }
       window.clearTimeout(revealTimer);
     };
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-
+  
   return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }

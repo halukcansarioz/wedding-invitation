@@ -83,9 +83,12 @@ main.invitation-page.mobile-mode .hero-section::before {
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
   display: flex !important; 
   flex-direction: column !important;
-  justify-content: flex-start !important; /* İçerik uzunsa üstten başlar, üstte kesilme yapmaz */
+  justify-content: flex-start !important;
   align-items: center !important;
-  padding-top: calc(8vh + env(safe-area-inset-top)) !important;
+  
+  /* Üstten minimum güvenlik boşluğu */
+  padding-top: calc(24px + env(safe-area-inset-top)) !important;
+  /* Alttan menü için bırakılan güvenlik boşluğu */
   padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
   padding-left: clamp(12px, 4vw, 20px) !important;
   padding-right: clamp(12px, 4vw, 20px) !important;
@@ -93,7 +96,10 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
 
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
-  display: none !important;
+  content: "" !important;
+  display: block !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
 }
 
 main.invitation-page.mobile-mode .card,
@@ -116,8 +122,8 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
   width: 100% !important;
-  margin: auto 0 !important; /* Kısa kartları dikeyde ortalar, uzun kartları ise üstte hizalar */
-  flex-shrink: 0 !important; /* Kartın sıkışıp içindeki yazıları kırpmasını/gizlemesini kesin olarak engeller */
+  margin: 0 auto !important; 
+  flex-shrink: 0 !important; 
 }
 
 /* =========================================================
@@ -130,6 +136,83 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 
 @media (max-width: 768px) {
+  .rsvp-form, 
+  .wish-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .rsvp-form > div, 
+  .wish-form > div {
+    width: 100% !important;
+  }
+
+  /* Form elemanları ve ana butonlar */
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea,
+  .option-group,
+  .option-button,
+  .form-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important; 
+  }
+  
+  .option-button,
+  .form-button {
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
+  .rsvp-whatsapp-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important;
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    
+    /* Tema renklerine uygun zarif bir ikincil buton stili */
+    background: var(--paper, #fff) !important;
+    border: 1.5px solid var(--amp-color, #9f4f68) !important;
+    color: var(--amp-color, #9f4f68) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
+  }
+
+  .rsvp-whatsapp-button:hover {
+    background: var(--amp-color, #9f4f68) !important;
+    color: #fff !important;
+  }
+
+  .option-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .rsvp-actions {
+    width: 100% !important;
+    margin-top: 16px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
   .story-timeline-container, 
   .schedule-list, 
   .wish-list, 
