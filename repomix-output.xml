@@ -451,6 +451,114 @@ export const LocalizedDate = ({ dateString = "2026-08-22T19:00:00" }) => {
 };
 </file>
 
+<file path="src/components/common/UIComponents.jsx">
+import { useEffect, useRef, useState } from "react";
+
+export function OptionGroup({ value, options, onChange, disabled = false }) {
+  return (
+    <div className={disabled ? "option-group disabled" : "option-group"}>
+      {options.map((option) => (
+        <button
+          type="button"
+          key={option.value}
+          disabled={disabled}
+          className={String(value) === String(option.value) ? "option-button active" : "option-button"}
+          onClick={() => {
+            if (disabled) return;
+            onChange(option.value);
+          }}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const dropdownRef = useRef(null);
+  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (isOpen && focusedIndex >= 0) {
+        onChange(options[focusedIndex].value);
+        setIsOpen(false);
+      } else {
+        setIsOpen(!isOpen);
+      }
+    } else if (e.key === "ArrowDown" && isOpen) {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : prev));
+    } else if (e.key === "ArrowUp" && isOpen) {
+      e.preventDefault();
+      setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
+    } else if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div 
+      className={`admin-custom-select ${isOpen ? "open" : ""}`} 
+      ref={dropdownRef}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="combobox"
+      aria-expanded={isOpen}
+      aria-haspopup="listbox"
+    >
+      <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
+        <span>{selectedOption?.label || placeholder}</span>
+        <div className="admin-custom-select-arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+      {isOpen && (
+        <div className="admin-custom-select-menu" role="listbox">
+          {options.map((option, index) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={value === option.value}
+              key={option.value}
+              className={`admin-custom-select-option ${value === option.value ? "selected" : ""} ${focusedIndex === index ? "focused" : ""}`}
+              style={focusedIndex === index ? { backgroundColor: 'var(--theme-hero-mid)' } : {}}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+                setFocusedIndex(-1);
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/invitation/sections/GuestsListSection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -571,19 +679,30 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
 <file path="src/hooks/useAssetPreloader.js">
 import { useState, useEffect } from 'react';
 
-export function useAssetPreloader(imageUrl) {
+export function useAssetPreloader(mediaUrl) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!imageUrl) {
+    if (!mediaUrl) {
       setIsLoaded(true);
       return;
     }
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => setIsLoaded(true);
-    img.onerror = () => setIsLoaded(true); // Görsel kırıksa da sitenin açılmasına izin ver
-  }, [imageUrl]);
+
+    const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+
+    if (isVideo) {
+      const video = document.createElement('video');
+      video.src = mediaUrl;
+      video.onloadeddata = () => setIsLoaded(true);
+      video.onerror = () => setIsLoaded(true);
+      video.load();
+    } else {
+      const img = new Image();
+      img.src = mediaUrl;
+      img.onload = () => setIsLoaded(true);
+      img.onerror = () => setIsLoaded(true);
+    }
+  }, [mediaUrl]);
 
   return isLoaded;
 }
@@ -655,22 +774,30 @@ import { useState, useEffect } from 'react';
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
-    // Uygulama zaten yüklü mü kontrolü
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    setIsIos(isIosDevice);
+
+    if (isStandalone) return;
+
+    if (isIosDevice) {
+      setIsInstallable(true);
       return;
     }
 
     const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault(); // Tarayıcının varsayılan pop-up'ını engelle
-      setDeferredPrompt(e); // Olayı daha sonra tetiklemek için sakla
+      e.preventDefault(); 
+      setDeferredPrompt(e); 
       setIsInstallable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Kullanıcı uygulamayı yüklediğinde
     window.addEventListener('appinstalled', () => {
       setIsInstallable(false);
       setDeferredPrompt(null);
@@ -692,7 +819,7 @@ export function usePWAInstall() {
     setDeferredPrompt(null);
   };
 
-  return { isInstallable, promptInstall };
+  return { isInstallable, isIos, promptInstall, setIsInstallable };
 }
 </file>
 
@@ -744,15 +871,12 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { type, data, turnstileToken } = await req.json();
 
-    // 1. Admin Bypass Kontrolü (Offline Senkronizasyon İçin)
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
     
@@ -762,34 +886,38 @@ serve(async (req) => {
       if (user) isAdmin = true;
     }
 
-    // 2. Turnstile Doğrulaması (Kullanıcı ziyaretçi ise)
+    let isOfflineSync = false;
     if (!isAdmin) {
-      if (!turnstileToken || turnstileToken === "OFFLINE_TOKEN" || turnstileToken === "MISSING_TOKEN") {
+      if (turnstileToken === "OFFLINE_TOKEN") {
+        isOfflineSync = true;
+      } else if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
         throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
-      }
+      } else {
+        const formData = new URLSearchParams();
+        formData.append('secret', TURNSTILE_SECRET_KEY!);
+        formData.append('response', turnstileToken);
 
-      const formData = new URLSearchParams();
-      formData.append('secret', TURNSTILE_SECRET_KEY!);
-      formData.append('response', turnstileToken);
-
-      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        body: formData,
-      });
-      const turnstileData = await turnstileRes.json();
-
-      if (!turnstileData.success) {
-        throw new Error("Bot doğrulaması geçilemedi.");
+        const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          body: formData,
+        });
+        const turnstileData = await turnstileRes.json();
+        if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
       }
     }
 
-    // 3. Veritabanına Ekleme
     let result;
     if (type === 'guest') {
+      if (isOfflineSync) {
+        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
+      }
       const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
       if (error) throw error;
       result = guestData;
     } else if (type === 'wish') {
+      if (isOfflineSync) {
+        data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
+      }
       const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
       if (error) throw error;
       result = wishData;
@@ -1099,17 +1227,50 @@ const supabaseAnonKey = String(
     ""
 ).trim();
 
-// Canlı (Production) ortamdaysak ve key eksikse uygulamayı durdur (Fail-fast mekanizması)
 if (import.meta.env?.PROD && (!supabaseUrl || !supabaseAnonKey)) {
-  throw new Error("Kritik Hata: Supabase ortam değişkenleri eksik! Uygulama başlatılamıyor. Lütfen VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerlerini kontrol edin.");
+  throw new Error("Kritik Hata: Supabase ortam değişkenleri eksik! Uygulama başlatılamıyor.");
 }
 
-// Env eksikken uygulama geliştirme (dev) ortamında komple çökmesin diye geçici placeholder kullanılır.
-// Asıl kontrol App.jsx içinde isSupabaseReady() ile yapılıyor.
-export const supabase = createClient(
-  supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key"
-);
+// Konsol hatalarını ve başarısız ağ isteklerini önleyen mock/proxy obje
+const createMockSupabase = () => {
+  const dummyObj = {
+    from: () => dummyObj,
+    select: () => dummyObj,
+    insert: () => dummyObj,
+    update: () => dummyObj,
+    eq: () => dummyObj,
+    order: () => dummyObj,
+    limit: () => dummyObj,
+    single: () => dummyObj,
+    not: () => dummyObj,
+    delete: () => dummyObj,
+    upsert: () => dummyObj,
+    then: (cb) => cb({ data: null, error: { message: "Supabase eksik (Dev Modu)" } }),
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithPassword: async () => ({ data: null, error: { message: "Mock Client" } }),
+      signOut: async () => ({ error: null }),
+      resetPasswordForEmail: async () => ({ error: null }),
+      updateUser: async () => ({ error: null })
+    },
+    storage: {
+      from: () => dummyObj,
+      getPublicUrl: () => ({ data: { publicUrl: "" } }),
+      upload: async () => ({ data: null, error: { message: "Mock Upload" } }),
+      remove: async () => ({ data: null, error: null })
+    },
+    channel: () => dummyObj,
+    on: () => dummyObj,
+    subscribe: () => dummyObj,
+    removeChannel: () => {}
+  };
+  return dummyObj;
+};
+
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockSupabase();
 </file>
 
 <file path="src/components/admin/tabs/CeremonyTab.jsx">
@@ -1695,6 +1856,66 @@ export function AdminVideoField({ label, value, onFileSelect, onClear }) {
 }
 </file>
 
+<file path="src/components/common/GlobalModals.jsx">
+import React, { memo } from "react";
+import "../../styles/modals.css"; 
+
+export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
+  if (!customAlert && !customConfirm && !customPrompt) return null;
+
+  return (
+    <>
+      {customAlert && (
+        <div className="global-modal-overlay" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
+          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
+            <h3 className="global-modal-title">{customAlert.title}</h3>
+            <p className="global-modal-text">{customAlert.message}</p>
+            <button type="button" className="main-button global-modal-btn" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
+              {t('ui.ok')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {customConfirm && (
+        <div className="global-modal-overlay" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
+          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
+            <h3 className="global-modal-title">{customConfirm.title}</h3>
+            <p className="global-modal-text">{customConfirm.message}</p>
+            <div className="global-modal-actions">
+              <button type="button" className="main-button global-modal-btn" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }}>
+                {t('ui.yes')}
+              </button>
+              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
+                {t('ui.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {customPrompt && (
+        <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
+          <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
+            <h3 className="global-modal-title">{customPrompt.title}</h3>
+            <p className="global-modal-text">{customPrompt.label}</p>
+            {customPrompt.multiline ? (
+              <textarea autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
+            ) : (
+              <input autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
+            )}
+            <div className="global-modal-actions">
+              <button type="submit" className="main-button global-modal-btn">{t('ui.save')}</button>
+              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>{t('ui.cancel')}</button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
+  );
+});
+</file>
+
 <file path="src/components/common/PwaInstallBanner.jsx">
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -1703,9 +1924,22 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 export function PwaInstallBanner() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
-  const { isInstallable, promptInstall } = usePWAInstall();
+  const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
 
   if (!isInstallable) return null;
+
+  if (isIos) {
+    return (
+      <div className="pwa-banner-wrapper ios-pwa-banner">
+        <span className="pwa-banner-text">
+          {isEn ? "📱 Tap 'Share' icon then 'Add to Home Screen'" : "📱 Kolay erişim için 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin"}
+        </span>
+        <button onClick={() => setIsInstallable(false)} className="secondary-button pwa-banner-btn" style={{ minWidth: 'auto', padding: '4px 12px' }}>
+          ✕
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="pwa-banner-wrapper">
@@ -1715,114 +1949,6 @@ export function PwaInstallBanner() {
       <button onClick={promptInstall} className="main-button pwa-banner-btn">
         {isEn ? "Install" : "Yükle"}
       </button>
-    </div>
-  );
-}
-</file>
-
-<file path="src/components/common/UIComponents.jsx">
-import { useEffect, useRef, useState } from "react";
-
-export function OptionGroup({ value, options, onChange, disabled = false }) {
-  return (
-    <div className={disabled ? "option-group disabled" : "option-group"}>
-      {options.map((option) => (
-        <button
-          type="button"
-          key={option.value}
-          disabled={disabled}
-          className={String(value) === String(option.value) ? "option-button active" : "option-button"}
-          onClick={() => {
-            if (disabled) return;
-            onChange(option.value);
-          }}
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const dropdownRef = useRef(null);
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (isOpen && focusedIndex >= 0) {
-        onChange(options[focusedIndex].value);
-        setIsOpen(false);
-      } else {
-        setIsOpen(!isOpen);
-      }
-    } else if (e.key === "ArrowDown" && isOpen) {
-      e.preventDefault();
-      setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : prev));
-    } else if (e.key === "ArrowUp" && isOpen) {
-      e.preventDefault();
-      setFocusedIndex((prev) => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Escape") {
-      setIsOpen(false);
-    }
-  };
-
-  return (
-    <div 
-      className={`admin-custom-select ${isOpen ? "open" : ""}`} 
-      ref={dropdownRef}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
-      role="combobox"
-      aria-expanded={isOpen}
-      aria-haspopup="listbox"
-    >
-      <div className="admin-custom-select-button" onClick={() => setIsOpen(!isOpen)}>
-        <span>{selectedOption?.label || placeholder}</span>
-        <div className="admin-custom-select-arrow">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-      </div>
-      {isOpen && (
-        <div className="admin-custom-select-menu" role="listbox">
-          {options.map((option, index) => (
-            <button
-              type="button"
-              role="option"
-              aria-selected={value === option.value}
-              key={option.value}
-              className={`admin-custom-select-option ${value === option.value ? "selected" : ""} ${focusedIndex === index ? "focused" : ""}`}
-              style={focusedIndex === index ? { backgroundColor: 'var(--theme-hero-mid)' } : {}}
-              onClick={() => {
-                onChange(option.value);
-                setIsOpen(false);
-                setFocusedIndex(-1);
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -2201,15 +2327,17 @@ export const useAdminStore = create((set) => ({
 <file path="src/supabase/functions/verify-submission/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+// Supabase Dashboard -> Edge Functions -> Secrets sekmesinden ADMIN_EMAIL eklenmeli
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL'); 
 
 serve(async (req) => {
   try {
     const payload = await req.json()
     const guest = payload.record;
 
-    if (!guest || guest.attendance !== "Katılacağım") {
-      return new Response("Email gönderilmedi (Katılmıyor veya test isteği).", { status: 200 })
+    if (!guest || guest.attendance !== "Katılacağım" || !ADMIN_EMAIL) {
+      return new Response("Email gönderilmedi (Katılmıyor, test isteği veya admin email eksik).", { status: 200 })
     }
 
     const controller = new AbortController();
@@ -2224,7 +2352,7 @@ serve(async (req) => {
       signal: controller.signal,
       body: JSON.stringify({
         from: 'Düğün Davetiyesi <onboarding@resend.dev>', 
-        to: ['senin-kendi-epostan@gmail.com'], // KENDI MAIL ADRESINI YAZ
+        to: [ADMIN_EMAIL], 
         subject: `Yeni LCV: ${guest.name} Düğüne Katılıyor! 🎉`,
         html: `
           <div style="font-family: sans-serif; padding: 20px; background: #fffafb; border: 1px solid #9f4f68; border-radius: 12px;">
@@ -2234,8 +2362,6 @@ serve(async (req) => {
             <p><strong>Kişi Sayısı:</strong> ${guest.person_count}</p>
             <p><strong>Taraf:</strong> ${guest.side}</p>
             <p><strong>Not:</strong> ${guest.note || '-'}</p>
-            <hr style="border: none; border-top: 1px solid #eee;" />
-            <a href="https://senin-site-linkin.com/admin" style="display:inline-block; margin-top: 10px; padding: 10px 20px; background: #9f4f68; color: white; text-decoration: none; border-radius: 8px;">Admin Paneline Git</a>
           </div>
         `
       })
@@ -2243,15 +2369,10 @@ serve(async (req) => {
 
     clearTimeout(timeoutId);
 
-    if (!res.ok) {
-      console.warn(`Resend Hatası: Status ${res.status}`);
-      return new Response("E-posta gönderilemedi fakat kayıt başarılı.", { status: 200 });
-    }
-
+    if (!res.ok) return new Response("E-posta gönderilemedi fakat kayıt başarılı.", { status: 200 });
     return new Response(JSON.stringify({ success: true, message: "E-posta başarıyla gönderildi" }), { status: 200 })
 
   } catch (err) {
-    console.error("Webhook İşleme Hatası:", err.message);
     return new Response("İşlem tamamlandı, e-posta yoksayıldı.", { status: 200 })
   }
 })
@@ -2540,66 +2661,6 @@ export function ThemeTab({ isEn }) {
     </AdminSection>
   );
 }
-</file>
-
-<file path="src/components/common/GlobalModals.jsx">
-import React, { memo } from "react";
-import "../../styles/modals.css"; 
-
-export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
-  if (!customAlert && !customConfirm && !customPrompt) return null;
-
-  return (
-    <>
-      {customAlert && (
-        <div className="global-modal-overlay" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
-          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
-            <h3 className="global-modal-title">{customAlert.title}</h3>
-            <p className="global-modal-text">{customAlert.message}</p>
-            <button type="button" className="main-button global-modal-btn" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
-              {t('ui.ok')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {customConfirm && (
-        <div className="global-modal-overlay" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
-          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
-            <h3 className="global-modal-title">{customConfirm.title}</h3>
-            <p className="global-modal-text">{customConfirm.message}</p>
-            <div className="global-modal-actions">
-              <button type="button" className="main-button global-modal-btn" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }}>
-                {t('ui.yes')}
-              </button>
-              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
-                {t('ui.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {customPrompt && (
-        <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
-          <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
-            <h3 className="global-modal-title">{customPrompt.title}</h3>
-            <p className="global-modal-text">{customPrompt.label}</p>
-            {customPrompt.multiline ? (
-              <textarea autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
-            ) : (
-              <input autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
-            )}
-            <div className="global-modal-actions">
-              <button type="submit" className="main-button global-modal-btn">{t('ui.save')}</button>
-              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>{t('ui.cancel')}</button>
-            </div>
-          </form>
-        </div>
-      )}
-    </>
-  );
-});
 </file>
 
 <file path="src/components/invitation/sections/CountdownSection.jsx">
@@ -5005,6 +5066,12 @@ export class ErrorBoundary extends React.Component {
 }
 </file>
 
+<file path="src/components/AdminUI.jsx">
+export * from "./admin/ui/AdminInputs";
+export * from "./admin/ui/AdminMediaFields";
+export * from "./admin/ui/AdminLayout";
+</file>
+
 <file path="src/styles/modals.css">
 .global-modal-input,
 .global-modal-text,
@@ -5531,12 +5598,6 @@ export const triggerConfetti = () => {
 };
 </file>
 
-<file path="src/components/AdminUI.jsx">
-export * from "./admin/ui/AdminInputs";
-export * from "./admin/ui/AdminMediaFields";
-export * from "./admin/ui/AdminLayout";
-</file>
-
 <file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
 import React, { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
@@ -5910,6 +5971,44 @@ function AdminDashboard(props) {
 }
 
 export default React.memo(AdminDashboard);
+</file>
+
+<file path="src/components/admin/AdminPanelComponents.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { 
+  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
+  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
+} from "./tabs";
+
+export function AdminPanelContent(props) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+  const { activeAdminTab } = props;
+
+  switch (activeAdminTab) {
+    case "general": return <GeneralTab {...props} isEn={isEn} />;
+    case "theme": return <ThemeTab {...props} isEn={isEn} />;
+    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
+    case "guests": return <GuestsAdminPanel {...props} />;
+    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
+    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
+    case "personalLink": return <PersonalLinkPanel {...props} />;
+    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
+    case "security": return <SecurityTab {...props} isEn={isEn} />;
+    case "messages": return <MessagesTab {...props} isEn={isEn} />;
+    case "copy": return <CopyTab {...props} isEn={isEn} />;
+    case "family": return <FamilyTab {...props} isEn={isEn} />;
+    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
+    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
+    case "qr": return <QrTab {...props} isEn={isEn} />;
+    case "data": return <DataTab {...props} isEn={isEn} />;
+    case "gift": return <GiftTab {...props} isEn={isEn} />;
+    case "story": return <StoryTab {...props} isEn={isEn} />; 
+    default: return null;
+  }
+}
 </file>
 
 <file path="src/components/invitation/sections/HeroSection.jsx">
@@ -6669,44 +6768,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </React.StrictMode>
 );
-</file>
-
-<file path="src/components/admin/AdminPanelComponents.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { 
-  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
-  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
-} from "./tabs";
-
-export function AdminPanelContent(props) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-  const { activeAdminTab } = props;
-
-  switch (activeAdminTab) {
-    case "general": return <GeneralTab {...props} isEn={isEn} />;
-    case "theme": return <ThemeTab {...props} isEn={isEn} />;
-    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
-    case "guests": return <GuestsAdminPanel {...props} />;
-    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
-    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
-    case "personalLink": return <PersonalLinkPanel {...props} />;
-    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
-    case "security": return <SecurityTab {...props} isEn={isEn} />;
-    case "messages": return <MessagesTab {...props} isEn={isEn} />;
-    case "copy": return <CopyTab {...props} isEn={isEn} />;
-    case "family": return <FamilyTab {...props} isEn={isEn} />;
-    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
-    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
-    case "qr": return <QrTab {...props} isEn={isEn} />;
-    case "data": return <DataTab {...props} isEn={isEn} />;
-    case "gift": return <GiftTab {...props} isEn={isEn} />;
-    case "story": return <StoryTab {...props} isEn={isEn} />; 
-    default: return null;
-  }
-}
 </file>
 
 <file path="src/pages/AdminController.jsx">
@@ -14335,6 +14396,161 @@ export default function InvitationView({ scrollToNext, scrollToPrev, currentSlid
 }
 </file>
 
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { supabase } from "./supabaseClient"; 
+
+// YENİ EKLENEN İMPORT
+import { LazyMotion, domAnimation } from "framer-motion";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = activeTheme;
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(activeTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, activeTheme]);
+
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
+    const realtimeChannel = supabase
+      .channel('schema-db-changes')
+      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'guests' },
+        async (payload) => {
+          console.log("LCV Güncellemesi:", payload);
+          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
+          const updatedGuests = await loadGuestsFromDatabase();
+          setGuests(updatedGuests || []);
+          
+          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
+          if (payload.eventType === 'INSERT') {
+            setCustomAlert({ 
+              title: "Yeni LCV Geldi!", 
+              message: "Biri az önce katılım durumunu bildirdi." 
+            });
+          }
+        }
+      )
+      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'wishes' },
+        async (payload) => {
+          console.log("Mesaj Güncellemesi:", payload);
+          const updatedWishes = await loadPublishedWishesFromDatabase();
+          setWishes(updatedWishes || []);
+        }
+      )
+      .subscribe();
+
+    // Bileşen ekrandan kalkarsa dinlemeyi durdur
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, [setGuests, setWishes, setCustomAlert]);
+  
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={activeTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals
+          customAlert={customAlert} setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
+</file>
+
 <file path="src/components/common/FloatingMenu.jsx">
 import React, { memo } from "react";
 
@@ -14532,161 +14748,6 @@ export const FloatingMenu = memo(function FloatingMenu({
     </>
   );
 });
-</file>
-
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { supabase } from "./supabaseClient"; 
-
-// YENİ EKLENEN İMPORT
-import { LazyMotion, domAnimation } from "framer-motion";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = activeTheme;
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(activeTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, activeTheme]);
-
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
-    const realtimeChannel = supabase
-      .channel('schema-db-changes')
-      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'guests' },
-        async (payload) => {
-          console.log("LCV Güncellemesi:", payload);
-          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
-          const updatedGuests = await loadGuestsFromDatabase();
-          setGuests(updatedGuests || []);
-          
-          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
-          if (payload.eventType === 'INSERT') {
-            setCustomAlert({ 
-              title: "Yeni LCV Geldi!", 
-              message: "Biri az önce katılım durumunu bildirdi." 
-            });
-          }
-        }
-      )
-      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'wishes' },
-        async (payload) => {
-          console.log("Mesaj Güncellemesi:", payload);
-          const updatedWishes = await loadPublishedWishesFromDatabase();
-          setWishes(updatedWishes || []);
-        }
-      )
-      .subscribe();
-
-    // Bileşen ekrandan kalkarsa dinlemeyi durdur
-    return () => {
-      supabase.removeChannel(realtimeChannel);
-    };
-  }, [setGuests, setWishes, setCustomAlert]);
-  
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={activeTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals
-          customAlert={customAlert} setCustomAlert={setCustomAlert}
-          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-        />
-        
-        <Routes>
-          <Route path="/" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
 </file>
 
 <file path="src/styles/invitation.css">
@@ -16422,6 +16483,15 @@ body .app .glass-dock .dock-btn.music-on {
 .glass-dock button:hover,
 .glass-dock a:hover {
   animation-play-state: paused !important;
+}
+.floating-button {
+    animation: floatAnim 3s ease-in-out infinite;
+}
+
+/* Sadece üzerine gelinen veya tıklanan buton durur, diğerleri zıplamaya devam eder */
+.floating-button:hover,
+.floating-button:active {
+    animation-play-state: paused;
 }
 </file>
 

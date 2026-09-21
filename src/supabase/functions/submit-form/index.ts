@@ -11,15 +11,12 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { type, data, turnstileToken } = await req.json();
 
-    // 1. Admin Bypass Kontrolü (Offline Senkronizasyon İçin)
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
     
@@ -29,34 +26,38 @@ serve(async (req) => {
       if (user) isAdmin = true;
     }
 
-    // 2. Turnstile Doğrulaması (Kullanıcı ziyaretçi ise)
+    let isOfflineSync = false;
     if (!isAdmin) {
-      if (!turnstileToken || turnstileToken === "OFFLINE_TOKEN" || turnstileToken === "MISSING_TOKEN") {
+      if (turnstileToken === "OFFLINE_TOKEN") {
+        isOfflineSync = true;
+      } else if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
         throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
-      }
+      } else {
+        const formData = new URLSearchParams();
+        formData.append('secret', TURNSTILE_SECRET_KEY!);
+        formData.append('response', turnstileToken);
 
-      const formData = new URLSearchParams();
-      formData.append('secret', TURNSTILE_SECRET_KEY!);
-      formData.append('response', turnstileToken);
-
-      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        body: formData,
-      });
-      const turnstileData = await turnstileRes.json();
-
-      if (!turnstileData.success) {
-        throw new Error("Bot doğrulaması geçilemedi.");
+        const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          body: formData,
+        });
+        const turnstileData = await turnstileRes.json();
+        if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
       }
     }
 
-    // 3. Veritabanına Ekleme
     let result;
     if (type === 'guest') {
+      if (isOfflineSync) {
+        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
+      }
       const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
       if (error) throw error;
       result = guestData;
     } else if (type === 'wish') {
+      if (isOfflineSync) {
+        data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
+      }
       const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
       if (error) throw error;
       result = wishData;

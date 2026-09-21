@@ -3,22 +3,30 @@ import { useState, useEffect } from 'react';
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [isIos, setIsIos] = useState(false);
 
   useEffect(() => {
-    // Uygulama zaten yüklü mü kontrolü
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    setIsIos(isIosDevice);
+
+    if (isStandalone) return;
+
+    if (isIosDevice) {
+      setIsInstallable(true);
       return;
     }
 
     const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault(); // Tarayıcının varsayılan pop-up'ını engelle
-      setDeferredPrompt(e); // Olayı daha sonra tetiklemek için sakla
+      e.preventDefault(); 
+      setDeferredPrompt(e); 
       setIsInstallable(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Kullanıcı uygulamayı yüklediğinde
     window.addEventListener('appinstalled', () => {
       setIsInstallable(false);
       setDeferredPrompt(null);
@@ -40,5 +48,5 @@ export function usePWAInstall() {
     setDeferredPrompt(null);
   };
 
-  return { isInstallable, promptInstall };
+  return { isInstallable, isIos, promptInstall, setIsInstallable };
 }

@@ -1,18 +1,29 @@
 import { useState, useEffect } from 'react';
 
-export function useAssetPreloader(imageUrl) {
+export function useAssetPreloader(mediaUrl) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!imageUrl) {
+    if (!mediaUrl) {
       setIsLoaded(true);
       return;
     }
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => setIsLoaded(true);
-    img.onerror = () => setIsLoaded(true); // Görsel kırıksa da sitenin açılmasına izin ver
-  }, [imageUrl]);
+
+    const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+
+    if (isVideo) {
+      const video = document.createElement('video');
+      video.src = mediaUrl;
+      video.onloadeddata = () => setIsLoaded(true);
+      video.onerror = () => setIsLoaded(true);
+      video.load();
+    } else {
+      const img = new Image();
+      img.src = mediaUrl;
+      img.onload = () => setIsLoaded(true);
+      img.onerror = () => setIsLoaded(true);
+    }
+  }, [mediaUrl]);
 
   return isLoaded;
 }

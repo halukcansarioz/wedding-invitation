@@ -7,14 +7,47 @@ const supabaseAnonKey = String(
     ""
 ).trim();
 
-// Canlı (Production) ortamdaysak ve key eksikse uygulamayı durdur (Fail-fast mekanizması)
 if (import.meta.env?.PROD && (!supabaseUrl || !supabaseAnonKey)) {
-  throw new Error("Kritik Hata: Supabase ortam değişkenleri eksik! Uygulama başlatılamıyor. Lütfen VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerlerini kontrol edin.");
+  throw new Error("Kritik Hata: Supabase ortam değişkenleri eksik! Uygulama başlatılamıyor.");
 }
 
-// Env eksikken uygulama geliştirme (dev) ortamında komple çökmesin diye geçici placeholder kullanılır.
-// Asıl kontrol App.jsx içinde isSupabaseReady() ile yapılıyor.
-export const supabase = createClient(
-  supabaseUrl || "https://placeholder.supabase.co",
-  supabaseAnonKey || "placeholder-anon-key"
-);
+// Konsol hatalarını ve başarısız ağ isteklerini önleyen mock/proxy obje
+const createMockSupabase = () => {
+  const dummyObj = {
+    from: () => dummyObj,
+    select: () => dummyObj,
+    insert: () => dummyObj,
+    update: () => dummyObj,
+    eq: () => dummyObj,
+    order: () => dummyObj,
+    limit: () => dummyObj,
+    single: () => dummyObj,
+    not: () => dummyObj,
+    delete: () => dummyObj,
+    upsert: () => dummyObj,
+    then: (cb) => cb({ data: null, error: { message: "Supabase eksik (Dev Modu)" } }),
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithPassword: async () => ({ data: null, error: { message: "Mock Client" } }),
+      signOut: async () => ({ error: null }),
+      resetPasswordForEmail: async () => ({ error: null }),
+      updateUser: async () => ({ error: null })
+    },
+    storage: {
+      from: () => dummyObj,
+      getPublicUrl: () => ({ data: { publicUrl: "" } }),
+      upload: async () => ({ data: null, error: { message: "Mock Upload" } }),
+      remove: async () => ({ data: null, error: null })
+    },
+    channel: () => dummyObj,
+    on: () => dummyObj,
+    subscribe: () => dummyObj,
+    removeChannel: () => {}
+  };
+  return dummyObj;
+};
+
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : createMockSupabase();
