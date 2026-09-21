@@ -1731,3 +1731,12 @@ body .app .glass-dock .dock-btn.music-on {
 .glass-dock a:hover {
   animation-play-state: paused !important;
 }
+.floating-button {
+    animation: floatAnim 3s ease-in-out infinite;
+}
+
+/* Sadece üzerine gelinen veya tıklanan buton durur, diğerleri zıplamaya devam eder */
+.floating-button:hover,
+.floating-button:active {
+    animation-play-state: paused;
+}

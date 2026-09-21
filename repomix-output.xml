@@ -5986,223 +5986,6 @@ export const HeroSection = memo(function HeroSection({ invitation, copy, guestGr
 });
 </file>
 
-<file path="src/store/useStore.js">
-import { create } from 'zustand';
-import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
-import toast from 'react-hot-toast';
-import { saveSettingsToDatabase } from '../services/database';
-import { useAdminStore } from './useAdminStore';
-
-// --- 1. UI (ARAYÜZ) MODÜLÜ ---
-// Modallar, uyarılar ve ekran açılış durumlarını yönetir.
-const createUISlice = (set) => ({
-  opened: false,
-  setOpened: (opened) => set({ opened }),
-  isOpening: false,
-  setIsOpening: (isOpening) => set({ isOpening }),
-
-  customAlert: null,
-  setCustomAlert: (alert) => set({ customAlert: alert }),
-  showAppAlert: (message, options = {}) => new Promise((resolve) => {
-    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
-    if (isError) toast.error(message);
-    else toast.success(message);
-    resolve(true);
-  }),
-
-  customConfirm: null,
-  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
-  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
-    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
-  }),
-
-  customPrompt: null,
-  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
-  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
-    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
-  }),
-});
-
-// --- 2. DATA (VERİ) MODÜLÜ ---
-// Misafir listesi, anı defteri ve canlı sitenin içerik verilerini yönetir.
-const createDataSlice = (set) => ({
-  siteData: loadStoredSiteData(),
-  setSiteData: (data) => set({ siteData: data }),
-  guests: [],
-  setGuests: (guests) => set({ guests }),
-  wishes: [],
-  setWishes: (wishes) => set({ wishes }),
-});
-
-// --- 3. ADMIN DRAFT (TASLAK) MODÜLÜ ---
-// Yönetici panelindeki henüz kaydedilmemiş değişiklikleri ve sekmeleri yönetir.
-const createAdminDraftSlice = (set, get) => ({
-  adminDraft: loadStoredSiteData(),
-  setAdminDraft: (draftOrUpdater) => set((state) => ({
-    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
-  })),
-  activeAdminTab: "general",
-  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
-  personalLinkName: "",
-  setPersonalLinkName: (name) => set({ personalLinkName: name }),
-  dataImportText: "",
-  setDataImportText: (text) => set({ dataImportText: text }),
-
-  updateDraftObject: (group, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [group]: {
-        ...state.adminDraft[group],
-        [key]: value
-      }
-    }
-  })),
-
-  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
-    }
-  })),
-
-  addDraftArrayItem: (arrayKey, item) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: [...state.adminDraft[arrayKey], item]
-    }
-  })),
-
-  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
-    }
-  })),
-
-  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
-    const newArray = [...(state.adminDraft[arrayKey] || [])];
-    if (index + direction < 0 || index + direction >= newArray.length) return state;
-    const temp = newArray[index];
-    newArray[index] = newArray[index + direction];
-    newArray[index + direction] = temp;
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: newArray
-      }
-    };
-  }),
-
-  saveSiteContent: async (isEn) => {
-    const { adminDraft, setSiteData, setAdminDraft } = get();
-    const { setAdminSaveMessage } = useAdminStore.getState();
-    const cleanedData = normalizeSiteData({ 
-      ...adminDraft, 
-      invitation: { 
-        ...adminDraft.invitation, 
-        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
-      } 
-    });
-    try {
-      await saveSettingsToDatabase(cleanedData);
-      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
-      setSiteData(cleanedData); 
-      setAdminDraft(cleanedData);
-      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
-    } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
-    }
-  }
-});
-
-// === ANA STORE BİRLEŞTİRME ===
-// Bu yapı sayesinde projedeki diğer hiçbir dosyadaki importları değiştirmenize gerek kalmaz!
-export const useStore = create((...a) => ({
-  ...createUISlice(...a),
-  ...createDataSlice(...a),
-  ...createAdminDraftSlice(...a)
-}));
-</file>
-
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register';
-import * as Sentry from '@sentry/react'; // Sentry entegrasyonu eklendi
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-// Sentry konfigürasyonu (Kendi DSN adresinle güncellemelisin)
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN || "",
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  tracesSampleRate: 1.0, 
-  replaysSessionSampleRate: 0.1, 
-  replaysOnErrorSampleRate: 1.0, 
-});
-
-registerSW({ immediate: true }); 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
-</file>
-
-<file path="src/components/admin/AdminPanelComponents.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { 
-  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
-  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
-} from "./tabs";
-
-export function AdminPanelContent(props) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-  const { activeAdminTab } = props;
-
-  switch (activeAdminTab) {
-    case "general": return <GeneralTab {...props} isEn={isEn} />;
-    case "theme": return <ThemeTab {...props} isEn={isEn} />;
-    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
-    case "guests": return <GuestsAdminPanel {...props} />;
-    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
-    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
-    case "personalLink": return <PersonalLinkPanel {...props} />;
-    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
-    case "security": return <SecurityTab {...props} isEn={isEn} />;
-    case "messages": return <MessagesTab {...props} isEn={isEn} />;
-    case "copy": return <CopyTab {...props} isEn={isEn} />;
-    case "family": return <FamilyTab {...props} isEn={isEn} />;
-    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
-    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
-    case "qr": return <QrTab {...props} isEn={isEn} />;
-    case "data": return <DataTab {...props} isEn={isEn} />;
-    case "gift": return <GiftTab {...props} isEn={isEn} />;
-    case "story": return <StoryTab {...props} isEn={isEn} />; 
-    default: return null;
-  }
-}
-</file>
-
 <file path="src/components/invitation/PublicSections.jsx">
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -6706,6 +6489,223 @@ export function FooterSection({ coupleName, invitation, copy }) {
       <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
     </m.footer>
   );
+}
+</file>
+
+<file path="src/store/useStore.js">
+import { create } from 'zustand';
+import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
+import toast from 'react-hot-toast';
+import { saveSettingsToDatabase } from '../services/database';
+import { useAdminStore } from './useAdminStore';
+
+// --- 1. UI (ARAYÜZ) MODÜLÜ ---
+// Modallar, uyarılar ve ekran açılış durumlarını yönetir.
+const createUISlice = (set) => ({
+  opened: false,
+  setOpened: (opened) => set({ opened }),
+  isOpening: false,
+  setIsOpening: (isOpening) => set({ isOpening }),
+
+  customAlert: null,
+  setCustomAlert: (alert) => set({ customAlert: alert }),
+  showAppAlert: (message, options = {}) => new Promise((resolve) => {
+    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
+    if (isError) toast.error(message);
+    else toast.success(message);
+    resolve(true);
+  }),
+
+  customConfirm: null,
+  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
+  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
+    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
+  }),
+
+  customPrompt: null,
+  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
+  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
+    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
+  }),
+});
+
+// --- 2. DATA (VERİ) MODÜLÜ ---
+// Misafir listesi, anı defteri ve canlı sitenin içerik verilerini yönetir.
+const createDataSlice = (set) => ({
+  siteData: loadStoredSiteData(),
+  setSiteData: (data) => set({ siteData: data }),
+  guests: [],
+  setGuests: (guests) => set({ guests }),
+  wishes: [],
+  setWishes: (wishes) => set({ wishes }),
+});
+
+// --- 3. ADMIN DRAFT (TASLAK) MODÜLÜ ---
+// Yönetici panelindeki henüz kaydedilmemiş değişiklikleri ve sekmeleri yönetir.
+const createAdminDraftSlice = (set, get) => ({
+  adminDraft: loadStoredSiteData(),
+  setAdminDraft: (draftOrUpdater) => set((state) => ({
+    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
+  })),
+  activeAdminTab: "general",
+  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
+  personalLinkName: "",
+  setPersonalLinkName: (name) => set({ personalLinkName: name }),
+  dataImportText: "",
+  setDataImportText: (text) => set({ dataImportText: text }),
+
+  updateDraftObject: (group, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [group]: {
+        ...state.adminDraft[group],
+        [key]: value
+      }
+    }
+  })),
+
+  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
+    }
+  })),
+
+  addDraftArrayItem: (arrayKey, item) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: [...state.adminDraft[arrayKey], item]
+    }
+  })),
+
+  removeDraftArrayItem: (arrayKey, index) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
+    }
+  })),
+
+  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
+    const newArray = [...(state.adminDraft[arrayKey] || [])];
+    if (index + direction < 0 || index + direction >= newArray.length) return state;
+    const temp = newArray[index];
+    newArray[index] = newArray[index + direction];
+    newArray[index + direction] = temp;
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: newArray
+      }
+    };
+  }),
+
+  saveSiteContent: async (isEn) => {
+    const { adminDraft, setSiteData, setAdminDraft } = get();
+    const { setAdminSaveMessage } = useAdminStore.getState();
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    });
+    try {
+      await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
+      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    } catch (error) {
+      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+    }
+  }
+});
+
+// === ANA STORE BİRLEŞTİRME ===
+// Bu yapı sayesinde projedeki diğer hiçbir dosyadaki importları değiştirmenize gerek kalmaz!
+export const useStore = create((...a) => ({
+  ...createUISlice(...a),
+  ...createDataSlice(...a),
+  ...createAdminDraftSlice(...a)
+}));
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register';
+import * as Sentry from '@sentry/react'; // Sentry entegrasyonu eklendi
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+// Sentry konfigürasyonu (Kendi DSN adresinle güncellemelisin)
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN || "",
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 1.0, 
+  replaysSessionSampleRate: 0.1, 
+  replaysOnErrorSampleRate: 1.0, 
+});
+
+registerSW({ immediate: true }); 
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <HelmetProvider>
+        <App />
+        <Analytics />
+        <SpeedInsights />
+      </HelmetProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+</file>
+
+<file path="src/components/admin/AdminPanelComponents.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { 
+  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
+  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
+} from "./tabs";
+
+export function AdminPanelContent(props) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+  const { activeAdminTab } = props;
+
+  switch (activeAdminTab) {
+    case "general": return <GeneralTab {...props} isEn={isEn} />;
+    case "theme": return <ThemeTab {...props} isEn={isEn} />;
+    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
+    case "guests": return <GuestsAdminPanel {...props} />;
+    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
+    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
+    case "personalLink": return <PersonalLinkPanel {...props} />;
+    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
+    case "security": return <SecurityTab {...props} isEn={isEn} />;
+    case "messages": return <MessagesTab {...props} isEn={isEn} />;
+    case "copy": return <CopyTab {...props} isEn={isEn} />;
+    case "family": return <FamilyTab {...props} isEn={isEn} />;
+    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
+    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
+    case "qr": return <QrTab {...props} isEn={isEn} />;
+    case "data": return <DataTab {...props} isEn={isEn} />;
+    case "gift": return <GiftTab {...props} isEn={isEn} />;
+    case "story": return <StoryTab {...props} isEn={isEn} />; 
+    default: return null;
+  }
 }
 </file>
 
@@ -7660,506 +7660,6 @@ export function useScrollNavigation(isAdminPage, opened) {
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
   
   return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
-}
-</file>
-
-<file path="src/styles/responsive.css">
-/* src/styles/responsive.css */
-
-/* =========================================================
-   MOBİL: TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
-   ========================================================= */
-main.invitation-page.mobile-mode {
-  position: relative !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: block !important;
-  width: 100vw !important;
-  height: 100dvh !important;
-  overflow: hidden !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper {
-  position: absolute !important; 
-  top: 0 !important; 
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100dvh !important; 
-  
-  opacity: 0 !important; 
-  pointer-events: none !important;
-  visibility: hidden !important;
-  z-index: 1 !important;
-  
-  overflow-y: auto !important; 
-  overflow-x: hidden !important;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  
-  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
-  transform: translateY(30px) scale(0.98) !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper::-webkit-scrollbar {
-  display: none !important;
-}
-
-main.invitation-page.mobile-mode .slide-wrapper.active-slide {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  visibility: visible !important;
-  z-index: 2 !important;
-  transform: translateY(0) scale(1) !important;
-}
-
-/* HERO (İlk Ekran) Ayarları */
-main.invitation-page.mobile-mode .slide-wrapper:first-child {
-  display: flex !important; 
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  padding: 0 !important; 
-  background: transparent !important;
-}
-
-main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
-  overflow: hidden !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
-  min-height: 100dvh !important; 
-  width: 100vw !important; 
-  border-radius: 0 !important; 
-  padding: max(64px, env(safe-area-inset-top)) 16px max(80px, env(safe-area-inset-bottom)) 16px !important; 
-  margin: 0 !important;
-  background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
-}
-
-main.invitation-page.mobile-mode .hero-section::before {
-  top: 14px !important;
-  right: 14px !important;
-  bottom: 14px !important;
-  left: 14px !important;
-  border-radius: 24px !important;
-}
-
-/* =========================================================
-   DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
-   Kesilme (Cut-off) sorunlarını tamamen engeller
-   ========================================================= */
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
-  display: flex !important; 
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  align-items: center !important;
-  
-  /* Üstten minimum güvenlik boşluğu */
-  padding-top: calc(24px + env(safe-area-inset-top)) !important;
-  /* Alttan menü için bırakılan güvenlik boşluğu */
-  padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
-  padding-left: clamp(12px, 4vw, 20px) !important;
-  padding-right: clamp(12px, 4vw, 20px) !important;
-}
-
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
-  content: "" !important;
-  display: block !important;
-  flex: 1 1 0% !important;
-  min-height: 0 !important;
-}
-
-main.invitation-page.mobile-mode .card,
-main.invitation-page.mobile-mode .countdown-section,
-main.invitation-page.mobile-mode .rsvp-card,
-main.invitation-page.mobile-mode .story-card {
-  height: max-content !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  overflow: visible !important;
-  width: 100% !important;
-  margin: 0 auto !important; 
-}
-
-
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
-  width: 100% !important;
-  margin: 0 auto !important; 
-  flex-shrink: 0 !important; 
-}
-
-/* =========================================================
-   MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
-   ========================================================= */
-h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc, .ceremony-item p {
-  overflow-wrap: break-word !important;
-  word-wrap: break-word !important;
-  white-space: normal !important; 
-}
-
-@media (max-width: 768px) {
-  .rsvp-form, 
-  .wish-form {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  .rsvp-form > div, 
-  .wish-form > div {
-    width: 100% !important;
-  }
-
-  /* Form elemanları ve ana butonlar */
-  .rsvp-form input,
-  .rsvp-form textarea,
-  .wish-form input,
-  .wish-form textarea,
-  .option-group,
-  .option-button,
-  .form-button {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    box-sizing: border-box !important;
-    border-radius: 20px !important; 
-  }
-  
-  .option-button,
-  .form-button {
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
-  .rsvp-whatsapp-button {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    border-radius: 20px !important;
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    
-    /* Tema renklerine uygun zarif bir ikincil buton stili */
-    background: var(--paper, #fff) !important;
-    border: 1.5px solid var(--amp-color, #9f4f68) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    font-weight: 700 !important;
-    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
-  }
-
-  .rsvp-whatsapp-button:hover {
-    background: var(--amp-color, #9f4f68) !important;
-    color: #fff !important;
-  }
-
-  .option-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-  }
-
-  .rsvp-actions {
-    width: 100% !important;
-    margin-top: 16px !important;
-    display: flex !important;
-    justify-content: center !important;
-  }
-  
-  .story-timeline-container, 
-  .schedule-list, 
-  .wish-list, 
-  .guest-list,
-  .ceremony-grid,
-  .info-list,
-  .rsvp-form,
-  .wish-form {
-    max-height: none !important; 
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .card h2, .countdown-section h2, .section-label {
-    line-height: 1.35 !important;
-    padding-bottom: 2px !important;
-  }
-
-  .admin-main-panel, 
-  .admin-editor, 
-  .admin-list, 
-  .admin-guest-list-container {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  .admin-edit-grid, .theme-picker-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 12px !important;
-  }
-  .admin-edit-grid > *, .theme-picker-grid > * {
-    flex: 1 1 100% !important;
-  }
-  
-  .admin-stats {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    padding-bottom: 8px !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  .admin-stats > div {
-    flex: 0 0 140px !important; 
-  }
-
-  .app-modal-card {
-    max-height: 85dvh !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
-  }
-}
-
-/* =========================================================
-   GENEL MOBİL TWEAKS (Tüm küçük ekranlar için)
-   ========================================================= */
-@media (max-width: 650px) {
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
-  }
-  .gallery-grid .gallery-image {
-    height: auto !important;
-    aspect-ratio: 1 / 1 !important; 
-  }
-  .gallery-grid .gallery-image img {
-    height: 100% !important;
-    width: 100% !important;
-    object-fit: cover !important;
-  }
-  
-  .mini-map {
-    height: 250px !important;
-    border-radius: 16px !important;
-  }
-  
-  .guest-item,
-  .info-row,
-  .option-group {
-    flex-direction: column;
-  }
-  .scroll-indicator {
-    bottom: calc(5px + env(safe-area-inset-bottom)); 
-  }
-  .intro-page {
-    padding: clamp(12px, 4vw, 24px); 
-  }
-  .intro-card {
-    padding: clamp(30px, 8vw, 46px) clamp(16px, 5vw, 24px);
-    border-radius: 32px;
-  }
-  .couple-title {
-    font-size: clamp(48px, 12vw, 68px); 
-  }
-  .couple-title em {
-    display: block;
-    margin: 4px 0;
-  }
-  .intro-text,
-  .rsvp-card > p {
-    font-size: clamp(16px, 4.5vw, 19px);
-  }
-  
-  .hero-section {
-    min-height: max-content !important;
-    height: auto !important;
-    padding-top: calc(100px + env(safe-area-inset-top)) !important;
-    padding-bottom: 100px !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    background: radial-gradient(
-        circle at center,
-        rgba(70, 24, 40, 0.24) 0,
-        rgba(70, 24, 40, 0.42) 46%,
-        rgba(35, 14, 22, 0.66) 100%
-      ),
-      var(--hero-image) center/cover no-repeat !important;
-  }
-  .hero-section .couple-title {
-    color: #fff;
-    line-height: 1.04;
-    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42),
-      0 0 24px rgba(255, 220, 230, 0.22);
-  }
-  .hero-section .couple-title em {
-    margin: -4px 0 -6px;
-    font-size: 0.45em;
-  }
-  .hero-date {
-    padding: 8px 16px;
-    font-size: clamp(16px, 5vw, 21px);
-  }
-  .hero-time {
-    font-size: clamp(16px, 5vw, 20px);
-  }
-  .card,
-  .countdown-section {
-    padding: clamp(24px, 6vw, 36px) clamp(14px, 5vw, 20px); 
-    border-radius: 24px;
-  }
-  .rsvp-card h2 {
-    font-size: clamp(26px, 8vw, 32px);
-  }
-  
-  input, textarea, select, .option-button, .form-button {
-    font-size: 16px !important; 
-  }
-  
-  .countdown-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  .timeline-item {
-    grid-template-columns: 1fr;
-  }
-  .guest-item,
-  .info-row {
-    gap: 6px;
-    text-align: center;
-  }
-  .timeline::before {
-    display: none;
-  }
-  .timeline-item {
-    gap: 8px;
-    text-align: center;
-  }
-  .option-button {
-    width: 100%;
-    min-width: unset;
-  }
-  .main-button,
-  .secondary-button {
-    width: 100%;
-    padding: 14px 20px; 
-  }
-  
-  .app-modal-backdrop {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    height: 100dvh !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 16px !important;
-  }
-  .app-modal-card {
-    position: relative !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    transform: none !important;
-    width: 100% !important;
-    max-width: 380px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    background: var(--paper, #fff) !important;
-    border-radius: 24px !important;
-    padding: 24px 16px !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
-    box-sizing: border-box !important;
-  }
-  .app-modal-actions {
-    margin-top: 20px !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-}
-
-@media (max-width: 400px) {
-  .intro-card {
-    padding: 30px 16px !important;
-    width: 92vw !important;
-  }
-  .couple-title {
-    font-size: clamp(32px, 11vw, 44px) !important; 
-  }
-  .card, .countdown-section, .rsvp-card {
-    padding: 24px 16px !important;
-  }
-  .hero-date, .hero-time {
-    font-size: 14px !important;
-    padding: 8px 16px !important;
-  }
-  .count-box {
-    padding: 16px 8px !important;
-  }
-  .count-box strong {
-    font-size: 26px !important; 
-  }
-  .info-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-    padding: 16px !important;
-  }
-  .info-row strong {
-    font-size: 18px !important;
-  }
-  .guest-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-  .story-content-box {
-    padding: 16px 12px !important;
-  }
-}
-
-@media (min-width: 651px) {
-  .floating-actions,
-  .glass-dock {
-    height: auto !important;
-    max-height: none !important;
-    top: auto !important;
-    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
-    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
-  }
-  html body .app .glass-dock .wa-btn {
-    display: none !important;
-  }
-  html body .app .hero-section {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-  }
-  html body .app .hero-content {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-    padding-bottom: 60px !important;
-  }
 }
 </file>
 
@@ -14143,6 +13643,546 @@ button {
 }
 </file>
 
+<file path="src/styles/responsive.css">
+/* src/styles/responsive.css */
+
+/* =========================================================
+   MOBİL: TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
+   ========================================================= */
+main.invitation-page.mobile-mode {
+  position: relative !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  overflow: hidden !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper {
+  position: absolute !important; 
+  top: 0 !important; 
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; 
+  
+  opacity: 0 !important; 
+  pointer-events: none !important;
+  visibility: hidden !important;
+  z-index: 1 !important;
+  
+  overflow-y: auto !important; 
+  overflow-x: hidden !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
+  transform: translateY(30px) scale(0.98) !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper::-webkit-scrollbar {
+  display: none !important;
+}
+
+main.invitation-page.mobile-mode .slide-wrapper.active-slide {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  z-index: 2 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* HERO (İlk Ekran) Ayarları */
+main.invitation-page.mobile-mode .slide-wrapper:first-child {
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  padding: 0 !important; 
+  background: transparent !important;
+}
+
+main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
+  overflow: hidden !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
+  min-height: 100dvh !important; 
+  width: 100vw !important; 
+  border-radius: 0 !important; 
+  padding: max(64px, env(safe-area-inset-top)) 16px max(80px, env(safe-area-inset-bottom)) 16px !important; 
+  margin: 0 !important;
+  background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
+}
+
+main.invitation-page.mobile-mode .hero-section::before {
+  top: 14px !important;
+  right: 14px !important;
+  bottom: 14px !important;
+  left: 14px !important;
+  border-radius: 24px !important;
+}
+
+/* =========================================================
+   DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
+   Kesilme (Cut-off) sorunlarını tamamen engeller
+   ========================================================= */
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  
+  /* Üstten minimum güvenlik boşluğu */
+  padding-top: calc(24px + env(safe-area-inset-top)) !important;
+  /* Alttan menü için bırakılan güvenlik boşluğu */
+  padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
+  padding-left: clamp(12px, 4vw, 20px) !important;
+  padding-right: clamp(12px, 4vw, 20px) !important;
+}
+
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
+  content: "" !important;
+  display: block !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+main.invitation-page.mobile-mode .card,
+main.invitation-page.mobile-mode .countdown-section,
+main.invitation-page.mobile-mode .rsvp-card,
+main.invitation-page.mobile-mode .story-card {
+  height: max-content !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+  width: 100% !important;
+  margin: 0 auto !important; 
+}
+
+
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
+  width: 100% !important;
+  margin: 0 auto !important; 
+  flex-shrink: 0 !important; 
+}
+
+/* =========================================================
+   MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
+   ========================================================= */
+h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc, .ceremony-item p {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  white-space: normal !important; 
+}
+
+@media (max-width: 768px) {
+  .rsvp-form, 
+  .wish-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .rsvp-form > div, 
+  .wish-form > div {
+    width: 100% !important;
+  }
+
+  /* Form elemanları ve ana butonlar */
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea,
+  .option-group,
+  .option-button,
+  .form-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important; 
+  }
+  
+  .option-button,
+  .form-button {
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
+  .rsvp-whatsapp-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important;
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    
+    /* Tema renklerine uygun zarif bir ikincil buton stili */
+    background: var(--paper, #fff) !important;
+    border: 1.5px solid var(--amp-color, #9f4f68) !important;
+    color: var(--amp-color, #9f4f68) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
+  }
+
+  .rsvp-whatsapp-button:hover {
+    background: var(--amp-color, #9f4f68) !important;
+    color: #fff !important;
+  }
+
+  .option-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .rsvp-actions {
+    width: 100% !important;
+    margin-top: 16px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
+  .story-timeline-container, 
+  .schedule-list, 
+  .wish-list, 
+  .guest-list,
+  .ceremony-grid,
+  .info-list,
+  .rsvp-form,
+  .wish-form {
+    max-height: none !important; 
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .card h2, .countdown-section h2, .section-label {
+    line-height: 1.35 !important;
+    padding-bottom: 2px !important;
+  }
+
+  .admin-main-panel, 
+  .admin-editor, 
+  .admin-list, 
+  .admin-guest-list-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .admin-edit-grid, .theme-picker-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  .admin-edit-grid > *, .theme-picker-grid > * {
+    flex: 1 1 100% !important;
+  }
+  
+  .admin-stats {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .admin-stats > div {
+    flex: 0 0 140px !important; 
+  }
+
+  .app-modal-card {
+    max-height: 85dvh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+}
+
+/* =========================================================
+   GENEL MOBİL TWEAKS (Tüm küçük ekranlar için)
+   ========================================================= */
+@media (max-width: 650px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .gallery-grid .gallery-image {
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important; 
+  }
+  .gallery-grid .gallery-image img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+  }
+  
+  .mini-map {
+    height: 250px !important;
+    border-radius: 16px !important;
+  }
+  
+  .guest-item,
+  .info-row,
+  .option-group {
+    flex-direction: column;
+  }
+  .scroll-indicator {
+    bottom: calc(5px + env(safe-area-inset-bottom)); 
+  }
+  .intro-page {
+    padding: clamp(12px, 4vw, 24px); 
+  }
+  .intro-card {
+    padding: clamp(30px, 8vw, 46px) clamp(16px, 5vw, 24px);
+    border-radius: 32px;
+  }
+  .couple-title {
+    font-size: clamp(48px, 12vw, 68px); 
+  }
+  .couple-title em {
+    display: block;
+    margin: 4px 0;
+  }
+  .intro-text,
+  .rsvp-card > p {
+    font-size: clamp(16px, 4.5vw, 19px);
+  }
+  
+  .hero-section {
+    min-height: max-content !important;
+    height: auto !important;
+    padding-top: calc(100px + env(safe-area-inset-top)) !important;
+    padding-bottom: 100px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    background: radial-gradient(
+        circle at center,
+        rgba(70, 24, 40, 0.24) 0,
+        rgba(70, 24, 40, 0.42) 46%,
+        rgba(35, 14, 22, 0.66) 100%
+      ),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+  .hero-section .couple-title {
+    color: #fff;
+    line-height: 1.04;
+    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42),
+      0 0 24px rgba(255, 220, 230, 0.22);
+  }
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+  .hero-date {
+    padding: 8px 16px;
+    font-size: clamp(16px, 5vw, 21px);
+  }
+  .hero-time {
+    font-size: clamp(16px, 5vw, 20px);
+  }
+  .card,
+  .countdown-section {
+    padding: clamp(24px, 6vw, 36px) clamp(14px, 5vw, 20px); 
+    border-radius: 24px;
+  }
+  .rsvp-card h2 {
+    font-size: clamp(26px, 8vw, 32px);
+  }
+  
+  input, textarea, select, .option-button, .form-button {
+    font-size: 16px !important; 
+  }
+  
+  .countdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .timeline-item {
+    grid-template-columns: 1fr;
+  }
+  .guest-item,
+  .info-row {
+    gap: 6px;
+    text-align: center;
+  }
+  .timeline::before {
+    display: none;
+  }
+  .timeline-item {
+    gap: 8px;
+    text-align: center;
+  }
+  .option-button {
+    width: 100%;
+    min-width: unset;
+  }
+  .main-button,
+  .secondary-button {
+    width: 100%;
+    padding: 14px 20px; 
+  }
+  
+  .app-modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100dvh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+  }
+  .app-modal-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    background: var(--paper, #fff) !important;
+    border-radius: 24px !important;
+    padding: 24px 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    box-sizing: border-box !important;
+  }
+  .app-modal-actions {
+    margin-top: 20px !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .intro-card {
+    padding: 30px 16px !important;
+    width: 92vw !important;
+  }
+  .couple-title {
+    font-size: clamp(32px, 11vw, 44px) !important; 
+  }
+  .card, .countdown-section, .rsvp-card {
+    padding: 24px 16px !important;
+  }
+  .hero-date, .hero-time {
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+  }
+  .count-box {
+    padding: 16px 8px !important;
+  }
+  .count-box strong {
+    font-size: 26px !important; 
+  }
+  .info-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 16px !important;
+  }
+  .info-row strong {
+    font-size: 18px !important;
+  }
+  .guest-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .story-content-box {
+    padding: 16px 12px !important;
+  }
+}
+
+@media (min-width: 651px) {
+  .floating-actions,
+  .glass-dock {
+    height: auto !important;
+    max-height: none !important;
+    top: auto !important;
+    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
+    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
+  }
+  html body .app .glass-dock .wa-btn {
+    display: none !important;
+  }
+  html body .app .hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+  html body .app .hero-content {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    padding-bottom: 60px !important;
+  }
+}
+.guest-stats {
+  display: flex !important;
+  flex-direction: row !important; /* Alt alta yerine yan yana diz */
+  justify-content: space-between !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  gap: 8px !important;
+  margin: 16px 0 !important;
+}
+
+.guest-stats > div {
+  flex: 1 !important; /* 3 kutuyu da ekrana eşit böl */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 16px 4px !important;
+  border-radius: 16px !important; /* Köşeleri daha estetik yap */
+  box-sizing: border-box !important;
+}
+
+.guest-stats > div strong {
+  font-size: 22px !important;
+  margin-bottom: 6px !important;
+  line-height: 1 !important;
+}
+
+.guest-stats > div span {
+  font-size: 11px !important; /* "Katılmayacak" gibi uzun kelimelerin taşmaması için */
+  text-align: center !important;
+  line-height: 1.2 !important;
+  word-wrap: break-word !important;
+}
+
+/* Altındaki gizlilik notunun da karta tam oturması için */
+.private-note-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+</file>
+
 <file path="src/pages/InvitationView.jsx">
 import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
 import { useStore } from "../store/useStore";
@@ -16020,8 +16060,55 @@ body .app .glass-dock .dock-btn.music-on {
   }
   .rsvp-form,
   .wish-form {
-    margin-top: 1vh !important;
-    gap: clamp(6px, 1vh, 16px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important; /* Formun kendisi kartı tam doldursun */
+    gap: 12px !important;   /* Elemanlar arası dengeli boşluk */
+  }
+  .rsvp-form > div,
+  .wish-form > div,
+  .field-with-counter {
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea,
+  .option-group .option-button,
+  .form-button,
+  .rsvp-whatsapp-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box !important;
+    border-radius: 16px !important; /* Tüm alanlar aynı zarif köşe ovalliğine sahip olsun */
+    margin: 0 !important;
+    min-height: 54px !important;    /* Tüm form elemanları aynı yükseklikte olsun */
+    padding: 14px 16px !important;  /* Aynı iç boşluk */
+    font-size: 15px !important;
+  }
+  .option-group {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 12px !important;
+  }
+  .option-button,
+  .form-button,
+  .rsvp-whatsapp-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .rsvp-actions {
+    width: 100% !important;
+    margin-top: 12px !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
   }
   .rsvp-form textarea,
   .wish-form textarea {
@@ -16309,6 +16396,32 @@ body .app .glass-dock .dock-btn.music-on {
 }
 .btn:active, button:active, .main-button:active, .secondary-button:active, .option-button:active { 
   transform: translateY(2px) !important; 
+}
+/* Yüzen menü buton animasyonları */
+.floating-actions button,
+.floating-actions a,
+.glass-dock button,
+.glass-dock a {
+  /* floatAnim isimli kendi süzülme animasyonunun adını buraya yazmalısın */
+  animation: floatAnim 3s ease-in-out infinite;
+}
+
+/* Butonların aynı anda değil, dalgalı şekilde hareket etmesi için ufak gecikmeler */
+.floating-actions button:nth-child(1),
+.glass-dock button:nth-child(1) { animation-delay: 0s; }
+
+.floating-actions button:nth-child(2),
+.glass-dock button:nth-child(2) { animation-delay: 0.4s; }
+
+.floating-actions button:nth-child(3),
+.glass-dock button:nth-child(3) { animation-delay: 0.8s; }
+
+/* SADECE fare ile üzerine gelinen butonu durdurur */
+.floating-actions button:hover,
+.floating-actions a:hover,
+.glass-dock button:hover,
+.glass-dock a:hover {
+  animation-play-state: paused !important;
 }
 </file>
 
