@@ -709,26 +709,36 @@ button {
   cursor: not-allowed;
   transform: none;
 }
+.form-button,
+.rsvp-whatsapp-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 280px !important;       /* İkisini de aynı genişliğe sabitliyoruz */
+  max-width: 100% !important;
+  min-height: 56px !important;
+  margin: 16px auto 0 !important;
+  padding: 12px 20px !important;
+  font-family: "Playfair Display", "Noto Serif", Georgia, serif !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  box-sizing: border-box !important;
+  border-radius: 999px !important;
+  gap: 8px !important;
+  letter-spacing: 0.5px !important;
+}
+
 .form-button {
-  display: block;
-  min-width: 220px;
-  padding: 16px 44px;
-  margin: 16px auto 0;
-  font-size: 18px;
   z-index: 2;
 }
+
 .whatsapp-button {
-  min-width: 220px;
-  margin-top: 18px;
+  margin-top: 18px !important;
 }
+
 .rsvp-whatsapp-button {
-  display: block;
-  min-width: 240px;
-  margin: 14px auto 0;
-  padding: 16px 40px;
-  font-size: 17px;
-  border-radius: 999px;
-  box-shadow: 0 14px 34px rgba(111, 47, 67, 0.12);
+  box-shadow: 0 14px 34px rgba(111, 47, 67, 0.12) !important;
+  text-decoration: none !important;
 }
 .guest-list,
 .guest-stats,
@@ -1089,4 +1099,40 @@ button {
   html body .app .invitation-page > section {
     scroll-margin-top: 40px !important;
   }
+}
+
+/* =================================================================
+   SAĞ YÜZEN MENÜ (FLOATING ACTIONS) ZIPLAMA ANİMASYONU
+   ================================================================= */
+
+@keyframes floatingBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* 1) İçi beyaz olan butonlara zıplama animasyonunu veriyoruz */
+.floating-actions > *:not(.main-button) {
+  animation: floatingBounce 2.5s ease-in-out infinite;
+  will-change: transform;
+  /* Titremeyi önlemek için transform geçişini dışarıda bırakıyoruz */
+  transition: background-color 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s !important;
+}
+
+/* 2) İçi mor olan (aşağı kaydırma) buton hep sabit kalır */
+.floating-actions > .main-button {
+  animation: none !important;
+  transform: translateY(0) !important;
+}
+
+/* 3) Dalga (Wave) efekti için zıplayan butonlara sırayla gecikme */
+.floating-actions > *:nth-child(1) { animation-delay: 0s; }
+.floating-actions > *:nth-child(2) { animation-delay: 0.15s; }
+.floating-actions > *:nth-child(3) { animation-delay: 0.3s; }
+.floating-actions > *:nth-child(4) { animation-delay: 0.45s; }
+.floating-actions > *:nth-child(5) { animation-delay: 0.6s; }
+
+/* 4) FARE İLE ÜSTÜNE GELİNEN BUTON TAMAMEN SABİT KALSIN (Sıfır noktasına otursun) */
+.floating-actions > *:not(.main-button):hover {
+  animation: none !important; /* Animasyonu tamamen iptal et */
+  transform: translateY(0) !important; /* Butonu orijinal yerine (aşağı) oturt */
 }

@@ -1,13 +1,19 @@
+// src/hooks/useScrollNavigation.js
 import { useState, useRef, useCallback, useEffect } from "react";
 
 export function useScrollNavigation(isAdminPage, opened) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(true);
+  
+  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
+  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
+  const [showScrollDown, setShowScrollDown] = useState(false); 
   const [isMobile, setIsMobile] = useState(false);
 
   const isScrollingRef = useRef(false);
   const touchStartYRef = useRef(0);
+  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
+  const resizeTimerRef = useRef(null); 
 
   // Ekran boyutunu izle
   useEffect(() => {
@@ -17,7 +23,6 @@ export function useScrollNavigation(isAdminPage, opened) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Masaüstünde kartların birbirine karışmasını engellemek için sadece top-level elementler seçilir
   const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
 
   const getActiveDesktopIndex = (sections) => {
@@ -70,13 +75,11 @@ export function useScrollNavigation(isAdminPage, opened) {
       
       const currentWrapper = wrappers[currentSlideIndex];
       
-      // AKILLI KAYDIRMA: Slaytın içerisinde çok aşağı inildiyse, önce nazikçe o slaytın en tepesine çıkar.
       if (currentWrapper && currentWrapper.scrollTop > 150) {
         currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
       
-      // Zaten slaytın en üstündeyse bir önceki slayta/bölüme geçer.
       setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
     } else {
       const sections = getDesktopSections();
@@ -85,7 +88,6 @@ export function useScrollNavigation(isAdminPage, opened) {
       const activeIdx = getActiveDesktopIndex(sections);
       const currentSection = sections[activeIdx];
       
-      // AKILLI KAYDIRMA: Masaüstünde uzun bir kartın sonlarındaysa, önceki karta atlamak yerine bulunduğu kartın en üstüne çıkar.
       if (currentSection) {
         const currentRect = currentSection.getBoundingClientRect();
         if (currentRect.top < -150) {
@@ -172,10 +174,14 @@ export function useScrollNavigation(isAdminPage, opened) {
   }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
 
   // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
-useEffect(() => {
+  useEffect(() => {
     if (isAdminPage || !opened) return;
 
+    let isMounted = true;
+    let activeWrapper = null;
+
     const handleScroll = () => {
+      if (!isMounted) return;
       if (isMobile) {
          const wrappers = document.querySelectorAll('.slide-wrapper');
          const currentWrapper = wrappers[currentSlideIndex];
@@ -186,39 +192,60 @@ useEffect(() => {
       } else {
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
         
-        // GÜNCELLEME: Sayfanın en tepesindeyken bile aşağı butonunun hemen görünmesi sağlanır
         setShowScrollTop(scrollTop > 100);
         
-        // Sadece sayfanın en sonuna (footer'a) ulaşıldığında aşağı butonu gizlenir
         const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
-        setShowScrollDown(!isAtBottom);
+        
+        if (scrollTop <= 10) {
+          setShowScrollDown(true);
+        } else {
+          setShowScrollDown(!isAtBottom);
+        }
       }
     };
 
-    if (!isMobile) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-    }
-    
-    let activeWrapper = null;
-    if (isMobile) {
-       const wrappers = document.querySelectorAll('.slide-wrapper');
-       activeWrapper = wrappers[currentSlideIndex];
-       if (activeWrapper) {
-          activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
-       }
-    }
+    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
+    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
+    const mountDelayTimer = setTimeout(() => {
+      if (!isMounted) return;
+      
+      handleScroll();
 
-    const revealTimer = window.setTimeout(handleScroll, 100);
-    handleScroll();
-    
+      if (!isMobile) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+      
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         activeWrapper = wrappers[currentSlideIndex];
+         if (activeWrapper) {
+            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+         }
+      }
+
+      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
+      const resizeObserver = new ResizeObserver(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(() => {
+          if (isMounted) handleScroll();
+        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
+      });
+      
+      resizeObserver.observe(document.body);
+
+    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
+
     return () => {
+      isMounted = false;
+      clearTimeout(mountDelayTimer);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      
       if (!isMobile) {
         window.removeEventListener('scroll', handleScroll);
       }
       if (activeWrapper) {
         activeWrapper.removeEventListener('scroll', handleScroll);
       }
-      window.clearTimeout(revealTimer);
     };
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
   

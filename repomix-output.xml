@@ -2822,174 +2822,6 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
 }
 </file>
 
-<file path="src/components/invitation/sections/RsvpSection.jsx">
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { OptionGroup } from "../../common/UIComponents";
-import { triggerConfetti } from "../../../utils/helpers";
-import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
-import { getRsvpSchema } from "../../../validations/schemas"; 
-
-const DeadlineBanner = memo(({ isEn, title, text }) => (
-  <div className="rsvp-deadline-banner">
-    <div className="deadline-icon">⏳</div>
-    <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
-    <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
-  </div>
-));
-
-const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) => {
-  if (!showDeclineModal) return null;
-  return createPortal(
-    <div onClick={resetAndCloseModal} className="app-modal-backdrop">
-      <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
-        <div className="app-modal-content">
-          <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
-          <p className="deadline-text modal-message">
-            {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
-          </p>
-        </div>
-        {!showDeclineGift ? (
-          <div className="app-modal-actions">
-            <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>{t('ui.close')}</button>
-            {showIban && giftData && (
-              <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}><span>{t('ui.sendGift')}</span></button>
-            )}
-          </div>
-        ) : (
-          <div className="app-modal-content">
-            <div className="modal-gift-card">
-              <strong className="modal-gift-receiver">{giftData.receiver}</strong>
-              <span className="modal-gift-bank">{giftData.bankName}</span>
-              <code className="modal-gift-iban">{giftData.iban}</code>
-            </div>
-            <div className="app-modal-actions">
-              <button type="button" className="main-button" onClick={copyIban}>{copied ? t('ui.copied') : t('ui.copyIban')}</button>
-              <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>{t('ui.closeBtn')}</button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>,
-    document.body
-  );
-});
-
-export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [showDeclineGift, setShowDeclineGift] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [urlGuestName, setUrlGuestName] = useState("");
-
-  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
-  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", songRequest: "", note: "", honeypot: "" }
-  });
-
-  const currentNote = watch("note") || "";
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const guestName = params.get("guest") || params.get("davetli") || "";
-    if (guestName) {
-      setUrlGuestName(guestName);
-      setValue("name", guestName);
-    }
-  }, [setValue]);
-
-  const todayStr = new Date().toLocaleDateString('en-CA'); 
-  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
-
-  const onSubmit = async (data) => {
-    if (data.honeypot) return;
-    const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest(data);
-    if (!isDeclining) triggerConfetti();
-    reset();
-    if (isDeclining) setShowDeclineModal(true);
-  };
-
-  const resetAndCloseModal = useCallback(() => {
-    setShowDeclineModal(false);
-    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
-  }, []);
-
-  const copyIban = useCallback(() => {
-    if (giftData?.iban) {
-      navigator.clipboard.writeText(giftData.iban);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  }, [giftData?.iban]);
-
-  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
-    ...opt, 
-    label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
-  })), [isEn, t]);
-
-  return (
-    <section className="card rsvp-card">
-      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
-      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
-      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
-      
-      {isDeadlinePassed ? (
-        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
-      ) : (
-        <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
-          
-          {urlGuestName && (
-            <div className="guest-badge-banner">
-              {t('ui.prefilled', { name: urlGuestName })}
-              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
-            </div>
-          )}
-
-          <div style={{ width: '100%' }}>
-            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-          </div>
-
-          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
-
-          <div className="field-with-counter">
-            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
-            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
-          </div>
-
-          {/* DÜZELTME: İki butonun genişliklerinin (width) %100 oranında tam eşleşmesi sağlandı */}
-          <button type="submit" className="main-button form-button" disabled={isSubmitting} style={{ width: '100%', marginTop: '16px' }}>
-            {isSubmitting ? "..." : t('form.submitRsvp')}
-          </button>
-        </form>
-      )}
-
-      {/* WhatsApp butonu da submit butonuyla tamamen aynı genişlikte (100%) olacak */}
-      <div className="rsvp-actions" style={{ width: '100%', marginTop: '12px' }}>
-        <a 
-          className="secondary-button rsvp-whatsapp-button" 
-          style={{ width: '100%', margin: 0, display: 'inline-flex' }} 
-          href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} 
-          target="_blank" 
-          rel="noreferrer"
-        >
-          {t('form.whatsappRsvp')}
-        </a>
-      </div>
-      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
-    </section>
-  );
-});
-</file>
-
 <file path="src/hooks/useAdminSession.js">
 import { useEffect } from "react";
 import { supabase } from "../supabaseClient";
@@ -4133,6 +3965,172 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
 });
 </file>
 
+<file path="src/components/invitation/sections/RsvpSection.jsx">
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { OptionGroup } from "../../common/UIComponents";
+import { triggerConfetti } from "../../../utils/helpers";
+import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
+import { getRsvpSchema } from "../../../validations/schemas"; 
+
+const DeadlineBanner = memo(({ isEn, title, text }) => (
+  <div className="rsvp-deadline-banner">
+    <div className="deadline-icon">⏳</div>
+    <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
+    <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
+  </div>
+));
+
+const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) => {
+  if (!showDeclineModal) return null;
+  return createPortal(
+    <div onClick={resetAndCloseModal} className="app-modal-backdrop">
+      <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
+        <div className="app-modal-content">
+          <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
+          <p className="deadline-text modal-message">
+            {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
+          </p>
+        </div>
+        {!showDeclineGift ? (
+          <div className="app-modal-actions">
+            <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>{t('ui.close')}</button>
+            {showIban && giftData && (
+              <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}><span>{t('ui.sendGift')}</span></button>
+            )}
+          </div>
+        ) : (
+          <div className="app-modal-content">
+            <div className="modal-gift-card">
+              <strong className="modal-gift-receiver">{giftData.receiver}</strong>
+              <span className="modal-gift-bank">{giftData.bankName}</span>
+              <code className="modal-gift-iban">{giftData.iban}</code>
+            </div>
+            <div className="app-modal-actions">
+              <button type="button" className="main-button" onClick={copyIban}>{copied ? t('ui.copied') : t('ui.copyIban')}</button>
+              <button type="button" className="secondary-button app-modal-cancel" onClick={resetAndCloseModal}>{t('ui.closeBtn')}</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
+  );
+});
+
+export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showDeclineGift, setShowDeclineGift] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [urlGuestName, setUrlGuestName] = useState("");
+
+  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
+  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(rsvpSchema),
+    defaultValues: { name: "", attendance: "Katılacağım", songRequest: "", note: "", honeypot: "" }
+  });
+
+  const currentNote = watch("note") || "";
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const guestName = params.get("guest") || params.get("davetli") || "";
+    if (guestName) {
+      setUrlGuestName(guestName);
+      setValue("name", guestName);
+    }
+  }, [setValue]);
+
+  const todayStr = new Date().toLocaleDateString('en-CA'); 
+  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
+
+  const onSubmit = async (data) => {
+    if (data.honeypot) return;
+    const isDeclining = data.attendance === "Katılamayacağım";
+    await submitGuest(data);
+    if (!isDeclining) triggerConfetti();
+    reset();
+    if (isDeclining) setShowDeclineModal(true);
+  };
+
+  const resetAndCloseModal = useCallback(() => {
+    setShowDeclineModal(false);
+    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
+  }, []);
+
+  const copyIban = useCallback(() => {
+    if (giftData?.iban) {
+      navigator.clipboard.writeText(giftData.iban);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }, [giftData?.iban]);
+
+  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
+    ...opt, 
+    label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
+  })), [isEn, t]);
+
+  return (
+    <section className="card rsvp-card">
+      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
+      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
+      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
+      
+      {isDeadlinePassed ? (
+        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
+      ) : (
+        <form className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
+          
+          {urlGuestName && (
+            <div className="guest-badge-banner">
+              {t('ui.prefilled', { name: urlGuestName })}
+              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
+            </div>
+          )}
+
+          <div style={{ width: '100%' }}>
+            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
+            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+          </div>
+
+          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
+
+          <div className="field-with-counter">
+            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
+            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
+          </div>
+
+          <button type="submit" className="main-button form-button" disabled={isSubmitting} style={{ marginTop: '16px' }}>
+                  {isSubmitting ? "..." : t('form.submitRsvp')}
+                </button>
+              </form>
+            )}
+
+            <div className="rsvp-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+              <a 
+                className="secondary-button rsvp-whatsapp-button" 
+                style={{ margin: 0, display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }} 
+                href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} 
+                target="_blank" 
+                rel="noreferrer"
+              >
+                {t('form.whatsappRsvp')}
+              </a>
+            </div>
+          <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
+    </section>
+  );
+});
+</file>
+
 <file path="src/components/invitation/sections/StorySection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -4717,6 +4715,296 @@ export class ErrorBoundary extends React.Component {
 }
 </file>
 
+<file path="src/i18n/locales/en.json">
+{
+  "invitation": {
+    "introLabel": "Wedding Invitation",
+    "introText": "You are invited to the most special day of our love story.",
+    "openButton": "Open Invitation 💌",
+    "heroLabel": "We Are Getting Married",
+    "countdownLabel": "Countdown",
+    "countdownTitle": "Time Left Until Our Wedding",
+    "invitationLabel": "Invitation",
+    "invitationTitle": "Will You Share Our Happiness?",
+    "familyLabel": "Our Families",
+    "familyTitle": "With the Joy of Our Families",
+    "ceremonyLabel": "Ceremony & Celebration",
+    "ceremonyTitle": "Details of the Day",
+    "scheduleLabel": "Wedding Schedule",
+    "locationLabel": "Date & Location",
+    "locationTitle": "Wedding Details",
+    "galleryLabel": "Photos",
+    "galleryTitle": "Outdoor Wedding Atmosphere",
+    "rsvpLabel": "RSVP",
+    "rsvpTitle": "RSVP Form",
+    "rsvpText": "Please let us know if you can attend to help us plan.",
+    "guestsLabel": "Guests",
+    "guestsTitle": "Guest List",
+    "wishesLabel": "Guestbook",
+    "wishesTitle": "Your Best Wishes",
+    "shareLabel": "Share",
+    "shareTitle": "Share the Invitation",
+    "shareDescription": "You can share our invitation with your loved ones.",
+    "thanksText": "Having you with us on this special day is the greatest gift.",
+    "footerSmall": "Made with love",
+    "declineTitle": "We'll Miss You! 😔",
+    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
+  },
+  "form": {
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Your Phone Number",
+    "notePlaceholder": "Please Specify The Number Of People",
+    "messagePlaceholder": "Your Message",
+    "submitRsvp": "Send RSVP 🕊️",
+    "submitWish": "Send Message 💌",
+    "whatsappRsvp": "RSVP via WhatsApp 💬",
+    "missingInfo": "Missing Info ⚠️",
+    "missingNameMessage": "Please enter your full name. ✍️",
+    "missingWishMessage": "Please enter your name and message. ✍️"
+  },
+  "ui": {
+    "time": "Time",
+    "scroll": "SCROLL",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "date": "Date",
+    "venue": "Venue",
+    "address": "Address",
+    "goToMap": "Go to Map 📍",
+    "addToCalendar": "Add to Calendar 📅",
+    "closeEsc": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "shareQr": "Share quickly via QR code.",
+    "shareWhatsapp": "Share via WhatsApp 💬",
+    "copyLink": "Copy Link 🔗",
+    "giftTitle": "Gift & Registry",
+    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
+    "copyIban": "Copy IBAN 📋",
+    "copied": "Copied! ✅",
+    "close": "OK 👍",
+    "closeBtn": "Close ❌",
+    "sendGift": "Would you like to send a gift? 🎁",    
+    "totalResponses": "Total Responses",
+    "attending": "Attending",
+    "notAttending": "Not Attending",
+    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
+    "noWishes": "No wishes yet.",
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save 💾",
+    "cancel": "Cancel 🚫",
+    "yes": "Yes ✔️",
+    "ok": "OK 👍"
+  },
+  "visibility": {
+    "countdown": "Countdown",
+    "family": "Family Info",
+    "ceremony": "Ceremony & Wedding",
+    "schedule": "Wedding Schedule",
+    "location": "Location (Map)",
+    "gallery": "Photo Gallery",
+    "rsvp": "RSVP Form",
+    "wishes": "Guestbook",
+    "iban": "Gift / IBAN Section",
+    "guests": "Guest List",
+    "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information ℹ️",
+    "errorTitle": "Error ❌",
+    "saveTitle": "Saved 🎉",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing 🔌",
+    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
+    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
+    "wishSaved": "Your wish has been saved. 💖",
+    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
+    "wishError": "Could not save message. Detail: {{message}} ❌",
+    "linkCopied": "Invitation link copied. 🔗",
+    "linkCopyError": "Could not copy link. ⚠️"
+  },
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status."
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
+  }
+}
+</file>
+
+<file path="src/i18n/locales/tr.json">
+{
+  "invitation": {
+    "introLabel": "Düğün Davetiyesi",
+    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
+    "openButton": "Daveti Aç 💌",
+    "heroLabel": "Biz Evleniyoruz",
+    "countdownLabel": "Geri Sayım",
+    "countdownTitle": "Düğünümüze Kalan Süre",
+    "invitationLabel": "Davet",
+    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
+    "familyLabel": "Ailelerimiz",
+    "familyTitle": "Ailelerimizin Katılımıyla",
+    "ceremonyLabel": "Nikah ve Düğün",
+    "ceremonyTitle": "Günün Detayları",
+    "scheduleLabel": "Düğün Takvimi",
+    "locationLabel": "Tarih ve Konum",
+    "locationTitle": "Düğün Bilgileri",
+    "galleryLabel": "Fotoğraflar",
+    "galleryTitle": "Kır Düğünü Atmosferi",
+    "rsvpLabel": "Katılım",
+    "rsvpTitle": "Katılım Bildirimi",
+    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
+    "guestsLabel": "Misafirler",
+    "guestsTitle": "Misafir Listesi",
+    "wishesLabel": "Anı Defteri",
+    "wishesTitle": "Güzel Dilekleriniz",
+    "shareLabel": "Paylaş",
+    "shareTitle": "Davetiyeyi Paylaş",
+    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
+    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
+    "footerSmall": "Made with love",
+    "declineTitle": "Çok Üzüldük! 😔",
+    "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
+    "deadlineTitle": "LCV Bildirim Süresi Doldu",
+    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
+  },
+  "form": {
+    "namePlaceholder": "Ad Soyad",
+    "phonePlaceholder": "Telefon Numaranız",
+    "notePlaceholder": "Kişi Sayısını Belirtiniz",
+    "messagePlaceholder": "Mesajınız",
+    "submitRsvp": "Katılımı Gönder 🕊️",
+    "submitWish": "Mesajı Gönder 💌",
+    "whatsappRsvp": "WhatsApp ile Bildir 💬",
+    "missingInfo": "Eksik Bilgi ⚠️",
+    "missingNameMessage": "Lütfen ad soyad gir. ✍️",
+    "missingWishMessage": "Lütfen isim ve mesaj gir. ✍️"
+  },
+  "ui": {
+    "time": "Saat",
+    "scroll": "KAYDIR",
+    "days": "Gün",
+    "hours": "Saat",
+    "mins": "Dakika",
+    "secs": "Saniye",
+    "date": "Tarih",
+    "venue": "Yer",
+    "address": "Adres",
+    "goToMap": "Konuma Git 📍",
+    "addToCalendar": "Takvime Ekle 📅",
+    "closeEsc": "Kapat (Esc)",
+    "prev": "Önceki (←)",
+    "next": "Sonraki (→)",
+    "shareQr": "QR kod ile hızlıca paylaşabilirsiniz.",
+    "shareWhatsapp": "WhatsApp ile Paylaş 💬",
+    "copyLink": "Linki Kopyala 🔗",
+    "giftTitle": "Hediye & Takı",
+    "giftDescription": "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için:",
+    "copyIban": "IBAN'ı Kopyala 📋",
+    "copied": "Kopyalandı ✅",
+    "close": "Tamam 👍",
+    "closeBtn": "Kapat ❌",
+    "sendGift": "Hediye Göndermek İster misiniz? 🎁",
+    "totalResponses": "Toplam Yanıt",
+    "attending": "Katılacak",
+    "notAttending": "Katılmayacak",
+    "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
+    "noWishes": "Henüz güzel dilek yok.",
+    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
+    "save": "Kaydet 💾",
+    "cancel": "Vazgeç 🚫",
+    "yes": "Evet ✔️",
+    "ok": "Tamam 👍"
+  },
+  "visibility": {
+    "countdown": "Geri Sayım",
+    "family": "Aile Bilgileri",
+    "ceremony": "Nikah ve Düğün",
+    "schedule": "Düğün Takvimi",
+    "location": "Konum (Harita)",
+    "gallery": "Fotoğraf Galerisi",
+    "rsvp": "Lcv (Katılım Formu)",
+    "wishes": "Anı Defteri",
+    "iban": "Hediye / IBAN Bölümü",
+    "guests": "Misafir Listesi",
+    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Bilgi ℹ️",
+    "errorTitle": "Hata ❌",
+    "saveTitle": "Bilgileriniz Alındı 🎉",
+    "saveErrorTitle": "Kayıt hatası 😔",
+    "supabaseMissingTitle": "Supabase bağlantısı eksik 🔌",
+    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz! 💌",
+    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}} ❌",
+    "wishSaved": "Güzel dileğin kaydedildi. 💖",
+    "wishSentApproval": "Güzel dileğin admin onayına gönderildi. ⏳",
+    "wishError": "Mesaj kaydedilemedi. Detay: {{message}} ❌",
+    "linkCopied": "Davetiye linki kopyalandı. 🔗",
+    "linkCopyError": "Link kopyalanamadı. ⚠️"
+  },
+  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
+    "clearGuestsTitle": "Katılım kayıtlarını sil",
+    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
+    "clearWishesTitle": "Anı defterini temizle",
+    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
+    "deleteGuestTitle": "Kaydı sil",
+    "editGuestTitle": "Katılım kaydını düzenle",
+    "fullName": "Ad Soyad",
+    "phone": "Telefon",
+    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
+    "personCount": "Kişi sayısı",
+    "side": "Taraf",
+    "hasChild": "Çocuk var mı? (Evet/Hayır)",
+    "songRequest": "Müzik isteği",
+    "note": "Not",
+    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
+    "deleteWishTitle": "Mesajı sil",
+    "editWishTitle": "Mesajı düzenle",
+    "message": "Mesaj",
+    "couldNotDelete": "Silinemedi.",
+    "couldNotUpdate": "Güncellenemedi.",
+    "couldNotChangeStatus": "Durum değiştirilemedi."
+  },
+    "navigation": {
+    "chooseApp": "Yol Tarifi Al",
+    "copyAddress": "Tam Adresi Kopyala 📋",
+    "addressCopied": "Adres Kopyalandı! ✅"
+  }
+}
+</file>
+
 <file path="src/styles/modals.css">
 .global-modal-input,
 .global-modal-text,
@@ -5249,151 +5537,6 @@ export * from "./admin/ui/AdminMediaFields";
 export * from "./admin/ui/AdminLayout";
 </file>
 
-<file path="src/i18n/locales/en.json">
-{
-  "invitation": {
-    "introLabel": "Wedding Invitation",
-    "introText": "You are invited to the most special day of our love story.",
-    "openButton": "Open Invitation 💌",
-    "heroLabel": "We Are Getting Married",
-    "countdownLabel": "Countdown",
-    "countdownTitle": "Time Left Until Our Wedding",
-    "invitationLabel": "Invitation",
-    "invitationTitle": "Will You Share Our Happiness?",
-    "familyLabel": "Our Families",
-    "familyTitle": "With the Joy of Our Families",
-    "ceremonyLabel": "Ceremony & Celebration",
-    "ceremonyTitle": "Details of the Day",
-    "scheduleLabel": "Wedding Schedule",
-    "locationLabel": "Date & Location",
-    "locationTitle": "Wedding Details",
-    "galleryLabel": "Photos",
-    "galleryTitle": "Outdoor Wedding Atmosphere",
-    "rsvpLabel": "RSVP",
-    "rsvpTitle": "RSVP Form",
-    "rsvpText": "Please let us know if you can attend to help us plan.",
-    "guestsLabel": "Guests",
-    "guestsTitle": "Guest List",
-    "wishesLabel": "Guestbook",
-    "wishesTitle": "Your Best Wishes",
-    "shareLabel": "Share",
-    "shareTitle": "Share the Invitation",
-    "shareDescription": "You can share our invitation with your loved ones.",
-    "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You! 😔",
-    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
-    "deadlineTitle": "RSVP Deadline Passed",
-    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
-  },
-  "form": {
-    "namePlaceholder": "Full Name",
-    "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Please Specify The Number Of People",
-    "messagePlaceholder": "Your Message",
-    "submitRsvp": "Send RSVP 🕊️",
-    "submitWish": "Send Message 💌",
-    "whatsappRsvp": "RSVP via WhatsApp 💬",
-    "missingInfo": "Missing Info ⚠️",
-    "missingNameMessage": "Please enter your full name. ✍️",
-    "missingWishMessage": "Please enter your name and message. ✍️"
-  },
-  "ui": {
-    "time": "Time",
-    "scroll": "SCROLL",
-    "days": "Days",
-    "hours": "Hours",
-    "mins": "Mins",
-    "secs": "Secs",
-    "date": "Date",
-    "venue": "Venue",
-    "address": "Address",
-    "goToMap": "Go to Map 📍",
-    "addToCalendar": "Add to Calendar 📅",
-    "closeEsc": "Close (Esc)",
-    "prev": "Previous (←)",
-    "next": "Next (→)",
-    "shareQr": "Share quickly via QR code.",
-    "shareWhatsapp": "Share via WhatsApp 💬",
-    "copyLink": "Copy Link 🔗",
-    "giftTitle": "Gift & Registry",
-    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
-    "copyIban": "Copy IBAN 📋",
-    "copied": "Copied! ✅",
-    "close": "OK 👍",
-    "closeBtn": "Close ❌",
-    "sendGift": "Would you like to send a gift? 🎁",    
-    "totalResponses": "Total Responses",
-    "attending": "Attending",
-    "notAttending": "Not Attending",
-    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
-    "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
-    "save": "Save 💾",
-    "cancel": "Cancel 🚫",
-    "yes": "Yes ✔️",
-    "ok": "OK 👍"
-  },
-  "visibility": {
-    "countdown": "Countdown",
-    "family": "Family Info",
-    "ceremony": "Ceremony & Wedding",
-    "schedule": "Wedding Schedule",
-    "location": "Location (Map)",
-    "gallery": "Photo Gallery",
-    "rsvp": "RSVP Form",
-    "wishes": "Guestbook",
-    "iban": "Gift / IBAN Section",
-    "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Information ℹ️",
-    "errorTitle": "Error ❌",
-    "saveTitle": "Saved 🎉",
-    "saveErrorTitle": "Save error 😔",
-    "supabaseMissingTitle": "Supabase connection missing 🔌",
-    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
-    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
-    "wishSaved": "Your wish has been saved. 💖",
-    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
-    "wishError": "Could not save message. Detail: {{message}} ❌",
-    "linkCopied": "Invitation link copied. 🔗",
-    "linkCopyError": "Could not copy link. ⚠️"
-  },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Delete all RSVP records?",
-    "clearGuestsTitle": "Clear Guests",
-    "clearWishesConfirm": "Delete all guestbook messages?",
-    "clearWishesTitle": "Clear Guestbook",
-    "deleteGuestConfirm": "Delete this RSVP record?",
-    "deleteGuestTitle": "Delete Record",
-    "editGuestTitle": "Edit RSVP",
-    "fullName": "Full Name",
-    "phone": "Phone",
-    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
-    "personCount": "Person Count",
-    "side": "Side",
-    "hasChild": "Has children? (Evet/Hayır)",
-    "songRequest": "Song Request",
-    "note": "Note",
-    "deleteWishConfirm": "Delete this message?",
-    "deleteWishTitle": "Delete Message",
-    "editWishTitle": "Edit Message",
-    "message": "Message",
-    "couldNotDelete": "Could not delete.",
-    "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
-  },
-    "navigation": {
-    "chooseApp": "Choose Navigation App",
-    "copyAddress": "Copy Full Address 📋",
-    "addressCopied": "Address Copied! ✅"
-  }
-}
-</file>
-
 <file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
 import React, { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
@@ -5767,151 +5910,6 @@ function AdminDashboard(props) {
 }
 
 export default React.memo(AdminDashboard);
-</file>
-
-<file path="src/i18n/locales/tr.json">
-{
-  "invitation": {
-    "introLabel": "Düğün Davetiyesi",
-    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
-    "openButton": "Daveti Aç 💌",
-    "heroLabel": "Biz Evleniyoruz",
-    "countdownLabel": "Geri Sayım",
-    "countdownTitle": "Düğünümüze Kalan Süre",
-    "invitationLabel": "Davet",
-    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
-    "familyLabel": "Ailelerimiz",
-    "familyTitle": "Ailelerimizin Katılımıyla",
-    "ceremonyLabel": "Nikah ve Düğün",
-    "ceremonyTitle": "Günün Detayları",
-    "scheduleLabel": "Düğün Takvimi",
-    "locationLabel": "Tarih ve Konum",
-    "locationTitle": "Düğün Bilgileri",
-    "galleryLabel": "Fotoğraflar",
-    "galleryTitle": "Kır Düğünü Atmosferi",
-    "rsvpLabel": "Katılım",
-    "rsvpTitle": "Katılım Bildirimi",
-    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
-    "guestsLabel": "Misafirler",
-    "guestsTitle": "Misafir Listesi",
-    "wishesLabel": "Anı Defteri",
-    "wishesTitle": "Güzel Dilekleriniz",
-    "shareLabel": "Paylaş",
-    "shareTitle": "Davetiyeyi Paylaş",
-    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
-    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    "footerSmall": "Made with love",
-    "declineTitle": "Çok Üzüldük! 😔",
-    "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
-    "deadlineTitle": "LCV Bildirim Süresi Doldu",
-    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
-  },
-  "form": {
-    "namePlaceholder": "Ad Soyad",
-    "phonePlaceholder": "Telefon Numaranız",
-    "notePlaceholder": "Kişi Sayısını Belirtiniz",
-    "messagePlaceholder": "Mesajınız",
-    "submitRsvp": "Katılımı Gönder 🕊️",
-    "submitWish": "Mesajı Gönder 💌",
-    "whatsappRsvp": "WhatsApp ile Bildir 💬",
-    "missingInfo": "Eksik Bilgi ⚠️",
-    "missingNameMessage": "Lütfen ad soyad gir. ✍️",
-    "missingWishMessage": "Lütfen isim ve mesaj gir. ✍️"
-  },
-  "ui": {
-    "time": "Saat",
-    "scroll": "KAYDIR",
-    "days": "Gün",
-    "hours": "Saat",
-    "mins": "Dakika",
-    "secs": "Saniye",
-    "date": "Tarih",
-    "venue": "Yer",
-    "address": "Adres",
-    "goToMap": "Konuma Git 📍",
-    "addToCalendar": "Takvime Ekle 📅",
-    "closeEsc": "Kapat (Esc)",
-    "prev": "Önceki (←)",
-    "next": "Sonraki (→)",
-    "shareQr": "QR kod ile hızlıca paylaşabilirsiniz.",
-    "shareWhatsapp": "WhatsApp ile Paylaş 💬",
-    "copyLink": "Linki Kopyala 🔗",
-    "giftTitle": "Hediye & Takı",
-    "giftDescription": "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için:",
-    "copyIban": "IBAN'ı Kopyala 📋",
-    "copied": "Kopyalandı ✅",
-    "close": "Tamam 👍",
-    "closeBtn": "Kapat ❌",
-    "sendGift": "Hediye Göndermek İster misiniz? 🎁",
-    "totalResponses": "Toplam Yanıt",
-    "attending": "Katılacak",
-    "notAttending": "Katılmayacak",
-    "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
-    "noWishes": "Henüz güzel dilek yok.",
-    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
-    "save": "Kaydet 💾",
-    "cancel": "Vazgeç 🚫",
-    "yes": "Evet ✔️",
-    "ok": "Tamam 👍"
-  },
-  "visibility": {
-    "countdown": "Geri Sayım",
-    "family": "Aile Bilgileri",
-    "ceremony": "Nikah ve Düğün",
-    "schedule": "Düğün Takvimi",
-    "location": "Konum (Harita)",
-    "gallery": "Fotoğraf Galerisi",
-    "rsvp": "Lcv (Katılım Formu)",
-    "wishes": "Anı Defteri",
-    "iban": "Hediye / IBAN Bölümü",
-    "guests": "Misafir Listesi",
-    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Bilgi ℹ️",
-    "errorTitle": "Hata ❌",
-    "saveTitle": "Bilgileriniz Alındı 🎉",
-    "saveErrorTitle": "Kayıt hatası 😔",
-    "supabaseMissingTitle": "Supabase bağlantısı eksik 🔌",
-    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz! 💌",
-    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}} ❌",
-    "wishSaved": "Güzel dileğin kaydedildi. 💖",
-    "wishSentApproval": "Güzel dileğin admin onayına gönderildi. ⏳",
-    "wishError": "Mesaj kaydedilemedi. Detay: {{message}} ❌",
-    "linkCopied": "Davetiye linki kopyalandı. 🔗",
-    "linkCopyError": "Link kopyalanamadı. ⚠️"
-  },
-  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
-    "clearGuestsTitle": "Katılım kayıtlarını sil",
-    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
-    "clearWishesTitle": "Anı defterini temizle",
-    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
-    "deleteGuestTitle": "Kaydı sil",
-    "editGuestTitle": "Katılım kaydını düzenle",
-    "fullName": "Ad Soyad",
-    "phone": "Telefon",
-    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
-    "personCount": "Kişi sayısı",
-    "side": "Taraf",
-    "hasChild": "Çocuk var mı? (Evet/Hayır)",
-    "songRequest": "Müzik isteği",
-    "note": "Not",
-    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
-    "deleteWishTitle": "Mesajı sil",
-    "editWishTitle": "Mesajı düzenle",
-    "message": "Mesaj",
-    "couldNotDelete": "Silinemedi.",
-    "couldNotUpdate": "Güncellenemedi.",
-    "couldNotChangeStatus": "Durum değiştirilemedi."
-  },
-    "navigation": {
-    "chooseApp": "Yol Tarifi Al",
-    "copyAddress": "Tam Adresi Kopyala 📋",
-    "addressCopied": "Adres Kopyalandı! ✅"
-  }
-}
 </file>
 
 <file path="src/components/invitation/sections/HeroSection.jsx">
@@ -7215,6 +7213,235 @@ export default function InvitationController() {
 }
 </file>
 
+<file path="src/hooks/useScrollNavigation.js">
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+
+  // Ekran boyutunu izle
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Masaüstünde kartların birbirine karışmasını engellemek için sadece top-level elementler seçilir
+  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
+
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
+  const scrollToNext = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      setCurrentSlideIndex(prev => {
+        const next = prev + 1;
+        return next < wrappers.length ? next : prev;
+      });
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
+      
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
+        const rect = nextSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const scrollToPrev = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      const currentWrapper = wrappers[currentSlideIndex];
+      
+      // AKILLI KAYDIRMA: Slaytın içerisinde çok aşağı inildiyse, önce nazikçe o slaytın en tepesine çıkar.
+      if (currentWrapper && currentWrapper.scrollTop > 150) {
+        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      // Zaten slaytın en üstündeyse bir önceki slayta/bölüme geçer.
+      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const currentSection = sections[activeIdx];
+      
+      // AKILLI KAYDIRMA: Masaüstünde uzun bir kartın sonlarındaysa, önceki karta atlamak yerine bulunduğu kartın en üstüne çıkar.
+      if (currentSection) {
+        const currentRect = currentSection.getBoundingClientRect();
+        if (currentRect.top < -150) {
+           const absoluteTop = window.scrollY + currentRect.top;
+           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+           return;
+        }
+      }
+
+      const prevIdx = activeIdx - 1;
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
+        const rect = prevSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile, currentSlideIndex]);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
+    
+    const slideWrapper = e.target.closest('.slide-wrapper');
+    if (slideWrapper) {
+      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+      if (isScrollable) {
+        const atTop = slideWrapper.scrollTop <= 0;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+
+        if (e.deltaY > 0 && !atBottom) return; 
+        if (e.deltaY < 0 && !atTop) return;    
+      }
+    }
+
+    if (e.deltaY > 0) scrollToNext();
+    else scrollToPrev();
+
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 600);
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEndY;
+
+    const slideWrapper = target.closest('.slide-wrapper');
+    if (slideWrapper) {
+       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+       if (isScrollable) {
+           const atTop = slideWrapper.scrollTop <= 0;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+           if (diff > 0 && !atBottom) return;
+           if (diff < 0 && !atTop) return;
+       }
+    }
+
+    if (Math.abs(diff) > 40) { 
+      if (diff > 0) scrollToNext(); 
+      else scrollToPrev(); 
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 500); 
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
+useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    const handleScroll = () => {
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         const currentWrapper = wrappers[currentSlideIndex];
+         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
+         
+         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
+         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
+      } else {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        
+        // GÜNCELLEME: Sayfanın en tepesindeyken bile aşağı butonunun hemen görünmesi sağlanır
+        setShowScrollTop(scrollTop > 100);
+        
+        // Sadece sayfanın en sonuna (footer'a) ulaşıldığında aşağı butonu gizlenir
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
+        setShowScrollDown(!isAtBottom);
+      }
+    };
+
+    if (!isMobile) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    
+    let activeWrapper = null;
+    if (isMobile) {
+       const wrappers = document.querySelectorAll('.slide-wrapper');
+       activeWrapper = wrappers[currentSlideIndex];
+       if (activeWrapper) {
+          activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+       }
+    }
+
+    const revealTimer = window.setTimeout(handleScroll, 100);
+    handleScroll();
+    
+    return () => {
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+      }
+      if (activeWrapper) {
+        activeWrapper.removeEventListener('scroll', handleScroll);
+      }
+      window.clearTimeout(revealTimer);
+    };
+  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
+  
+  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
+}
+</file>
+
 <file path="src/styles/responsive.css">
 /* src/styles/responsive.css */
 
@@ -7248,9 +7475,6 @@ main.invitation-page.mobile-mode .slide-wrapper {
   -ms-overflow-style: none;
   scrollbar-width: none;
   
-  padding-top: env(safe-area-inset-top) !important;
-  padding-bottom: env(safe-area-inset-bottom) !important;
-
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
   transform: translateY(30px) scale(0.98) !important; 
 }
@@ -7299,11 +7523,17 @@ main.invitation-page.mobile-mode .hero-section::before {
 
 /* =========================================================
    DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
-   İçeriğin kesilmesini (cut-off) önlemek için blok yapıya geçildi
+   Kesilme (Cut-off) sorunlarını tamamen engeller
    ========================================================= */
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
-  display: block !important; 
-  padding-top: calc(6vh + env(safe-area-inset-top)) !important;
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  
+  /* Üstten minimum güvenlik boşluğu */
+  padding-top: calc(24px + env(safe-area-inset-top)) !important;
+  /* Alttan menü için bırakılan güvenlik boşluğu */
   padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
   padding-left: clamp(12px, 4vw, 20px) !important;
   padding-right: clamp(12px, 4vw, 20px) !important;
@@ -7311,16 +7541,35 @@ main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
 
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
-  display: none !important;
+  content: "" !important;
+  display: block !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
 }
+
+main.invitation-page.mobile-mode .card,
+main.invitation-page.mobile-mode .countdown-section,
+main.invitation-page.mobile-mode .rsvp-card,
+main.invitation-page.mobile-mode .story-card {
+  height: max-content !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+  width: 100% !important;
+  margin: 0 auto !important; 
+}
+
 
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
   width: 100% !important;
   margin: 0 auto !important; 
+  flex-shrink: 0 !important; 
 }
-
 
 /* =========================================================
    MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
@@ -7332,6 +7581,83 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 
 @media (max-width: 768px) {
+  .rsvp-form, 
+  .wish-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .rsvp-form > div, 
+  .wish-form > div {
+    width: 100% !important;
+  }
+
+  /* Form elemanları ve ana butonlar */
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea,
+  .option-group,
+  .option-button,
+  .form-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important; 
+  }
+  
+  .option-button,
+  .form-button {
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
+  .rsvp-whatsapp-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important;
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    
+    /* Tema renklerine uygun zarif bir ikincil buton stili */
+    background: var(--paper, #fff) !important;
+    border: 1.5px solid var(--amp-color, #9f4f68) !important;
+    color: var(--amp-color, #9f4f68) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
+  }
+
+  .rsvp-whatsapp-button:hover {
+    background: var(--amp-color, #9f4f68) !important;
+    color: #fff !important;
+  }
+
+  .option-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .rsvp-actions {
+    width: 100% !important;
+    margin-top: 16px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
   .story-timeline-container, 
   .schedule-list, 
   .wish-list, 
@@ -7343,6 +7669,11 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     max-height: none !important; 
     height: auto !important;
     overflow: visible !important;
+  }
+
+  .card h2, .countdown-section h2, .section-label {
+    line-height: 1.35 !important;
+    padding-bottom: 2px !important;
   }
 
   .admin-main-panel, 
@@ -7401,16 +7732,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   .mini-map {
     height: 250px !important;
     border-radius: 16px !important;
-  }
-  
-  .glass-dock {
-    top: auto !important;
-    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-    right: 50% !important;
-    transform: translateX(50%) !important;
-    flex-direction: row !important;
-    padding: 8px 14px !important;
-    gap: 14px !important;
   }
   
   .guest-item,
@@ -7513,30 +7834,7 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     width: 100%;
     padding: 14px 20px; 
   }
-  .floating-actions {
-    top: auto;
-    right: 14px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    left: auto;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  .floating-actions .share-button {
-    width: 120px;
-    height: 54px;
-    font-size: 16px;
-  }
-  .floating-actions .music-toggle-button {
-    width: 48px !important;
-    height: 48px !important;
-    min-width: 48px !important;
-    align-self: flex-end;
-  }
-  .floating-actions .music-toggle-button svg {
-    width: 24px;
-    height: 24px;
-  }
+  
   .app-modal-backdrop {
     position: fixed !important;
     top: 0 !important;
@@ -7578,7 +7876,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   }
 }
 
-/* 3. ÇOK KÜÇÜK EKRANLAR İÇİN (iPhone SE, vb. < 400px) */
 @media (max-width: 400px) {
   .intro-card {
     padding: 30px 16px !important;
@@ -7618,213 +7915,19 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     padding: 16px 12px !important;
   }
 }
-</file>
 
-<file path="src/hooks/useScrollNavigation.js">
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [showScrollDown, setShowScrollDown] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-
-  // Cihazın mobil olup olmadığını kontrol et (768px sınırı)
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Masaüstü için hangi bölümde olduğumuzu hesaplayan yardımcı fonksiyon
-  const getActiveDesktopIndex = (sections) => {
-    let activeIdx = 0;
-    sections.forEach((sec, idx) => {
-      const rect = sec.getBoundingClientRect();
-      // Eğer bölüm ekranın ortasından daha yukarıdaysa, okuduğumuz/odaklandığımız bölüm odur
-      if (rect.top < window.innerHeight * 0.55) {
-        activeIdx = idx;
-      }
-    });
-    return activeIdx;
-  };
-
-  const scrollToNext = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
-    if (sections.length === 0) return;
-
-    if (isMobile) {
-      // Mobilde Slayt Geçişi
-      setCurrentSlideIndex(prev => {
-        const next = prev + 1;
-        return next < sections.length ? next : prev;
-      });
-    } else {
-      // Masaüstü için Endeks (Index) Tabanlı Hedefleme
-      const activeIdx = getActiveDesktopIndex(sections);
-      const nextIdx = activeIdx + 1;
-      
-      if (nextIdx < sections.length) {
-        const nextSection = sections[nextIdx];
-        const rect = nextSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          // Kart ekrana sığıyorsa kusursuz ortala
-          window.scrollTo({ 
-            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
-            behavior: 'smooth' 
-          });
-        } else {
-          // Kart çok uzunsa en tepesinden başlat (okumak için 40px boşluk)
-          window.scrollTo({ 
-            top: absoluteTop - 40, 
-            behavior: 'smooth' 
-          });
-        }
-      } else {
-        // En sondayken hala buton görünüyorsa manuel kaydır
-        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile]);
-
-  const scrollToPrev = useCallback(() => {
-    const sections = Array.from(document.querySelectorAll('.slide-wrapper'));
-    if (sections.length === 0) return;
-
-    if (isMobile) {
-      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
-    } else {
-      const activeIdx = getActiveDesktopIndex(sections);
-      const prevIdx = activeIdx - 1;
-      
-      if (prevIdx >= 0) {
-        const prevSection = sections[prevIdx];
-        const rect = prevSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ 
-            top: absoluteTop - (window.innerHeight - rect.height) / 2, 
-            behavior: 'smooth' 
-          });
-        } else {
-          window.scrollTo({ 
-            top: absoluteTop - 40, 
-            behavior: 'smooth' 
-          });
-        }
-      } else {
-        // Zaten 1. karttaysak en tepeye dön
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile]);
-
-  const handleWheel = useCallback((e) => {
-    // Masaüstünde tekerlekle kaydırmaya müdahale etmiyoruz
-    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
-    
-    const slideWrapper = e.target.closest('.slide-wrapper');
-    if (slideWrapper) {
-      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-      if (isScrollable) {
-        const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-
-        if (e.deltaY > 0 && !atBottom) return; 
-        if (e.deltaY < 0 && !atTop) return;    
-      }
-    }
-
-    if (e.deltaY > 0) scrollToNext();
-    else scrollToPrev();
-
-    isScrollingRef.current = true;
-    setTimeout(() => { isScrollingRef.current = false; }, 600);
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) {
-      return; 
-    }
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartYRef.current - touchEndY;
-
-    const slideWrapper = target.closest('.slide-wrapper');
-    if (slideWrapper) {
-       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-       if (isScrollable) {
-           const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-           if (diff > 0 && !atBottom) return;
-           if (diff < 0 && !atTop) return;
-       }
-    }
-
-    if (Math.abs(diff) > 40) { 
-      if (diff > 0) scrollToNext(); 
-      else scrollToPrev(); 
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 500); 
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    const handleScroll = () => {
-      if (isMobile) {
-         setShowScrollTop(currentSlideIndex > 0);
-         const sectionsCount = document.querySelectorAll('.slide-wrapper').length;
-         setShowScrollDown(currentSlideIndex < sectionsCount - 1);
-      } else {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        setShowScrollTop(scrollTop > 100);
-        
-        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 100;
-        setShowScrollDown(!isAtBottom);
-      }
-    };
-
-    let resizeObserver;
-    if (!isMobile) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      resizeObserver = new ResizeObserver(() => handleScroll());
-      resizeObserver.observe(document.body);
-    }
-    
-    const revealTimer = window.setTimeout(handleScroll, 100);
-    handleScroll();
-    
-    return () => {
-      if (!isMobile) {
-        window.removeEventListener('scroll', handleScroll);
-        if (resizeObserver) resizeObserver.disconnect();
-      }
-      window.clearTimeout(revealTimer);
-    };
-  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-
-  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
+@media (min-width: 651px) {
+  .floating-actions,
+  .glass-dock {
+    height: auto !important;
+    max-height: none !important;
+    top: auto !important;
+    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
+    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
+  }
+  html body .app .glass-dock .wa-btn {
+    display: none !important;
+  }
 }
 </file>
 
@@ -8020,141 +8123,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
   return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
 }
-</file>
-
-<file path="src/components/common/FloatingMenu.jsx">
-import React, { memo } from "react";
-
-export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, 
-  toggleLanguage, 
-  shareText, 
-  toggleMusic, 
-  isMusicPlaying, 
-  showScrollDown, 
-  scrollToNext, 
-  showScrollTop, 
-  scrollToPrev 
-}) {
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        /* DÜZELTME: Tüm dock butonları tek bir boyutta ve stilde eşitlendi */
-        .floating-actions {
-          display: flex !important;
-          gap: 12px !important;
-          align-items: center !important;
-          justify-content: center !important;
-          height: auto !important;
-          top: auto !important;
-          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-          right: 50% !important;
-          transform: translateX(50%) !important;
-          padding: 8px 14px !important;
-        }
-        .floating-actions .dock-btn {
-          position: relative !important;
-          margin: 0 !important;
-          top: auto !important;
-          bottom: auto !important;
-          left: auto !important;
-          right: auto !important;
-          transform: none !important;
-          transition: all 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55) !important;
-          width: 48px !important;
-          height: 48px !important;
-          min-width: 48px !important;
-          border-radius: 50% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          background: var(--paper, #fff) !important;
-          color: var(--rose-dark, #9f4f68) !important;
-          border: 1.5px solid rgba(159, 79, 104, 0.3) !important;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-          cursor: pointer !important;
-        }
-        .floating-actions .dock-btn svg {
-          width: 22px !important;
-          height: 22px !important;
-        }
-        .hidden-btn {
-          opacity: 0 !important;
-          transform: scale(0.4) translateY(20px) !important;
-          pointer-events: none !important;
-          position: absolute !important;
-          visibility: hidden !important;
-        }
-        @media (min-width: 651px) {
-          .floating-actions {
-            flex-direction: column !important;
-            right: 24px !important;
-            bottom: 24px !important;
-            transform: none !important;
-          }
-        }
-        @media (max-width: 650px) {
-          .floating-actions {
-            flex-direction: row !important;
-          }
-        }
-      `}} />
-
-      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v4" />
-            <path d="M12 16h.01" />
-          </svg>
-        </a>
-      </div>
-
-      <div 
-        className="floating-actions glass-dock"
-        style={{ zIndex: 999999, pointerEvents: 'auto' }}
-      >
-        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
-          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
-        </button>
-
-        <button type="button" className="dock-btn music-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isMusicPlaying ? (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </>
-            ) : (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-                <line x1="3" y1="3" x2="21" y2="21" />
-              </>
-            )}
-          </svg>
-        </button>
-
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"></line>
-            <polyline points="5 12 12 5 19 12"></polyline>
-          </svg>
-        </button>
-        
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="19 12 12 19 5 12"></polyline>
-          </svg>
-        </button>
-      </div>
-    </>
-  );
-});
 </file>
 
 <file path="src/styles/base.css">
@@ -14241,6 +14209,205 @@ html[data-theme]
   .admin-check-field:has(input[type="checkbox"]:checked) {
   border-color: var(--amp-color, #e3b6c7) !important;
 }
+</file>
+
+<file path="src/components/common/FloatingMenu.jsx">
+import React, { memo } from "react";
+
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
+}) {
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        /* ZIPLAMA ANİMASYONLARI */
+        @keyframes syncContainerBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @keyframes syncDesktopBounce {
+          0%, 100% { transform: translateY(-50%); }
+          50% { transform: translateY(calc(-50% - 8px)); }
+        }
+
+        /* ANA MENÜ ÇERÇEVESİ */
+        #main-dock {
+          position: fixed !important;
+          z-index: 999999 !important;
+          pointer-events: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 8px !important;
+          
+          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
+          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
+          
+          flex-direction: row !important;
+          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+          top: auto !important;
+          left: 0 !important;
+          right: 0 !important;
+          margin: 0 auto !important;
+          width: fit-content !important;
+          height: auto !important;
+        }
+
+        #main-dock:hover {
+          animation-play-state: paused !important;
+        }
+
+        /* TEKİL BUTONLAR VE ANİMASYONLARI */
+        #main-dock .dock-btn {
+          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+          
+          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
+          margin: 0 6px !important; 
+          
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          
+          background: var(--theme-surface, #ffffff) !important;
+          color: var(--amp-color, #9f4f68) !important;
+          border: 1.5px solid var(--amp-color, #9f4f68) !important;
+          
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+          cursor: pointer !important;
+          overflow: hidden !important; 
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: scale(1) !important;
+        }
+
+        #main-dock .dock-btn:hover,
+        #main-dock .dock-btn:active {
+          transform: scale(1.08) !important;
+          background: var(--amp-color, #9f4f68) !important;
+          color: var(--theme-surface, #ffffff) !important;
+        }
+
+        #main-dock .dock-btn svg {
+          width: 22px !important;
+          height: 22px !important;
+          flex-shrink: 0 !important;
+          transition: all 0.5s ease !important;
+        }
+
+        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
+        #main-dock .hidden-btn {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          width: 0 !important;
+          min-width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          border-width: 0 !important;
+          
+          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
+          margin: 0 0 !important; 
+          
+          transform: scale(0) !important; 
+        }
+
+        #main-dock .hidden-btn svg {
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        /* MASAÜSTÜ GÖRÜNÜM */
+        @media (min-width: 651px) {
+          #main-dock {
+            flex-direction: column !important;
+            right: 32px !important;          
+            left: auto !important;
+            top: 50% !important;             
+            bottom: auto !important;         
+            margin: 0 !important; 
+            height: fit-content !important;
+            width: auto !important;
+            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
+          }
+          
+          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
+          #main-dock .dock-btn {
+            margin: 6px 0 !important;
+          }
+
+          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
+          #main-dock .hidden-btn {
+             margin: 0 0 !important;
+          }
+        }
+      `}} />
+
+      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
+      </div>
+
+      <div id="main-dock">
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMusicPlaying ? (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+              </>
+            )}
+          </svg>
+        </button>
+
+        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+});
 </file>
 
 <file path="src/App.jsx">

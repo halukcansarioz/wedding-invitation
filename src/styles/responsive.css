@@ -483,4 +483,15 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   html body .app .glass-dock .wa-btn {
     display: none !important;
   }
+  html body .app .hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+  html body .app .hero-content {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    padding-bottom: 60px !important;
+  }
 }
