@@ -28,15 +28,53 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
         {isEn ? t('ui.giftDescription') : giftData.description}
       </p>
       
-      <div className="gift-card">
-        <strong className="gift-card-receiver">{giftData.receiver}</strong>
-        <span className="gift-card-bank">{giftData.bankName}</span>
-        <code className="gift-card-iban">{giftData.iban}</code>
+      {/* Boyutları ufaltılmış, sınırlandırılmış (maxWidth) ve ortalanmış daha şık IBAN kartı */}
+      <div className="gift-card" style={{ 
+        background: 'var(--paper-soft)', 
+        padding: '20px 16px', 
+        borderRadius: '12px', 
+        margin: '16px auto 24px auto', 
+        maxWidth: '450px',
+        textAlign: 'center', 
+        border: '1px solid rgba(159, 79, 104, 0.08)' 
+      }}>
+        <strong className="gift-card-receiver" style={{ 
+          display: 'block', 
+          fontSize: '16px', 
+          color: 'var(--rose-dark)', 
+          fontWeight: '700', 
+          marginBottom: '4px' 
+        }}>
+          {giftData.receiver}
+        </strong>
+        <span className="gift-card-bank" style={{ 
+          display: 'block', 
+          fontSize: '13px', 
+          color: 'var(--text-muted)', 
+          marginBottom: '14px' 
+        }}>
+          {giftData.bankName}
+        </span>
+        <code className="gift-card-iban" style={{ 
+          display: 'inline-block', 
+          fontSize: '14px', 
+          padding: '10px 18px', 
+          background: 'var(--paper)', 
+          borderRadius: '8px', 
+          border: '1px dashed var(--rose-dark)', 
+          color: 'var(--text-main)', 
+          letterSpacing: '1px', 
+          wordBreak: 'break-all' 
+        }}>
+          {giftData.iban}
+        </code>
       </div>
       
-      <button type="button" className="main-button gift-copy-button" onClick={copyIban}>
-        {copied ? t('ui.copied') : t('ui.copyIban')}
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <button type="button" className="main-button gift-copy-button" onClick={copyIban} style={{ paddingLeft: '32px', paddingRight: '32px' }}>
+          {copied ? t('ui.copied') : t('ui.copyIban')}
+        </button>
+      </div>
     </m.section>
   );
 });

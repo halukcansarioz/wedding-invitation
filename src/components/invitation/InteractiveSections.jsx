@@ -79,8 +79,6 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   const [copied, setCopied] = useState(false);
   const [urlGuestName, setUrlGuestName] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
-  
-  // Turnstile form resetlendiğinde yeni token üretsin diye eklendi
   const [formKey, setFormKey] = useState(0); 
 
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
@@ -102,11 +100,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
       setUrlGuestName(guestName);
       setValue("name", guestName);
     }
-    
-    if (countParam) {
-      // Eğer backend'e person_count alanını gönderiyorsanız schema'ya da eklemeniz gerekebilir.
-      setValue("personCount", countParam); 
-    }
+    if (countParam) setValue("personCount", countParam); 
   }, [setValue]);
 
   const todayStr = new Date().toLocaleDateString('en-CA'); 
@@ -114,19 +108,16 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return; // Sadece internet varken token zorunlu
+    if (!turnstileToken && navigator.onLine) return;
 
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest({ ...data, turnstileToken });
     
-    if (!isDeclining) {
-      triggerConfetti();
-    }
+    if (!isDeclining) triggerConfetti();
     
     reset();
     setTurnstileToken("");
-    setFormKey(prev => prev + 1); // Turnstile widget'ını yenilemek için
-    
+    setFormKey(prev => prev + 1);
     if (isDeclining) setShowDeclineModal(true);
   };
 
@@ -144,8 +135,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   }, [giftData?.iban]);
 
   const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
-    ...opt, 
-    label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
+    ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
   })), [isEn, t]);
 
   return (
@@ -179,13 +169,8 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
 
-          {/* Cloudflare Turnstile */}
           <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-            <Turnstile 
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
-              onSuccess={(token) => setTurnstileToken(token)} 
-              onExpire={() => setTurnstileToken("")}
-            />
+            <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
           </div>
 
           <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
@@ -194,8 +179,9 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
         </form>
       )}
 
-      <div className="rsvp-actions">
-        <a className="secondary-button rsvp-whatsapp-button" href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+      {/* Butonun uzamasını önleyen CSS eklemesi */}
+      <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+        <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
           {t('form.whatsappRsvp')}
         </a>
       </div>
@@ -250,7 +236,7 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return; // İnternet varsa token zorunlu
+    if (!turnstileToken && navigator.onLine) return;
 
     await submitWish({ ...data, turnstileToken });
     triggerConfetti();
@@ -278,13 +264,8 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
           {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
         </div>
 
-        {/* Cloudflare Turnstile */}
         <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-          <Turnstile 
-            siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
-            onSuccess={(token) => setTurnstileToken(token)} 
-            onExpire={() => setTurnstileToken("")}
-          />
+          <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
         </div>
         
         <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>

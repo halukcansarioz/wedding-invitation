@@ -1,19 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-// E-posta gönderimi için ücretsiz Resend.com API'sini kullanacağız
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
 serve(async (req) => {
   try {
     const payload = await req.json()
-    
-    // Supabase Webhook payload'ı (yeni eklenen misafir 'record' içinde gelir)
     const guest = payload.record;
 
-    // Sadece "Katılacağım" diyenler için mail atsın
     if (!guest || guest.attendance !== "Katılacağım") {
       return new Response("Email gönderilmedi (Katılmıyor veya test isteği).", { status: 200 })
     }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -21,8 +20,9 @@ serve(async (req) => {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json'
       },
+      signal: controller.signal,
       body: JSON.stringify({
-        from: 'Düğün Davetiyesi <onboarding@resend.dev>', // Resend'in varsayılan test adresi
+        from: 'Düğün Davetiyesi <onboarding@resend.dev>', 
         to: ['senin-kendi-epostan@gmail.com'], // KENDI MAIL ADRESINI YAZ
         subject: `Yeni LCV: ${guest.name} Düğüne Katılıyor! 🎉`,
         html: `
@@ -40,13 +40,17 @@ serve(async (req) => {
       })
     })
 
-    if (res.ok) {
-      return new Response(JSON.stringify({ success: true, message: "E-posta başarıyla gönderildi" }), { status: 200 })
-    } else {
-      const errorInfo = await res.text()
-      return new Response(`Resend API Hatası: ${errorInfo}`, { status: 400 })
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      console.warn(`Resend Hatası: Status ${res.status}`);
+      return new Response("E-posta gönderilemedi fakat kayıt başarılı.", { status: 200 });
     }
+
+    return new Response(JSON.stringify({ success: true, message: "E-posta başarıyla gönderildi" }), { status: 200 })
+
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 })
+    console.error("Webhook İşleme Hatası:", err.message);
+    return new Response("İşlem tamamlandı, e-posta yoksayıldı.", { status: 200 })
   }
 })

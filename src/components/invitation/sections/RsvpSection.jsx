@@ -8,7 +8,6 @@ import { triggerConfetti } from "../../../utils/helpers";
 import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas"; 
 
-// --- Alt Bileşenler (Sadece bu dosyada kullanıldığı için burada kalabilir) ---
 const DeadlineBanner = memo(({ isEn, title, text }) => (
   <div className="rsvp-deadline-banner">
     <div className="deadline-icon">⏳</div>
@@ -54,7 +53,6 @@ const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, sh
   );
 });
 
-// --- Ana Bileşen (memo ile sarmalandı) ---
 export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
@@ -148,8 +146,15 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
         </form>
       )}
 
-      <div className="rsvp-actions">
-        <a className="secondary-button rsvp-whatsapp-button" href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+      {/* DÜZELTME: width: 'fit-content' eklendi, animasyonlar korundu */}
+      <div className="rsvp-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+        <a 
+          className="secondary-button rsvp-whatsapp-button" 
+          style={{ width: 'fit-content', paddingLeft: '32px', paddingRight: '32px' }} 
+          href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} 
+          target="_blank" 
+          rel="noreferrer"
+        >
           {t('form.whatsappRsvp')}
         </a>
       </div>

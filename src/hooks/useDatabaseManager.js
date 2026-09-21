@@ -37,10 +37,15 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
     const syncOfflineData = async () => {
       if (!navigator.onLine || !isSupabaseReady()) return;
       
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
       if (offlineGuests.length > 0) {
         for (const guest of offlineGuests) {
-          await supabase.rpc('submit_guest_secure', { guest_data: guest, token: guest.token || "OFFLINE_SYNC" });
+          await supabase.functions.invoke('submit-form', {
+            body: { type: 'guest', data: guest, turnstileToken: "OFFLINE_TOKEN" },
+            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+          });
         }
         localStorage.removeItem('offline_guests');
       }
@@ -48,8 +53,9 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
       const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
       if (offlineWishes.length > 0) {
         for (const wish of offlineWishes) {
-          await supabase.rpc('submit_wish_secure', { 
-            wish_name: wish.name, wish_message: wish.message, is_approved: wish.approved, token: wish.token || "OFFLINE_SYNC"
+          await supabase.functions.invoke('submit-form', {
+            body: { type: 'wish', data: wish, turnstileToken: "OFFLINE_TOKEN" },
+            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
           });
         }
         localStorage.removeItem('offline_wishes');
@@ -77,17 +83,20 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
     if (!navigator.onLine) {
       const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
-      offlineGuests.push({ ...uiGuestToDb(formData), token: formData.turnstileToken || "OFFLINE_TOKEN" });
+      offlineGuests.push(uiGuestToDb(formData));
       localStorage.setItem('offline_guests', JSON.stringify(offlineGuests));
       await showAppAlert?.(isEn ? "Saved offline. Will sync automatically." : "İnternet yok. Bağlantı geldiğinde form otomatik gönderilecek.", { title: "Çevrimdışı 📶" });
       return;
     }
     
     try {
-      const { data, error } = await supabase.rpc('submit_guest_secure', { guest_data: uiGuestToDb(formData), token: formData.turnstileToken || "MISSING_TOKEN" });
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { type: 'guest', data: uiGuestToDb(formData), turnstileToken: formData.turnstileToken }
+      });
       
-      setGuests((prev) => prev.map(g => g.id === tempId ? dbGuestToUi(data) : g));
+      if (error || !data.success) throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      
+      setGuests((prev) => prev.map(g => g.id === tempId ? dbGuestToUi(data.data) : g));
       if (formData.attendance === "Katılacağım") await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
     } catch (error) {
       setGuests((prev) => prev.filter(g => g.id !== tempId));
@@ -106,17 +115,24 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 
     if (!navigator.onLine) {
       const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
-      offlineWishes.push({ name: formData.name, message: formData.message, approved: shouldPublishNow, token: formData.turnstileToken || "OFFLINE_TOKEN" });
+      offlineWishes.push({ name: formData.name, message: formData.message, approved: shouldPublishNow });
       localStorage.setItem('offline_wishes', JSON.stringify(offlineWishes));
       return;
     }
     
     try {
-      const { data, error } = await supabase.rpc('submit_wish_secure', { wish_name: formData.name, wish_message: formData.message, is_approved: shouldPublishNow, token: formData.turnstileToken || "MISSING_TOKEN" });
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { 
+          type: 'wish', 
+          data: { name: formData.name, message: formData.message, approved: shouldPublishNow }, 
+          turnstileToken: formData.turnstileToken 
+        }
+      });
+      
+      if (error || !data.success) throw new Error(error?.message || data?.error || "Sunucu hatası.");
       
       if (shouldPublishNow) {
-        setWishes((prev) => prev.map(w => w.id === tempId ? dbWishToUi(data) : w));
+        setWishes((prev) => prev.map(w => w.id === tempId ? dbWishToUi(data.data) : w));
       }
       await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: t('alerts.saveTitle') });
     } catch (error) {

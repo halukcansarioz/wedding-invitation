@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { handleAddToCalendar, getNavigationLinks } from "../../utils/helpers";
-import { m } from "framer-motion";
+import { m, useScroll, useTransform, useSpring } from "framer-motion";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -16,7 +16,9 @@ function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
   const links = getNavigationLinks(invitation);
 
   const copyAddress = () => {
-    navigator.clipboard.writeText(`${invitation?.venue || ""} ${invitation?.address || ""}`.trim());
+    const venueStr = invitation?.venue ? invitation.venue : "";
+    const addressStr = invitation?.address ? invitation.address : "";
+    navigator.clipboard.writeText(`${venueStr} ${addressStr}`.trim());
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -184,6 +186,7 @@ export function StorySection({ copy, storyTimeline }) {
             key={index}
           >
             <div className="story-dot"></div>
+            
             <div className="story-content-box">
               <span className="story-date">{story.date}</span>
               <h3 className="story-heading">{story.title}</h3>
@@ -242,6 +245,12 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
   const isEn = i18n.language.startsWith('en');
   const [isNavOpen, setIsNavOpen] = useState(false);
 
+  // Düzenleyici kopyalama hatalarını önlemek için JSX dışında değişken oluşturuldu
+  const venueStr = invitation?.venue ? invitation.venue : "";
+  const addressStr = invitation?.address ? invitation.address : "";
+  const mapQuery = encodeURIComponent(`${venueStr} ${addressStr}`.trim());
+  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.locationLabel') : copy?.locationLabel}</p>
@@ -253,7 +262,7 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
         <div className="info-row"><span>{t('ui.address')}</span><strong>{invitation?.address}</strong></div>
       </div>
       <div className="mini-map">
-        <iframe title="Map" src={`https://maps.google.com/maps?q=${encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe>
+        <iframe title="Map" src={mapSrc} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe>
       </div>
       <div className="button-group">
         <button type="button" className="main-button" onClick={() => setIsNavOpen(true)}>
@@ -270,21 +279,22 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
 }
 
 function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextImage, isEn }) {
-  const { t } = useTranslation();
   if (lightboxIndex === null || typeof document === "undefined") return null;
 
   return createPortal(
     <div onClick={closeLightbox} className="gallery-lightbox-overlay">
-      <button type="button" onClick={closeLightbox} className="lightbox-control-btn lightbox-close" title={t('ui.closeEsc')}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+      <button type="button" onClick={closeLightbox} className="lightbox-control-btn lightbox-close" title="Kapat">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
 
       {gallery.length > 1 && (
-        <button type="button" onClick={prevImage} className="lightbox-control-btn lightbox-prev" title={t('ui.prev')}>
-          &#10094;
+        <button type="button" onClick={prevImage} className="lightbox-control-btn lightbox-prev" title="Önceki">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
       )}
 
@@ -296,8 +306,10 @@ function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextI
       </div>
 
       {gallery.length > 1 && (
-        <button type="button" onClick={nextImage} className="lightbox-control-btn lightbox-next" title={t('ui.next')}>
-          &#10095;
+        <button type="button" onClick={nextImage} className="lightbox-control-btn lightbox-next" title="Sonraki">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
       )}
     </div>,
@@ -402,15 +414,52 @@ export function GiftSection({ giftData }) {
         {isEn ? t('ui.giftDescription') : giftData.description}
       </p>
       
-      <div className="gift-card">
-        <strong className="gift-card-receiver">{giftData.receiver}</strong>
-        <span className="gift-card-bank">{giftData.bankName}</span>
-        <code className="gift-card-iban">{giftData.iban}</code>
+      <div className="gift-card" style={{ 
+        background: 'var(--paper-soft)', 
+        padding: '20px 16px', 
+        borderRadius: '12px', 
+        margin: '16px auto 24px auto', 
+        maxWidth: '450px',
+        textAlign: 'center', 
+        border: '1px solid rgba(159, 79, 104, 0.08)' 
+      }}>
+        <strong className="gift-card-receiver" style={{ 
+          display: 'block', 
+          fontSize: '16px', 
+          color: 'var(--rose-dark)', 
+          fontWeight: '700', 
+          marginBottom: '4px' 
+        }}>
+          {giftData.receiver}
+        </strong>
+        <span className="gift-card-bank" style={{ 
+          display: 'block', 
+          fontSize: '13px', 
+          color: 'var(--text-muted)', 
+          marginBottom: '14px' 
+        }}>
+          {giftData.bankName}
+        </span>
+        <code className="gift-card-iban" style={{ 
+          display: 'inline-block', 
+          fontSize: '14px', 
+          padding: '10px 18px', 
+          background: 'var(--paper)', 
+          borderRadius: '8px', 
+          border: '1px dashed var(--rose-dark)', 
+          color: 'var(--text-main)', 
+          letterSpacing: '1px', 
+          wordBreak: 'break-all' 
+        }}>
+          {giftData.iban}
+        </code>
       </div>
       
-      <button type="button" className="main-button gift-copy-button" onClick={copyIban}>
-        {copied ? t('ui.copied') : t('ui.copyIban')}
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <button type="button" className="main-button gift-copy-button" onClick={copyIban} style={{ paddingLeft: '32px', paddingRight: '32px' }}>
+          {copied ? t('ui.copied') : t('ui.copyIban')}
+        </button>
+      </div>
     </m.section>
   );
 }

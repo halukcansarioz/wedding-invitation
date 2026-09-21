@@ -13,6 +13,23 @@ export const FloatingMenu = memo(function FloatingMenu({
 }) {
   return (
     <>
+      {/* 
+        Zıplama animasyonunu (cubic-bezier) ve 
+        gizli butonların üst üste binmesini engelleyen koruma stili 
+      */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .dock-btn {
+          transition: all 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55) !important;
+        }
+        .hidden-btn {
+          opacity: 0 !important;
+          transform: scale(0.4) translateY(20px) !important;
+          pointer-events: none !important;
+          position: absolute !important;
+          visibility: hidden !important;
+        }
+      `}} />
+
       <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
         <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -23,7 +40,6 @@ export const FloatingMenu = memo(function FloatingMenu({
         </a>
       </div>
 
-      {/* Menü bloğuna zIndex: 999999 ve pointerEvents: 'auto' eklenerek her zaman tıklanabilir yapıldı */}
       <div 
         className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}
         style={{ zIndex: 999999, pointerEvents: 'auto' }}
@@ -62,6 +78,7 @@ export const FloatingMenu = memo(function FloatingMenu({
           </svg>
         </button>
 
+        {/* Butonlar DOM'da tutuluyor, gizlenme işlemi CSS sınıfıyla yapılıyor (Animasyon için) */}
         <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="19" x2="12" y2="5"></line>
