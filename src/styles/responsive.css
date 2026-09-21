@@ -49,7 +49,7 @@ main.invitation-page.mobile-mode .slide-wrapper.active-slide {
   transform: translateY(0) scale(1) !important;
 }
 
-/* HERO (İlk Ekran) Ayarları ve Güvenli Ortalama */
+/* HERO (İlk Ekran) Ayarları */
 main.invitation-page.mobile-mode .slide-wrapper:first-child {
   display: flex !important; 
   flex-direction: column !important;
@@ -60,14 +60,6 @@ main.invitation-page.mobile-mode .slide-wrapper:first-child {
 
 main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
   overflow: hidden !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper:first-child::before,
-main.invitation-page.mobile-mode .slide-wrapper:first-child::after {
-  content: "" !important;
-  display: block !important;
-  margin: auto !important; 
-  flex: 0 0 auto !important; 
 }
 
 main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
@@ -87,98 +79,54 @@ main.invitation-page.mobile-mode .hero-section::before {
   border-radius: 24px !important;
 }
 
-/* KARTLAR İÇİN GÜVENLİ ORTALAMA YAYLARI (SAFE CENTERING) */
+/* =========================================================
+   DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
+   İçeriğin kesilmesini (cut-off) önlemek için blok yapıya geçildi
+   ========================================================= */
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
-  display: flex !important;
-  flex-direction: column !important;
-  padding-top: calc(24px + env(safe-area-inset-top)) !important;
-  padding-bottom: calc(110px + env(safe-area-inset-bottom)) !important;
+  display: block !important; 
+  padding-top: calc(6vh + env(safe-area-inset-top)) !important;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
   padding-left: clamp(12px, 4vw, 20px) !important;
   padding-right: clamp(12px, 4vw, 20px) !important;
 }
 
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
-  content: "" !important;
-  display: block !important;
-  margin: auto !important; 
-  flex: 0 0 auto !important; 
+  display: none !important;
 }
 
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
 main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
-  flex: 0 0 auto !important; 
   width: 100% !important;
-  margin: 0 !important; 
+  margin: 0 auto !important; 
 }
+
 
 /* =========================================================
    MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
    ========================================================= */
-
-/* 1. UZUN METİNLERİN EKRANDAN TAŞMASINI ENGELLE */
-h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc {
+h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc, .ceremony-item p {
   overflow-wrap: break-word !important;
   word-wrap: break-word !important;
+  white-space: normal !important; 
 }
 
-/* 2. KAYDIRILABİLİR ALANLAR (İÇERİĞİ TAŞAN KARTLAR İÇİN) */
 @media (max-width: 768px) {
-  
-  /* Kartların içindeki uzun listeler (Hikaye, Program, Yorumlar) */
   .story-timeline-container, 
   .schedule-list, 
   .wish-list, 
   .guest-list,
   .ceremony-grid,
-  .info-list {
-    max-height: 48vh !important; /* Ekranın %48'i kadar uzayabilir, sonra kaydırma çıkar */
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding-right: 8px !important; /* Scrollbar için boşluk */
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior: contain !important; /* İç scroll bitince sayfayı kaydırmayı engeller */
+  .info-list,
+  .rsvp-form,
+  .wish-form {
+    max-height: none !important; 
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  /* Form alanlarının taşmasını önle */
-  .rsvp-form, .wish-form {
-    max-height: 55vh !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    padding-right: 8px !important;
-    padding-bottom: 20px !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior: contain !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Kart içi kaydırma çubuğu (Scrollbar) stili */
-  .story-timeline-container::-webkit-scrollbar, 
-  .schedule-list::-webkit-scrollbar, 
-  .wish-list::-webkit-scrollbar,
-  .guest-list::-webkit-scrollbar,
-  .ceremony-grid::-webkit-scrollbar,
-  .info-list::-webkit-scrollbar,
-  .rsvp-form::-webkit-scrollbar,
-  .wish-form::-webkit-scrollbar {
-    width: 5px !important;
-  }
-  
-  .story-timeline-container::-webkit-scrollbar-thumb, 
-  .schedule-list::-webkit-scrollbar-thumb, 
-  .wish-list::-webkit-scrollbar-thumb,
-  .guest-list::-webkit-scrollbar-thumb,
-  .ceremony-grid::-webkit-scrollbar-thumb,
-  .info-list::-webkit-scrollbar-thumb,
-  .rsvp-form::-webkit-scrollbar-thumb,
-  .wish-form::-webkit-scrollbar-thumb {
-    background: rgba(159, 79, 104, 0.3) !important;
-    border-radius: 10px !important;
-  }
-
-  /* Admin panelindeki tablolar ve istatistikler yatay/dikey kaydırılabilir olsun */
   .admin-main-panel, 
   .admin-editor, 
   .admin-list, 
@@ -187,17 +135,15 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     -webkit-overflow-scrolling: touch !important;
   }
   
-  /* Admin panel yan yana duran (Grid) yapıların taşmasını engelle */
   .admin-edit-grid, .theme-picker-grid {
     display: flex !important;
     flex-wrap: wrap !important;
     gap: 12px !important;
   }
   .admin-edit-grid > *, .theme-picker-grid > * {
-    flex: 1 1 100% !important; /* Mobilde her eleman tam satır kaplasın */
+    flex: 1 1 100% !important;
   }
   
-  /* İstatistik kartları yana doğru kaysın */
   .admin-stats {
     display: flex !important;
     flex-wrap: nowrap !important;
@@ -209,7 +155,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     flex: 0 0 140px !important; 
   }
 
-  /* Modal pencerelerinin ekrandan taşmasını engelle */
   .app-modal-card {
     max-height: 85dvh !important;
     overflow-y: auto !important;
@@ -221,13 +166,23 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
    GENEL MOBİL TWEAKS (Tüm küçük ekranlar için)
    ========================================================= */
 @media (max-width: 650px) {
-  .gallery-grid .gallery-image,
-  .mini-map {
-    height: 300px !important; 
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
-  .gallery-grid .gallery-image img,
-  .gallery-grid > img {
-    height: 100% !important; 
+  .gallery-grid .gallery-image {
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important; 
+  }
+  .gallery-grid .gallery-image img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+  }
+  
+  .mini-map {
+    height: 250px !important;
+    border-radius: 16px !important;
   }
   
   .glass-dock {
@@ -239,6 +194,7 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     padding: 8px 14px !important;
     gap: 14px !important;
   }
+  
   .guest-item,
   .info-row,
   .option-group {
@@ -266,7 +222,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     font-size: clamp(16px, 4.5vw, 19px);
   }
   
-  /* Hero alanındaki sabit yüksekliği kaldırıp içeriğe göre esnetiyoruz */
   .hero-section {
     min-height: max-content !important;
     height: auto !important;
@@ -316,7 +271,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  .gallery-grid,
   .timeline-item {
     grid-template-columns: 1fr;
   }
@@ -324,9 +278,6 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   .info-row {
     gap: 6px;
     text-align: center;
-  }
-  .mini-map {
-    border-radius: 22px;
   }
   .timeline::before {
     display: none;
@@ -409,7 +360,7 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   }
 }
 
-/* 3. ÇOK KÜÇÜK EKRANLAR İÇİN (iPhone SE, Galaxy Fold Dış Ekran vb. < 400px) */
+/* 3. ÇOK KÜÇÜK EKRANLAR İÇİN (iPhone SE, vb. < 400px) */
 @media (max-width: 400px) {
   .intro-card {
     padding: 30px 16px !important;

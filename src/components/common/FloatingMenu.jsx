@@ -13,13 +13,46 @@ export const FloatingMenu = memo(function FloatingMenu({
 }) {
   return (
     <>
-      {/* 
-        Zıplama animasyonunu (cubic-bezier) ve 
-        gizli butonların üst üste binmesini engelleyen koruma stili 
-      */}
       <style dangerouslySetInnerHTML={{__html: `
-        .dock-btn {
+        /* DÜZELTME: Tüm dock butonları tek bir boyutta ve stilde eşitlendi */
+        .floating-actions {
+          display: flex !important;
+          gap: 12px !important;
+          align-items: center !important;
+          justify-content: center !important;
+          height: auto !important;
+          top: auto !important;
+          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+          right: 50% !important;
+          transform: translateX(50%) !important;
+          padding: 8px 14px !important;
+        }
+        .floating-actions .dock-btn {
+          position: relative !important;
+          margin: 0 !important;
+          top: auto !important;
+          bottom: auto !important;
+          left: auto !important;
+          right: auto !important;
+          transform: none !important;
           transition: all 0.4s cubic-bezier(0.68, -0.55, 0.26, 1.55) !important;
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          background: var(--paper, #fff) !important;
+          color: var(--rose-dark, #9f4f68) !important;
+          border: 1.5px solid rgba(159, 79, 104, 0.3) !important;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+          cursor: pointer !important;
+        }
+        .floating-actions .dock-btn svg {
+          width: 22px !important;
+          height: 22px !important;
         }
         .hidden-btn {
           opacity: 0 !important;
@@ -27,6 +60,19 @@ export const FloatingMenu = memo(function FloatingMenu({
           pointer-events: none !important;
           position: absolute !important;
           visibility: hidden !important;
+        }
+        @media (min-width: 651px) {
+          .floating-actions {
+            flex-direction: column !important;
+            right: 24px !important;
+            bottom: 24px !important;
+            transform: none !important;
+          }
+        }
+        @media (max-width: 650px) {
+          .floating-actions {
+            flex-direction: row !important;
+          }
         }
       `}} />
 
@@ -41,26 +87,15 @@ export const FloatingMenu = memo(function FloatingMenu({
       </div>
 
       <div 
-        className={`floating-actions glass-dock dock-buttons-${1 + Number(showScrollTop) + Number(showScrollDown)}`}
+        className="floating-actions glass-dock"
         style={{ zIndex: 999999, pointerEvents: 'auto' }}
       >
-        
         <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
         </button>
 
-        <a className="dock-btn wa-btn" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" title={isEn ? 'WhatsApp ile Paylaş' : 'Share via WhatsApp'}>
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-        </a>
-
-        <button type="button" className={`dock-btn music-btn ${isMusicPlaying ? 'music-on' : ''}`} onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button type="button" className="dock-btn music-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {isMusicPlaying ? (
               <>
                 <path d="M9 18V5l12-2v13" />
@@ -78,16 +113,15 @@ export const FloatingMenu = memo(function FloatingMenu({
           </svg>
         </button>
 
-        {/* Butonlar DOM'da tutuluyor, gizlenme işlemi CSS sınıfıyla yapılıyor (Animasyon için) */}
         <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev} tabIndex={!showScrollTop ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="19" x2="12" y2="5"></line>
             <polyline points="5 12 12 5 19 12"></polyline>
           </svg>
         </button>
         
         <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext} tabIndex={!showScrollDown ? -1 : 0}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <polyline points="19 12 12 19 5 12"></polyline>
           </svg>

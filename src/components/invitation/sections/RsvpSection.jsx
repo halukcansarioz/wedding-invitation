@@ -140,17 +140,18 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
 
-          <button type="submit" className="main-button form-button" disabled={isSubmitting}>
+          {/* DÜZELTME: İki butonun genişliklerinin (width) %100 oranında tam eşleşmesi sağlandı */}
+          <button type="submit" className="main-button form-button" disabled={isSubmitting} style={{ width: '100%', marginTop: '16px' }}>
             {isSubmitting ? "..." : t('form.submitRsvp')}
           </button>
         </form>
       )}
 
-      {/* DÜZELTME: width: 'fit-content' eklendi, animasyonlar korundu */}
-      <div className="rsvp-actions" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+      {/* WhatsApp butonu da submit butonuyla tamamen aynı genişlikte (100%) olacak */}
+      <div className="rsvp-actions" style={{ width: '100%', marginTop: '12px' }}>
         <a 
           className="secondary-button rsvp-whatsapp-button" 
-          style={{ width: 'fit-content', paddingLeft: '32px', paddingRight: '32px' }} 
+          style={{ width: '100%', margin: 0, display: 'inline-flex' }} 
           href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} 
           target="_blank" 
           rel="noreferrer"

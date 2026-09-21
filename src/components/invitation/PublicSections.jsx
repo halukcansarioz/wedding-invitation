@@ -166,6 +166,21 @@ export function StorySection({ copy, storyTimeline }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const stories = Array.isArray(storyTimeline) ? storyTimeline : [];
+  
+  const containerRef = React.useRef(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end center"]
+  });
+
+  const scaleY = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  const travelerY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   if (stories.length === 0) return null;
 
@@ -174,18 +189,29 @@ export function StorySection({ copy, storyTimeline }) {
       <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
       <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
       
-      <div className="story-timeline-container">
-        <div className="story-line"></div>
+      <div className="story-timeline-container" ref={containerRef}>
+        <div className="story-line-bg"></div>
+        <m.div className="story-line-progress" style={{ scaleY }}></m.div>
+
+        <m.div className="story-traveler" style={{ top: travelerY }}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--rose-dark)" }}>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        </m.div>
+
         {stories.map((story, index) => (
           <m.div 
-            initial={{ opacity: 0, y: 30 }} 
-            whileInView={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6, delay: index * 0.2 }} 
-            viewport={{ once: true, amount: 0.3 }}
+            initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40 }} 
+            whileInView={{ opacity: 1, x: 0 }} 
+            transition={{ duration: 0.7, delay: 0.1, type: "spring", bounce: 0.4 }} 
+            viewport={{ once: true, amount: 0.4 }}
             className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
             key={index}
           >
-            <div className="story-dot"></div>
+            <div className="story-map-marker">
+              <div className="story-map-marker-inner"></div>
+            </div>
             
             <div className="story-content-box">
               <span className="story-date">{story.date}</span>
@@ -245,7 +271,6 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
   const isEn = i18n.language.startsWith('en');
   const [isNavOpen, setIsNavOpen] = useState(false);
 
-  // Düzenleyici kopyalama hatalarını önlemek için JSX dışında değişken oluşturuldu
   const venueStr = invitation?.venue ? invitation.venue : "";
   const addressStr = invitation?.address ? invitation.address : "";
   const mapQuery = encodeURIComponent(`${venueStr} ${addressStr}`.trim());
