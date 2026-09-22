@@ -938,14 +938,20 @@ button {
 }
 .floating-actions {
   position: fixed;
-  top: 22px;
-  right: 22px;
-  z-index: 20;
+  bottom: 24px;
+  right: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 12px;
+  z-index: 999;
+  /* Kapsayıcının (parent) yanlışlıkla fare temasını algılamasını engeller */
+  pointer-events: none; 
 }
+.floating-actions > * {
+  /* İçindeki butonların tıklanabilir olmasını sağlar */
+  pointer-events: auto; 
+}
+
 .floating-actions .share-button {
   width: 145px;
   height: 62px;
