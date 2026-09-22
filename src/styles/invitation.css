@@ -1447,8 +1447,12 @@ body .app .glass-dock .dock-btn.music-on {
     padding: clamp(12px, 1.5vh, 24px) 15px !important;
   }
   .guest-stats {
-    gap: 1vh !important;
-    margin: 1vh auto !important;
+    display: flex;
+    justify-content: center; /* Kutuları yatayda ortalar */
+    align-items: center;
+    gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
+    flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+    width: 100%;
   }
   .guest-stats div {
     padding: clamp(10px, 1.5vh, 24px) 10px !important;

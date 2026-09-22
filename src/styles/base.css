@@ -748,9 +748,12 @@ button {
   position: relative;
 }
 .guest-stats {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin: 30px auto;
+  display: flex;
+  justify-content: center; /* Kutuları yatayda ortalar */
+  align-items: center;
+  gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
+  flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+  width: 100%;
 }
 .guest-item,
 .guest-stats div,

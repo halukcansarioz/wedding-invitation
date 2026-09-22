@@ -7724,6 +7724,161 @@ export function useScrollNavigation(isAdminPage, opened) {
 }
 </file>
 
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { supabase } from "./supabaseClient"; 
+
+// YENİ EKLENEN İMPORT
+import { LazyMotion, domAnimation } from "framer-motion";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = activeTheme;
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(activeTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, activeTheme]);
+
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
+    const realtimeChannel = supabase
+      .channel('schema-db-changes')
+      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'guests' },
+        async (payload) => {
+          console.log("LCV Güncellemesi:", payload);
+          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
+          const updatedGuests = await loadGuestsFromDatabase();
+          setGuests(updatedGuests || []);
+          
+          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
+          if (payload.eventType === 'INSERT') {
+            setCustomAlert({ 
+              title: "Yeni LCV Geldi!", 
+              message: "Biri az önce katılım durumunu bildirdi." 
+            });
+          }
+        }
+      )
+      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'wishes' },
+        async (payload) => {
+          console.log("Mesaj Güncellemesi:", payload);
+          const updatedWishes = await loadPublishedWishesFromDatabase();
+          setWishes(updatedWishes || []);
+        }
+      )
+      .subscribe();
+
+    // Bileşen ekrandan kalkarsa dinlemeyi durdur
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, [setGuests, setWishes, setCustomAlert]);
+  
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={activeTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals
+          customAlert={customAlert} setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
+</file>
+
 <file path="src/styles/admin.css">
 .admin-current-section strong,
 .admin-nav-button span,
@@ -12563,6 +12718,698 @@ html[data-theme]
 }
 </file>
 
+<file path="src/styles/responsive.css">
+/* src/styles/responsive.css */
+
+/* =========================================================
+   MOBİL: TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
+   ========================================================= */
+main.invitation-page.mobile-mode {
+  position: relative !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  overflow: hidden !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper {
+  position: absolute !important; 
+  top: 0 !important; 
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; 
+  
+  opacity: 0 !important; 
+  pointer-events: none !important;
+  visibility: hidden !important;
+  z-index: 1 !important;
+  
+  overflow-y: auto !important; 
+  overflow-x: hidden !important;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
+  transform: translateY(30px) scale(0.98) !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper::-webkit-scrollbar {
+  display: none !important;
+}
+
+main.invitation-page.mobile-mode .slide-wrapper.active-slide {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  z-index: 2 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* HERO (İlk Ekran) Ayarları */
+main.invitation-page.mobile-mode .slide-wrapper:first-child {
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  padding: 0 !important; 
+  background: transparent !important;
+}
+
+main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
+  overflow: hidden !important; 
+}
+
+main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
+  min-height: 100dvh !important; 
+  width: 100vw !important; 
+  border-radius: 0 !important; 
+  padding: max(64px, env(safe-area-inset-top)) 16px max(80px, env(safe-area-inset-bottom)) 16px !important; 
+  margin: 0 !important;
+  background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
+}
+
+main.invitation-page.mobile-mode .hero-section::before {
+  top: 14px !important;
+  right: 14px !important;
+  bottom: 14px !important;
+  left: 14px !important;
+  border-radius: 24px !important;
+}
+
+/* =========================================================
+   DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
+   Kesilme (Cut-off) sorunlarını tamamen engeller
+   ========================================================= */
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
+  display: flex !important; 
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  
+  /* Üstten minimum güvenlik boşluğu */
+  padding-top: calc(24px + env(safe-area-inset-top)) !important;
+  /* Alttan menü için bırakılan güvenlik boşluğu */
+  padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
+  padding-left: clamp(12px, 4vw, 20px) !important;
+  padding-right: clamp(12px, 4vw, 20px) !important;
+}
+
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
+  content: "" !important;
+  display: block !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+}
+
+main.invitation-page.mobile-mode .card,
+main.invitation-page.mobile-mode .countdown-section,
+main.invitation-page.mobile-mode .rsvp-card,
+main.invitation-page.mobile-mode .story-card {
+  height: max-content !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+  width: 100% !important;
+  margin: 0 auto !important; 
+}
+
+
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
+main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
+  width: 100% !important;
+  margin: 0 auto !important; 
+  flex-shrink: 0 !important; 
+}
+
+/* =========================================================
+   MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
+   ========================================================= */
+h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc, .ceremony-item p {
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  white-space: normal !important; 
+}
+
+@media (max-width: 768px) {
+  .rsvp-form, 
+  .wish-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .rsvp-form > div, 
+  .wish-form > div {
+    width: 100% !important;
+  }
+
+  /* Form elemanları ve ana butonlar */
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
+  .wish-form textarea,
+  .option-group,
+  .option-button,
+  .form-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important; 
+  }
+  
+  .option-button,
+  .form-button {
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
+  .rsvp-whatsapp-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    border-radius: 20px !important;
+    padding: 16px 18px !important;
+    min-height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    
+    /* Tema renklerine uygun zarif bir ikincil buton stili */
+    background: var(--paper, #fff) !important;
+    border: 1.5px solid var(--amp-color, #9f4f68) !important;
+    color: var(--amp-color, #9f4f68) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
+  }
+
+  .rsvp-whatsapp-button:hover {
+    background: var(--amp-color, #9f4f68) !important;
+    color: #fff !important;
+  }
+
+  .option-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .rsvp-actions {
+    width: 100% !important;
+    margin-top: 16px !important;
+    display: flex !important;
+    justify-content: center !important;
+  }
+  
+  .story-timeline-container, 
+  .schedule-list, 
+  .wish-list, 
+  .guest-list,
+  .ceremony-grid,
+  .info-list,
+  .rsvp-form,
+  .wish-form {
+    max-height: none !important; 
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .card h2, .countdown-section h2, .section-label {
+    line-height: 1.35 !important;
+    padding-bottom: 2px !important;
+  }
+
+  .admin-main-panel, 
+  .admin-editor, 
+  .admin-list, 
+  .admin-guest-list-container {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .admin-edit-grid, .theme-picker-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  .admin-edit-grid > *, .theme-picker-grid > * {
+    flex: 1 1 100% !important;
+  }
+  
+  .admin-stats {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .admin-stats > div {
+    flex: 0 0 140px !important; 
+  }
+
+  .app-modal-card {
+    max-height: 85dvh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+}
+
+/* =========================================================
+   GENEL MOBİL TWEAKS (Tüm küçük ekranlar için)
+   ========================================================= */
+@media (max-width: 650px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .gallery-grid .gallery-image {
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important; 
+  }
+  .gallery-grid .gallery-image img {
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+  }
+  
+  .mini-map {
+    height: 250px !important;
+    border-radius: 16px !important;
+  }
+  
+  .guest-item,
+  .info-row,
+  .option-group {
+    flex-direction: column;
+  }
+  .scroll-indicator {
+    bottom: calc(5px + env(safe-area-inset-bottom)); 
+  }
+  .intro-page {
+    padding: clamp(12px, 4vw, 24px); 
+  }
+  .intro-card {
+    padding: clamp(30px, 8vw, 46px) clamp(16px, 5vw, 24px);
+    border-radius: 32px;
+  }
+  .couple-title {
+    font-size: clamp(48px, 12vw, 68px); 
+  }
+  .couple-title em {
+    display: block;
+    margin: 4px 0;
+  }
+  .intro-text,
+  .rsvp-card > p {
+    font-size: clamp(16px, 4.5vw, 19px);
+  }
+  
+  .hero-section {
+    min-height: max-content !important;
+    height: auto !important;
+    padding-top: calc(100px + env(safe-area-inset-top)) !important;
+    padding-bottom: 100px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    background: radial-gradient(
+        circle at center,
+        rgba(70, 24, 40, 0.24) 0,
+        rgba(70, 24, 40, 0.42) 46%,
+        rgba(35, 14, 22, 0.66) 100%
+      ),
+      var(--hero-image) center/cover no-repeat !important;
+  }
+  .hero-section .couple-title {
+    color: #fff;
+    line-height: 1.04;
+    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42),
+      0 0 24px rgba(255, 220, 230, 0.22);
+  }
+  .hero-section .couple-title em {
+    margin: -4px 0 -6px;
+    font-size: 0.45em;
+  }
+  .hero-date {
+    padding: 8px 16px;
+    font-size: clamp(16px, 5vw, 21px);
+  }
+  .hero-time {
+    font-size: clamp(16px, 5vw, 20px);
+  }
+  .card,
+  .countdown-section {
+    padding: clamp(24px, 6vw, 36px) clamp(14px, 5vw, 20px); 
+    border-radius: 24px;
+  }
+  .rsvp-card h2 {
+    font-size: clamp(26px, 8vw, 32px);
+  }
+  
+  input, textarea, select, .option-button, .form-button {
+    font-size: 16px !important; 
+  }
+  
+  .countdown-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .timeline-item {
+    grid-template-columns: 1fr;
+  }
+  .guest-item,
+  .info-row {
+    gap: 6px;
+    text-align: center;
+  }
+  .timeline::before {
+    display: none;
+  }
+  .timeline-item {
+    gap: 8px;
+    text-align: center;
+  }
+  .option-button {
+    width: 100%;
+    min-width: unset;
+  }
+  .main-button,
+  .secondary-button {
+    width: 100%;
+    padding: 14px 20px; 
+  }
+  
+  .app-modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100dvh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+  }
+  .app-modal-card {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    background: var(--paper, #fff) !important;
+    border-radius: 24px !important;
+    padding: 24px 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+    box-sizing: border-box !important;
+  }
+  .app-modal-actions {
+    margin-top: 20px !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .intro-card {
+    padding: 30px 16px !important;
+    width: 92vw !important;
+  }
+  .couple-title {
+    font-size: clamp(32px, 11vw, 44px) !important; 
+  }
+  .card, .countdown-section, .rsvp-card {
+    padding: 24px 16px !important;
+  }
+  .hero-date, .hero-time {
+    font-size: 14px !important;
+    padding: 8px 16px !important;
+  }
+  .count-box {
+    padding: 16px 8px !important;
+  }
+  .count-box strong {
+    font-size: 26px !important; 
+  }
+  .info-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 16px !important;
+  }
+  .info-row strong {
+    font-size: 18px !important;
+  }
+  .guest-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .story-content-box {
+    padding: 16px 12px !important;
+  }
+}
+
+@media (min-width: 651px) {
+  .floating-actions,
+  .glass-dock {
+    height: auto !important;
+    max-height: none !important;
+    top: auto !important;
+    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
+    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
+  }
+  html body .app .glass-dock .wa-btn {
+    display: none !important;
+  }
+  html body .app .hero-section {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+  }
+  html body .app .hero-content {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+    padding-bottom: 60px !important;
+  }
+}
+.guest-stats {
+  display: flex !important;
+  flex-direction: row !important; /* Alt alta yerine yan yana diz */
+  justify-content: space-between !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  gap: 8px !important;
+  margin: 16px 0 !important;
+}
+
+.guest-stats > div {
+  flex: 1 !important; /* 3 kutuyu da ekrana eşit böl */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  padding: 16px 4px !important;
+  border-radius: 16px !important; /* Köşeleri daha estetik yap */
+  box-sizing: border-box !important;
+}
+
+.guest-stats > div strong {
+  font-size: 22px !important;
+  margin-bottom: 6px !important;
+  line-height: 1 !important;
+}
+
+.guest-stats > div span {
+  font-size: 11px !important; /* "Katılmayacak" gibi uzun kelimelerin taşmaması için */
+  text-align: center !important;
+  line-height: 1.2 !important;
+  word-wrap: break-word !important;
+}
+
+/* Altındaki gizlilik notunun da karta tam oturması için */
+.private-note-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+</file>
+
+<file path="src/pages/InvitationView.jsx">
+import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
+import { useStore } from "../store/useStore";
+import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
+import { useCountdown } from "../hooks/useCountdown";
+import { useDatabaseManager } from "../hooks/useDatabaseManager";
+import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
+
+import { HeroSection } from "../components/invitation/sections/HeroSection";
+
+const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
+const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
+const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
+const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
+const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
+const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
+const GallerySection = lazy(() => import("../components/invitation/sections/GallerySection").then(m => ({ default: m.GallerySection })));
+const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
+const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
+const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
+const StorySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.StorySection })));
+const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSection").then(m => ({ default: m.RsvpSection })));
+const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
+const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
+
+const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
+
+export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768);
+
+  const siteData = useStore((state) => state.siteData);
+  const guests = useStore((state) => state.guests);
+  const wishes = useStore((state) => state.wishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setWishes = useStore((state) => state.setWishes);
+  const showAppAlert = useStore((state) => state.showAppAlert);
+  const showAppConfirm = useStore((state) => state.showAppConfirm);
+
+  const { invitation, settings, copy, familyInfo, messages, storyTimeline, eventDetails, scheduleItems, giftRegistry } = siteData;
+  const coupleName = `${invitation.bride} & ${invitation.groom}`;
+  const personalGuestName = getGuestNameFromUrl();
+  const personalTableNumber = getTableFromUrl();
+  const currentShareLink = invitation.shareLink || getCurrentShareLink();
+  
+  const guestGreeting = personalGuestName ? formatMessageTemplate(messages.guestGreeting, { guest: personalGuestName, couple: coupleName, link: currentShareLink }) : "";
+  const rsvpWhatsappText = encodeURIComponent(formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
+  const shareText = encodeURIComponent(formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
+  const googleCalendarLink = createGoogleCalendarLink(siteData, coupleName);
+  const qrImageUrl = getQrImageUrl(currentShareLink);
+  const timeLeft = useCountdown(invitation.weddingDate);
+
+  const attendingGuests = useMemo(() => guests.filter((g) => g.attendance === "Katılacağım"), [guests]);
+  const totalPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const notAttendingCount = guests.filter((g) => g.attendance === "Katılamayacağım").length;
+  const approvedWishes = wishes.filter((w) => w.approved !== false);
+
+  const { submitGuest, submitWish } = useDatabaseManager({
+    guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
+  });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile(); 
+    
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const copyInvitationLink = async () => {
+    try {
+      await navigator.clipboard.writeText(currentShareLink);
+      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied ✅" : "Kopyalandı ✅" });
+    } catch {
+      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error ⚠️" : "Kopyalama hatası ⚠️" });
+    }
+  };
+
+  const handlePageClick = (e) => {
+    if (!isMobile) return; 
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('.floating-actions, .glass-dock, .dock-btn')) return;
+    const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
+    if (isInteractive) return;
+
+    if (e.clientX < window.innerWidth * 0.35) {
+      if (typeof scrollToPrev === 'function') scrollToPrev();
+    } else {
+      if (typeof scrollToNext === 'function') scrollToNext();
+    }
+  };
+
+  const sections = [
+    <HeroSection settings={settings} invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />,
+    settings.visibility?.countdown !== false ? <Suspense fallback={<SectionLoader />}><CountdownSection copy={copy} timeLeft={timeLeft} /></Suspense> : null,
+    <Suspense fallback={<SectionLoader />}><InvitationMessageSection copy={copy} invitation={invitation} /></Suspense>,
+    settings.visibility?.family !== false ? <Suspense fallback={<SectionLoader />}><FamilySection copy={copy} familyInfo={familyInfo} /></Suspense> : null,
+    settings.visibility?.story !== false ? <Suspense fallback={<SectionLoader />}><StorySection copy={copy} storyTimeline={storyTimeline} /></Suspense> : null,
+    settings.visibility?.ceremony !== false ? <Suspense fallback={<SectionLoader />}><CeremonySection copy={copy} eventDetails={eventDetails} /></Suspense> : null,
+    settings.visibility?.schedule !== false ? <Suspense fallback={<SectionLoader />}><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></Suspense> : null,
+    settings.visibility?.location !== false ? <Suspense fallback={<SectionLoader />}><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></Suspense> : null,
+    settings.visibility?.gallery !== false ? <Suspense fallback={<SectionLoader />}><GallerySection copy={copy} invitation={invitation} /></Suspense> : null,
+    settings.visibility?.rsvp !== false ? <Suspense fallback={<SectionLoader />}><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></Suspense> : null,
+    settings.visibility?.guests !== false ? <Suspense fallback={<SectionLoader />}><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></Suspense> : null,
+    settings.visibility?.wishes !== false ? <Suspense fallback={<SectionLoader />}><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></Suspense> : null,
+    settings.visibility?.iban !== false ? <Suspense fallback={<SectionLoader />}><GiftSection giftData={giftRegistry} /></Suspense> : null,
+    <Suspense fallback={<SectionLoader />}><ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} /></Suspense>,
+    <Suspense fallback={<SectionLoader />}><FooterSection coupleName={coupleName} invitation={invitation} copy={copy} /></Suspense>
+  ].filter(Boolean);
+
+  return (
+    <main 
+      className={`invitation-page ${isMobile ? 'mobile-mode' : 'desktop-mode'}`} 
+      onClick={handlePageClick}
+      style={{ 
+        '--hero-image': `url(${invitation.heroImage})`, 
+        '--intro-image': `url(${invitation.introImage})` 
+      }}
+    >
+      <Helmet>
+        <title>{coupleName} - Düğün Davetiyesi</title>
+        <meta name="description" content={invitation.message} />
+        <meta property="og:title" content={`${coupleName} - Evleniyoruz!`} />
+        <meta property="og:description" content={invitation.message} />
+        <meta property="og:image" content={invitation.heroImage} />
+        <meta property="og:url" content={currentShareLink} />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+
+      <div className="layout-wrapper">
+        {sections.map((Section, index) => (
+          <div 
+            key={`section-${index}`} 
+            className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+          >
+            {Section}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="src/styles/base.css">
 .app,
 .intro-page {
@@ -13707,853 +14554,6 @@ button {
 .floating-actions > *:not(.main-button):hover {
   animation: none !important; /* Animasyonu tamamen iptal et */
   transform: translateY(0) !important; /* Butonu orijinal yerine (aşağı) oturt */
-}
-</file>
-
-<file path="src/styles/responsive.css">
-/* src/styles/responsive.css */
-
-/* =========================================================
-   MOBİL: TEK SAYFA (SINGLE PAGE) SLAYT/FADE ANİMASYONLARI
-   ========================================================= */
-main.invitation-page.mobile-mode {
-  position: relative !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: block !important;
-  width: 100vw !important;
-  height: 100dvh !important;
-  overflow: hidden !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper {
-  position: absolute !important; 
-  top: 0 !important; 
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100dvh !important; 
-  
-  opacity: 0 !important; 
-  pointer-events: none !important;
-  visibility: hidden !important;
-  z-index: 1 !important;
-  
-  overflow-y: auto !important; 
-  overflow-x: hidden !important;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  
-  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out, transform 0.5s ease-out !important;
-  transform: translateY(30px) scale(0.98) !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper::-webkit-scrollbar {
-  display: none !important;
-}
-
-main.invitation-page.mobile-mode .slide-wrapper.active-slide {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  visibility: visible !important;
-  z-index: 2 !important;
-  transform: translateY(0) scale(1) !important;
-}
-
-/* HERO (İlk Ekran) Ayarları */
-main.invitation-page.mobile-mode .slide-wrapper:first-child {
-  display: flex !important; 
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  padding: 0 !important; 
-  background: transparent !important;
-}
-
-main.invitation-page.mobile-mode .slide-wrapper:first-child.active-slide {
-  overflow: hidden !important; 
-}
-
-main.invitation-page.mobile-mode .slide-wrapper > .hero-section {
-  min-height: 100dvh !important; 
-  width: 100vw !important; 
-  border-radius: 0 !important; 
-  padding: max(64px, env(safe-area-inset-top)) 16px max(80px, env(safe-area-inset-bottom)) 16px !important; 
-  margin: 0 !important;
-  background: radial-gradient(circle at center, rgba(70, 24, 40, 0.24) 0, rgba(70, 24, 40, 0.42) 46%, rgba(35, 14, 22, 0.66) 100%), var(--hero-image) center/cover no-repeat !important;
-}
-
-main.invitation-page.mobile-mode .hero-section::before {
-  top: 14px !important;
-  right: 14px !important;
-  bottom: 14px !important;
-  left: 14px !important;
-  border-radius: 24px !important;
-}
-
-/* =========================================================
-   DÜZELTME: KARTLAR İÇİN GÜVENLİ YERLEŞİM (SAFE LAYOUT)
-   Kesilme (Cut-off) sorunlarını tamamen engeller
-   ========================================================= */
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) {
-  display: flex !important; 
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  align-items: center !important;
-  
-  /* Üstten minimum güvenlik boşluğu */
-  padding-top: calc(24px + env(safe-area-inset-top)) !important;
-  /* Alttan menü için bırakılan güvenlik boşluğu */
-  padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
-  padding-left: clamp(12px, 4vw, 20px) !important;
-  padding-right: clamp(12px, 4vw, 20px) !important;
-}
-
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::before,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child)::after {
-  content: "" !important;
-  display: block !important;
-  flex: 1 1 0% !important;
-  min-height: 0 !important;
-}
-
-main.invitation-page.mobile-mode .card,
-main.invitation-page.mobile-mode .countdown-section,
-main.invitation-page.mobile-mode .rsvp-card,
-main.invitation-page.mobile-mode .story-card {
-  height: max-content !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  overflow: visible !important;
-  width: 100% !important;
-  margin: 0 auto !important; 
-}
-
-
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > section,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > footer,
-main.invitation-page.mobile-mode .slide-wrapper:not(:first-child) > div {
-  width: 100% !important;
-  margin: 0 auto !important; 
-  flex-shrink: 0 !important; 
-}
-
-/* =========================================================
-   MOBİL GÖRÜNÜM HATA GİDERMELERİ (TEXT & SCROLL FIXES)
-   ========================================================= */
-h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .info-row, .story-desc, .ceremony-item p {
-  overflow-wrap: break-word !important;
-  word-wrap: break-word !important;
-  white-space: normal !important; 
-}
-
-@media (max-width: 768px) {
-  .rsvp-form, 
-  .wish-form {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  .rsvp-form > div, 
-  .wish-form > div {
-    width: 100% !important;
-  }
-
-  /* Form elemanları ve ana butonlar */
-  .rsvp-form input,
-  .rsvp-form textarea,
-  .wish-form input,
-  .wish-form textarea,
-  .option-group,
-  .option-button,
-  .form-button {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    box-sizing: border-box !important;
-    border-radius: 20px !important; 
-  }
-  
-  .option-button,
-  .form-button {
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
-  .rsvp-whatsapp-button {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    border-radius: 20px !important;
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    
-    /* Tema renklerine uygun zarif bir ikincil buton stili */
-    background: var(--paper, #fff) !important;
-    border: 1.5px solid var(--amp-color, #9f4f68) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    font-weight: 700 !important;
-    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
-  }
-
-  .rsvp-whatsapp-button:hover {
-    background: var(--amp-color, #9f4f68) !important;
-    color: #fff !important;
-  }
-
-  .option-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-  }
-
-  .rsvp-actions {
-    width: 100% !important;
-    margin-top: 16px !important;
-    display: flex !important;
-    justify-content: center !important;
-  }
-  
-  .story-timeline-container, 
-  .schedule-list, 
-  .wish-list, 
-  .guest-list,
-  .ceremony-grid,
-  .info-list,
-  .rsvp-form,
-  .wish-form {
-    max-height: none !important; 
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .card h2, .countdown-section h2, .section-label {
-    line-height: 1.35 !important;
-    padding-bottom: 2px !important;
-  }
-
-  .admin-main-panel, 
-  .admin-editor, 
-  .admin-list, 
-  .admin-guest-list-container {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  .admin-edit-grid, .theme-picker-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 12px !important;
-  }
-  .admin-edit-grid > *, .theme-picker-grid > * {
-    flex: 1 1 100% !important;
-  }
-  
-  .admin-stats {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    padding-bottom: 8px !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  .admin-stats > div {
-    flex: 0 0 140px !important; 
-  }
-
-  .app-modal-card {
-    max-height: 85dvh !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
-  }
-}
-
-/* =========================================================
-   GENEL MOBİL TWEAKS (Tüm küçük ekranlar için)
-   ========================================================= */
-@media (max-width: 650px) {
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
-  }
-  .gallery-grid .gallery-image {
-    height: auto !important;
-    aspect-ratio: 1 / 1 !important; 
-  }
-  .gallery-grid .gallery-image img {
-    height: 100% !important;
-    width: 100% !important;
-    object-fit: cover !important;
-  }
-  
-  .mini-map {
-    height: 250px !important;
-    border-radius: 16px !important;
-  }
-  
-  .guest-item,
-  .info-row,
-  .option-group {
-    flex-direction: column;
-  }
-  .scroll-indicator {
-    bottom: calc(5px + env(safe-area-inset-bottom)); 
-  }
-  .intro-page {
-    padding: clamp(12px, 4vw, 24px); 
-  }
-  .intro-card {
-    padding: clamp(30px, 8vw, 46px) clamp(16px, 5vw, 24px);
-    border-radius: 32px;
-  }
-  .couple-title {
-    font-size: clamp(48px, 12vw, 68px); 
-  }
-  .couple-title em {
-    display: block;
-    margin: 4px 0;
-  }
-  .intro-text,
-  .rsvp-card > p {
-    font-size: clamp(16px, 4.5vw, 19px);
-  }
-  
-  .hero-section {
-    min-height: max-content !important;
-    height: auto !important;
-    padding-top: calc(100px + env(safe-area-inset-top)) !important;
-    padding-bottom: 100px !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    background: radial-gradient(
-        circle at center,
-        rgba(70, 24, 40, 0.24) 0,
-        rgba(70, 24, 40, 0.42) 46%,
-        rgba(35, 14, 22, 0.66) 100%
-      ),
-      var(--hero-image) center/cover no-repeat !important;
-  }
-  .hero-section .couple-title {
-    color: #fff;
-    line-height: 1.04;
-    text-shadow: 0 3px 5px rgba(0, 0, 0, 0.75), 0 8px 22px rgba(0, 0, 0, 0.42),
-      0 0 24px rgba(255, 220, 230, 0.22);
-  }
-  .hero-section .couple-title em {
-    margin: -4px 0 -6px;
-    font-size: 0.45em;
-  }
-  .hero-date {
-    padding: 8px 16px;
-    font-size: clamp(16px, 5vw, 21px);
-  }
-  .hero-time {
-    font-size: clamp(16px, 5vw, 20px);
-  }
-  .card,
-  .countdown-section {
-    padding: clamp(24px, 6vw, 36px) clamp(14px, 5vw, 20px); 
-    border-radius: 24px;
-  }
-  .rsvp-card h2 {
-    font-size: clamp(26px, 8vw, 32px);
-  }
-  
-  input, textarea, select, .option-button, .form-button {
-    font-size: 16px !important; 
-  }
-  
-  .countdown-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-  .timeline-item {
-    grid-template-columns: 1fr;
-  }
-  .guest-item,
-  .info-row {
-    gap: 6px;
-    text-align: center;
-  }
-  .timeline::before {
-    display: none;
-  }
-  .timeline-item {
-    gap: 8px;
-    text-align: center;
-  }
-  .option-button {
-    width: 100%;
-    min-width: unset;
-  }
-  .main-button,
-  .secondary-button {
-    width: 100%;
-    padding: 14px 20px; 
-  }
-  
-  .app-modal-backdrop {
-    position: fixed !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    height: 100dvh !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 16px !important;
-  }
-  .app-modal-card {
-    position: relative !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin: 0 !important;
-    top: auto !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: auto !important;
-    transform: none !important;
-    width: 100% !important;
-    max-width: 380px !important;
-    height: auto !important;
-    min-height: 0 !important;
-    background: var(--paper, #fff) !important;
-    border-radius: 24px !important;
-    padding: 24px 16px !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
-    box-sizing: border-box !important;
-  }
-  .app-modal-actions {
-    margin-top: 20px !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-}
-
-@media (max-width: 400px) {
-  .intro-card {
-    padding: 30px 16px !important;
-    width: 92vw !important;
-  }
-  .couple-title {
-    font-size: clamp(32px, 11vw, 44px) !important; 
-  }
-  .card, .countdown-section, .rsvp-card {
-    padding: 24px 16px !important;
-  }
-  .hero-date, .hero-time {
-    font-size: 14px !important;
-    padding: 8px 16px !important;
-  }
-  .count-box {
-    padding: 16px 8px !important;
-  }
-  .count-box strong {
-    font-size: 26px !important; 
-  }
-  .info-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-    padding: 16px !important;
-  }
-  .info-row strong {
-    font-size: 18px !important;
-  }
-  .guest-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-  .story-content-box {
-    padding: 16px 12px !important;
-  }
-}
-
-@media (min-width: 651px) {
-  .floating-actions,
-  .glass-dock {
-    height: auto !important;
-    max-height: none !important;
-    top: auto !important;
-    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
-    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
-  }
-  html body .app .glass-dock .wa-btn {
-    display: none !important;
-  }
-  html body .app .hero-section {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-  }
-  html body .app .hero-content {
-    margin-top: auto !important;
-    margin-bottom: auto !important;
-    padding-bottom: 60px !important;
-  }
-}
-.guest-stats {
-  display: flex !important;
-  flex-direction: row !important; /* Alt alta yerine yan yana diz */
-  justify-content: space-between !important;
-  align-items: stretch !important;
-  width: 100% !important;
-  gap: 8px !important;
-  margin: 16px 0 !important;
-}
-
-.guest-stats > div {
-  flex: 1 !important; /* 3 kutuyu da ekrana eşit böl */
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  padding: 16px 4px !important;
-  border-radius: 16px !important; /* Köşeleri daha estetik yap */
-  box-sizing: border-box !important;
-}
-
-.guest-stats > div strong {
-  font-size: 22px !important;
-  margin-bottom: 6px !important;
-  line-height: 1 !important;
-}
-
-.guest-stats > div span {
-  font-size: 11px !important; /* "Katılmayacak" gibi uzun kelimelerin taşmaması için */
-  text-align: center !important;
-  line-height: 1.2 !important;
-  word-wrap: break-word !important;
-}
-
-/* Altındaki gizlilik notunun da karta tam oturması için */
-.private-note-card {
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-</file>
-
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { supabase } from "./supabaseClient"; 
-
-// YENİ EKLENEN İMPORT
-import { LazyMotion, domAnimation } from "framer-motion";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = activeTheme;
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(activeTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, activeTheme]);
-
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
-    const realtimeChannel = supabase
-      .channel('schema-db-changes')
-      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'guests' },
-        async (payload) => {
-          console.log("LCV Güncellemesi:", payload);
-          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
-          const updatedGuests = await loadGuestsFromDatabase();
-          setGuests(updatedGuests || []);
-          
-          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
-          if (payload.eventType === 'INSERT') {
-            setCustomAlert({ 
-              title: "Yeni LCV Geldi!", 
-              message: "Biri az önce katılım durumunu bildirdi." 
-            });
-          }
-        }
-      )
-      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'wishes' },
-        async (payload) => {
-          console.log("Mesaj Güncellemesi:", payload);
-          const updatedWishes = await loadPublishedWishesFromDatabase();
-          setWishes(updatedWishes || []);
-        }
-      )
-      .subscribe();
-
-    // Bileşen ekrandan kalkarsa dinlemeyi durdur
-    return () => {
-      supabase.removeChannel(realtimeChannel);
-    };
-  }, [setGuests, setWishes, setCustomAlert]);
-  
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={activeTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals
-          customAlert={customAlert} setCustomAlert={setCustomAlert}
-          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-        />
-        
-        <Routes>
-          <Route path="/" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
-</file>
-
-<file path="src/pages/InvitationView.jsx">
-import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
-import { useStore } from "../store/useStore";
-import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet-async";
-import { useCountdown } from "../hooks/useCountdown";
-import { useDatabaseManager } from "../hooks/useDatabaseManager";
-import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
-
-import { HeroSection } from "../components/invitation/sections/HeroSection";
-
-const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
-const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
-const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
-const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
-const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
-const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
-const GallerySection = lazy(() => import("../components/invitation/sections/GallerySection").then(m => ({ default: m.GallerySection })));
-const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
-const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
-const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
-const StorySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.StorySection })));
-const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSection").then(m => ({ default: m.RsvpSection })));
-const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
-const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
-
-const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
-
-export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768);
-
-  const siteData = useStore((state) => state.siteData);
-  const guests = useStore((state) => state.guests);
-  const wishes = useStore((state) => state.wishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setWishes = useStore((state) => state.setWishes);
-  const showAppAlert = useStore((state) => state.showAppAlert);
-  const showAppConfirm = useStore((state) => state.showAppConfirm);
-
-  const { invitation, settings, copy, familyInfo, messages, storyTimeline, eventDetails, scheduleItems, giftRegistry } = siteData;
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const personalGuestName = getGuestNameFromUrl();
-  const personalTableNumber = getTableFromUrl();
-  const currentShareLink = invitation.shareLink || getCurrentShareLink();
-  
-  const guestGreeting = personalGuestName ? formatMessageTemplate(messages.guestGreeting, { guest: personalGuestName, couple: coupleName, link: currentShareLink }) : "";
-  const rsvpWhatsappText = encodeURIComponent(formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
-  const shareText = encodeURIComponent(formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
-  const googleCalendarLink = createGoogleCalendarLink(siteData, coupleName);
-  const qrImageUrl = getQrImageUrl(currentShareLink);
-  const timeLeft = useCountdown(invitation.weddingDate);
-
-  const attendingGuests = useMemo(() => guests.filter((g) => g.attendance === "Katılacağım"), [guests]);
-  const totalPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const notAttendingCount = guests.filter((g) => g.attendance === "Katılamayacağım").length;
-  const approvedWishes = wishes.filter((w) => w.approved !== false);
-
-  const { submitGuest, submitWish } = useDatabaseManager({
-    guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
-  });
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile(); 
-    
-    window.addEventListener('resize', checkMobile, { passive: true });
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const copyInvitationLink = async () => {
-    try {
-      await navigator.clipboard.writeText(currentShareLink);
-      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied ✅" : "Kopyalandı ✅" });
-    } catch {
-      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error ⚠️" : "Kopyalama hatası ⚠️" });
-    }
-  };
-
-  const handlePageClick = (e) => {
-    if (!isMobile) return; 
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('.floating-actions, .glass-dock, .dock-btn')) return;
-    const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
-    if (isInteractive) return;
-
-    if (e.clientX < window.innerWidth * 0.35) {
-      if (typeof scrollToPrev === 'function') scrollToPrev();
-    } else {
-      if (typeof scrollToNext === 'function') scrollToNext();
-    }
-  };
-
-  const sections = [
-    <HeroSection settings={settings} invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />,
-    settings.visibility?.countdown !== false ? <Suspense fallback={<SectionLoader />}><CountdownSection copy={copy} timeLeft={timeLeft} /></Suspense> : null,
-    <Suspense fallback={<SectionLoader />}><InvitationMessageSection copy={copy} invitation={invitation} /></Suspense>,
-    settings.visibility?.family !== false ? <Suspense fallback={<SectionLoader />}><FamilySection copy={copy} familyInfo={familyInfo} /></Suspense> : null,
-    settings.visibility?.story !== false ? <Suspense fallback={<SectionLoader />}><StorySection copy={copy} storyTimeline={storyTimeline} /></Suspense> : null,
-    settings.visibility?.ceremony !== false ? <Suspense fallback={<SectionLoader />}><CeremonySection copy={copy} eventDetails={eventDetails} /></Suspense> : null,
-    settings.visibility?.schedule !== false ? <Suspense fallback={<SectionLoader />}><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></Suspense> : null,
-    settings.visibility?.location !== false ? <Suspense fallback={<SectionLoader />}><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></Suspense> : null,
-    settings.visibility?.gallery !== false ? <Suspense fallback={<SectionLoader />}><GallerySection copy={copy} invitation={invitation} /></Suspense> : null,
-    settings.visibility?.rsvp !== false ? <Suspense fallback={<SectionLoader />}><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></Suspense> : null,
-    settings.visibility?.guests !== false ? <Suspense fallback={<SectionLoader />}><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></Suspense> : null,
-    settings.visibility?.wishes !== false ? <Suspense fallback={<SectionLoader />}><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></Suspense> : null,
-    settings.visibility?.iban !== false ? <Suspense fallback={<SectionLoader />}><GiftSection giftData={giftRegistry} /></Suspense> : null,
-    <Suspense fallback={<SectionLoader />}><ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} /></Suspense>,
-    <Suspense fallback={<SectionLoader />}><FooterSection coupleName={coupleName} invitation={invitation} copy={copy} /></Suspense>
-  ].filter(Boolean);
-
-  return (
-    <main 
-      className={`invitation-page ${isMobile ? 'mobile-mode' : 'desktop-mode'}`} 
-      onClick={handlePageClick}
-      style={{ 
-        '--hero-image': `url(${invitation.heroImage})`, 
-        '--intro-image': `url(${invitation.introImage})` 
-      }}
-    >
-      <Helmet>
-        <title>{coupleName} - Düğün Davetiyesi</title>
-        <meta name="description" content={invitation.message} />
-        <meta property="og:title" content={`${coupleName} - Evleniyoruz!`} />
-        <meta property="og:description" content={invitation.message} />
-        <meta property="og:image" content={invitation.heroImage} />
-        <meta property="og:url" content={currentShareLink} />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Helmet>
-
-      <div className="layout-wrapper">
-        {sections.map((Section, index) => (
-          <div 
-            key={`section-${index}`} 
-            className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
-          >
-            {Section}
-          </div>
-        ))}
-      </div>
-    </main>
-  );
 }
 </file>
 
