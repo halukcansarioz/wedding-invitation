@@ -10,3 +10,6 @@ export { GallerySection } from './GallerySection';
 export { ShareSection } from './ShareSection';
 export { GiftSection } from './GiftSection';
 export { FooterSection } from './FooterSection';
+export { RsvpSection } from './RsvpSection';
+export { WishesSection } from './WishesSection';
+export { GuestsListSection } from './GuestsListSection';

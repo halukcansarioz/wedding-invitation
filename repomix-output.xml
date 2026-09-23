@@ -7468,6 +7468,161 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
 }
 </file>
 
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { supabase } from "./supabaseClient"; 
+
+// YENİ EKLENEN İMPORT
+import { LazyMotion, domAnimation } from "framer-motion";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = activeTheme;
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(activeTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, activeTheme]);
+
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
+    const realtimeChannel = supabase
+      .channel('schema-db-changes')
+      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'guests' },
+        async (payload) => {
+          console.log("LCV Güncellemesi:", payload);
+          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
+          const updatedGuests = await loadGuestsFromDatabase();
+          setGuests(updatedGuests || []);
+          
+          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
+          if (payload.eventType === 'INSERT') {
+            setCustomAlert({ 
+              title: "Yeni LCV Geldi!", 
+              message: "Biri az önce katılım durumunu bildirdi." 
+            });
+          }
+        }
+      )
+      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'wishes' },
+        async (payload) => {
+          console.log("Mesaj Güncellemesi:", payload);
+          const updatedWishes = await loadPublishedWishesFromDatabase();
+          setWishes(updatedWishes || []);
+        }
+      )
+      .subscribe();
+
+    // Bileşen ekrandan kalkarsa dinlemeyi durdur
+    return () => {
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, [setGuests, setWishes, setCustomAlert]);
+  
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={activeTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals
+          customAlert={customAlert} setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
+</file>
+
 <file path="src/hooks/useScrollNavigation.js">
 // src/hooks/useScrollNavigation.js
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -7722,161 +7877,6 @@ export function useScrollNavigation(isAdminPage, opened) {
   
   return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }
-</file>
-
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { supabase } from "./supabaseClient"; 
-
-// YENİ EKLENEN İMPORT
-import { LazyMotion, domAnimation } from "framer-motion";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = activeTheme;
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(activeTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, activeTheme]);
-
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
-    const realtimeChannel = supabase
-      .channel('schema-db-changes')
-      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'guests' },
-        async (payload) => {
-          console.log("LCV Güncellemesi:", payload);
-          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
-          const updatedGuests = await loadGuestsFromDatabase();
-          setGuests(updatedGuests || []);
-          
-          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
-          if (payload.eventType === 'INSERT') {
-            setCustomAlert({ 
-              title: "Yeni LCV Geldi!", 
-              message: "Biri az önce katılım durumunu bildirdi." 
-            });
-          }
-        }
-      )
-      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'wishes' },
-        async (payload) => {
-          console.log("Mesaj Güncellemesi:", payload);
-          const updatedWishes = await loadPublishedWishesFromDatabase();
-          setWishes(updatedWishes || []);
-        }
-      )
-      .subscribe();
-
-    // Bileşen ekrandan kalkarsa dinlemeyi durdur
-    return () => {
-      supabase.removeChannel(realtimeChannel);
-    };
-  }, [setGuests, setWishes, setCustomAlert]);
-  
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={activeTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals
-          customAlert={customAlert} setCustomAlert={setCustomAlert}
-          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-        />
-        
-        <Routes>
-          <Route path="/" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
 </file>
 
 <file path="src/styles/admin.css">
@@ -12718,6 +12718,158 @@ html[data-theme]
 }
 </file>
 
+<file path="src/pages/InvitationView.jsx">
+import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
+import { useStore } from "../store/useStore";
+import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async";
+import { useCountdown } from "../hooks/useCountdown";
+import { useDatabaseManager } from "../hooks/useDatabaseManager";
+import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
+
+import { HeroSection } from "../components/invitation/sections/HeroSection";
+
+const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
+const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
+const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
+const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
+const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
+const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
+const GallerySection = lazy(() => import("../components/invitation/sections/GallerySection").then(m => ({ default: m.GallerySection })));
+const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
+const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
+const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
+const StorySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.StorySection })));
+const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSection").then(m => ({ default: m.RsvpSection })));
+const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
+const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
+
+const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
+
+export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768);
+
+  const siteData = useStore((state) => state.siteData);
+  const guests = useStore((state) => state.guests);
+  const wishes = useStore((state) => state.wishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setWishes = useStore((state) => state.setWishes);
+  const showAppAlert = useStore((state) => state.showAppAlert);
+  const showAppConfirm = useStore((state) => state.showAppConfirm);
+
+  const { invitation, settings, copy, familyInfo, messages, storyTimeline, eventDetails, scheduleItems, giftRegistry } = siteData;
+  const coupleName = `${invitation.bride} & ${invitation.groom}`;
+  const personalGuestName = getGuestNameFromUrl();
+  const personalTableNumber = getTableFromUrl();
+  const currentShareLink = invitation.shareLink || getCurrentShareLink();
+  
+  const guestGreeting = personalGuestName ? formatMessageTemplate(messages.guestGreeting, { guest: personalGuestName, couple: coupleName, link: currentShareLink }) : "";
+  const rsvpWhatsappText = encodeURIComponent(formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
+  const shareText = encodeURIComponent(formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
+  const googleCalendarLink = createGoogleCalendarLink(siteData, coupleName);
+  const qrImageUrl = getQrImageUrl(currentShareLink);
+  const timeLeft = useCountdown(invitation.weddingDate);
+
+  const attendingGuests = useMemo(() => guests.filter((g) => g.attendance === "Katılacağım"), [guests]);
+  const totalPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const notAttendingCount = guests.filter((g) => g.attendance === "Katılamayacağım").length;
+  const approvedWishes = wishes.filter((w) => w.approved !== false);
+
+  const { submitGuest, submitWish } = useDatabaseManager({
+    guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
+  });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile(); 
+    
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const copyInvitationLink = async () => {
+    try {
+      await navigator.clipboard.writeText(currentShareLink);
+      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied ✅" : "Kopyalandı ✅" });
+    } catch {
+      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error ⚠️" : "Kopyalama hatası ⚠️" });
+    }
+  };
+
+  const handlePageClick = (e) => {
+    if (!isMobile) return; 
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('.floating-actions, .glass-dock, .dock-btn')) return;
+    const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
+    if (isInteractive) return;
+
+    if (e.clientX < window.innerWidth * 0.35) {
+      if (typeof scrollToPrev === 'function') scrollToPrev();
+    } else {
+      if (typeof scrollToNext === 'function') scrollToNext();
+    }
+  };
+
+  const sections = [
+    <HeroSection settings={settings} invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />,
+    settings.visibility?.countdown !== false ? <Suspense fallback={<SectionLoader />}><CountdownSection copy={copy} timeLeft={timeLeft} /></Suspense> : null,
+    <Suspense fallback={<SectionLoader />}><InvitationMessageSection copy={copy} invitation={invitation} /></Suspense>,
+    settings.visibility?.family !== false ? <Suspense fallback={<SectionLoader />}><FamilySection copy={copy} familyInfo={familyInfo} /></Suspense> : null,
+    settings.visibility?.story !== false ? <Suspense fallback={<SectionLoader />}><StorySection copy={copy} storyTimeline={storyTimeline} /></Suspense> : null,
+    settings.visibility?.ceremony !== false ? <Suspense fallback={<SectionLoader />}><CeremonySection copy={copy} eventDetails={eventDetails} /></Suspense> : null,
+    settings.visibility?.schedule !== false ? <Suspense fallback={<SectionLoader />}><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></Suspense> : null,
+    settings.visibility?.location !== false ? <Suspense fallback={<SectionLoader />}><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></Suspense> : null,
+    settings.visibility?.gallery !== false ? <Suspense fallback={<SectionLoader />}><GallerySection copy={copy} invitation={invitation} /></Suspense> : null,
+    settings.visibility?.rsvp !== false ? <Suspense fallback={<SectionLoader />}><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></Suspense> : null,
+    settings.visibility?.guests !== false ? <Suspense fallback={<SectionLoader />}><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></Suspense> : null,
+    settings.visibility?.wishes !== false ? <Suspense fallback={<SectionLoader />}><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></Suspense> : null,
+    settings.visibility?.iban !== false ? <Suspense fallback={<SectionLoader />}><GiftSection giftData={giftRegistry} /></Suspense> : null,
+    <Suspense fallback={<SectionLoader />}><ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} /></Suspense>,
+    <Suspense fallback={<SectionLoader />}><FooterSection coupleName={coupleName} invitation={invitation} copy={copy} /></Suspense>
+  ].filter(Boolean);
+
+  return (
+    <main 
+      className={`invitation-page ${isMobile ? 'mobile-mode' : 'desktop-mode'}`} 
+      onClick={handlePageClick}
+      style={{ 
+        '--hero-image': `url(${invitation.heroImage})`, 
+        '--intro-image': `url(${invitation.introImage})` 
+      }}
+    >
+      <Helmet>
+        <title>{coupleName} - Düğün Davetiyesi</title>
+        <meta name="description" content={invitation.message} />
+        <meta property="og:title" content={`${coupleName} - Evleniyoruz!`} />
+        <meta property="og:description" content={invitation.message} />
+        <meta property="og:image" content={invitation.heroImage} />
+        <meta property="og:url" content={currentShareLink} />
+        <meta name="twitter:card" content="summary_large_image" />
+      </Helmet>
+
+      <div className="layout-wrapper">
+        {sections.map((Section, index) => (
+          <div 
+            key={`section-${index}`} 
+            className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
+          >
+            {Section}
+          </div>
+        ))}
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="src/styles/responsive.css">
 /* src/styles/responsive.css */
 
@@ -13217,13 +13369,12 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
   }
 }
 .guest-stats {
-  display: flex !important;
-  flex-direction: row !important; /* Alt alta yerine yan yana diz */
-  justify-content: space-between !important;
-  align-items: stretch !important;
-  width: 100% !important;
-  gap: 8px !important;
-  margin: 16px 0 !important;
+  display: flex;
+  justify-content: center; /* Kutuları yatayda ortalar */
+  align-items: center;
+  gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
+  flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+  width: 100%;
 }
 
 .guest-stats > div {
@@ -13258,156 +13409,203 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 </file>
 
-<file path="src/pages/InvitationView.jsx">
-import React, { useMemo, useEffect, useState, lazy, Suspense } from "react";
-import { useStore } from "../store/useStore";
-import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet-async";
-import { useCountdown } from "../hooks/useCountdown";
-import { useDatabaseManager } from "../hooks/useDatabaseManager";
-import { formatMessageTemplate, getCurrentShareLink, createGoogleCalendarLink, getGuestNameFromUrl, getTableFromUrl, getQrImageUrl } from "../utils/helpers";
+<file path="src/components/common/FloatingMenu.jsx">
+import React, { memo } from "react";
 
-import { HeroSection } from "../components/invitation/sections/HeroSection";
-
-const CountdownSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CountdownSection })));
-const InvitationMessageSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.InvitationMessageSection })));
-const FamilySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FamilySection })));
-const CeremonySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.CeremonySection })));
-const ScheduleSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ScheduleSection })));
-const LocationSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.LocationSection })));
-const GallerySection = lazy(() => import("../components/invitation/sections/GallerySection").then(m => ({ default: m.GallerySection })));
-const ShareSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.ShareSection })));
-const FooterSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.FooterSection })));
-const GiftSection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.GiftSection })));
-const StorySection = lazy(() => import("../components/invitation/sections").then(m => ({ default: m.StorySection })));
-const RsvpSection = lazy(() => import("../components/invitation/sections/RsvpSection").then(m => ({ default: m.RsvpSection })));
-const GuestsListSection = lazy(() => import("../components/invitation/sections/GuestsListSection").then(m => ({ default: m.GuestsListSection })));
-const WishesSection = lazy(() => import("../components/invitation/sections/WishesSection").then(m => ({ default: m.WishesSection })));
-
-const SectionLoader = () => <div style={{ minHeight: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}></div>;
-
-export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth <= 768);
-
-  const siteData = useStore((state) => state.siteData);
-  const guests = useStore((state) => state.guests);
-  const wishes = useStore((state) => state.wishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setWishes = useStore((state) => state.setWishes);
-  const showAppAlert = useStore((state) => state.showAppAlert);
-  const showAppConfirm = useStore((state) => state.showAppConfirm);
-
-  const { invitation, settings, copy, familyInfo, messages, storyTimeline, eventDetails, scheduleItems, giftRegistry } = siteData;
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const personalGuestName = getGuestNameFromUrl();
-  const personalTableNumber = getTableFromUrl();
-  const currentShareLink = invitation.shareLink || getCurrentShareLink();
-  
-  const guestGreeting = personalGuestName ? formatMessageTemplate(messages.guestGreeting, { guest: personalGuestName, couple: coupleName, link: currentShareLink }) : "";
-  const rsvpWhatsappText = encodeURIComponent(formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
-  const shareText = encodeURIComponent(formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
-  const googleCalendarLink = createGoogleCalendarLink(siteData, coupleName);
-  const qrImageUrl = getQrImageUrl(currentShareLink);
-  const timeLeft = useCountdown(invitation.weddingDate);
-
-  const attendingGuests = useMemo(() => guests.filter((g) => g.attendance === "Katılacağım"), [guests]);
-  const totalPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const notAttendingCount = guests.filter((g) => g.attendance === "Katılamayacağım").length;
-  const approvedWishes = wishes.filter((w) => w.approved !== false);
-
-  const { submitGuest, submitWish } = useDatabaseManager({
-    guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, t, isEn
-  });
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile(); 
-    
-    window.addEventListener('resize', checkMobile, { passive: true });
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const copyInvitationLink = async () => {
-    try {
-      await navigator.clipboard.writeText(currentShareLink);
-      await showAppAlert(t('alerts.linkCopied'), { title: isEn ? "Copied ✅" : "Kopyalandı ✅" });
-    } catch {
-      await showAppAlert(t('alerts.linkCopyError'), { title: isEn ? "Copy error ⚠️" : "Kopyalama hatası ⚠️" });
-    }
-  };
-
-  const handlePageClick = (e) => {
-    if (!isMobile) return; 
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('.floating-actions, .glass-dock, .dock-btn')) return;
-    const isInteractive = target.closest('button, a, input, textarea, select, .option-button, .lightbox-control-btn, img, iframe, .mini-map, .info-row');
-    if (isInteractive) return;
-
-    if (e.clientX < window.innerWidth * 0.35) {
-      if (typeof scrollToPrev === 'function') scrollToPrev();
-    } else {
-      if (typeof scrollToNext === 'function') scrollToNext();
-    }
-  };
-
-  const sections = [
-    <HeroSection settings={settings} invitation={invitation} copy={copy} guestGreeting={guestGreeting} personalTableNumber={personalTableNumber} scrollToNext={scrollToNext} />,
-    settings.visibility?.countdown !== false ? <Suspense fallback={<SectionLoader />}><CountdownSection copy={copy} timeLeft={timeLeft} /></Suspense> : null,
-    <Suspense fallback={<SectionLoader />}><InvitationMessageSection copy={copy} invitation={invitation} /></Suspense>,
-    settings.visibility?.family !== false ? <Suspense fallback={<SectionLoader />}><FamilySection copy={copy} familyInfo={familyInfo} /></Suspense> : null,
-    settings.visibility?.story !== false ? <Suspense fallback={<SectionLoader />}><StorySection copy={copy} storyTimeline={storyTimeline} /></Suspense> : null,
-    settings.visibility?.ceremony !== false ? <Suspense fallback={<SectionLoader />}><CeremonySection copy={copy} eventDetails={eventDetails} /></Suspense> : null,
-    settings.visibility?.schedule !== false ? <Suspense fallback={<SectionLoader />}><ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} /></Suspense> : null,
-    settings.visibility?.location !== false ? <Suspense fallback={<SectionLoader />}><LocationSection copy={copy} invitation={invitation} googleCalendarLink={googleCalendarLink} /></Suspense> : null,
-    settings.visibility?.gallery !== false ? <Suspense fallback={<SectionLoader />}><GallerySection copy={copy} invitation={invitation} /></Suspense> : null,
-    settings.visibility?.rsvp !== false ? <Suspense fallback={<SectionLoader />}><RsvpSection copy={copy} submitGuest={submitGuest} invitation={invitation} rsvpWhatsappText={rsvpWhatsappText} showIban={settings.visibility?.popupIban !== false} giftData={giftRegistry} personalTableNumber={personalTableNumber} /></Suspense> : null,
-    settings.visibility?.guests !== false ? <Suspense fallback={<SectionLoader />}><GuestsListSection copy={copy} guests={guests} totalPersonCount={totalPersonCount} notAttendingCount={notAttendingCount} /></Suspense> : null,
-    settings.visibility?.wishes !== false ? <Suspense fallback={<SectionLoader />}><WishesSection copy={copy} submitWish={submitWish} approvedWishes={approvedWishes} /></Suspense> : null,
-    settings.visibility?.iban !== false ? <Suspense fallback={<SectionLoader />}><GiftSection giftData={giftRegistry} /></Suspense> : null,
-    <Suspense fallback={<SectionLoader />}><ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} copyInvitationLink={copyInvitationLink} /></Suspense>,
-    <Suspense fallback={<SectionLoader />}><FooterSection coupleName={coupleName} invitation={invitation} copy={copy} /></Suspense>
-  ].filter(Boolean);
-
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
+}) {
   return (
-    <main 
-      className={`invitation-page ${isMobile ? 'mobile-mode' : 'desktop-mode'}`} 
-      onClick={handlePageClick}
-      style={{ 
-        '--hero-image': `url(${invitation.heroImage})`, 
-        '--intro-image': `url(${invitation.introImage})` 
-      }}
-    >
-      <Helmet>
-        <title>{coupleName} - Düğün Davetiyesi</title>
-        <meta name="description" content={invitation.message} />
-        <meta property="og:title" content={`${coupleName} - Evleniyoruz!`} />
-        <meta property="og:description" content={invitation.message} />
-        <meta property="og:image" content={invitation.heroImage} />
-        <meta property="og:url" content={currentShareLink} />
-        <meta name="twitter:card" content="summary_large_image" />
-      </Helmet>
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        /* ZIPLAMA ANİMASYONLARI */
+        @keyframes syncContainerBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
 
-      <div className="layout-wrapper">
-        {sections.map((Section, index) => (
-          <div 
-            key={`section-${index}`} 
-            className={`slide-wrapper ${currentSlideIndex === index ? 'active-slide' : ''}`}
-          >
-            {Section}
-          </div>
-        ))}
+        @keyframes syncDesktopBounce {
+          0%, 100% { transform: translateY(-50%); }
+          50% { transform: translateY(calc(-50% - 8px)); }
+        }
+
+        /* ANA MENÜ ÇERÇEVESİ */
+        #main-dock {
+          position: fixed !important;
+          z-index: 999999 !important;
+          pointer-events: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 8px !important;
+          
+          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
+          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
+          
+          flex-direction: row !important;
+          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+          top: auto !important;
+          left: 0 !important;
+          right: 0 !important;
+          margin: 0 auto !important;
+          width: fit-content !important;
+          height: auto !important;
+        }
+
+        #main-dock:hover {
+          animation-play-state: paused !important;
+        }
+
+        /* TEKİL BUTONLAR VE ANİMASYONLARI */
+        #main-dock .dock-btn {
+          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+          
+          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
+          margin: 0 6px !important; 
+          
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          
+          background: var(--theme-surface, #ffffff) !important;
+          color: var(--amp-color, #9f4f68) !important;
+          border: 1.5px solid var(--amp-color, #9f4f68) !important;
+          
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+          cursor: pointer !important;
+          overflow: hidden !important; 
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: scale(1) !important;
+        }
+
+        #main-dock .dock-btn:hover,
+        #main-dock .dock-btn:active {
+          transform: scale(1.08) !important;
+          background: var(--amp-color, #9f4f68) !important;
+          color: var(--theme-surface, #ffffff) !important;
+        }
+
+        #main-dock .dock-btn svg {
+          width: 22px !important;
+          height: 22px !important;
+          flex-shrink: 0 !important;
+          transition: all 0.5s ease !important;
+        }
+
+        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
+        #main-dock .hidden-btn {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          width: 0 !important;
+          min-width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          border-width: 0 !important;
+          
+          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
+          margin: 0 0 !important; 
+          
+          transform: scale(0) !important; 
+        }
+
+        #main-dock .hidden-btn svg {
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        /* MASAÜSTÜ GÖRÜNÜM */
+        @media (min-width: 651px) {
+          #main-dock {
+            flex-direction: column !important;
+            right: 32px !important;          
+            left: auto !important;
+            top: 50% !important;             
+            bottom: auto !important;         
+            margin: 0 !important; 
+            height: fit-content !important;
+            width: auto !important;
+            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
+          }
+          
+          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
+          #main-dock .dock-btn {
+            margin: 6px 0 !important;
+          }
+
+          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
+          #main-dock .hidden-btn {
+             margin: 0 0 !important;
+          }
+        }
+      `}} />
+
+      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
       </div>
-    </main>
+
+      <div id="main-dock">
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMusicPlaying ? (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+              </>
+            )}
+          </svg>
+        </button>
+
+        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </>
   );
-}
+});
 </file>
 
 <file path="src/styles/base.css">
@@ -14161,9 +14359,12 @@ button {
   position: relative;
 }
 .guest-stats {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
-  margin: 30px auto;
+  display: flex;
+  justify-content: center; /* Kutuları yatayda ortalar */
+  align-items: center;
+  gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
+  flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+  width: 100%;
 }
 .guest-item,
 .guest-stats div,
@@ -14555,205 +14756,6 @@ button {
   animation: none !important; /* Animasyonu tamamen iptal et */
   transform: translateY(0) !important; /* Butonu orijinal yerine (aşağı) oturt */
 }
-</file>
-
-<file path="src/components/common/FloatingMenu.jsx">
-import React, { memo } from "react";
-
-export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, 
-  toggleLanguage, 
-  shareText, 
-  toggleMusic, 
-  isMusicPlaying, 
-  showScrollDown, 
-  scrollToNext, 
-  showScrollTop, 
-  scrollToPrev 
-}) {
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        /* ZIPLAMA ANİMASYONLARI */
-        @keyframes syncContainerBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-
-        @keyframes syncDesktopBounce {
-          0%, 100% { transform: translateY(-50%); }
-          50% { transform: translateY(calc(-50% - 8px)); }
-        }
-
-        /* ANA MENÜ ÇERÇEVESİ */
-        #main-dock {
-          position: fixed !important;
-          z-index: 999999 !important;
-          pointer-events: auto !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 8px !important;
-          
-          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
-          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
-          
-          flex-direction: row !important;
-          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-          top: auto !important;
-          left: 0 !important;
-          right: 0 !important;
-          margin: 0 auto !important;
-          width: fit-content !important;
-          height: auto !important;
-        }
-
-        #main-dock:hover {
-          animation-play-state: paused !important;
-        }
-
-        /* TEKİL BUTONLAR VE ANİMASYONLARI */
-        #main-dock .dock-btn {
-          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
-          
-          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
-          margin: 0 6px !important; 
-          
-          width: 48px !important;
-          height: 48px !important;
-          min-width: 48px !important;
-          border-radius: 50% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          
-          background: var(--theme-surface, #ffffff) !important;
-          color: var(--amp-color, #9f4f68) !important;
-          border: 1.5px solid var(--amp-color, #9f4f68) !important;
-          
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-          cursor: pointer !important;
-          overflow: hidden !important; 
-          opacity: 1 !important;
-          visibility: visible !important;
-          transform: scale(1) !important;
-        }
-
-        #main-dock .dock-btn:hover,
-        #main-dock .dock-btn:active {
-          transform: scale(1.08) !important;
-          background: var(--amp-color, #9f4f68) !important;
-          color: var(--theme-surface, #ffffff) !important;
-        }
-
-        #main-dock .dock-btn svg {
-          width: 22px !important;
-          height: 22px !important;
-          flex-shrink: 0 !important;
-          transition: all 0.5s ease !important;
-        }
-
-        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
-        #main-dock .hidden-btn {
-          opacity: 0 !important;
-          visibility: hidden !important;
-          width: 0 !important;
-          min-width: 0 !important;
-          height: 0 !important;
-          padding: 0 !important;
-          border-width: 0 !important;
-          
-          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
-          margin: 0 0 !important; 
-          
-          transform: scale(0) !important; 
-        }
-
-        #main-dock .hidden-btn svg {
-          width: 0 !important;
-          height: 0 !important;
-        }
-
-        /* MASAÜSTÜ GÖRÜNÜM */
-        @media (min-width: 651px) {
-          #main-dock {
-            flex-direction: column !important;
-            right: 32px !important;          
-            left: auto !important;
-            top: 50% !important;             
-            bottom: auto !important;         
-            margin: 0 !important; 
-            height: fit-content !important;
-            width: auto !important;
-            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
-          }
-          
-          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
-          #main-dock .dock-btn {
-            margin: 6px 0 !important;
-          }
-
-          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
-          #main-dock .hidden-btn {
-             margin: 0 0 !important;
-          }
-        }
-      `}} />
-
-      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v4" />
-            <path d="M12 16h.01" />
-          </svg>
-        </a>
-      </div>
-
-      <div id="main-dock">
-        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
-          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
-        </button>
-
-        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isMusicPlaying ? (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </>
-            ) : (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-                <line x1="3" y1="3" x2="21" y2="21" />
-              </>
-            )}
-          </svg>
-        </button>
-
-        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"></line>
-            <polyline points="5 12 12 5 19 12"></polyline>
-          </svg>
-        </button>
-        
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="19 12 12 19 5 12"></polyline>
-          </svg>
-        </button>
-      </div>
-    </>
-  );
-});
 </file>
 
 <file path="src/styles/invitation.css">
@@ -16206,8 +16208,12 @@ body .app .glass-dock .dock-btn.music-on {
     padding: clamp(12px, 1.5vh, 24px) 15px !important;
   }
   .guest-stats {
-    gap: 1vh !important;
-    margin: 1vh auto !important;
+    display: flex;
+    justify-content: center; /* Kutuları yatayda ortalar */
+    align-items: center;
+    gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
+    flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+    width: 100%;
   }
   .guest-stats div {
     padding: clamp(10px, 1.5vh, 24px) 10px !important;
