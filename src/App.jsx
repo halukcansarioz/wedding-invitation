@@ -11,6 +11,7 @@ import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, load
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -34,18 +35,23 @@ function App() {
   const invitation = siteData.invitation;
   const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
 
+  // Sistem Dark Mode Kontrolü
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolvedTheme = prefersDark ? "dark" : activeTheme;
+
   // Dinamik Tema ve Favicon Yönetimi
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = activeTheme;
+    document.documentElement.dataset.theme = resolvedTheme;
+    
     const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
     favicon.rel = "icon"; 
     favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(activeTheme);
+    favicon.href = getFaviconUrl(resolvedTheme);
     if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, activeTheme]);
+  }, [isEn, resolvedTheme]);
 
-  // Sayfa İlk Açılışında Verilerin Yüklenmesi (Sadece 1 Kere Çalışır)
+  // Sayfa İlk Açılışında Verilerin Yüklenmesi
   useEffect(() => {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
@@ -70,18 +76,12 @@ function App() {
     initDatabaseData();
   }, [setSiteData, setAdminDraft, setWishes, setGuests]);
 
-  /* 
-    NOT: Buradaki gereksiz Supabase Realtime (schema-db-changes) aboneliği tamamen SİLİNDİ.
-    Çünkü useDatabaseManager.js dosyası zaten çok daha performanslı bir şekilde (bütün
-    tabloyu baştan indirmeden) eklenen kayıtları Zustand state'ine anlık ekliyor.
-  */
-  
   return (
     <LazyMotion features={domAnimation} strict>
       <div 
         className="app" 
         lang={isEn ? "en" : "tr"} 
-        data-theme={activeTheme}
+        data-theme={resolvedTheme}
         style={{
           "--intro-image": `url(${invitation.introImage})`,
           "--hero-image": `url(${invitation.heroImage})`,
@@ -95,12 +95,25 @@ function App() {
         />
         
         <Routes>
+          {/* 1. Orijinal Rotalar (Standart Kullanım İçin) */}
           <Route path="/" element={
             <ErrorBoundary>
               {isAuthRecovery ? <AdminController /> : <InvitationController />}
             </ErrorBoundary>
           } />
           <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+
+          {/* 2. YENİ: SaaS (Multi-Tenant) Rotaları (Örn: /ahmet-ayse) */}
+          <Route path="/:tenant_slug" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/:tenant_slug/admin/*" element={
             <ErrorBoundary>
               <AdminController />
             </ErrorBoundary>

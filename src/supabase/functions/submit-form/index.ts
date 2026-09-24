@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
 
+// Basit bir küfür/argo filtresi listesi (Genişletebilirsiniz)
+const BAD_WORDS = ["küfür1", "argo2", "kötükelime", "spam"]; 
+
 const TURNSTILE_SECRET_KEY = Deno.env.get('TURNSTILE_SECRET_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -61,6 +64,15 @@ serve(async (req) => {
       if (error) throw error;
       result = guestData;
     } else if (type === 'wish') {
+      
+      // YENİ EKLENEN BÖLÜM: Küfür ve Argo Kontrolü
+      const messageText = (data.message || "").toLowerCase();
+      const containsBadWord = BAD_WORDS.some(word => messageText.includes(word));
+      
+      if (containsBadWord) {
+        throw new Error("Mesajınız topluluk kurallarına aykırı kelimeler içeriyor.");
+      }
+
       if (isOfflineSync) {
         data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
       }

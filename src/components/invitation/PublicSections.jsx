@@ -345,37 +345,80 @@ function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextI
 export function GallerySection({ copy, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
+  const showAppAlert = useStore(state => state.showAppAlert);
+  
   const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
+  // ... (Lightbox metodlarınız aynı kalacak)
   const openLightbox = (index) => setLightboxIndex(index);
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
-  
-  const prevImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
-  }, [gallery.length]);
-  
-  const nextImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
-  }, [gallery.length]);
+  const prevImage = useCallback((e) => { if (e) e.stopPropagation(); setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1)); }, [gallery.length]);
+  const nextImage = useCallback((e) => { if (e) e.stopPropagation(); setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1)); }, [gallery.length]);
 
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowLeft") prevImage();
-      if (e.key === "ArrowRight") nextImage();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, closeLightbox, prevImage, nextImage]);
+  // YENİ: Misafir Fotoğraf Yükleme İşlemi
+  const handleGuestUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Sadece imaj dosyalarına izin ver
+    if (!file.type.startsWith('image/')) {
+      showAppAlert(isEn ? "Please select an image file." : "Lütfen sadece geçerli bir fotoğraf dosyası seçin.", { title: "Hata" });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // 1. Dosyayı optimize edip Supabase Storage'a atar (imageWorker.js burada devreye giriyor!)
+      const url = await uploadMediaFile(file, "guest-uploads");
+      
+      if (url) {
+        // 2. Veritabanına onay bekleyen kayıt olarak düş (tenant_slug entegre edildiyse ekle)
+        const { error } = await supabase.from('guest_photos').insert([{ 
+          image_url: url, 
+          approved: false, // Admin onayına düşer
+          guest_name: "Misafir" 
+        }]);
+
+        if (error) throw error;
+        
+        showAppAlert(
+          isEn ? "Photo uploaded! It will be added to the gallery after approval." : "Fotoğrafınız yüklendi! Çiftin onayından sonra galeride yayınlanacaktır. 📸", 
+          { title: isEn ? "Thank You!" : "Teşekkürler!" }
+        );
+      }
+    } catch (error) {
+      showAppAlert(isEn ? "Upload failed. Please try again." : "Fotoğraf yüklenemedi. İnternet bağlantınızı kontrol edin.", { title: "Hata" });
+    } finally {
+      setIsUploading(false);
+      // Input'u sıfırla ki aynı dosyayı bir daha seçebilsin
+      event.target.value = "";
+    }
+  };
 
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
-      <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
+          <h2 style={{ margin: 0 }}>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
+        </div>
+        
+        {/* YENİ: Misafir Fotoğraf Yükleme Butonu */}
+        <label className={`secondary-button ${isUploading ? 'disabled' : ''}`} style={{ margin: 0, padding: '8px 16px', cursor: isUploading ? 'wait' : 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {isUploading ? (isEn ? "Uploading... ⏳" : "Yükleniyor... ⏳") : (isEn ? "📷 Upload Your POV" : "📷 Sizin Gözünüzden Ekle")}
+          <input 
+            type="file" 
+            accept="image/*" 
+            onChange={handleGuestUpload} 
+            disabled={isUploading}
+            style={{ display: "none" }} 
+            capture="environment" // Mobilde direkt kamerayı açmayı teşvik eder
+          />
+        </label>
+      </div>
+
       <div className="gallery-grid">
         {gallery.map((image, index) => (
           <img 
@@ -383,11 +426,7 @@ export function GallerySection({ copy, invitation }) {
             src={image} 
             alt={`Galeri ${index + 1}`} 
             loading="lazy" 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openLightbox(index);
-            }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); openLightbox(index); }}
             className="gallery-image"
             style={{ cursor: "zoom-in" }}
           />

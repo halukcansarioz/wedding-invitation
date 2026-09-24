@@ -1,3 +1,4 @@
+// src/components/invitation/InteractiveSections.jsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -9,6 +10,11 @@ import { OptionGroup } from "../common/UIComponents";
 import { triggerConfetti } from "../../utils/helpers";
 import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../config/constants";
 import { getRsvpSchema, getWishSchema } from "../../validations/schemas"; 
+
+// YENİ: Durum ve Veri Hook'ları
+import { useStore } from "../../store/useStore";
+import { useGuestsQuery } from "../../hooks/useGuestsQuery";
+import { useWishesQuery } from "../../hooks/useWishesQuery";
 
 function DeadlineBanner({ isEn, title, text }) {
   return (
@@ -70,10 +76,15 @@ function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDec
   );
 }
 
-export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
+export function RsvpSection({ copy, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   
+  // Zustand'dan alert metodunu alıyoruz
+  const showAppAlert = useStore(state => state.showAppAlert);
+  // React Query'den ekleme metodunu alıyoruz (Prop Drilling bitti!)
+  const { addGuest } = useGuestsQuery();
+
   const [showDeclineModal, setShowDeclineModal] = useState(false);
   const [showDeclineGift, setShowDeclineGift] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -111,14 +122,23 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
     if (!turnstileToken && navigator.onLine) return;
 
     const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest({ ...data, turnstileToken });
     
-    if (!isDeclining) triggerConfetti();
-    
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
-    if (isDeclining) setShowDeclineModal(true);
+    try {
+      await addGuest({ ...data, turnstileToken });
+      
+      if (!isDeclining) triggerConfetti();
+      reset();
+      setTurnstileToken("");
+      setFormKey(prev => prev + 1);
+      
+      if (isDeclining) {
+        setShowDeclineModal(true);
+      } else {
+        showAppAlert(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
+      }
+    } catch (error) {
+      showAppAlert(t('alerts.rsvpError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
+    }
   };
 
   const resetAndCloseModal = useCallback(() => {
@@ -189,29 +209,24 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
   );
 }
 
-export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
+export function GuestsListSection({ copy }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
+  
+  // React Query ile veritabanından listeyi çek (Props yok!)
+  const { guests } = useGuestsQuery();
   const guestList = Array.isArray(guests) ? guests : [];
   
   const totalResponses = guestList.length;
-  const attending = totalPersonCount !== undefined ? totalPersonCount : guestList.filter(g => g.attendance === "Katılacağım").length;
-  const notAttending = notAttendingCount !== undefined ? notAttendingCount : guestList.filter(g => g.attendance === "Katılamayacağım").length;
+  const attending = guestList.filter(g => g.attendance === "Katılacağım").length;
+  const notAttending = guestList.filter(g => g.attendance === "Katılamayacağım").length;
 
   return (
     <section className="card">
       <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
       <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
-      {/* İstatistik Kutuları - Eşit Dağılımlı Flexbox ile Ortalandı */}
-      <div className="guest-stats" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: '12px', 
-        flexWrap: 'wrap', 
-        margin: '24px auto 16px', 
-        width: '100%' 
-      }}>
+      <div className="guest-stats" style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', margin: '24px auto 16px', width: '100%' }}>
         <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
           <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{totalResponses}</strong>
           <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.totalResponses')}</span>
@@ -226,19 +241,8 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
         </div>
       </div>
       
-      {/* Gizlilik Notu - İkon ve Metin Ayrılarak Ortalandı */}
       <div className="private-note-card" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-        <p className="private-note-text" style={{ 
-          display: 'flex', 
-          alignItems: 'flex-start', 
-          justifyContent: 'center', 
-          textAlign: 'left', 
-          margin: '0 auto', 
-          color: 'var(--text-muted)', 
-          fontSize: '13.5px', 
-          lineHeight: '1.6', 
-          maxWidth: '90%' 
-        }}>
+        <p className="private-note-text" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', textAlign: 'left', margin: '0 auto', color: 'var(--text-muted)', fontSize: '13.5px', lineHeight: '1.6', maxWidth: '90%' }}>
           <span style={{ marginRight: '8px', fontSize: '15px', marginTop: '1px', flexShrink: 0 }}>🔒</span>
           <span style={{ textAlign: 'center' }}>{t('ui.privateNote')}</span>
         </p>
@@ -247,10 +251,15 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
   );
 }
 
-export function WishesSection({ copy, submitWish, approvedWishes }) {
+export function WishesSection({ copy }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
-  const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
+  
+  const showAppAlert = useStore(state => state.showAppAlert);
+  const settings = useStore(state => state.siteData?.settings);
+  
+  // React Query ile mesajları çek ve ekle (Props bitti!)
+  const { wishes, addWish } = useWishesQuery();
   
   const [turnstileToken, setTurnstileToken] = useState("");
   const [formKey, setFormKey] = useState(0); 
@@ -268,11 +277,20 @@ export function WishesSection({ copy, submitWish, approvedWishes }) {
     if (data.honeypot) return;
     if (!turnstileToken && navigator.onLine) return;
 
-    await submitWish({ ...data, turnstileToken });
-    triggerConfetti();
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
+    const shouldPublishNow = !settings?.requireWishApproval;
+
+    try {
+      await addWish({ ...data, turnstileToken, approved: shouldPublishNow });
+      
+      triggerConfetti();
+      reset();
+      setTurnstileToken("");
+      setFormKey(prev => prev + 1);
+      
+      showAppAlert(shouldPublishNow ? t('alerts.wishSaved') : t('alerts.wishSentApproval'), { title: t('alerts.saveTitle') });
+    } catch (error) {
+      showAppAlert(t('alerts.wishError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
+    }
   };
 
   return (

@@ -1,3 +1,4 @@
+// src/components/admin/tabs/index.js
 export { GuestsAdminPanel } from './GuestsAdminPanel';
 export { WishesAdminPanel } from './WishesAdminPanel';
 export { PersonalLinkPanel } from './PersonalLinkPanel';
@@ -16,3 +17,4 @@ export { DataTab } from './DataTab';
 export { GiftTab } from './GiftTab';
 export { StoryTab } from './StoryTab';
 export { TablePlanTab } from './TablePlanTab';
+export { GuestPhotosTab } from './GuestPhotosTab';

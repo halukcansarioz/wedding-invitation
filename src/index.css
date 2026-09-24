@@ -1715,6 +1715,13 @@ input[type="search"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Framer Motion elemanlarının görünmez kalmasını engellemek için */
+  .hero-section, .card, .story-node, .countdown-section {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

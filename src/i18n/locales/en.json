@@ -138,5 +138,8 @@
     "chooseApp": "Choose Navigation App",
     "copyAddress": "Copy Full Address 📋",
     "addressCopied": "Address Copied! ✅"
-  }
+  },
+  "guestPhotos": "Guest POV Photos",
+  "massMessageSuccess": "Mass messages successfully initiated.",
+  "aiGenerating": "AI assistant is preparing your message..."
 }

@@ -138,5 +138,9 @@
     "chooseApp": "Yol Tarifi Al",
     "copyAddress": "Tam Adresi Kopyala 📋",
     "addressCopied": "Adres Kopyalandı! ✅"
-  }
+  },
+
+  "guestPhotos": "Misafir POV Fotoğrafları",
+  "massMessageSuccess": "Toplu mesajlar başarıyla başlatıldı.",
+  "aiGenerating": "Yapay zeka asistanı mesajınızı hazırlıyor..."
 }

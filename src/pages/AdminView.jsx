@@ -1,3 +1,4 @@
+// src/pages/AdminView.jsx
 import React from "react";
 import AdminDashboard from "../components/AdminDashboard";
 import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
@@ -17,6 +18,8 @@ export default function AdminView(props) {
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
     { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
     { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    // YENİ EKLENEN: Misafir Fotoğrafları Sekmesi
+    { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
     { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
     { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
     { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },

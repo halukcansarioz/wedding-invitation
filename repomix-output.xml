@@ -81,6 +81,7 @@ src/
       FloatingMenu.jsx
       GlobalModals.jsx
       LazyImage.jsx
+      LightboxModal.jsx
       LocalizedDate.jsx
       PwaInstallBanner.jsx
       UIComponents.jsx
@@ -114,6 +115,7 @@ src/
     useAssetPreloader.js
     useAudio.js
     useCountdown.js
+    useCountdown.test.js
     useDatabaseManager.js
     useExportData.js
     usePWAInstall.js
@@ -148,6 +150,8 @@ src/
       verify-submission/
         index.ts
     supabase-setup.sql
+  types/
+    index.ts
   utils/
     exportUtils.js
     helpers.js
@@ -432,6 +436,64 @@ export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isE
 }
 </file>
 
+<file path="src/components/common/LightboxModal.jsx">
+import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import FocusTrap from "focus-trap-react";
+import { LazyImage } from "./LazyImage";
+
+export function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextImage }) {
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") prevImage();
+      if (e.key === "ArrowRight") nextImage();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxIndex, closeLightbox, prevImage, nextImage]);
+
+  if (lightboxIndex === null || typeof document === "undefined") return null;
+
+  return createPortal(
+    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
+      <div onClick={closeLightbox} className="gallery-lightbox-overlay" role="dialog" aria-modal="true" aria-label="Fotoğraf Galerisi">
+        <button type="button" onClick={closeLightbox} className="lightbox-control-btn lightbox-close" title={t('ui.closeEsc')}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        {gallery.length > 1 && (
+          <button type="button" onClick={prevImage} className="lightbox-control-btn lightbox-prev" title={t('ui.prev')}>
+            &#10094;
+          </button>
+        )}
+
+        <div onClick={(e) => e.stopPropagation()} className="gallery-lightbox-content">
+          <LazyImage src={gallery[lightboxIndex]} alt="Büyütülmüş Fotoğraf" className="gallery-lightbox-image" />
+          <span className="gallery-lightbox-caption">
+            {lightboxIndex + 1} / {gallery.length}
+          </span>
+        </div>
+
+        {gallery.length > 1 && (
+          <button type="button" onClick={nextImage} className="lightbox-control-btn lightbox-next" title={t('ui.next')}>
+            &#10095;
+          </button>
+        )}
+      </div>
+    </FocusTrap>,
+    document.body
+  );
+}
+</file>
+
 <file path="src/components/common/LocalizedDate.jsx">
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -658,6 +720,68 @@ export function useCountdown(weddingDate) {
 }
 </file>
 
+<file path="src/hooks/useCountdown.test.js">
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useCountdown } from './useCountdown';
+
+describe('useCountdown Hook', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('hedeflenen tarihe kalan süreyi doğru hesaplamalıdır', () => {
+    // Şimdiki zamanı sabitle
+    const now = new Date('2026-08-01T00:00:00Z').getTime();
+    vi.setSystemTime(now);
+
+    // Hedef: 2 gün, 5 saat, 30 dakika, 15 saniye sonrası
+    const targetDate = new Date(now + (2 * 86400000) + (5 * 3600000) + (30 * 60000) + (15 * 1000)).toISOString();
+
+    const { result } = renderHook(() => useCountdown(targetDate));
+
+    expect(result.current).toEqual({
+      days: 2,
+      hours: 5,
+      minutes: 30,
+      seconds: 15,
+    });
+  });
+
+  it('hedef tarih geçmişse tüm değerleri 0 dönmelidir', () => {
+    const now = new Date('2026-08-01T00:00:00Z').getTime();
+    vi.setSystemTime(now);
+    
+    // Hedef tarih dündü
+    const targetDate = new Date(now - 86400000).toISOString();
+
+    const { result } = renderHook(() => useCountdown(targetDate));
+
+    expect(result.current).toEqual({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  });
+
+  it('zaman ilerledikçe sayacı güncellemelidir', () => {
+    const now = new Date('2026-08-01T00:00:00Z').getTime();
+    vi.setSystemTime(now);
+    const targetDate = new Date(now + 10000).toISOString(); // 10 saniye sonrası
+
+    const { result } = renderHook(() => useCountdown(targetDate));
+    
+    expect(result.current.seconds).toBe(10);
+
+    act(() => {
+      vi.advanceTimersByTime(2000); // 2 saniye ileri sar
+    });
+
+    expect(result.current.seconds).toBe(8);
+  });
+});
+</file>
+
 <file path="src/hooks/useExportData.js">
 import { useCallback } from "react";
 import { createExcelTable, createCsv, downloadTextFile } from "../utils/helpers";
@@ -833,6 +957,63 @@ create policy "Authenticated can update wedding media" on storage.objects for
 update to authenticated using (bucket_id = 'wedding-media') with check (bucket_id = 'wedding-media');
 create policy "Authenticated can delete wedding media" on storage.objects for delete to authenticated using (bucket_id = 'wedding-media');
 -- (Mevcut 'insert into public.invitation_settings' JSON tema içeriğinizi bu bölümün altına olduğu gibi bırakabilirsiniz.)
+</file>
+
+<file path="src/types/index.ts">
+export interface Guest {
+  id: string;
+  name: string;
+  attendance: "Katılacağım" | "Katılamayacağım";
+  phone?: string;
+  personCount: string;
+  side: "Gelin Tarafı" | "Damat Tarafı" | "Ortak";
+  hasChild: "Evet" | "Hayır";
+  songRequest?: string;
+  note?: string;
+  tableNumber?: string;
+  has_arrived: boolean;
+  createdAt?: string;
+}
+
+export interface Wish {
+  id: string;
+  name: string;
+  message: string;
+  approved: boolean;
+  createdAt?: string;
+}
+
+export interface SiteSettings {
+  theme: string;
+  defaultTheme: string;
+  requireWishApproval: boolean;
+  isPostWedding: boolean;
+  visibility: {
+    countdown: boolean;
+    family: boolean;
+    ceremony: boolean;
+    schedule: boolean;
+    location: boolean;
+    gallery: boolean;
+    rsvp: boolean;
+    guests: boolean;
+    wishes: boolean;
+    iban: boolean;
+    popupIban: boolean;
+  };
+}
+
+export interface SiteData {
+  invitation: Record<string, any>;
+  familyInfo: Record<string, any>;
+  giftRegistry: Record<string, any>;
+  copy: Record<string, any>;
+  settings: SiteSettings;
+  messages: Record<string, string>;
+  eventDetails: Array<{ label: string; time: string; location: string; description: string }>;
+  scheduleItems: Array<{ time: string; title: string; description: string }>;
+  storyTimeline: Array<{ date: string; title: string; description: string; image?: string }>;
+}
 </file>
 
 <file path="src/utils/exportUtils.js">
@@ -1612,110 +1793,6 @@ export const FooterSection = memo(function FooterSection({ coupleName, invitatio
     </m.footer>
   );
 });
-</file>
-
-<file path="src/components/invitation/sections/GallerySection.jsx">
-import React, { useState, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { LazyImage } from "../../common/LazyImage";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextImage, isEn }) {
-  const { t } = useTranslation();
-  if (lightboxIndex === null || typeof document === "undefined") return null;
-
-  return createPortal(
-    <div onClick={closeLightbox} className="gallery-lightbox-overlay">
-      <button type="button" onClick={closeLightbox} className="lightbox-control-btn lightbox-close" title={t('ui.closeEsc')}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-
-      {gallery.length > 1 && (
-        <button type="button" onClick={prevImage} className="lightbox-control-btn lightbox-prev" title={t('ui.prev')}>
-          &#10094;
-        </button>
-      )}
-
-      <div onClick={(e) => e.stopPropagation()} className="gallery-lightbox-content">
-        <LazyImage src={gallery[lightboxIndex]} alt="Büyütülmüş Fotoğraf" className="gallery-lightbox-image" />
-        <span className="gallery-lightbox-caption">
-          {lightboxIndex + 1} / {gallery.length}
-        </span>
-      </div>
-
-      {gallery.length > 1 && (
-        <button type="button" onClick={nextImage} className="lightbox-control-btn lightbox-next" title={t('ui.next')}>
-          &#10095;
-        </button>
-      )}
-    </div>,
-    document.body
-  );
-}
-
-export function GallerySection({ copy, invitation }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-
-  const openLightbox = (index) => setLightboxIndex(index);
-  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
-  
-  const prevImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
-  }, [gallery.length]);
-  
-  const nextImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
-  }, [gallery.length]);
-
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowLeft") prevImage();
-      if (e.key === "ArrowRight") nextImage();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, closeLightbox, prevImage, nextImage]);
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
-      <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
-      <div className="gallery-grid">
-        {gallery.map((image, index) => (
-          <LazyImage 
-            key={`gallery-img-${index}`} 
-            src={image} 
-            alt={`Galeri ${index + 1}`} 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openLightbox(index);
-            }}
-            className="gallery-image"
-            style={{ cursor: "zoom-in" }}
-          />
-        ))}
-      </div>
-      <LightboxModal gallery={gallery} lightboxIndex={lightboxIndex} closeLightbox={closeLightbox} prevImage={prevImage} nextImage={nextImage} isEn={isEn} />
-    </m.section>
-  );
-}
 </file>
 
 <file path="src/components/invitation/sections/GuestsListSection.jsx">
@@ -2510,6 +2587,74 @@ export const CountdownSection = memo(function CountdownSection({ copy, timeLeft 
           <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
         </div>
       )}
+    </m.section>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/GallerySection.jsx">
+import React, { useState, useCallback, memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { LazyImage } from "../../common/LazyImage";
+// Yeni ortak bileşeni import ediyoruz
+import { LightboxModal } from "../../common/LightboxModal"; 
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const GallerySection = memo(function GallerySection({ copy, invitation }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
+  
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const openLightbox = (index) => setLightboxIndex(index);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  
+  const prevImage = useCallback((e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
+  }, [gallery.length]);
+  
+  const nextImage = useCallback((e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
+  }, [gallery.length]);
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+      <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
+      <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
+      
+      <div className="gallery-grid">
+        {gallery.map((image, index) => (
+          <LazyImage 
+            key={`gallery-img-${index}`} 
+            src={image} 
+            alt={`Galeri ${index + 1}`} 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openLightbox(index);
+            }}
+            className="gallery-image"
+            style={{ cursor: "zoom-in" }}
+          />
+        ))}
+      </div>
+
+      {/* Tekrar eden uzun portal kodu yerine sadece bu satır */}
+      <LightboxModal 
+        gallery={gallery} 
+        lightboxIndex={lightboxIndex} 
+        closeLightbox={closeLightbox} 
+        prevImage={prevImage} 
+        nextImage={nextImage} 
+      />
     </m.section>
   );
 });
@@ -4942,171 +5087,6 @@ export * from "./admin/ui/AdminMediaFields";
 export * from "./admin/ui/AdminLayout";
 </file>
 
-<file path="src/services/database.js">
-import { supabase } from "../supabaseClient";
-import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
-import { optimizeImage } from "../utils/imageOptimizer"; // EKLENDİ: Görüntü optimizasyon modülü
-
-export const getSupabaseUrl = () => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-export const getSupabaseKey = () => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
-
-export const getSupabaseSetupMessage = () => {
-  const url = getSupabaseUrl();
-  const key = getSupabaseKey();
-  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı. Dosyayı değiştirdikten sonra npm run dev sunucusunu kapatıp yeniden aç.";
-  if (!url.startsWith("https://") || !url.includes(".supabase.co")) return "Supabase URL hatalı görünüyor. Dashboard linki değil, Project Settings > API kısmındaki Project URL kullanılmalı.";
-  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini, internet bağlantını ve Supabase projesinin aktif olduğunu kontrol et.";
-};
-
-export const getReadableAuthError = (error) => {
-  if (!error) return "Bilinmeyen bir hata oluştu.";
-
-  const status = error?.status || error?.code;
-  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
-
-  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğunuz admin e-posta/şifresiyle giriş yapmalısınız.";
-  if (status === 429) return "Çok fazla deneme yapıldı. Güvenlik nedeniyle birkaç dakika bekleyip tekrar deneyin.";
-  if (status === 401 && message.includes("email not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication kısmından hesabınızı doğrulayın.";
-  if (status === 404 || message.includes("not found")) return "Kayıt bulunamadı. Silinmiş veya taşınmış olabilir.";
-  if (error?.name === "AuthApiError" && message.includes("url")) return "Yönlendirme hatası. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisiniz.";
-  
-  if (message.includes("failed to fetch") || message.includes("network") || error?.name === "AuthRetryableFetchError") {
-     return getSupabaseSetupMessage();
-  }
-
-  return error?.message || "İşlem tamamlanamadı. Lütfen internet bağlantınızı ve Supabase ayarlarını kontrol edin.";
-};
-
-export const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());
-
-export const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const result = await fetchFn();
-      return result;
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); 
-    }
-  }
-};
-
-export const loadSettingsFromDatabase = async () => {
-  if (!isSupabaseReady()) return null;
-  return fetchWithRetry(async () => {
-    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
-    if (error) throw error;
-    return normalizeSiteData(data?.content || null);
-  });
-};
-
-export const saveSettingsToDatabase = async (settings) => {
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. .env.local dosyasını kontrol et.");
-  const { error } = await supabase.from("invitation_settings").upsert({ id: "main", content: settings, updated_at: new Date().toISOString() }, { onConflict: "id" });
-  if (error) throw error;
-};
-
-export const loadPublishedWishesFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
-  if (error) { console.error("Yayındaki anı defteri mesajları alınamadı:", error); return []; }
-  return (data || []).map(dbWishToUi);
-};
-
-export const loadGuestsFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
-  if (error) { console.error("Katılım kayıtları alınamadı:", error); return []; }
-  return (data || []).map(dbGuestToUi);
-};
-
-export const loadAllWishesFromDatabase = async () => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
-  if (error) { console.error("Anı defteri mesajları alınamadı:", error); return []; }
-  return (data || []).map(dbWishToUi);
-};
-
-export const uploadMediaFile = async (rawFile, folder = "media") => {
-  if (!rawFile) return null;
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
-  
-  // EKLENDİ: Görüntü (Fotoğraf) yüklendiğinde otomatik optimize et
-  let fileToUpload = rawFile;
-  if (folder === "images" || rawFile.type.startsWith("image/")) {
-    try {
-      fileToUpload = await optimizeImage(rawFile);
-    } catch (e) {
-      console.warn("Görsel optimize edilemedi, orijinal dosya yükleniyor.", e);
-    }
-  }
-
-  const fileExt = fileToUpload.name.split(".").pop() || "file";
-  
-  // DÜZELTİLDİ: \vert{} hatası temizlendi, geçerli bir regex kullanıldı
-  const safeName = fileToUpload.name
-    .replace(/\.[^/.]+$/, "")
-    .toLocaleLowerCase("tr-TR")
-    .replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-")
-    .replace(/^-+|-+$/g, ""); 
-    
-  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
-  
-  const { error } = await supabase.storage
-    .from("wedding-media")
-    .upload(fileName, fileToUpload, { 
-      cacheControl: "3600", 
-      upsert: true, 
-      contentType: fileToUpload.type || undefined 
-    });
-    
-  if (error) {
-    const message = String(error.message || "").toLocaleLowerCase("tr-TR");
-    if (message.includes("bucket") || message.includes("not found")) throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");
-    if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) throw new Error("Görsel/müzik yüklenemedi. wedding-media Storage bucket için authenticated policy eksik.");
-    throw error;
-  }
-  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
-  return data.publicUrl;
-};
-
-export const deleteMediaFile = async (fileUrl) => {
-  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
-  try {
-    const urlObj = new URL(fileUrl);
-    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
-    if (pathSegments.length < 2) return;
-    const filePath = decodeURIComponent(pathSegments[1]);
-
-    if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
-
-    await supabase.storage.from("wedding-media").remove([filePath]);
-  } catch (error) {
-    console.error("Dosya silinirken hata:", error);
-  }
-};
-
-export const restoreBackupToDatabase = async (parsedData) => {
-  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
-  
-  if (parsedData.siteData) {
-     await saveSettingsToDatabase(parsedData.siteData);
-  }
-  
-  if (parsedData.guests && parsedData.guests.length > 0) {
-     await supabase.from("guests").delete().not("id", "is", null);
-     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }) => rest);
-     await supabase.from("guests").insert(guestsToInsert);
-  }
-  
-  if (parsedData.wishes && parsedData.wishes.length > 0) {
-     await supabase.from("wishes").delete().not("id", "is", null);
-     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }) => rest);
-     await supabase.from("wishes").insert(wishesToInsert);
-  }
-};
-</file>
-
 <file path="src/styles/modals.css">
 .global-modal-input,
 .global-modal-text,
@@ -5813,6 +5793,197 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     </section>
   );
 });
+</file>
+
+<file path="src/services/database.js">
+import { supabase } from "../supabaseClient";
+import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+import { optimizeImage } from "../utils/imageOptimizer"; // EKLENDİ: Görüntü optimizasyon modülü
+
+export const getSupabaseUrl = () => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+export const getSupabaseKey = () => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
+
+export const getSupabaseSetupMessage = () => {
+  const url = getSupabaseUrl();
+  const key = getSupabaseKey();
+  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı. Dosyayı değiştirdikten sonra npm run dev sunucusunu kapatıp yeniden aç.";
+  if (!url.startsWith("https://") || !url.includes(".supabase.co")) return "Supabase URL hatalı görünüyor. Dashboard linki değil, Project Settings > API kısmındaki Project URL kullanılmalı.";
+  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini, internet bağlantını ve Supabase projesinin aktif olduğunu kontrol et.";
+};
+
+export const getReadableAuthError = (error) => {
+  if (!error) return "Bilinmeyen bir hata oluştu.";
+
+  const status = error?.status || error?.code;
+  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
+
+  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı. Supabase Authentication > Users bölümünde oluşturduğunuz admin e-posta/şifresiyle giriş yapmalısınız.";
+  if (status === 429) return "Çok fazla deneme yapıldı. Güvenlik nedeniyle birkaç dakika bekleyip tekrar deneyin.";
+  if (status === 401 && message.includes("email not confirmed")) return "Bu e-posta henüz doğrulanmamış. Supabase Authentication kısmından hesabınızı doğrulayın.";
+  if (status === 404 || message.includes("not found")) return "Kayıt bulunamadı. Silinmiş veya taşınmış olabilir.";
+  if (error?.name === "AuthApiError" && message.includes("url")) return "Yönlendirme hatası. Supabase > Authentication > URL Configuration bölümüne localhost ve canlı site adresini eklemelisiniz.";
+  
+  if (message.includes("failed to fetch") || message.includes("network") || error?.name === "AuthRetryableFetchError") {
+     return getSupabaseSetupMessage();
+  }
+
+  return error?.message || "İşlem tamamlanamadı. Lütfen internet bağlantınızı ve Supabase ayarlarını kontrol edin.";
+};
+
+export const isSupabaseReady = () => Boolean(getSupabaseUrl() && getSupabaseKey());
+
+export const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const result = await fetchFn();
+      return result;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); 
+    }
+  }
+};
+
+export const loadSettingsFromDatabase = async () => {
+  if (!isSupabaseReady()) return null;
+  return fetchWithRetry(async () => {
+    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
+    if (error) throw error;
+    return normalizeSiteData(data?.content || null);
+  });
+};
+
+export const saveSettingsToDatabase = async (settings) => {
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. .env.local dosyasını kontrol et.");
+  const { error } = await supabase.from("invitation_settings").upsert({ id: "main", content: settings, updated_at: new Date().toISOString() }, { onConflict: "id" });
+  if (error) throw error;
+};
+
+export const loadPublishedWishesFromDatabase = async () => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("Yayındaki anı defteri mesajları alınamadı:", error); return []; }
+  return (data || []).map(dbWishToUi);
+};
+
+export const loadGuestsFromDatabase = async () => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("Katılım kayıtları alınamadı:", error); return []; }
+  return (data || []).map(dbGuestToUi);
+};
+
+export const loadAllWishesFromDatabase = async () => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) { console.error("Anı defteri mesajları alınamadı:", error); return []; }
+  return (data || []).map(dbWishToUi);
+};
+
+export const uploadMediaFile = async (rawFile, folder = "media") => {
+  if (!rawFile) return null;
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
+  
+  // EKLENDİ: Görüntü (Fotoğraf) yüklendiğinde otomatik optimize et
+  let fileToUpload = rawFile;
+  if (folder === "images" || rawFile.type.startsWith("image/")) {
+    try {
+      fileToUpload = await optimizeImage(rawFile);
+    } catch (e) {
+      console.warn("Görsel optimize edilemedi, orijinal dosya yükleniyor.", e);
+    }
+  }
+
+  const fileExt = fileToUpload.name.split(".").pop() || "file";
+  
+  // DÜZELTİLDİ: \vert{} hatası temizlendi, geçerli bir regex kullanıldı
+  const safeName = fileToUpload.name
+    .replace(/\.[^/.]+$/, "")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-")
+    .replace(/^-+|-+$/g, ""); 
+    
+  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
+  
+  const { error } = await supabase.storage
+    .from("wedding-media")
+    .upload(fileName, fileToUpload, { 
+      cacheControl: "3600", 
+      upsert: true, 
+      contentType: fileToUpload.type || undefined 
+    });
+    
+  if (error) {
+    const message = String(error.message || "").toLocaleLowerCase("tr-TR");
+    if (message.includes("bucket") || message.includes("not found")) throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");
+    if (message.includes("row-level security") || message.includes("policy") || message.includes("permission")) throw new Error("Görsel/müzik yüklenemedi. wedding-media Storage bucket için authenticated policy eksik.");
+    throw error;
+  }
+  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
+  return data.publicUrl;
+};
+
+export const deleteMediaFile = async (fileUrl) => {
+  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
+  try {
+    const urlObj = new URL(fileUrl);
+    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
+    if (pathSegments.length < 2) return;
+    const filePath = decodeURIComponent(pathSegments[1]);
+
+    if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
+
+    const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+    if (error) throw error;
+  } catch (error) {
+    console.error("Dosya silinirken hata oluştu, kuyruğa ekleniyor:", error);
+    // Başarısız silme işlemlerini kuyruğa al
+    const failedDeletes = JSON.parse(localStorage.getItem('failed_deletes') || '[]');
+    if (!failedDeletes.includes(fileUrl)) {
+      failedDeletes.push(fileUrl);
+      localStorage.setItem('failed_deletes', JSON.stringify(failedDeletes));
+    }
+  }
+};
+
+export const retryFailedDeletes = async () => {
+  if (!navigator.onLine || !isSupabaseReady()) return;
+  const failedDeletes = JSON.parse(localStorage.getItem('failed_deletes') || '[]');
+  if (failedDeletes.length === 0) return;
+
+  const remaining = [];
+  for (const fileUrl of failedDeletes) {
+    try {
+      const urlObj = new URL(fileUrl);
+      const filePath = decodeURIComponent(urlObj.pathname.split('/object/public/wedding-media/')[1]);
+      const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+      if (error) remaining.push(fileUrl);
+    } catch {
+      remaining.push(fileUrl);
+    }
+  }
+  localStorage.setItem('failed_deletes', JSON.stringify(remaining));
+};
+
+export const restoreBackupToDatabase = async (parsedData) => {
+  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
+  
+  if (parsedData.siteData) {
+     await saveSettingsToDatabase(parsedData.siteData);
+  }
+  
+  if (parsedData.guests && parsedData.guests.length > 0) {
+     await supabase.from("guests").delete().not("id", "is", null);
+     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }) => rest);
+     await supabase.from("guests").insert(guestsToInsert);
+  }
+  
+  if (parsedData.wishes && parsedData.wishes.length > 0) {
+     await supabase.from("wishes").delete().not("id", "is", null);
+     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }) => rest);
+     await supabase.from("wishes").insert(wishesToInsert);
+  }
+};
 </file>
 
 <file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
@@ -7139,6 +7310,123 @@ export default function AdminController() {
 }
 </file>
 
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { LazyMotion, domAnimation } from "framer-motion";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  // Dinamik Tema ve Favicon Yönetimi
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = activeTheme;
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(activeTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, activeTheme]);
+
+  // Sayfa İlk Açılışında Verilerin Yüklenmesi (Sadece 1 Kere Çalışır)
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  /* 
+    NOT: Buradaki gereksiz Supabase Realtime (schema-db-changes) aboneliği tamamen SİLİNDİ.
+    Çünkü useDatabaseManager.js dosyası zaten çok daha performanslı bir şekilde (bütün
+    tabloyu baştan indirmeden) eklenen kayıtları Zustand state'ine anlık ekliyor.
+  */
+  
+  return (
+    <LazyMotion features={domAnimation} strict>
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={activeTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals
+          customAlert={customAlert} setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
+</file>
+
 <file path="src/components/invitation/InteractiveSections.jsx">
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
@@ -7599,123 +7887,6 @@ export default function InvitationController() {
     </div>
   );
 }
-</file>
-
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { LazyMotion, domAnimation } from "framer-motion";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  // Dinamik Tema ve Favicon Yönetimi
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = activeTheme;
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(activeTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, activeTheme]);
-
-  // Sayfa İlk Açılışında Verilerin Yüklenmesi (Sadece 1 Kere Çalışır)
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  /* 
-    NOT: Buradaki gereksiz Supabase Realtime (schema-db-changes) aboneliği tamamen SİLİNDİ.
-    Çünkü useDatabaseManager.js dosyası zaten çok daha performanslı bir şekilde (bütün
-    tabloyu baştan indirmeden) eklenen kayıtları Zustand state'ine anlık ekliyor.
-  */
-  
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={activeTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals
-          customAlert={customAlert} setCustomAlert={setCustomAlert}
-          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-        />
-        
-        <Routes>
-          <Route path="/" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
 </file>
 
 <file path="src/hooks/useDatabaseManager.js">
