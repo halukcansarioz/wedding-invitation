@@ -27,23 +27,29 @@ serve(async (req) => {
     }
 
     let isOfflineSync = false;
-    if (!isAdmin) {
-      if (turnstileToken === "OFFLINE_TOKEN") {
-        isOfflineSync = true;
-      } else if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
-        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
-      } else {
-        const formData = new URLSearchParams();
-        formData.append('secret', TURNSTILE_SECRET_KEY!);
-        formData.append('response', turnstileToken);
-
-        const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-          method: 'POST',
-          body: formData,
-        });
-        const turnstileData = await turnstileRes.json();
-        if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
+    
+    // GÜVENLİK GÜNCELLEMESİ: OFFLINE_TOKEN sadece admin tarafından kullanılabilir
+    if (turnstileToken === "OFFLINE_TOKEN") {
+      if (!isAdmin) {
+        throw new Error("Güvenlik İhlali: Çevrimdışı senkronizasyon sadece yetkili oturumlar (admin) tarafından yapılabilir.");
       }
+      isOfflineSync = true;
+    } else if (!isAdmin) {
+      // Normal ziyaretçiler için Turnstile zorunluluğu
+      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
+        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
+      }
+      
+      const formData = new URLSearchParams();
+      formData.append('secret', TURNSTILE_SECRET_KEY!);
+      formData.append('response', turnstileToken);
+
+      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: formData,
+      });
+      const turnstileData = await turnstileRes.json();
+      if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
     }
 
     let result;

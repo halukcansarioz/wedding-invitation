@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async"; // EKLENDİ: Meta etiketleri için
 import { useAudio } from "../hooks/useAudio";
 import { useScrollNavigation } from "../hooks/useScrollNavigation";
 import IntroPage from "../components/invitation/IntroPage";
@@ -31,7 +32,6 @@ export default function InvitationController() {
 
   const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
   
-  // DÜZELTME: currentSlideIndex eklendi
   const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
 
   useEffect(() => {
@@ -54,9 +54,39 @@ export default function InvitationController() {
     setTimeout(() => setOpened(true), 4000);
   };
 
+  // EKLENDİ: Dinamik SEO ve Meta Etiket Bilgileri
+  const pageTitle = isEn ? `${coupleName} | Wedding Invitation` : `${coupleName} | Düğün Davetiyesi`;
+  const pageDescription = invitation.message || (isEn ? "You are invited to our wedding." : "Düğün davetiyemize davetlisiniz.");
+  // Eğer video varsa ve görsel yoksa intro imajını yedek (fallback) olarak kullan
+  const ogImage = invitation.heroImage || invitation.introImage;
+
+  // Ortak render fonksiyonu (Kod tekrarını önlemek için)
+  const renderSEO = () => (
+    <Helmet>
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
+      
+      {/* Open Graph / Facebook / WhatsApp */}
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={currentShareLink} />
+      <meta property="og:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
+      <meta property="og:description" content={pageDescription} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:site_name" content={coupleName} />
+      
+      {/* Twitter */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={currentShareLink} />
+      <meta name="twitter:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
+      <meta name="twitter:description" content={pageDescription} />
+      <meta name="twitter:image" content={ogImage} />
+    </Helmet>
+  );
+
   if (!opened) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
+        {renderSEO()}
         <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
         <IntroPage 
           isOpening={isOpening} 
@@ -84,6 +114,7 @@ export default function InvitationController() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
+      {renderSEO()}
       <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
       <PwaInstallBanner />
       <FloatingMenu 

@@ -104,6 +104,10 @@ export function useAdminSession({ isAdminPage, isEn }) {
       adminStore.clearAdminAuth();
       mainStore.setActiveAdminTab("general");
       adminStore.setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
+      
+      // EKLENDİ: Güvenlik ihlali olmaması için hafızadaki misafirleri sil
+      mainStore.setGuests([]);
+      mainStore.setWishes(mainStore.wishes.filter(w => w.approved));
     };
 
     markActivity();
@@ -117,7 +121,6 @@ export function useAdminSession({ isAdminPage, isEn }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdminPage, adminStore.isAdminUnlocked, isEn]);
 
-  // Eylemler (Zustand getState ile state anlık olarak çekilir ve prop drilling ihtiyacı kalmaz)
   const submitAdminPassword = async (e) => {
     e.preventDefault();
     const { setAdminError, setAdminLoginNotice, setAdminAuthLoading, setAdminUser, setIsAdminUnlocked, setIsPasswordRecovery, setShowForgotPassword, setForgotPasswordMessage, setAdminPassword, adminEmail, adminPassword } = useAdminStore.getState();
@@ -258,7 +261,7 @@ export function useAdminSession({ isAdminPage, isEn }) {
   };
 
   const logoutAdmin = async () => {
-    const { showAppConfirm, setActiveAdminTab } = useStore.getState();
+    const { showAppConfirm, setActiveAdminTab, setGuests, setWishes, wishes } = useStore.getState();
     const { clearAdminAuth, setAdminLoginNotice, setAdminSaveMessage } = useAdminStore.getState();
 
     const confirmed = await showAppConfirm(
@@ -276,6 +279,11 @@ export function useAdminSession({ isAdminPage, isEn }) {
     clearAdminSessionTimestamp();
     clearAdminAuth();
     setActiveAdminTab("general");
+    
+    // EKLENDİ: Çıkış yapınca hafızadaki gizli verileri (guests ve onaysız mesajları) temizle (GDPR Data Leak Önlemi)
+    setGuests([]); 
+    setWishes(wishes.filter(w => w.approved)); 
+
     setAdminLoginNotice(isEn ? "Logged out. Please log in again to access the admin panel." : "Çıkış yapıldı. Admin paneline girmek için tekrar giriş yapmalısın.");
   };
 

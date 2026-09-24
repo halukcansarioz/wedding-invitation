@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient";
 import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+import { optimizeImage } from "../utils/imageOptimizer"; // EKLENDİ: Görüntü optimizasyon modülü
 
 export const getSupabaseUrl = () => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 export const getSupabaseKey = () => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
@@ -81,13 +82,39 @@ export const loadAllWishesFromDatabase = async () => {
   return (data || []).map(dbWishToUi);
 };
 
-export const uploadMediaFile = async (file, folder = "media") => {
-  if (!file) return null;
+export const uploadMediaFile = async (rawFile, folder = "media") => {
+  if (!rawFile) return null;
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik. Dosya yüklemek için .env.local dosyasını kontrol et.");
-  const fileExt = file.name.split(".").pop() || "file";
-  const safeName = file.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+\vert{}-+$/g, "");
+  
+  // EKLENDİ: Görüntü (Fotoğraf) yüklendiğinde otomatik optimize et
+  let fileToUpload = rawFile;
+  if (folder === "images" || rawFile.type.startsWith("image/")) {
+    try {
+      fileToUpload = await optimizeImage(rawFile);
+    } catch (e) {
+      console.warn("Görsel optimize edilemedi, orijinal dosya yükleniyor.", e);
+    }
+  }
+
+  const fileExt = fileToUpload.name.split(".").pop() || "file";
+  
+  // DÜZELTİLDİ: \vert{} hatası temizlendi, geçerli bir regex kullanıldı
+  const safeName = fileToUpload.name
+    .replace(/\.[^/.]+$/, "")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-")
+    .replace(/^-+|-+$/g, ""); 
+    
   const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
-  const { error } = await supabase.storage.from("wedding-media").upload(fileName, file, { cacheControl: "3600", upsert: true, contentType: file.type || undefined });
+  
+  const { error } = await supabase.storage
+    .from("wedding-media")
+    .upload(fileName, fileToUpload, { 
+      cacheControl: "3600", 
+      upsert: true, 
+      contentType: fileToUpload.type || undefined 
+    });
+    
   if (error) {
     const message = String(error.message || "").toLocaleLowerCase("tr-TR");
     if (message.includes("bucket") || message.includes("not found")) throw new Error("Görsel/müzik yüklenemedi. Supabase Storage içinde wedding-media adlı public bucket oluşturmalısın.");

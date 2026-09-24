@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Virtuoso } from "react-virtuoso";
-import jsPDF from "jspdf";
+// jsPDF importu kaldırıldı (lazy loading yapılacak)
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
@@ -27,7 +27,10 @@ export function WishesAdminPanel({
   const adminDraft = useStore((state) => state.adminDraft);
   const updateDraftObject = useStore((state) => state.updateDraftObject);
 
-  const exportWishesPDF = () => {
+  const exportWishesPDF = async () => {
+    // Kütüphane sadece butona tıklandığında indirilir (Code Splitting)
+    const { default: jsPDF } = await import("jspdf");
+    
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);

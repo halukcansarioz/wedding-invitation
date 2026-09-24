@@ -75,7 +75,7 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
 
   const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", songRequest: "", note: "", honeypot: "" }
+    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
   });
 
   const currentNote = watch("note") || "";
@@ -90,7 +90,8 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
       setUrlGuestName(guestName);
       setValue("name", guestName);
     }
-    if (countParam) setValue("personCount", countParam); 
+    // Eğer akıllı link ile kişi sayısı geldiyse note kısmına yazdır
+    if (countParam) setValue("note", `${countParam} Kişi`); 
   }, [setValue]);
 
   const todayStr = new Date().toLocaleDateString('en-CA'); 
@@ -124,9 +125,7 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     }
   }, [giftData?.iban]);
 
-  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
-    ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
-  })), [isEn, t]);
+  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label })), [isEn, t]);
 
   return (
     <section className="card rsvp-card">
@@ -138,7 +137,7 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
         <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <input type="text" {...control.register("honeypot")} style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
           {urlGuestName && (
             <div className="guest-badge-banner">
@@ -154,7 +153,7 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
 
           <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
 
-          <div className="field-with-counter">
+          <div className="field-with-counter" style={{ marginTop: '12px' }}>
             <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>

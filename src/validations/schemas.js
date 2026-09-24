@@ -3,7 +3,11 @@ import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH } from "../config/constants";
 
 export const getRsvpSchema = (t) => z.object({
   name: z.string().min(3, { message: t('form.missingNameMessage') }),
+  phone: z.string().optional(),
   attendance: z.string(),
+  personCount: z.string().optional(),
+  side: z.string().optional(),
+  hasChild: z.string().optional(),
   songRequest: z.string().max(100).optional(),
   note: z.string().max(NOTE_MAX_LENGTH).optional(),
   honeypot: z.string().optional()

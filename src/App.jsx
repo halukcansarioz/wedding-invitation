@@ -10,9 +10,6 @@ import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
-import { supabase } from "./supabaseClient"; 
-
-// YENİ EKLENEN İMPORT
 import { LazyMotion, domAnimation } from "framer-motion";
 
 function App() {
@@ -25,6 +22,7 @@ function App() {
   const setCustomConfirm = useStore((state) => state.setCustomConfirm);
   const customPrompt = useStore((state) => state.customPrompt);
   const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  
   const siteData = useStore((state) => state.siteData);
   const setSiteData = useStore((state) => state.setSiteData);
   const setWishes = useStore((state) => state.setWishes);
@@ -36,6 +34,7 @@ function App() {
   const invitation = siteData.invitation;
   const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
 
+  // Dinamik Tema ve Favicon Yönetimi
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
     document.documentElement.dataset.theme = activeTheme;
@@ -46,6 +45,7 @@ function App() {
     if (!favicon.parentNode) document.head.appendChild(favicon);
   }, [isEn, activeTheme]);
 
+  // Sayfa İlk Açılışında Verilerin Yüklenmesi (Sadece 1 Kere Çalışır)
   useEffect(() => {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
@@ -70,49 +70,11 @@ function App() {
     initDatabaseData();
   }, [setSiteData, setAdminDraft, setWishes, setGuests]);
 
-  // --- SUPABASE REALTIME (CANLI DASHBOARD) ---
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    // Veritabanındaki değişiklikleri dinleyecek kanalı oluştur
-    const realtimeChannel = supabase
-      .channel('schema-db-changes')
-      // 1. Davetliler (guests) tablosundaki tüm değişiklikleri (INSERT, UPDATE, DELETE) dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'guests' },
-        async (payload) => {
-          console.log("LCV Güncellemesi:", payload);
-          // Değişiklik olunca güncel listeyi tekrar çek ve state'e yaz
-          const updatedGuests = await loadGuestsFromDatabase();
-          setGuests(updatedGuests || []);
-          
-          // Eğer yeni bir kayıt eklendiyse admin'e bildirim göster
-          if (payload.eventType === 'INSERT') {
-            setCustomAlert({ 
-              title: "Yeni LCV Geldi!", 
-              message: "Biri az önce katılım durumunu bildirdi." 
-            });
-          }
-        }
-      )
-      // 2. Dilekler/Mesajlar (wishes) tablosundaki değişiklikleri dinle
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'wishes' },
-        async (payload) => {
-          console.log("Mesaj Güncellemesi:", payload);
-          const updatedWishes = await loadPublishedWishesFromDatabase();
-          setWishes(updatedWishes || []);
-        }
-      )
-      .subscribe();
-
-    // Bileşen ekrandan kalkarsa dinlemeyi durdur
-    return () => {
-      supabase.removeChannel(realtimeChannel);
-    };
-  }, [setGuests, setWishes, setCustomAlert]);
+  /* 
+    NOT: Buradaki gereksiz Supabase Realtime (schema-db-changes) aboneliği tamamen SİLİNDİ.
+    Çünkü useDatabaseManager.js dosyası zaten çok daha performanslı bir şekilde (bütün
+    tabloyu baştan indirmeden) eklenen kayıtları Zustand state'ine anlık ekliyor.
+  */
   
   return (
     <LazyMotion features={domAnimation} strict>

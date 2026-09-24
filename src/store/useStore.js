@@ -4,8 +4,6 @@ import toast from 'react-hot-toast';
 import { saveSettingsToDatabase } from '../services/database';
 import { useAdminStore } from './useAdminStore';
 
-// --- 1. UI (ARAYÜZ) MODÜLÜ ---
-// Modallar, uyarılar ve ekran açılış durumlarını yönetir.
 const createUISlice = (set) => ({
   opened: false,
   setOpened: (opened) => set({ opened }),
@@ -34,8 +32,6 @@ const createUISlice = (set) => ({
   }),
 });
 
-// --- 2. DATA (VERİ) MODÜLÜ ---
-// Misafir listesi, anı defteri ve canlı sitenin içerik verilerini yönetir.
 const createDataSlice = (set) => ({
   siteData: loadStoredSiteData(),
   setSiteData: (data) => set({ siteData: data }),
@@ -45,8 +41,6 @@ const createDataSlice = (set) => ({
   setWishes: (wishes) => set({ wishes }),
 });
 
-// --- 3. ADMIN DRAFT (TASLAK) MODÜLÜ ---
-// Yönetici panelindeki henüz kaydedilmemiş değişiklikleri ve sekmeleri yönetir.
 const createAdminDraftSlice = (set, get) => ({
   adminDraft: loadStoredSiteData(),
   setAdminDraft: (draftOrUpdater) => set((state) => ({
@@ -69,24 +63,27 @@ const createAdminDraftSlice = (set, get) => ({
     }
   })),
 
+  // GÜNCELLENDİ: Tanımsız dizi durumunda çökmeyi önleyen Fallback (|| [])
   updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => ({
     adminDraft: {
       ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].map((item, i) => i === index ? { ...item, [key]: value } : item)
+      [arrayKey]: (state.adminDraft[arrayKey] || []).map((item, i) => i === index ? { ...item, [key]: value } : item)
     }
   })),
 
+  // GÜNCELLENDİ: Tanımsız dizi durumunda çökmeyi önleyen Fallback (|| [])
   addDraftArrayItem: (arrayKey, item) => set((state) => ({
     adminDraft: {
       ...state.adminDraft,
-      [arrayKey]: [...state.adminDraft[arrayKey], item]
+      [arrayKey]: [...(state.adminDraft[arrayKey] || []), item]
     }
   })),
 
+  // GÜNCELLENDİ: Tanımsız dizi durumunda çökmeyi önleyen Fallback (|| [])
   removeDraftArrayItem: (arrayKey, index) => set((state) => ({
     adminDraft: {
       ...state.adminDraft,
-      [arrayKey]: state.adminDraft[arrayKey].filter((_, i) => i !== index)
+      [arrayKey]: (state.adminDraft[arrayKey] || []).filter((_, i) => i !== index)
     }
   })),
 
@@ -111,7 +108,7 @@ const createAdminDraftSlice = (set, get) => ({
       ...adminDraft, 
       invitation: { 
         ...adminDraft.invitation, 
-        gallery: adminDraft.invitation.gallery.map((img) => String(img || "").trim()).filter(Boolean) 
+        gallery: (adminDraft.invitation.gallery || []).map((img) => String(img || "").trim()).filter(Boolean) 
       } 
     });
     try {
@@ -127,8 +124,6 @@ const createAdminDraftSlice = (set, get) => ({
   }
 });
 
-// === ANA STORE BİRLEŞTİRME ===
-// Bu yapı sayesinde projedeki diğer hiçbir dosyadaki importları değiştirmenize gerek kalmaz!
 export const useStore = create((...a) => ({
   ...createUISlice(...a),
   ...createDataSlice(...a),

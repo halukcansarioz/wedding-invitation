@@ -85,7 +85,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
   const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", songRequest: "", note: "", honeypot: "" }
+    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
   });
 
   const currentNote = watch("note") || "";
@@ -100,7 +100,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
       setUrlGuestName(guestName);
       setValue("name", guestName);
     }
-    if (countParam) setValue("personCount", countParam); 
+    if (countParam) setValue("note", `${countParam} Kişi`); 
   }, [setValue]);
 
   const todayStr = new Date().toLocaleDateString('en-CA'); 
@@ -164,7 +164,7 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
 
           <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
 
-          <div className="field-with-counter">
+          <div className="field-with-counter" style={{ marginTop: '12px' }}>
             <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
             <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
           </div>
@@ -179,7 +179,6 @@ export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, s
         </form>
       )}
 
-      {/* Butonun uzamasını önleyen CSS eklemesi */}
       <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
         <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
           {t('form.whatsappRsvp')}
@@ -204,14 +203,45 @@ export function GuestsListSection({ copy, guests, totalPersonCount, notAttending
       <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
       <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
       
-      <div className="guest-stats">
-        <div><strong>{totalResponses}</strong><span>{t('ui.totalResponses')}</span></div>
-        <div><strong>{attending}</strong><span>{t('ui.attending')}</span></div>
-        <div><strong>{notAttending}</strong><span>{t('ui.notAttending')}</span></div>
+      {/* İstatistik Kutuları - Eşit Dağılımlı Flexbox ile Ortalandı */}
+      <div className="guest-stats" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        gap: '12px', 
+        flexWrap: 'wrap', 
+        margin: '24px auto 16px', 
+        width: '100%' 
+      }}>
+        <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
+          <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{totalResponses}</strong>
+          <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.totalResponses')}</span>
+        </div>
+        <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
+          <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{attending}</strong>
+          <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.attending')}</span>
+        </div>
+        <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
+          <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{notAttending}</strong>
+          <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.notAttending')}</span>
+        </div>
       </div>
       
-      <div className="private-note-card">
-        <p className="private-note-text">🔒 {t('ui.privateNote')}</p>
+      {/* Gizlilik Notu - İkon ve Metin Ayrılarak Ortalandı */}
+      <div className="private-note-card" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+        <p className="private-note-text" style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          justifyContent: 'center', 
+          textAlign: 'left', 
+          margin: '0 auto', 
+          color: 'var(--text-muted)', 
+          fontSize: '13.5px', 
+          lineHeight: '1.6', 
+          maxWidth: '90%' 
+        }}>
+          <span style={{ marginRight: '8px', fontSize: '15px', marginTop: '1px', flexShrink: 0 }}>🔒</span>
+          <span style={{ textAlign: 'center' }}>{t('ui.privateNote')}</span>
+        </p>
       </div>
     </section>
   );
