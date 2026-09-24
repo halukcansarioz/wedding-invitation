@@ -135,10 +135,36 @@ export const deleteMediaFile = async (fileUrl) => {
 
     if (filePath.startsWith("media/Rose") || filePath.startsWith("media/Sage") || filePath.startsWith("media/Gold") || filePath.startsWith("media/Burgundy") || filePath.startsWith("media/Lavanta") || filePath.startsWith("media/Minimal") || filePath.startsWith("media/Dark")) return;
 
-    await supabase.storage.from("wedding-media").remove([filePath]);
+    const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+    if (error) throw error;
   } catch (error) {
-    console.error("Dosya silinirken hata:", error);
+    console.error("Dosya silinirken hata oluştu, kuyruğa ekleniyor:", error);
+    // Başarısız silme işlemlerini kuyruğa al
+    const failedDeletes = JSON.parse(localStorage.getItem('failed_deletes') || '[]');
+    if (!failedDeletes.includes(fileUrl)) {
+      failedDeletes.push(fileUrl);
+      localStorage.setItem('failed_deletes', JSON.stringify(failedDeletes));
+    }
   }
+};
+
+export const retryFailedDeletes = async () => {
+  if (!navigator.onLine || !isSupabaseReady()) return;
+  const failedDeletes = JSON.parse(localStorage.getItem('failed_deletes') || '[]');
+  if (failedDeletes.length === 0) return;
+
+  const remaining = [];
+  for (const fileUrl of failedDeletes) {
+    try {
+      const urlObj = new URL(fileUrl);
+      const filePath = decodeURIComponent(urlObj.pathname.split('/object/public/wedding-media/')[1]);
+      const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+      if (error) remaining.push(fileUrl);
+    } catch {
+      remaining.push(fileUrl);
+    }
+  }
+  localStorage.setItem('failed_deletes', JSON.stringify(remaining));
 };
 
 export const restoreBackupToDatabase = async (parsedData) => {
