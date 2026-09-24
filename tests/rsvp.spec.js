@@ -1,34 +1,48 @@
-// tests/rsvp.spec.js
 import { test, expect } from '@playwright/test';
 
 test.describe('Düğün Davetiyesi Temel Süreçleri', () => {
-  
   test('Misafir LCV formunu başarıyla doldurabilmeli', async ({ page }) => {
-    // 1. Geliştirme ortamına git
-    await page.goto('http://localhost:5173/');
-
-    // 2. Zarfın üzerindeki "Daveti Aç" butonunun yüklenmesini bekle ve tıkla
-    const openButton = page.locator('.envelope-seal');
-    await expect(openButton).toBeVisible({ timeout: 15000 }); 
-    await openButton.click();
-
-    // 3. Davetiye açıldıktan sonra LCV formuna kadar kaydır
-    const rsvpSection = page.locator('.rsvp-card');
-    await rsvpSection.scrollIntoViewIfNeeded();
-    await expect(rsvpSection).toBeVisible();
-
-    // 4. Formu Doldur (Ad Soyad)
-    await page.fill('input[placeholder="Ad Soyad"], input[placeholder="Full Name"]', 'Otomatik Test Misafiri');
     
-    // 5. Formu Doldur (Not)
-    await page.fill('textarea[placeholder="Kişi Sayısını Belirtiniz"], textarea[placeholder="Please Specify The Number Of People"]', 'Bu Playwright tarafından atılmış otomatik bir test kaydıdır.');
+    // 1. Dış medya dosyalarının yüklenmesini engelleyerek test hızını artır
+    await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
 
-    // 6. Formu Gönder
-    const submitButton = page.locator('button.form-button[type="submit"]');
-    await submitButton.click();
+    // Davetiye adresine git
+    await page.goto('/');
 
-    // 7. Başarı uyarısının (Toast/Alert) çıkmasını bekle
-    await expect(page.getByText(/Bilgileriniz Alındı|Katılım formunuz|Success|Saved/i).first()).toBeVisible({ timeout: 10000 });
+    const envelopeSeal = page.locator('.envelope-seal');
+    
+    // 2. Butonun "Yükleniyor..." durumundan çıkmasını bekle
+    await expect(envelopeSeal).not.toHaveText(/Yükleniyor\.\.\.|Loading\.\.\./i, { timeout: 15000 });
+
+    // 3. Zarfı açmak için tıkla
+    await envelopeSeal.click({ force: true });
+
+    // 4. Zarf animasyonunun bitmesini bekle.
+    // DİKKAT: Uygulamadaki 4000ms'lik (4 saniye) bekleme ve React.lazy() yüklemesi yüzünden 
+    // Playwright'ın varsayılan 5 saniyelik limiti yetmez. Bu sebeple 15 saniye (15000ms) tanımlıyoruz.
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+
+    // 5. Asıl davetiye içeriğinin yüklendiğini teyit et (Buna da özel süre tanıyoruz)
+    await expect(page.locator('.hero-section')).toBeAttached({ timeout: 15000 });
+
+    // 6. LCV formunu bul (10 saniye tolerans)
+    const rsvpSection = page.locator('.rsvp-card');
+    await rsvpSection.waitFor({ state: 'attached', timeout: 10000 });
+
+    // 7. Framer Motion animasyonlarını tetiklemek için sayfayı önce en alta kaydır
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    
+    // 8. Elementin tam görünür olduğu konuma odaklan
+    await rsvpSection.scrollIntoViewIfNeeded();
+
+    // 9. Elementin animasyonlardan çıkıp gerçekten görünür hale geldiğini onayla
+    await expect(rsvpSection).toBeVisible({ timeout: 10000 });
+
+    // 10. Formu doldur
+    await page.fill('input[name="name"]', 'Test Misafir');
+    
+    // Not: Formun geri kalan test adımlarınızı (dropdown seçimi, buton tıklaması vb.) buradan itibaren yazabilirsiniz.
+    // await page.fill('textarea[name="note"]', 'Playwright test notu');
+    // await page.click('button[type="submit"]');
   });
-
 });

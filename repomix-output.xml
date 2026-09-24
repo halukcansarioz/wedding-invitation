@@ -59,6 +59,7 @@ src/
         GalleryTab.jsx
         GeneralTab.jsx
         GiftTab.jsx
+        GuestPhotosTab.jsx
         GuestsAdminPanel.jsx
         index.js
         MessagesTab.jsx
@@ -103,9 +104,7 @@ src/
         ShareSection.jsx
         StorySection.jsx
         WishesSection.jsx
-      InteractiveSections.jsx
       IntroPage.jsx
-      PublicSections.jsx
     AdminDashboard.jsx
     AdminUI.jsx
   config/
@@ -118,8 +117,10 @@ src/
     useCountdown.test.js
     useDatabaseManager.js
     useExportData.js
+    useGuestsQuery.js
     usePWAInstall.js
     useScrollNavigation.js
+    useWishesQuery.js
   i18n/
     locales/
       en.json
@@ -130,6 +131,8 @@ src/
     AdminView.jsx
     InvitationController.jsx
     InvitationView.jsx
+    LandingPage.jsx
+    LiveProjector.jsx
   services/
     database.js
   store/
@@ -145,6 +148,8 @@ src/
     variables.css
   supabase/
     functions/
+      send-push/
+        index.ts
       submit-form/
         index.ts
       verify-submission/
@@ -213,6 +218,126 @@ export default function AdminCharts({ sideData, checkInData, isEn }) {
         </ResponsiveContainer>
       </div>
     </div>
+  );
+}
+</file>
+
+<file path="src/components/admin/tabs/GuestPhotosTab.jsx">
+// src/components/admin/tabs/GuestPhotosTab.jsx
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { AdminSection } from "../../AdminUI";
+import { supabase } from "../../../supabaseClient";
+import { useStore } from "../../../store/useStore";
+import { deleteMediaFile } from "../../../services/database";
+
+export function GuestPhotosTab({ isEn }) {
+  const { t } = useTranslation();
+  const showAppAlert = useStore(state => state.showAppAlert);
+  const [photos, setPhotos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Veritabanından fotoğrafları çek
+  const fetchPhotos = async () => {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('guest_photos')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (!error && data) {
+      setPhotos(data);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchPhotos();
+  }, []);
+
+  // Fotoğrafı Onayla (Galeride görünür yap)
+  const approvePhoto = async (id) => {
+    const { error } = await supabase.from('guest_photos').update({ approved: true }).eq('id', id);
+    if (!error) {
+      setPhotos(prev => prev.map(p => p.id === id ? { ...p, approved: true } : p));
+      showAppAlert(isEn ? "Photo approved!" : "Fotoğraf onaylandı ve galeriye eklendi!");
+    }
+  };
+
+  // Fotoğrafı Sil (Hem veritabanından hem Storage'dan)
+  const rejectPhoto = async (id, imageUrl) => {
+    if (!window.confirm(isEn ? "Delete this photo permanently?" : "Bu fotoğrafı kalıcı olarak silmek istiyor musunuz?")) return;
+    
+    // 1. Storage'dan fiziksel olarak sil
+    await deleteMediaFile(imageUrl).catch(console.error);
+    
+    // 2. Veritabanından sil
+    const { error } = await supabase.from('guest_photos').delete().eq('id', id);
+    if (!error) {
+      setPhotos(prev => prev.filter(p => p.id !== id));
+      showAppAlert(isEn ? "Photo deleted." : "Fotoğraf silindi.");
+    }
+  };
+
+  const pendingPhotos = photos.filter(p => !p.approved);
+  const approvedPhotos = photos.filter(p => p.approved);
+
+  return (
+    <AdminSection title={isEn ? "Guest Uploads (POV)" : "Misafir Fotoğrafları (POV)"}>
+      <p className="admin-help-text">
+        {isEn 
+          ? "Photos uploaded by guests appear here. Approved photos are shown in the main gallery." 
+          : "Misafirlerin yüklediği fotoğraflar burada onayınıza düşer. Onayladığınız kareler ana galeride ziyaretçilere gösterilir."}
+      </p>
+
+      {isLoading ? (
+        <div style={{ padding: "20px", textAlign: "center" }}>{isEn ? "Loading..." : "Yükleniyor..."}</div>
+      ) : (
+        <>
+          {/* ONAY BEKLEYENLER */}
+          <h4 style={{ color: "var(--rose-deep)", marginTop: "10px", marginBottom: "16px" }}>
+            {isEn ? `Pending Approval (${pendingPhotos.length})` : `Onay Bekleyenler (${pendingPhotos.length})`}
+          </h4>
+          
+          <div className="gallery-grid" style={{ marginBottom: "40px" }}>
+            {pendingPhotos.length === 0 && <p className="empty-text">{isEn ? "No pending photos." : "Onay bekleyen fotoğraf yok."}</p>}
+            {pendingPhotos.map(photo => (
+              <div key={photo.id} style={{ position: "relative", borderRadius: "12px", overflow: "hidden", border: "2px solid #f1c40f" }}>
+                <img src={photo.image_url} alt="Guest Upload" style={{ width: "100%", height: "200px", objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", background: "rgba(0,0,0,0.7)", padding: "10px", display: "flex", justifyContent: "space-between" }}>
+                  <button type="button" className="secondary-button danger-button" style={{ margin: 0, padding: "4px 8px", fontSize: "12px" }} onClick={() => rejectPhoto(photo.id, photo.image_url)}>
+                    {isEn ? "Delete 🗑️" : "Sil 🗑️"}
+                  </button>
+                  <button type="button" className="main-button" style={{ margin: 0, padding: "4px 12px", fontSize: "12px", background: "#27ae60", borderColor: "#27ae60" }} onClick={() => approvePhoto(photo.id)}>
+                    {isEn ? "Approve ✅" : "Onayla ✅"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ONAYLANMIŞ OLANLAR */}
+          <h4 style={{ color: "var(--text-muted)", marginBottom: "16px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: "20px" }}>
+            {isEn ? `Approved & Published (${approvedPhotos.length})` : `Yayında Olanlar (${approvedPhotos.length})`}
+          </h4>
+          <div className="gallery-grid">
+            {approvedPhotos.map(photo => (
+              <div key={photo.id} style={{ position: "relative", borderRadius: "12px", overflow: "hidden" }}>
+                <img src={photo.image_url} alt="Guest Upload" style={{ width: "100%", height: "150px", objectFit: "cover", display: "block", filter: "brightness(0.8)" }} />
+                <button 
+                  type="button" 
+                  className="secondary-button danger-button" 
+                  style={{ position: "absolute", top: "8px", right: "8px", margin: 0, padding: "4px 8px", fontSize: "12px" }} 
+                  onClick={() => rejectPhoto(photo.id, photo.image_url)}
+                >
+                  {isEn ? "Remove" : "Kaldır"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </AdminSection>
   );
 }
 </file>
@@ -805,6 +930,168 @@ export function useExportData(isEn) {
 }
 </file>
 
+<file path="src/hooks/useGuestsQuery.js">
+// src/hooks/useGuestsQuery.js
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { loadGuestsFromDatabase, supabase } from '../services/database';
+import { uiGuestToDb } from '../utils/helpers';
+
+export function useGuestsQuery() {
+  const queryClient = useQueryClient();
+
+  // 1. Veriyi Çekme (Fetch & Cache)
+  const { data: guests = [], isLoading, isError } = useQuery({
+    queryKey: ['guests'],
+    queryFn: loadGuestsFromDatabase,
+  });
+
+  // 2. Veri Ekleme (Mutation) ve İyimser Güncelleme
+  const addGuestMutation = useMutation({
+    mutationFn: async (newGuestData) => {
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { 
+          type: 'guest', 
+          data: uiGuestToDb(newGuestData), 
+          turnstileToken: newGuestData.turnstileToken 
+        }
+      });
+
+      if (error || !data.success) {
+        throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      }
+      return data.data;
+    },
+    onMutate: async (newGuest) => {
+      // Devam eden işlemleri durdur
+      await queryClient.cancelQueries({ queryKey: ['guests'] });
+      const previousGuests = queryClient.getQueryData(['guests']);
+      
+      // Anında arayüze ekle (Kullanıcı beklemez)
+      queryClient.setQueryData(['guests'], (old = []) => [
+        { 
+          id: `temp-${Date.now()}`, 
+          name: newGuest.name, 
+          attendance: newGuest.attendance,
+          phone: newGuest.phone || "",
+          personCount: String(newGuest.personCount || 1),
+          side: newGuest.side || "Gelin Tarafı",
+          hasChild: newGuest.hasChild || "Hayır",
+          note: newGuest.note || "",
+          has_arrived: false,
+          createdAt: new Date().toISOString()
+        }, 
+        ...old
+      ]);
+
+      return { previousGuests };
+    },
+    onError: (err, newGuest, context) => {
+      // Hata olursa eski haline döndür
+      if (context?.previousGuests) {
+        queryClient.setQueryData(['guests'], context.previousGuests);
+      }
+      console.error("LCV eklenirken hata oluştu:", err);
+    },
+    onSettled: () => {
+      // Gerçek veriyi arkada tekrar çek
+      queryClient.invalidateQueries({ queryKey: ['guests'] });
+    }
+  });
+
+  return { 
+    guests, 
+    isLoading, 
+    isError, 
+    addGuest: addGuestMutation.mutateAsync,
+    isAdding: addGuestMutation.isPending
+  };
+}
+</file>
+
+<file path="src/hooks/useWishesQuery.js">
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { loadPublishedWishesFromDatabase, supabase } from '../services/database';
+
+export function useWishesQuery() {
+  const queryClient = useQueryClient();
+
+  // 1. Veriyi Çekme (Fetch & Cache)
+  const { data: wishes = [], isLoading, isError } = useQuery({
+    queryKey: ['wishes'], // Cache anahtarı
+    queryFn: loadPublishedWishesFromDatabase, // Fetch fonksiyonu
+  });
+
+  // 2. Veri Ekleme (Mutation) ve İyimser Güncelleme (Optimistic Update)
+  const addWishMutation = useMutation({
+    mutationFn: async (newWishData) => {
+      // Supabase Edge Function çağrısı
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { 
+          type: 'wish', 
+          data: {
+            name: newWishData.name,
+            message: newWishData.message,
+            approved: newWishData.approved 
+          }, 
+          turnstileToken: newWishData.turnstileToken 
+        }
+      });
+
+      if (error || !data.success) {
+        throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      }
+      return data.data;
+    },
+    
+    // İşlem tetiklendiği an (Sunucuyu beklemeden arayüzü anında güncelle)
+    onMutate: async (newWish) => {
+      // Devam eden fetch işlemlerini iptal et ki üstüne yazmasın
+      await queryClient.cancelQueries({ queryKey: ['wishes'] });
+
+      // Hata durumunda geri dönmek için eski veriyi sakla
+      const previousWishes = queryClient.getQueryData(['wishes']);
+
+      // Yeni veriyi geçici bir ID ile anında listeye ekle
+      queryClient.setQueryData(['wishes'], (old = []) => [
+        { 
+          id: `temp-${Date.now()}`, 
+          name: newWish.name, 
+          message: newWish.message, 
+          approved: newWish.approved,
+          createdAt: new Date().toISOString()
+        }, 
+        ...old
+      ]);
+
+      return { previousWishes };
+    },
+
+    // Eğer sunucudan hata dönerse
+    onError: (err, newWish, context) => {
+      // Arayüzü eski (hatasız) haline geri döndür
+      if (context?.previousWishes) {
+        queryClient.setQueryData(['wishes'], context.previousWishes);
+      }
+      console.error("Mesaj eklenirken hata oluştu:", err);
+    },
+
+    // Başarılı ya da başarısız, işlem bitince
+    onSettled: () => {
+      // Sunucudaki gerçek ve son veriyi arka planda tekrar çek (Senkronize et)
+      queryClient.invalidateQueries({ queryKey: ['wishes'] });
+    }
+  });
+
+  return { 
+    wishes, 
+    isLoading, 
+    isError, 
+    addWish: addWishMutation.mutateAsync,
+    isAdding: addWishMutation.isPending
+  };
+}
+</file>
+
 <file path="src/i18n/config.js">
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -831,12 +1118,232 @@ i18n
 export default i18n;
 </file>
 
+<file path="src/pages/LandingPage.jsx">
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { m } from 'framer-motion';
+
+export default function LandingPage() {
+  const navigate = useNavigate();
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--paper)', color: 'var(--text-main)', fontFamily: '"Playfair Display", serif' }}>
+      
+      {/* Navbar */}
+      <header style={{ padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(159, 79, 104, 0.1)' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--rose-deep)', margin: 0 }}>Davetiyem.AI</h1>
+        <nav style={{ display: 'flex', gap: '24px' }}>
+          <button onClick={() => navigate('/demo-cift')} className="secondary-button" style={{ margin: 0 }}>Demo İncele</button>
+          <button onClick={() => navigate('/demo-cift/admin')} className="main-button" style={{ margin: 0 }}>Admin Girişi</button>
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <section style={{ padding: '100px 24px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
+        <m.h2 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+          style={{ fontSize: '48px', color: 'var(--rose-dark)', marginBottom: '24px', lineHeight: 1.2 }}
+        >
+          En Mutlu Gününüz İçin<br />Akıllı Dijital Davetiye
+        </m.h2>
+        <m.p 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+          style={{ fontSize: '20px', color: 'var(--text-muted)', marginBottom: '40px', fontFamily: 'sans-serif' }}
+        >
+          Yapay zeka destekli teşekkür mesajları, canlı barkovizyon, LCV yönetimi ve misafirlerin gözünden ortak fotoğraf albümü. Klasik davetiyeleri unutun.
+        </m.p>
+        <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          <button onClick={() => navigate('/demo-cift')} className="main-button" style={{ fontSize: '18px', padding: '16px 32px' }}>
+            Hemen Ücretsiz Dene ✨
+          </button>
+        </m.div>
+      </section>
+
+      {/* Features Grid */}
+      <section style={{ padding: '60px 24px', backgroundColor: 'var(--paper-soft)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
+          
+          <div className="card" style={{ textAlign: 'center', padding: '32px' }}>
+            <span style={{ fontSize: '40px', display: 'block', marginBottom: '16px' }}>📊</span>
+            <h3 style={{ fontSize: '22px', color: 'var(--rose-deep)', marginBottom: '12px' }}>Gelişmiş LCV (RSVP)</h3>
+            <p style={{ fontFamily: 'sans-serif', color: 'var(--text-muted)' }}>Masa planlaması, QR kod ile kapı kontrolü ve anlık katılım istatistikleri.</p>
+          </div>
+
+          <div className="card" style={{ textAlign: 'center', padding: '32px' }}>
+            <span style={{ fontSize: '40px', display: 'block', marginBottom: '16px' }}>📸</span>
+            <h3 style={{ fontSize: '22px', color: 'var(--rose-deep)', marginBottom: '12px' }}>Misafir POV Albüm</h3>
+            <p style={{ fontFamily: 'sans-serif', color: 'var(--text-muted)' }}>Misafirleriniz kendi çektikleri fotoğrafları anında davetiyenize yüklesin.</p>
+          </div>
+
+          <div className="card" style={{ textAlign: 'center', padding: '32px' }}>
+            <span style={{ fontSize: '40px', display: 'block', marginBottom: '16px' }}>🎬</span>
+            <h3 style={{ fontSize: '22px', color: 'var(--rose-deep)', marginBottom: '12px' }}>Canlı Barkovizyon</h3>
+            <p style={{ fontFamily: 'sans-serif', color: 'var(--text-muted)' }}>Düğün gecesi dev ekranda akan canlı anı defteri ve kutlama mesajları.</p>
+          </div>
+
+        </div>
+      </section>
+      
+    </div>
+  );
+}
+</file>
+
+<file path="src/pages/LiveProjector.jsx">
+// src/pages/LiveProjector.jsx
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { m, AnimatePresence } from 'framer-motion';
+import { useWishesQuery } from '../hooks/useWishesQuery';
+import { useStore } from '../store/useStore';
+
+export default function LiveProjector() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const siteData = useStore(state => state.siteData);
+  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
+  
+  // React Query ile onaylı mesajları çekiyoruz (Realtime olarak arkada güncellenir)
+  const { wishes } = useWishesQuery();
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Her 8 saniyede bir ekrandaki mesajı sinematik olarak değiştir
+  useEffect(() => {
+    if (!wishes || wishes.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % wishes.length);
+    }, 8000); // 8 saniyede bir döner
+
+    return () => clearInterval(interval);
+  }, [wishes]);
+
+  // Sayfayı her zaman tam ekran karanlık modda tut
+  useEffect(() => {
+    document.documentElement.dataset.theme = "dark";
+    document.body.style.overflow = "hidden"; // Scroll'u kapat
+    return () => { document.body.style.overflow = "auto"; };
+  }, []);
+
+  const activeWish = wishes[currentIndex];
+
+  return (
+    <div style={{
+      width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', 
+      display: 'flex', flexDirection: 'column', alignItems: 'center', 
+      justifyContent: 'center', position: 'relative', overflow: 'hidden'
+    }}>
+      {/* Sinematik Işık Efektleri */}
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(159, 79, 104, 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+
+      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
+        {coupleName}
+      </h1>
+      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '60px', zIndex: 10 }}>
+        {isEn ? "Live Guestbook" : "Canlı Anı Defteri"}
+      </p>
+
+      <div style={{ width: '80%', maxWidth: '900px', height: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+        <AnimatePresence mode="wait">
+          {activeWish ? (
+            <m.div
+              key={activeWish.id}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{ textAlign: 'center' }}
+            >
+              <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: '30px' }}>
+                "{activeWish.message}"
+              </p>
+              <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600' }}>
+                — {activeWish.name}
+              </strong>
+            </m.div>
+          ) : (
+            <m.p 
+              initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} 
+              style={{ color: '#fff', fontSize: '1.5rem' }}
+            >
+              {isEn ? "Waiting for the first message..." : "İlk mesaj bekleniyor..."}
+            </m.p>
+          )}
+        </AnimatePresence>
+      </div>
+      
+      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
+        {isEn ? "Scan the QR code on your table to send a message to the screen!" : "Ekrana mesaj göndermek için masanızdaki QR kodu okutun!"}
+      </div>
+    </div>
+  );
+}
+</file>
+
 <file path="src/styles/index.css">
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
 
 @import "./variables.css";
 @import "./base.css";
 @import "./responsive.css";
+</file>
+
+<file path="src/supabase/functions/send-push/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import webpush from "npm:web-push@3.6.7"; // NPM paketini Deno içine alıyoruz
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const { title, body, url } = await req.json();
+
+    // VAPID Ayarlarını Tanımla
+    webpush.setVapidDetails(
+      'mailto:sizin-emailiniz@gmail.com', // Kendi e-postanızı yazın
+      Deno.env.get('VAPID_PUBLIC_KEY')!, // Public key'i de Supabase Secrets'a eklemeyi unutmayın
+      Deno.env.get('VAPID_PRIVATE_KEY')!
+    );
+
+    // Supabase bağlantısını kur ve veritabanındaki abonelikleri çek
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!, 
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const { data: subscriptions } = await supabaseAdmin.from('push_subscriptions').select('sub_data');
+
+    if (!subscriptions || subscriptions.length === 0) {
+      return new Response(JSON.stringify({ message: "Kayıtlı abone bulunamadı." }), { status: 200, headers: corsHeaders });
+    }
+
+    // Gönderilecek Mesajın İçeriği
+    const payload = JSON.stringify({ title, body, url });
+
+    // Tüm abonelere sırayla bildirimi fırlat
+    const sendPromises = subscriptions.map((sub) => 
+      webpush.sendNotification(sub.sub_data, payload).catch(error => {
+        console.error("Bir aboneye bildirim gitmedi (belki abonelikten çıktı):", error);
+      })
+    );
+
+    await Promise.all(sendPromises);
+
+    return new Response(JSON.stringify({ success: true, count: subscriptions.length }), { headers: corsHeaders, status: 200 });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 400 });
+  }
+});
 </file>
 
 <file path="src/supabase/supabase-setup.sql">
@@ -1346,27 +1853,6 @@ export function GiftTab({ isEn }) {
     </AdminSection>
   );
 }
-</file>
-
-<file path="src/components/admin/tabs/index.js">
-export { GuestsAdminPanel } from './GuestsAdminPanel';
-export { WishesAdminPanel } from './WishesAdminPanel';
-export { PersonalLinkPanel } from './PersonalLinkPanel';
-export { GeneralTab } from './GeneralTab';
-export { ThemeTab } from './ThemeTab';
-export { GalleryTab } from './GalleryTab';
-export { VisibilityTab } from './VisibilityTab';
-export { SecurityTab } from './SecurityTab';
-export { MessagesTab } from './MessagesTab';
-export { CopyTab } from './CopyTab';
-export { FamilyTab } from './FamilyTab';
-export { CeremonyTab } from './CeremonyTab';
-export { ScheduleTab } from './ScheduleTab';
-export { QrTab } from './QrTab';
-export { DataTab } from './DataTab';
-export { GiftTab } from './GiftTab';
-export { StoryTab } from './StoryTab';
-export { TablePlanTab } from './TablePlanTab';
 </file>
 
 <file path="src/components/admin/tabs/MessagesTab.jsx">
@@ -2317,6 +2803,29 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, se
 }
 </file>
 
+<file path="src/components/admin/tabs/index.js">
+// src/components/admin/tabs/index.js
+export { GuestsAdminPanel } from './GuestsAdminPanel';
+export { WishesAdminPanel } from './WishesAdminPanel';
+export { PersonalLinkPanel } from './PersonalLinkPanel';
+export { GeneralTab } from './GeneralTab';
+export { ThemeTab } from './ThemeTab';
+export { GalleryTab } from './GalleryTab';
+export { VisibilityTab } from './VisibilityTab';
+export { SecurityTab } from './SecurityTab';
+export { MessagesTab } from './MessagesTab';
+export { CopyTab } from './CopyTab';
+export { FamilyTab } from './FamilyTab';
+export { CeremonyTab } from './CeremonyTab';
+export { ScheduleTab } from './ScheduleTab';
+export { QrTab } from './QrTab';
+export { DataTab } from './DataTab';
+export { GiftTab } from './GiftTab';
+export { StoryTab } from './StoryTab';
+export { TablePlanTab } from './TablePlanTab';
+export { GuestPhotosTab } from './GuestPhotosTab';
+</file>
+
 <file path="src/components/admin/tabs/SecurityTab.jsx">
 import React from "react";
 import { AdminSection, AdminField } from "../../AdminUI";
@@ -2507,44 +3016,6 @@ export function ThemeTab({ isEn }) {
         />
       </div>
     </AdminSection>
-  );
-}
-</file>
-
-<file path="src/components/common/PwaInstallBanner.jsx">
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { usePWAInstall } from '../../hooks/usePWAInstall';
-
-export function PwaInstallBanner() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
-
-  if (!isInstallable) return null;
-
-  if (isIos) {
-    return (
-      <div className="pwa-banner-wrapper ios-pwa-banner">
-        <span className="pwa-banner-text">
-          {isEn ? "📱 Tap 'Share' icon then 'Add to Home Screen'" : "📱 Kolay erişim için 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin"}
-        </span>
-        <button onClick={() => setIsInstallable(false)} className="secondary-button pwa-banner-btn" style={{ minWidth: 'auto', padding: '4px 12px' }}>
-          ✕
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="pwa-banner-wrapper">
-      <span className="pwa-banner-text">
-        {isEn ? "📱 Install App for Easy Access" : "📱 Kolay Erişim İçin Yükle"}
-      </span>
-      <button onClick={promptInstall} className="main-button pwa-banner-btn">
-        {isEn ? "Install" : "Yükle"}
-      </button>
-    </div>
   );
 }
 </file>
@@ -2837,45 +3308,285 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
 }
 </file>
 
-<file path="src/pages/AdminView.jsx">
-import React from "react";
-import AdminDashboard from "../components/AdminDashboard";
-import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
-import { useStore } from "../store/useStore";
+<file path="src/config/constants.js">
+export const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
+export const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
+export const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
 
-export default function AdminView(props) {
-  const activeAdminTab = useStore(state => state.activeAdminTab);
-  
-  const adminTabs = [
-    { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
-    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
-    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
-    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
-    { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
-    { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
-    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
-    { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
-    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
-    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
-    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
-    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
-    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
-    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
-    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
-    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
-  ];
+export const THEME_FAVICON_COLORS = {
+  rose: { bg: "#fff5f8", circle: "#f8d7e2", petal: "#cf7c9a", stroke: "#9f4f68", center: "#fff1b8" },
+  sage: { bg: "#f5f8f5", circle: "#d7ebd7", petal: "#8cb38c", stroke: "#597359", center: "#fff1b8" },
+  gold: { bg: "#fdfbf7", circle: "#f3e9d2", petal: "#d4b872", stroke: "#9c8346", center: "#fff1b8" },
+  burgundy: { bg: "#fcf5f6", circle: "#ebccd2", petal: "#a3495d", stroke: "#702838", center: "#fff1b8" },
+  lavanta: { bg: "#f9f7fc", circle: "#e6dcf2", petal: "#9b7cbf", stroke: "#664b8a", center: "#fff1b8" },
+  minimal: { bg: "#ffffff", circle: "#f0f0f0", petal: "#b3b3b3", stroke: "#737373", center: "#ffffff" },
+  dark: { bg: "#2a2a2a", circle: "#404040", petal: "#8c8c8c", stroke: "#bfbfbf", center: "#404040" },
+};
 
-  const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
+export const DEFAULT_SITE_DATA = {
+  invitation: {
+    bride: "Handenur",
+    groom: "Haluk Can",
+    dateText: "07 Ağustos 2027",
+    timeText: "19:00",
+    weddingDate: "2027-07-07T19:00:00",
+    rsvpDeadline: "2027-07-01", 
+    venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+    address: "Kadıköy / İstanbul",
+    mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
+    shareLink: DEFAULT_SHARE_LINK,
+    whatsappNumber: "905394933614",
+    introImage: "/images/themes/lavanta/8.jpg",
+    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
+    musicFile: DEFAULT_WEDDING_MUSIC_FILE,
+    musicName: DEFAULT_WEDDING_MUSIC_NAME,
+    gallery: [
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
+      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
+      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
+    ],
+    message: "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
+  },
+  familyInfo: {
+    brideFamilyTitle: "Gelin Ailesi",
+    brideFamilyName: "Çeltik Ailesi",
+    groomFamilyTitle: "Damat Ailesi",
+    groomFamilyName: "Sarıöz Ailesi",
+    text: "Ailelerimizin de katılımıyla bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.",
+  },
+  giftRegistry: {
+    title: "Hediye & Takı Gönderimi",
+    description: "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için hesap bilgilerimiz:",
+    receiver: "Haluk Can Sarıöz",
+    iban: "TR53 0011 1000 0000 0145 4005 17",
+    bankName: "QNB Bankası"
+  },
+  copy: {
+    introLabel: "Düğün Davetiyesi",
+    introText: "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
+    openButton: "Daveti Aç",
+    heroLabel: "Biz Evleniyoruz",
+    countdownLabel: "Geri Sayım",
+    countdownTitle: "Düğünümüze Kalan Süre",
+    invitationLabel: "Davet",
+    invitationTitle: "Mutluluğumuza Ortak Olur Musunuz?",
+    familyLabel: "Ailelerimiz",
+    familyTitle: "Ailelerimizin Katılımıyla",
+    ceremonyLabel: "Nikah ve Düğün",
+    ceremonyTitle: "Günün Detayları",
+    scheduleLabel: "Düğün Takvimi",
+    locationLabel: "Tarih ve Konum",
+    locationTitle: "Düğün Bilgileri",
+    galleryLabel: "Fotoğraflar",
+    galleryTitle: "Kır Düğünü Atmosferi",
+    rsvpLabel: "Katılım",
+    rsvpTitle: "Katılım Bildirimi",
+    rsvpText: "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
+    guestsLabel: "Misafirler",
+    guestsTitle: "Misafir Listesi",
+    wishesLabel: "Anı Defteri",
+    wishesTitle: "Güzel Dilekleriniz",
+    shareLabel: "Paylaş",
+    shareTitle: "Davetiyeyi Paylaş",
+    shareDescription: "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
+    thanksText: "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
+    footerSmall: "Made with love",
+    giftButton: "Hediye & Takı Gönder",
+    declineTitle: "Çok Üzüldük!",
+    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
+    deadlineTitle: "LCV Bildirim Süresi Doldu",
+    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.",
+    storyLabel: "Bizim Hikayemiz",
+    storyTitle: "Nasıl Tanıştık?"
+  },
+  eventDetails: [
+    {
+      label: "Nikah Töreni",
+      time: "19:00",
+      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+      description: "Mutluluğumuza ilk imzayı atacağımız özel an.",
+    },
+    {
+      label: "Düğün & Eğlence",
+      time: "20:00",
+      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+      description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
+    },
+  ],
+  storyTimeline: [
+    {
+      date: "İlkbahar 2024",
+      title: "İlk Karşılaşma",
+      description: "Hikayemizin başladığı o güzel tesadüf ve sihirli an...",
+      image: ""
+    },
+    {
+      date: "22 Ağustos 2026",
+      title: "Büyük Teklif",
+      description: "Fenerbahçe Parkı'nın yeşillikleri arasında başlayan günümüz, Boğaz vapuru keyfi ve köprü manzaralı harika bir akşam yemeği eşliğinde 'Evet!' ile taçlandı.",
+      image: ""
+    }
+  ],
+  scheduleItems: [
+    { time: "18:30", title: "Misafir Karşılama", description: "Davetlilerimizin alana gelişi ve karşılama." },
+    { time: "19:00", title: "Nikah Töreni", description: "Nikah merasimimiz başlar." },
+    { time: "20:00", title: "Yemek ve Kutlama", description: "Yemek ikramı ve kutlama bölümü." },
+    { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
+  ],
+  settings: {
+    theme: "lavanta",
+    defaultTheme: "lavanta",
+    requireWishApproval: true,
+    isPostWedding: false, 
+    visibility: {
+      countdown: true,
+      family: true,
+      ceremony: true,
+      schedule: true,
+      location: true,
+      gallery: true,
+      rsvp: true,
+      guests: true,
+      wishes: true,
+      iban: true,
+      popupIban: true,
+    },
+  },
+  messages: {
+    whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
+    rsvpWhatsappMessage: "Merhaba, {couple} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.",
+    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız."
+  },
+};
 
-  return (
-    <AdminDashboard
-      activeTabInfo={activeTabInfo}
-      adminTabs={adminTabs}
-      {...props}
-      renderAdminActivePanel={() => <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />}
-    />
-  );
-}
+export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+export const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
+export const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
+export const NOTE_MAX_LENGTH = 160;
+export const WISH_MAX_LENGTH = 220;
+export const SITE_DATA_KEY = "wedding-site-data";
+
+export const THEMES = [
+  { label: "Pembe Romantik", value: "rose" },
+  { label: "Yeşil Kır Düğünü", value: "sage" },
+  { label: "Altın Krem", value: "gold" },
+  { label: "Bordo", value: "burgundy" },
+  { label: "Lavanta", value: "lavanta" },
+  { label: "Minimal Beyaz", value: "minimal" },
+  { label: "Koyu Tema", value: "dark" },
+];
+
+export const THEME_DEFAULT_IMAGES = {
+  rose: {
+    introImage: "/images/themes/rose/1.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4", 
+    gallery: [
+      "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
+      "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
+      "/images/themes/rose/sergey-semin-3gpzjLWHb0I-unsplash.jpg",
+      "/images/themes/rose/thomas-curryer-UDfxsawmiKk-unsplash.jpg",
+    ],
+  },
+  sage: {
+    introImage: "/images/themes/sage/3.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4", 
+    gallery: [
+      "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
+      "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
+      "/images/themes/sage/matthew-PmFCYjRqHN8-unsplash.jpg",
+      "/images/themes/sage/silvia-mara-Hi69z0dFLjA-unsplash.jpg",
+    ],
+  },
+  gold: {
+    introImage: "/images/themes/gold/5.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4", 
+    gallery: [
+      "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
+      "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
+      "/images/themes/gold/charlotte-cowell-cHzTNuMAIJs-unsplash.jpg",
+      "/images/themes/gold/thlt-lcx-R5d7yOCkPJU-unsplash.jpg",
+    ],
+  },
+  burgundy: {
+    introImage: "/images/themes/burgundy/7.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
+    gallery: [
+      "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
+      "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
+      "/images/themes/burgundy/11.jpg",
+      "/images/themes/burgundy/6.jpg",
+    ],
+  },
+  lavanta: {
+    introImage: "/images/themes/lavanta/8.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Lavanta.mp4",
+    gallery: [
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
+      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
+      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
+    ],
+  },
+  minimal: {
+    introImage: "/images/themes/minimal/9.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Minimal.mp4",
+    gallery: [
+      "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
+      "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
+      "/images/themes/minimal/max-letek-_zH2qqQ1dHA-unsplash.jpg",
+      "/images/themes/minimal/micah-sammie-chaffin-ECZeV9L7Pc4-unsplash.jpg",
+    ],
+  },
+  dark: {
+    introImage: "/images/themes/dark/10.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Dark.mp4",
+    gallery: [
+      "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
+      "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
+      "/images/themes/dark/13.jpg",
+      "/images/themes/dark/mike-marrah-1kCJYMKROiU-unsplash.jpg",
+    ],
+  },
+};
+
+export const MAX_IMAGE_DIMENSION = 1400;
+export const IMAGE_QUALITY = 0.78;
+export const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
+
+export const INITIAL_GUEST_FORM = {
+  name: "",
+  attendance: "Katılacağım",
+  note: "",
+};
+
+export const INITIAL_WISH_FORM = {
+  name: "",
+  message: "",
+};
+
+export const ATTENDANCE_OPTIONS = [
+  { label: "Katılacağım", value: "Katılacağım" },
+  { label: "Katılamayacağım", value: "Katılamayacağım" },
+];
+
+export const PERSON_COUNT_OPTIONS = [
+  { label: "1 Kişi", value: "1" },
+  { label: "2 Kişi", value: "2" },
+  { label: "3 Kişi", value: "3" },
+  { label: "4 Kişi", value: "4" },
+];
+
+export const SIDE_OPTIONS = [
+  { label: "Gelin Tarafı", value: "Gelin Tarafı" },
+  { label: "Damat Tarafı", value: "Damat Tarafı" },
+  { label: "Ortak", value: "Ortak" },
+];
+
+export const CHILD_OPTIONS = [
+  { label: "Çocuk Yok", value: "Hayır" },
+  { label: "Çocuk Var", value: "Evet" },
+];
 </file>
 
 <file path="src/styles/variables.css">
@@ -3485,94 +4196,6 @@ html[data-theme="dark"] .gallery-grid img {
 }
 </file>
 
-<file path="src/supabase/functions/submit-form/index.ts">
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-
-const TURNSTILE_SECRET_KEY = Deno.env.get('TURNSTILE_SECRET_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-
-  try {
-    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { type, data, turnstileToken } = await req.json();
-
-    const authHeader = req.headers.get('Authorization');
-    let isAdmin = false;
-    
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-      if (user) isAdmin = true;
-    }
-
-    let isOfflineSync = false;
-    
-    // GÜVENLİK GÜNCELLEMESİ: OFFLINE_TOKEN sadece admin tarafından kullanılabilir
-    if (turnstileToken === "OFFLINE_TOKEN") {
-      if (!isAdmin) {
-        throw new Error("Güvenlik İhlali: Çevrimdışı senkronizasyon sadece yetkili oturumlar (admin) tarafından yapılabilir.");
-      }
-      isOfflineSync = true;
-    } else if (!isAdmin) {
-      // Normal ziyaretçiler için Turnstile zorunluluğu
-      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
-        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
-      }
-      
-      const formData = new URLSearchParams();
-      formData.append('secret', TURNSTILE_SECRET_KEY!);
-      formData.append('response', turnstileToken);
-
-      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        body: formData,
-      });
-      const turnstileData = await turnstileRes.json();
-      if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
-    }
-
-    let result;
-    if (type === 'guest') {
-      if (isOfflineSync) {
-        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
-      }
-      const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
-      if (error) throw error;
-      result = guestData;
-    } else if (type === 'wish') {
-      if (isOfflineSync) {
-        data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
-      }
-      const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
-      if (error) throw error;
-      result = wishData;
-    } else {
-      throw new Error("Geçersiz form tipi.");
-    }
-
-    return new Response(JSON.stringify({ success: true, data: result }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    });
-  }
-})
-</file>
-
 <file path="src/supabase/functions/verify-submission/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -3847,6 +4470,89 @@ export function GalleryTab({ isEn }) {
 }
 </file>
 
+<file path="src/components/common/PwaInstallBanner.jsx">
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { supabase } from '../../supabaseClient';
+
+// VAPID anahtarınızı ortam değişkenlerinden alıyoruz
+const PUBLIC_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+// URL Base64 string'i Uint8Array'e çeviren yardımcı fonksiyon
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export const subscribeToPushNotifications = async () => {
+  if ('serviceWorker' in navigator && 'PushManager' in window && PUBLIC_VAPID_KEY) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+      });
+
+      // Abonelik bilgilerini Supabase veritabanına kaydedin
+      await supabase.from('push_subscriptions').insert([
+        { sub_data: subscription, created_at: new Date() }
+      ]);
+      
+      console.log("Push bildirimlerine başarıyla abone olundu!");
+    } catch (error) {
+      console.error("Bildirim izni alınamadı:", error);
+    }
+  }
+};
+
+export function PwaInstallBanner() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
+
+  if (!isInstallable) return null;
+
+  const handleInstallClick = async () => {
+    await promptInstall();
+    // Kullanıcı uygulamayı yükleme adımlarını tamamladıktan sonra bildirim izni iste
+    subscribeToPushNotifications();
+  };
+
+  if (isIos) {
+    return (
+      <div className="pwa-banner-wrapper ios-pwa-banner">
+        <span className="pwa-banner-text">
+          {isEn ? "📱 Tap 'Share' icon then 'Add to Home Screen'" : "📱 Kolay erişim için 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin"}
+        </span>
+        <button onClick={() => setIsInstallable(false)} className="secondary-button pwa-banner-btn" style={{ minWidth: 'auto', padding: '4px 12px' }}>
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pwa-banner-wrapper">
+      <span className="pwa-banner-text">
+        {isEn ? "📱 Install App for Easy Access" : "📱 Kolay Erişim İçin Yükle"}
+      </span>
+      {/* Kurulum butonuna basıldığında hem PWA kurulur hem Push izni istenir */}
+      <button onClick={handleInstallClick} className="main-button pwa-banner-btn">
+        {isEn ? "Install" : "Yükle"}
+      </button>
+    </div>
+  );
+}
+</file>
+
 <file path="src/components/invitation/sections/CeremonySection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -3938,285 +4644,10 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }) 
 });
 </file>
 
-<file path="src/config/constants.js">
-export const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
-export const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
-export const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
-
-export const THEME_FAVICON_COLORS = {
-  rose: { bg: "#fff5f8", circle: "#f8d7e2", petal: "#cf7c9a", stroke: "#9f4f68", center: "#fff1b8" },
-  sage: { bg: "#f5f8f5", circle: "#d7ebd7", petal: "#8cb38c", stroke: "#597359", center: "#fff1b8" },
-  gold: { bg: "#fdfbf7", circle: "#f3e9d2", petal: "#d4b872", stroke: "#9c8346", center: "#fff1b8" },
-  burgundy: { bg: "#fcf5f6", circle: "#ebccd2", petal: "#a3495d", stroke: "#702838", center: "#fff1b8" },
-  lavanta: { bg: "#f9f7fc", circle: "#e6dcf2", petal: "#9b7cbf", stroke: "#664b8a", center: "#fff1b8" },
-  minimal: { bg: "#ffffff", circle: "#f0f0f0", petal: "#b3b3b3", stroke: "#737373", center: "#ffffff" },
-  dark: { bg: "#2a2a2a", circle: "#404040", petal: "#8c8c8c", stroke: "#bfbfbf", center: "#404040" },
-};
-
-export const DEFAULT_SITE_DATA = {
-  invitation: {
-    bride: "Handenur",
-    groom: "Haluk Can",
-    dateText: "07 Ağustos 2027",
-    timeText: "19:00",
-    weddingDate: "2027-07-07T19:00:00",
-    rsvpDeadline: "2027-07-01", 
-    venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
-    address: "Kadıköy / İstanbul",
-    mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
-    shareLink: DEFAULT_SHARE_LINK,
-    whatsappNumber: "905394933614",
-    introImage: "/images/themes/lavanta/8.jpg",
-    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
-    musicFile: DEFAULT_WEDDING_MUSIC_FILE,
-    musicName: DEFAULT_WEDDING_MUSIC_NAME,
-    gallery: [
-      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
-      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
-      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
-      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
-    ],
-    message: "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
-  },
-  familyInfo: {
-    brideFamilyTitle: "Gelin Ailesi",
-    brideFamilyName: "Çeltik Ailesi",
-    groomFamilyTitle: "Damat Ailesi",
-    groomFamilyName: "Sarıöz Ailesi",
-    text: "Ailelerimizin de katılımıyla bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.",
-  },
-  giftRegistry: {
-    title: "Hediye & Takı Gönderimi",
-    description: "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için hesap bilgilerimiz:",
-    receiver: "Haluk Can Sarıöz",
-    iban: "TR53 0011 1000 0000 0145 4005 17",
-    bankName: "QNB Bankası"
-  },
-  copy: {
-    introLabel: "Düğün Davetiyesi",
-    introText: "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
-    openButton: "Daveti Aç",
-    heroLabel: "Biz Evleniyoruz",
-    countdownLabel: "Geri Sayım",
-    countdownTitle: "Düğünümüze Kalan Süre",
-    invitationLabel: "Davet",
-    invitationTitle: "Mutluluğumuza Ortak Olur Musunuz?",
-    familyLabel: "Ailelerimiz",
-    familyTitle: "Ailelerimizin Katılımıyla",
-    ceremonyLabel: "Nikah ve Düğün",
-    ceremonyTitle: "Günün Detayları",
-    scheduleLabel: "Düğün Takvimi",
-    locationLabel: "Tarih ve Konum",
-    locationTitle: "Düğün Bilgileri",
-    galleryLabel: "Fotoğraflar",
-    galleryTitle: "Kır Düğünü Atmosferi",
-    rsvpLabel: "Katılım",
-    rsvpTitle: "Katılım Bildirimi",
-    rsvpText: "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
-    guestsLabel: "Misafirler",
-    guestsTitle: "Misafir Listesi",
-    wishesLabel: "Anı Defteri",
-    wishesTitle: "Güzel Dilekleriniz",
-    shareLabel: "Paylaş",
-    shareTitle: "Davetiyeyi Paylaş",
-    shareDescription: "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
-    thanksText: "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    footerSmall: "Made with love",
-    giftButton: "Hediye & Takı Gönder",
-    declineTitle: "Çok Üzüldük!",
-    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
-    deadlineTitle: "LCV Bildirim Süresi Doldu",
-    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.",
-    storyLabel: "Bizim Hikayemiz",
-    storyTitle: "Nasıl Tanıştık?"
-  },
-  eventDetails: [
-    {
-      label: "Nikah Töreni",
-      time: "19:00",
-      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
-      description: "Mutluluğumuza ilk imzayı atacağımız özel an.",
-    },
-    {
-      label: "Düğün & Eğlence",
-      time: "20:00",
-      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
-      description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
-    },
-  ],
-  storyTimeline: [
-    {
-      date: "İlkbahar 2024",
-      title: "İlk Karşılaşma",
-      description: "Hikayemizin başladığı o güzel tesadüf ve sihirli an...",
-      image: ""
-    },
-    {
-      date: "22 Ağustos 2026",
-      title: "Büyük Teklif",
-      description: "Fenerbahçe Parkı'nın yeşillikleri arasında başlayan günümüz, Boğaz vapuru keyfi ve köprü manzaralı harika bir akşam yemeği eşliğinde 'Evet!' ile taçlandı.",
-      image: ""
-    }
-  ],
-  scheduleItems: [
-    { time: "18:30", title: "Misafir Karşılama", description: "Davetlilerimizin alana gelişi ve karşılama." },
-    { time: "19:00", title: "Nikah Töreni", description: "Nikah merasimimiz başlar." },
-    { time: "20:00", title: "Yemek ve Kutlama", description: "Yemek ikramı ve kutlama bölümü." },
-    { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
-  ],
-  settings: {
-    theme: "lavanta",
-    defaultTheme: "lavanta",
-    requireWishApproval: true,
-    isPostWedding: false, 
-    visibility: {
-      countdown: true,
-      family: true,
-      ceremony: true,
-      schedule: true,
-      location: true,
-      gallery: true,
-      rsvp: true,
-      guests: true,
-      wishes: true,
-      iban: true,
-      popupIban: true,
-    },
-  },
-  messages: {
-    whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
-    rsvpWhatsappMessage: "Merhaba, {couple} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.",
-    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız."
-  },
-};
-
-export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
-export const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
-export const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
-export const NOTE_MAX_LENGTH = 160;
-export const WISH_MAX_LENGTH = 220;
-export const SITE_DATA_KEY = "wedding-site-data";
-
-export const THEMES = [
-  { label: "Pembe Romantik", value: "rose" },
-  { label: "Yeşil Kır Düğünü", value: "sage" },
-  { label: "Altın Krem", value: "gold" },
-  { label: "Bordo", value: "burgundy" },
-  { label: "Lavanta", value: "lavanta" },
-  { label: "Minimal Beyaz", value: "minimal" },
-  { label: "Koyu Tema", value: "dark" },
-];
-
-export const THEME_DEFAULT_IMAGES = {
-  rose: {
-    introImage: "/images/themes/rose/1.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4", 
-    gallery: [
-      "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
-      "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
-      "/images/themes/rose/sergey-semin-3gpzjLWHb0I-unsplash.jpg",
-      "/images/themes/rose/thomas-curryer-UDfxsawmiKk-unsplash.jpg",
-    ],
-  },
-  sage: {
-    introImage: "/images/themes/sage/3.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4", 
-    gallery: [
-      "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
-      "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
-      "/images/themes/sage/matthew-PmFCYjRqHN8-unsplash.jpg",
-      "/images/themes/sage/silvia-mara-Hi69z0dFLjA-unsplash.jpg",
-    ],
-  },
-  gold: {
-    introImage: "/images/themes/gold/5.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4", 
-    gallery: [
-      "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
-      "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
-      "/images/themes/gold/charlotte-cowell-cHzTNuMAIJs-unsplash.jpg",
-      "/images/themes/gold/thlt-lcx-R5d7yOCkPJU-unsplash.jpg",
-    ],
-  },
-  burgundy: {
-    introImage: "/images/themes/burgundy/7.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
-    gallery: [
-      "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
-      "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
-      "/images/themes/burgundy/11.jpg",
-      "/images/themes/burgundy/6.jpg",
-    ],
-  },
-  lavanta: {
-    introImage: "/images/themes/lavanta/8.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Lavanta.mp4",
-    gallery: [
-      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
-      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
-      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
-      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
-    ],
-  },
-  minimal: {
-    introImage: "/images/themes/minimal/9.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Minimal.mp4",
-    gallery: [
-      "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
-      "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
-      "/images/themes/minimal/max-letek-_zH2qqQ1dHA-unsplash.jpg",
-      "/images/themes/minimal/micah-sammie-chaffin-ECZeV9L7Pc4-unsplash.jpg",
-    ],
-  },
-  dark: {
-    introImage: "/images/themes/dark/10.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Dark.mp4",
-    gallery: [
-      "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
-      "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
-      "/images/themes/dark/13.jpg",
-      "/images/themes/dark/mike-marrah-1kCJYMKROiU-unsplash.jpg",
-    ],
-  },
-};
-
-export const MAX_IMAGE_DIMENSION = 1400;
-export const IMAGE_QUALITY = 0.78;
-export const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
-
-export const INITIAL_GUEST_FORM = {
-  name: "",
-  attendance: "Katılacağım",
-  note: "",
-};
-
-export const INITIAL_WISH_FORM = {
-  name: "",
-  message: "",
-};
-
-export const ATTENDANCE_OPTIONS = [
-  { label: "Katılacağım", value: "Katılacağım" },
-  { label: "Katılamayacağım", value: "Katılamayacağım" },
-];
-
-export const PERSON_COUNT_OPTIONS = [
-  { label: "1 Kişi", value: "1" },
-  { label: "2 Kişi", value: "2" },
-  { label: "3 Kişi", value: "3" },
-  { label: "4 Kişi", value: "4" },
-];
-
-export const SIDE_OPTIONS = [
-  { label: "Gelin Tarafı", value: "Gelin Tarafı" },
-  { label: "Damat Tarafı", value: "Damat Tarafı" },
-  { label: "Ortak", value: "Ortak" },
-];
-
-export const CHILD_OPTIONS = [
-  { label: "Çocuk Yok", value: "Hayır" },
-  { label: "Çocuk Var", value: "Evet" },
-];
+<file path="src/components/AdminUI.jsx">
+export * from "./admin/ui/AdminInputs";
+export * from "./admin/ui/AdminMediaFields";
+export * from "./admin/ui/AdminLayout";
 </file>
 
 <file path="src/hooks/useAdminSession.js">
@@ -4654,7 +5085,10 @@ export function useAdminSession({ isAdminPage, isEn }) {
     "chooseApp": "Choose Navigation App",
     "copyAddress": "Copy Full Address 📋",
     "addressCopied": "Address Copied! ✅"
-  }
+  },
+  "guestPhotos": "Guest POV Photos",
+  "massMessageSuccess": "Mass messages successfully initiated.",
+  "aiGenerating": "AI assistant is preparing your message..."
 }
 </file>
 
@@ -4799,8 +5233,156 @@ export function useAdminSession({ isAdminPage, isEn }) {
     "chooseApp": "Yol Tarifi Al",
     "copyAddress": "Tam Adresi Kopyala 📋",
     "addressCopied": "Adres Kopyalandı! ✅"
-  }
+  },
+
+  "guestPhotos": "Misafir POV Fotoğrafları",
+  "massMessageSuccess": "Toplu mesajlar başarıyla başlatıldı.",
+  "aiGenerating": "Yapay zeka asistanı mesajınızı hazırlıyor..."
 }
+</file>
+
+<file path="src/pages/AdminView.jsx">
+// src/pages/AdminView.jsx
+import React from "react";
+import AdminDashboard from "../components/AdminDashboard";
+import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
+import { useStore } from "../store/useStore";
+
+export default function AdminView(props) {
+  const activeAdminTab = useStore(state => state.activeAdminTab);
+  
+  const adminTabs = [
+    { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
+    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
+    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
+    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
+    { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
+    { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
+    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
+    { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
+    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
+    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    // YENİ EKLENEN: Misafir Fotoğrafları Sekmesi
+    { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
+    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
+    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
+    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
+    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
+    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
+    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
+  ];
+
+  const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
+
+  return (
+    <AdminDashboard
+      activeTabInfo={activeTabInfo}
+      adminTabs={adminTabs}
+      {...props}
+      renderAdminActivePanel={() => <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />}
+    />
+  );
+}
+</file>
+
+<file path="src/supabase/functions/submit-form/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+
+// Basit bir küfür/argo filtresi listesi (Genişletebilirsiniz)
+const BAD_WORDS = ["küfür1", "argo2", "kötükelime", "spam"]; 
+
+const TURNSTILE_SECRET_KEY = Deno.env.get('TURNSTILE_SECRET_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const { type, data, turnstileToken } = await req.json();
+
+    const authHeader = req.headers.get('Authorization');
+    let isAdmin = false;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      if (user) isAdmin = true;
+    }
+
+    let isOfflineSync = false;
+    
+    // GÜVENLİK GÜNCELLEMESİ: OFFLINE_TOKEN sadece admin tarafından kullanılabilir
+    if (turnstileToken === "OFFLINE_TOKEN") {
+      if (!isAdmin) {
+        throw new Error("Güvenlik İhlali: Çevrimdışı senkronizasyon sadece yetkili oturumlar (admin) tarafından yapılabilir.");
+      }
+      isOfflineSync = true;
+    } else if (!isAdmin) {
+      // Normal ziyaretçiler için Turnstile zorunluluğu
+      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
+        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
+      }
+      
+      const formData = new URLSearchParams();
+      formData.append('secret', TURNSTILE_SECRET_KEY!);
+      formData.append('response', turnstileToken);
+
+      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: formData,
+      });
+      const turnstileData = await turnstileRes.json();
+      if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
+    }
+
+    let result;
+    if (type === 'guest') {
+      if (isOfflineSync) {
+        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
+      }
+      const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
+      if (error) throw error;
+      result = guestData;
+    } else if (type === 'wish') {
+      
+      // YENİ EKLENEN BÖLÜM: Küfür ve Argo Kontrolü
+      const messageText = (data.message || "").toLowerCase();
+      const containsBadWord = BAD_WORDS.some(word => messageText.includes(word));
+      
+      if (containsBadWord) {
+        throw new Error("Mesajınız topluluk kurallarına aykırı kelimeler içeriyor.");
+      }
+
+      if (isOfflineSync) {
+        data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
+      }
+      const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
+      if (error) throw error;
+      result = wishData;
+    } else {
+      throw new Error("Geçersiz form tipi.");
+    }
+
+    return new Response(JSON.stringify({ success: true, data: result }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    });
+  }
+})
 </file>
 
 <file path="src/utils/imageOptimizer.js">
@@ -5079,12 +5661,6 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
     </div>
   );
 }
-</file>
-
-<file path="src/components/AdminUI.jsx">
-export * from "./admin/ui/AdminInputs";
-export * from "./admin/ui/AdminMediaFields";
-export * from "./admin/ui/AdminLayout";
 </file>
 
 <file path="src/styles/modals.css">
@@ -5625,6 +6201,7 @@ import { OptionGroup } from "../../common/UIComponents";
 import { triggerConfetti } from "../../../utils/helpers";
 import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
+import { subscribeToPushNotifications } from "../../common/PwaInstallBanner"; // EKLENDİ
 
 const DeadlineBanner = memo(({ isEn, title, text }) => (
   <div className="rsvp-deadline-banner">
@@ -5706,7 +6283,6 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
       setUrlGuestName(guestName);
       setValue("name", guestName);
     }
-    // Eğer akıllı link ile kişi sayısı geldiyse note kısmına yazdır
     if (countParam) setValue("note", `${countParam} Kişi`); 
   }, [setValue]);
 
@@ -5720,7 +6296,16 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest({ ...data, turnstileToken });
     
-    if (!isDeclining) triggerConfetti();
+    if (!isDeclining) {
+      triggerConfetti();
+      
+      // UX İYİLEŞTİRMESİ: Sadece katılan kişiye bildirim izni sor
+      setTimeout(() => {
+        if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
+          subscribeToPushNotifications();
+        }
+      }, 1500);
+    }
     
     reset();
     setTurnstileToken("");
@@ -5986,129 +6571,14 @@ export const restoreBackupToDatabase = async (parsedData) => {
 };
 </file>
 
-<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
-import React, { Suspense, lazy } from "react";
-import { useTranslation } from "react-i18next";
-import { Virtuoso } from "react-virtuoso";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { useStore } from "../../../store/useStore";
-
-// Grafikler Bundle boyutunu şişirmemesi için asenkron yüklenecek
-const AdminCharts = lazy(() => import('./AdminCharts'));
-
-export function GuestsAdminPanel({ 
-  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
-  filteredGuests, editGuest, deleteGuest, clearGuests,
-  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
-  toggleCheckIn
-}) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-
-  if (!adminDraft?.settings) return null;
-
-  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
-  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-
-  const sideData = [
-    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
-  ].filter(d => d.value > 0);
-
-  const checkInData = [
-    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
-    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
-  ];
-
-  return (
-    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
-      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-      </div>
-      
-      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
-        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
-        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
-        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
-        <div className="admin-guest-badge arrived">
-          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
-          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
-        </div>
-      </div>
-
-      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
-        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
-      </Suspense>
-
-      <div className="admin-toolbar-flex">
-        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
-        <div className="admin-toolbar-filter">
-          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
-        </div>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
-      </div>
-
-      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px" }}>
-        {filteredGuests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
-        ) : (
-          <Virtuoso
-            style={{ height: '100%', width: '100%' }}
-            data={filteredGuests}
-            itemContent={(index, guest) => {
-              const isAttending = guest.attendance === "Katılacağım";
-              return (
-                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
-                  <div className="admin-guest-header">
-                    <strong>{guest.name}</strong>
-                  </div>
-                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
-                  {guest.phone && <span>📞 {guest.phone}</span>}
-                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
-                  {guest.note && <em>Not: {guest.note}</em>}
-                  
-                  <div className="admin-row-actions admin-guest-actions">
-                    <button 
-                      type="button" 
-                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
-                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
-                    >
-                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
-                    </button>
-                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
-                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
-                    </button>
-                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
-                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        )}
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/AdminPanelComponents.jsx">
+// src/components/admin/AdminPanelComponents.jsx
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { 
   GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
   VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab 
 } from "./tabs";
 
 export function AdminPanelContent(props) {
@@ -6135,6 +6605,7 @@ export function AdminPanelContent(props) {
     case "data": return <DataTab {...props} isEn={isEn} />;
     case "gift": return <GiftTab {...props} isEn={isEn} />;
     case "story": return <StoryTab {...props} isEn={isEn} />; 
+    case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
     default: return null;
   }
 }
@@ -6278,6 +6749,8 @@ function AdminDashboard(props) {
       if (tab.id === "theme") {
         tabs.push({ id: "visibility", label: isEn ? "Section Visibility" : "Bölüm Görünürlüğü", description: isEn ? "Toggle sections on page" : "Sayfadaki alanları aç/kapat" });
         tabs.push({ id: "gift", label: isEn ? "IBAN & Gift" : "IBAN & Hediye", description: isEn ? "Account and bank details" : "Hesap ve banka bilgileri" });
+        // Eğer GuestPhotosTab eklediysen onu da buraya dahil edebilirsin:
+        // tabs.push({ id: "guestPhotos", label: isEn ? "Guest Uploads (POV)" : "Misafir Fotoğrafları (POV)", description: isEn ? "Manage guest photos" : "Misafirlerin yüklediği fotoğrafları yönet" });
       }
     });
     return tabs;
@@ -6289,47 +6762,60 @@ function AdminDashboard(props) {
     <main className="admin-page">
       <section className="card admin-card admin-page-card admin-shell-card">
         <div className="admin-page-header">
-          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 120px', alignItems: 'center', marginBottom: '28px', paddingTop: '24px', width: '100%' }}>
+          
+          {/* HEADER ALANI: YENİ EKLENEN BARKOVİZYON BUTONU İLE BİRLİKTE */}
+          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', alignItems: 'center', marginBottom: '28px', paddingTop: '24px', width: '100%', gap: '16px' }}>
             <div />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <button type="button" className="secondary-button admin-back-button" style={{ margin: 0 }} onClick={closeAdminPage}>
                 {isEn ? "Back to Invitation 🏠" : "Davetiyeye Dön 🏠"}
               </button>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-                <button type="button" className="secondary-button" style={{ margin: 0, minHeight: '48px', padding: '0 24px' }} onClick={toggleLanguage}>
-                  {isEn ? "EN" : "TR"}
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px' }}>
+              {/* YENİ EKLENEN: Canlı Barkovizyon Butonu */}
+              <button 
+                type="button" 
+                className="main-button" 
+                style={{ margin: 0, minHeight: '48px', padding: '0 20px', background: 'linear-gradient(135deg, #2c3e50, #000000)', borderColor: '#000' }} 
+                onClick={() => window.open(`/${window.location.pathname.split('/')[1]}/live`, '_blank')}
+              >
+                {isEn ? "Live Projector 🎬" : "Barkovizyonu Aç 🎬"}
+              </button>
+              
+              <button type="button" className="secondary-button" style={{ margin: 0, minHeight: '48px', padding: '0 24px' }} onClick={toggleLanguage}>
+                {isEn ? "EN" : "TR"}
+              </button>
+              
+              {toggleMusic && (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  style={{ margin: 0, width: '48px', height: '48px', minHeight: '48px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+                  onClick={toggleMusic}
+                  title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
+                >
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    {isMusicPlaying ? (
+                      <>
+                        <path d="M9 18V5l12-2v13" />
+                        <circle cx="6" cy="18" r="3" />
+                        <circle cx="18" cy="16" r="3" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M9 18V5l12-2v13" />
+                        <circle cx="6" cy="18" r="3" />
+                        <circle cx="18" cy="16" r="3" />
+                        <line x1="3" y1="3" x2="21" y2="21" />
+                      </>
+                    )}
+                  </svg>
                 </button>
-                {toggleMusic && (
-                  <button
-                    type="button"
-                    className="secondary-button"
-                    style={{ margin: 0, width: '48px', height: '48px', minHeight: '48px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
-                    onClick={toggleMusic}
-                    title={isMusicPlaying ? (isEn ? "Mute Music" : "Müziği Kapat") : (isEn ? "Play Music" : "Müziği Aç")}
-                  >
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      {isMusicPlaying ? (
-                        <>
-                          <path d="M9 18V5l12-2v13" />
-                          <circle cx="6" cy="18" r="3" />
-                          <circle cx="18" cy="16" r="3" />
-                        </>
-                      ) : (
-                        <>
-                          <path d="M9 18V5l12-2v13" />
-                          <circle cx="6" cy="18" r="3" />
-                          <circle cx="18" cy="16" r="3" />
-                          <line x1="3" y1="3" x2="21" y2="21" />
-                        </>
-                      )}
-                    </svg>
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           </div>
+
           <p className="section-label">{isEn ? "Management" : "Yönetim"}</p>
           <h2>{isEn ? "Admin Panel" : "Admin Panel"}</h2>
         </div>
@@ -6397,6 +6883,291 @@ function AdminDashboard(props) {
 }
 
 export default React.memo(AdminDashboard);
+</file>
+
+<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
+import React, { Suspense, lazy, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
+import { Html5QrcodeScanner } from "html5-qrcode"; 
+
+const AdminCharts = lazy(() => import('./AdminCharts'));
+
+export function GuestsAdminPanel({ 
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+  filteredGuests, editGuest, deleteGuest, clearGuests,
+  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
+  toggleCheckIn
+}) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const showAppAlert = useStore((state) => state.showAppAlert); 
+
+  const [isScanning, setIsScanning] = useState(false);
+  
+  // WhatsApp Toplu Gönderim Kuyruğu State'leri
+  const [broadcastQueue, setBroadcastQueue] = useState([]);
+  const [currentBroadcastIndex, setCurrentBroadcastIndex] = useState(0);
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+
+  // QR Okuyucu Başlatma
+  useEffect(() => {
+    if (isScanning) {
+      const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      scanner.render(
+        (decodedText) => {
+          scanner.clear();
+          setIsScanning(false);
+          const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+          const guestId = urlParams.get('id');
+          if (guestId) {
+             toggleCheckIn(guestId, false); 
+             alert("✅ Misafir başarıyla onaylandı!");
+          } else {
+             alert("❌ Geçersiz QR kod.");
+          }
+        },
+        (error) => { /* Hataları yoksay */ }
+      );
+      return () => {
+        scanner.clear().catch(console.error);
+      };
+    }
+  }, [isScanning, toggleCheckIn]);
+
+  // WhatsApp Kuyruk Başlatıcı
+  const startMassWhatsApp = () => {
+    const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
+    if (attendingGuests.length === 0) {
+      alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
+      return;
+    }
+
+    const defaultMsg = isEn 
+      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
+      : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
+
+    const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
+    
+    if (msg) {
+      setBroadcastMessage(msg);
+      setBroadcastQueue(attendingGuests);
+      setCurrentBroadcastIndex(0);
+    }
+  };
+
+  // Sonraki Mesajı Gönder
+  const sendNextMessage = () => {
+    if (currentBroadcastIndex >= broadcastQueue.length) return;
+    
+    const guest = broadcastQueue[currentBroadcastIndex];
+    const personalizedMessage = encodeURIComponent(
+      isEn ? `Hello ${guest.name},\n\n${broadcastMessage}` : `Merhaba ${guest.name},\n\n${broadcastMessage}`
+    );
+    
+    window.open(`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${personalizedMessage}`, '_blank');
+    setCurrentBroadcastIndex(prev => prev + 1);
+  };
+
+  // Kuyruğu İptal Et
+  const cancelBroadcast = () => {
+    setBroadcastQueue([]);
+    setCurrentBroadcastIndex(0);
+  };
+
+  const generateAiThankYou = async (guestName) => {
+    showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
+    try {
+      // Not: Kendi Supabase URL'nizi buraya girmelisiniz
+      const res = await fetch('https://SİZİN_SUPABASE_PROJENİZ.supabase.co/functions/v1/ai-thank-you', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: guestName,
+          coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
+          wishMessage: "Sizin adınıza çok sevindim, bir ömür boyu mutluluklar dilerim."
+        })
+      });
+
+      const data = await res.json();
+      if(data.text) {
+        prompt(isEn ? "Generated AI Message:" : "Üretilen AI Teşekkür Mesajı (Kopyalayabilirsiniz):", data.text);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
+    }
+  };
+  
+  if (!adminDraft?.settings) return null;
+
+  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
+  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+
+  const sideData = [
+    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
+  ].filter(d => d.value > 0);
+
+  const checkInData = [
+    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
+    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
+  ];
+
+  const bride = adminDraft.invitation.bride || "Gelin";
+  const groom = adminDraft.invitation.groom || "Damat";
+  const mapLink = adminDraft.invitation.mapLink || "";
+
+  return (
+    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
+      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+      </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
+          {isScanning ? "📷 Kamerayı Kapat" : "📷 QR ile Kapı Kontrolü"}
+        </button>
+        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
+          {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
+        </button>
+      </div>
+
+      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden" }}></div>}
+
+      {/* Toplu Gönderim Kontrol Paneli */}
+      {broadcastQueue.length > 0 && (
+        <div style={{ background: 'var(--paper-soft)', border: '2px solid #25D366', padding: '20px', borderRadius: '12px', marginBottom: '20px', textAlign: 'center' }}>
+          <h4 style={{ color: '#25D366', marginTop: 0 }}>WhatsApp Toplu Gönderim</h4>
+          <p>Kişi {currentBroadcastIndex + 1} / {broadcastQueue.length}: <strong>{broadcastQueue[currentBroadcastIndex]?.name}</strong></p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '14px', flexWrap: 'wrap' }}>
+            {currentBroadcastIndex < broadcastQueue.length ? (
+              <button type="button" className="main-button" onClick={sendNextMessage} style={{ background: '#25D366', borderColor: '#25D366', margin: 0 }}>
+                Mesajı Gönder & Sonrakine Geç
+              </button>
+            ) : (
+              <span style={{ fontWeight: 'bold', color: '#25D366' }}>Tüm mesajlar gönderildi! 🎉</span>
+            )}
+            <button type="button" className="secondary-button danger-button" onClick={cancelBroadcast} style={{ margin: 0 }}>
+              Kapat
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
+        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
+        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
+        <div className="admin-guest-badge arrived">
+          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
+          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
+        </div>
+      </div>
+
+      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
+        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
+      </Suspense>
+
+      <div className="admin-toolbar-flex">
+        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
+        <div className="admin-toolbar-filter">
+          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
+        </div>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
+
+      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px" }}>
+        {filteredGuests.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredGuests}
+            itemContent={(index, guest) => {
+              const isAttending = guest.attendance === "Katılacağım";
+              
+              const whatsappMsg = encodeURIComponent(
+                isEn 
+                ? `Hello ${guest.name},\n\nYour RSVP for ${bride} & ${groom}'s wedding has been confirmed. ✅\n\n${guest.tableNumber ? `🍽️ Reserved Table: ${guest.tableNumber}\n\n` : ''}📍 Location:\n${mapLink}\n\nWe can't wait to celebrate with you! 🎉`
+                : `Merhaba ${guest.name},\n\n${bride} & ${groom} düğün davetiyemize LCV (katılım) kaydınız başarıyla alınmıştır. ✅\n\n${guest.tableNumber ? `🍽️ Sizin İçin Ayrılan Masa: ${guest.tableNumber}\n\n` : ''}📍 Konum ve Yol Tarifi:\n${mapLink}\n\nSizi aramızda görmek için sabırsızlanıyoruz! 🎉`
+              );
+
+              return (
+                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
+                  <div className="admin-guest-header">
+                    <strong>{guest.name}</strong>
+                  </div>
+                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
+                  
+                  {guest.phone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                      <span>📞 {guest.phone}</span>
+                      {isAttending && (
+                        <>
+                          <a 
+                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="secondary-button" 
+                            style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
+                          >
+                            {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
+                          </a>
+                          
+                          {adminDraft.settings.isPostWedding && (
+                            <button 
+                              type="button"
+                              onClick={() => generateAiThankYou(guest.name)}
+                              className="secondary-button"
+                              style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#8e44ad', borderColor: '#8e44ad', fontWeight: 'bold' }}
+                            >
+                              {isEn ? "AI Thank You 🤖" : "AI Teşekkür Et 🤖"}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
+                  {guest.note && <em>Not: {guest.note}</em>}
+                  
+                  <div className="admin-row-actions admin-guest-actions">
+                    <button 
+                      type="button" 
+                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
+                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
+                    >
+                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
+                    </button>
+                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
+                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
+                    </button>
+                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
+                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </AdminSection>
+  );
+}
 </file>
 
 <file path="src/components/invitation/sections/HeroSection.jsx">
@@ -6471,552 +7242,6 @@ export const HeroSection = memo(function HeroSection({ invitation, copy, guestGr
     </m.section>
   );
 });
-</file>
-
-<file path="src/components/invitation/PublicSections.jsx">
-import React, { useState, useEffect, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
-import { handleAddToCalendar, getNavigationLinks } from "../../utils/helpers";
-import { m, useScroll, useTransform, useSpring } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
-  const [copied, setCopied] = useState(false);
-  if (!isOpen || typeof document === "undefined") return null;
-
-  const links = getNavigationLinks(invitation);
-
-  const copyAddress = () => {
-    const venueStr = invitation?.venue ? invitation.venue : "";
-    const addressStr = invitation?.address ? invitation.address : "";
-    navigator.clipboard.writeText(`${venueStr} ${addressStr}`.trim());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
-  return createPortal(
-    <div onClick={onClose} className="app-modal-backdrop">
-      <div onClick={(e) => e.stopPropagation()} className="app-modal-card" style={{ maxWidth: '420px', textAlign: 'center' }}>
-        <h3 style={{ margin: '0 0 8px 0', color: 'var(--rose-deep)' }}>
-          {isEn ? "Choose Navigation App" : "Yol Tarifi Al"}
-        </h3>
-        <p style={{ margin: '0 0 18px 0', fontSize: '15px' }}>
-          {invitation?.venue} – {invitation?.address}
-        </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
-          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
-            Google Maps 🗺️
-          </a>
-          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
-            Apple Maps 🍏
-          </a>
-          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
-            Yandex Navi 🚕
-          </a>
-          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button" style={{ padding: '12px', fontSize: '14px', borderRadius: '14px' }}>
-            Waze 🚙
-          </a>
-        </div>
-
-        <button type="button" className="main-button" onClick={copyAddress} style={{ width: '100%', marginBottom: '10px' }}>
-          {copied ? (isEn ? "Address Copied! ✅" : "Adres Kopyalandı! ✅") : (isEn ? "Copy Full Address 📋" : "Tam Adresi Kopyala 📋")}
-        </button>
-        <button type="button" className="secondary-button" onClick={onClose} style={{ width: '100%' }}>
-          {t('ui.closeBtn')}
-        </button>
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-export function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  return (
-    <m.section 
-      initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
-    >
-      {invitation?.heroVideo ? (
-        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      ) : null}
-      
-      <div className="hero-content">
-        <p className="small-title">{isEn ? t('invitation.heroLabel') : copy?.heroLabel}</p>
-        <h1 className="couple-title"><span>{invitation?.bride}</span><em>&</em><span>{invitation?.groom}</span></h1>
-        <p className="hero-date">{invitation?.dateText}</p>
-        <p className="hero-time">{t('ui.time')} {invitation?.timeText}</p>
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <span>{t('ui.scroll')}</span>
-        </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
-        )}
-      </div>
-
-    </m.section>
-  );
-}
-
-export function CountdownSection({ copy, timeLeft }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const isFinished = timeLeft?.days === 0 && timeLeft?.hours === 0 && timeLeft?.minutes === 0 && timeLeft?.seconds === 0;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
-      <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
-      <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
-      
-      {isFinished ? (
-        <div style={{ padding: '24px', background: 'var(--paper-soft)', borderRadius: '24px', border: '1px solid rgba(217, 140, 161, 0.4)', marginTop: '20px' }}>
-          <span style={{ fontSize: '32px', display: 'block', marginBottom: '8px' }}>🎉💍✨</span>
-          <strong style={{ fontSize: '24px', color: 'var(--rose-dark)' }}>
-            {isEn ? "Today is the Big Day!" : "Bugün En Mutlu Günümüz!"}
-          </strong>
-          <p style={{ marginTop: '6px', fontSize: '16px' }}>
-            {isEn ? "We can't wait to celebrate with you." : "Sizinle kutlamak için sabırsızlanıyoruz."}
-          </p>
-        </div>
-      ) : (
-        <div className="countdown-grid">
-          <div className="count-box countdown-animated"><strong>{timeLeft?.days || 0}</strong><span>{t('ui.days')}</span></div>
-          <div className="count-box countdown-animated"><strong>{timeLeft?.hours || 0}</strong><span>{t('ui.hours')}</span></div>
-          <div className="count-box countdown-animated"><strong>{timeLeft?.minutes || 0}</strong><span>{t('ui.mins')}</span></div>
-          <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
-        </div>
-      )}
-    </m.section>
-  );
-}
-
-export function InvitationMessageSection({ copy, invitation }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card invitation-card">
-      <p className="section-label">{isEn ? t('invitation.invitationLabel') : copy?.invitationLabel}</p>
-      <h2>{isEn ? t('invitation.invitationTitle') : copy?.invitationTitle}</h2>
-      <p>{invitation?.message}</p>
-    </m.section>
-  );
-}
-
-export function FamilySection({ copy, familyInfo }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card family-card">
-      <p className="section-label">{isEn ? t('invitation.familyLabel') : copy?.familyLabel}</p>
-      <h2>{isEn ? t('invitation.familyTitle') : copy?.familyTitle}</h2>
-      <p>{familyInfo?.text}</p>
-      <div className="family-grid">
-        <div><span>{familyInfo?.brideFamilyTitle}</span><strong>{familyInfo?.brideFamilyName}</strong></div>
-        <div><span>{familyInfo?.groomFamilyTitle}</span><strong>{familyInfo?.groomFamilyName}</strong></div>
-      </div>
-    </m.section>
-  );
-}
-
-export function StorySection({ copy, storyTimeline }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const stories = Array.isArray(storyTimeline) ? storyTimeline : [];
-  
-  const containerRef = React.useRef(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"]
-  });
-
-  const scaleY = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
-
-  const travelerY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
-  if (stories.length === 0) return null;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
-      <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
-      <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
-      
-      <div className="story-timeline-container" ref={containerRef}>
-        <div className="story-line-bg"></div>
-        <m.div className="story-line-progress" style={{ scaleY }}></m.div>
-
-        <m.div className="story-traveler" style={{ top: travelerY }}>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--rose-dark)" }}>
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-        </m.div>
-
-        {stories.map((story, index) => (
-          <m.div 
-            initial={{ opacity: 0, x: index % 2 === 0 ? -40 : 40 }} 
-            whileInView={{ opacity: 1, x: 0 }} 
-            transition={{ duration: 0.7, delay: 0.1, type: "spring", bounce: 0.4 }} 
-            viewport={{ once: true, amount: 0.4 }}
-            className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
-            key={index}
-          >
-            <div className="story-map-marker">
-              <div className="story-map-marker-inner"></div>
-            </div>
-            
-            <div className="story-content-box">
-              <span className="story-date">{story.date}</span>
-              <h3 className="story-heading">{story.title}</h3>
-              <p className="story-desc">{story.description}</p>
-              {story.image && (
-                <img src={story.image} alt={story.title} className="story-image" loading="lazy" />
-              )}
-            </div>
-          </m.div>
-        ))}
-      </div>
-    </m.section>
-  );
-}
-
-export function CeremonySection({ copy, eventDetails }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const events = Array.isArray(eventDetails) ? eventDetails : [];
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
-      <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
-      <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
-      <div className="ceremony-grid">
-        {events.map((event, index) => (
-          <div className="ceremony-item" key={`${event.label}-${index}`}>
-            <span>{event.label}</span><strong>{event.time}</strong><p>{event.description}</p><em>{event.location}</em>
-          </div>
-        ))}
-      </div>
-    </m.section>
-  );
-}
-
-export function ScheduleSection({ copy, invitation, scheduleItems }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const items = Array.isArray(scheduleItems) ? scheduleItems : [];
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card schedule-card">
-      <p className="section-label">{isEn ? t('invitation.scheduleLabel') : copy?.scheduleLabel}</p>
-      <h2>{invitation?.dateText}</h2>
-      <div className="schedule-list">
-        {items.map((item, index) => (
-          <div className="schedule-item" key={`${item.time}-${index}`}>
-            <strong>{item.time}</strong><div><span>{item.title}</span><p>{item.description}</p></div>
-          </div>
-        ))}
-      </div>
-    </m.section>
-  );
-}
-
-export function LocationSection({ copy, invitation, googleCalendarLink }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const [isNavOpen, setIsNavOpen] = useState(false);
-
-  const venueStr = invitation?.venue ? invitation.venue : "";
-  const addressStr = invitation?.address ? invitation.address : "";
-  const mapQuery = encodeURIComponent(`${venueStr} ${addressStr}`.trim());
-  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.locationLabel') : copy?.locationLabel}</p>
-      <h2>{isEn ? t('invitation.locationTitle') : copy?.locationTitle}</h2>
-      <div className="info-list">
-        <div className="info-row"><span>{t('ui.date')}</span><strong>{invitation?.dateText}</strong></div>
-        <div className="info-row"><span>{t('ui.time')}</span><strong>{invitation?.timeText}</strong></div>
-        <div className="info-row"><span>{t('ui.venue')}</span><strong>{invitation?.venue}</strong></div>
-        <div className="info-row"><span>{t('ui.address')}</span><strong>{invitation?.address}</strong></div>
-      </div>
-      <div className="mini-map">
-        <iframe title="Map" src={mapSrc} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade"></iframe>
-      </div>
-      <div className="button-group">
-        <button type="button" className="main-button" onClick={() => setIsNavOpen(true)}>
-          {t('ui.goToMap')}
-        </button>
-        <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>
-          {t('ui.addToCalendar')}
-        </button>
-      </div>
-
-      <NavigationModal invitation={invitation} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} isEn={isEn} t={t} />
-    </m.section>
-  );
-}
-
-function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage, nextImage, isEn }) {
-  if (lightboxIndex === null || typeof document === "undefined") return null;
-
-  return createPortal(
-    <div onClick={closeLightbox} className="gallery-lightbox-overlay">
-      <button type="button" onClick={closeLightbox} className="lightbox-control-btn lightbox-close" title="Kapat">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-
-      {gallery.length > 1 && (
-        <button type="button" onClick={prevImage} className="lightbox-control-btn lightbox-prev" title="Önceki">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-      )}
-
-      <div onClick={(e) => e.stopPropagation()} className="gallery-lightbox-content">
-        <img src={gallery[lightboxIndex]} alt="Büyütülmüş Fotoğraf" className="gallery-lightbox-image" />
-        <span className="gallery-lightbox-caption">
-          {lightboxIndex + 1} / {gallery.length}
-        </span>
-      </div>
-
-      {gallery.length > 1 && (
-        <button type="button" onClick={nextImage} className="lightbox-control-btn lightbox-next" title="Sonraki">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-      )}
-    </div>,
-    document.body
-  );
-}
-
-export function GallerySection({ copy, invitation }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-
-  const openLightbox = (index) => setLightboxIndex(index);
-  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
-  
-  const prevImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
-  }, [gallery.length]);
-  
-  const nextImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
-  }, [gallery.length]);
-
-  useEffect(() => {
-    if (lightboxIndex === null) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowLeft") prevImage();
-      if (e.key === "ArrowRight") nextImage();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [lightboxIndex, closeLightbox, prevImage, nextImage]);
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
-      <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
-      <div className="gallery-grid">
-        {gallery.map((image, index) => (
-          <img 
-            key={`gallery-img-${index}`} 
-            src={image} 
-            alt={`Galeri ${index + 1}`} 
-            loading="lazy" 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openLightbox(index);
-            }}
-            className="gallery-image"
-            style={{ cursor: "zoom-in" }}
-          />
-        ))}
-      </div>
-      <LightboxModal gallery={gallery} lightboxIndex={lightboxIndex} closeLightbox={closeLightbox} prevImage={prevImage} nextImage={nextImage} isEn={isEn} />
-    </m.section>
-  );
-}
-
-export function ShareSection({ copy, qrImageUrl, shareText, copyInvitationLink }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.shareLabel') : copy?.shareLabel}</p>
-      <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
-      <p>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
-      <div className="qr-public-card">
-        <img src={qrImageUrl} alt="QR Code" loading="lazy" />
-        <span>{t('ui.shareQr')}</span>
-      </div>
-      <div className="button-group">
-        <a className="main-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">{t('ui.shareWhatsapp')}</a>
-        <button className="secondary-button" onClick={copyInvitationLink}>{t('ui.copyLink')}</button>
-      </div>
-    </m.section>
-  );
-}
-
-export function GiftSection({ giftData }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const [copied, setCopied] = useState(false);
-
-  const copyIban = () => {
-    navigator.clipboard.writeText(giftData?.iban);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
-  if (!giftData) return null;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{t('ui.giftTitle')}</p>
-      <h2>{isEn ? t('ui.giftTitle') : giftData.title}</h2>
-      <p className="gift-description">
-        {isEn ? t('ui.giftDescription') : giftData.description}
-      </p>
-      
-      <div className="gift-card" style={{ 
-        background: 'var(--paper-soft)', 
-        padding: '20px 16px', 
-        borderRadius: '12px', 
-        margin: '16px auto 24px auto', 
-        maxWidth: '450px',
-        textAlign: 'center', 
-        border: '1px solid rgba(159, 79, 104, 0.08)' 
-      }}>
-        <strong className="gift-card-receiver" style={{ 
-          display: 'block', 
-          fontSize: '16px', 
-          color: 'var(--rose-dark)', 
-          fontWeight: '700', 
-          marginBottom: '4px' 
-        }}>
-          {giftData.receiver}
-        </strong>
-        <span className="gift-card-bank" style={{ 
-          display: 'block', 
-          fontSize: '13px', 
-          color: 'var(--text-muted)', 
-          marginBottom: '14px' 
-        }}>
-          {giftData.bankName}
-        </span>
-        <code className="gift-card-iban" style={{ 
-          display: 'inline-block', 
-          fontSize: '14px', 
-          padding: '10px 18px', 
-          background: 'var(--paper)', 
-          borderRadius: '8px', 
-          border: '1px dashed var(--rose-dark)', 
-          color: 'var(--text-main)', 
-          letterSpacing: '1px', 
-          wordBreak: 'break-all' 
-        }}>
-          {giftData.iban}
-        </code>
-      </div>
-      
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <button type="button" className="main-button gift-copy-button" onClick={copyIban} style={{ paddingLeft: '32px', paddingRight: '32px' }}>
-          {copied ? t('ui.copied') : t('ui.copyIban')}
-        </button>
-      </div>
-    </m.section>
-  );
-}
-
-export function FooterSection({ coupleName, invitation, copy }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  return (
-    <m.footer initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="footer">
-      <p>{coupleName}</p>
-      <span>{invitation?.dateText}</span>
-      <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
-      <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
-    </m.footer>
-  );
-}
-</file>
-
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register';
-import * as Sentry from '@sentry/react'; // Sentry entegrasyonu eklendi
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-// Sentry konfigürasyonu (Kendi DSN adresinle güncellemelisin)
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN || "",
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  tracesSampleRate: 1.0, 
-  replaysSessionSampleRate: 0.1, 
-  replaysOnErrorSampleRate: 1.0, 
-});
-
-registerSW({ immediate: true }); 
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <HelmetProvider>
-        <App />
-        <Analytics />
-        <SpeedInsights />
-      </HelmetProvider>
-    </BrowserRouter>
-  </React.StrictMode>
-);
 </file>
 
 <file path="src/store/useStore.js">
@@ -7151,6 +7376,62 @@ export const useStore = create((...a) => ({
   ...createDataSlice(...a),
   ...createAdminDraftSlice(...a)
 }));
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register';
+import * as Sentry from '@sentry/react'; 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // EKLENDİ: React Query
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+// Sentry konfigürasyonu
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN || "",
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 1.0, 
+  replaysSessionSampleRate: 0.1, 
+  replaysOnErrorSampleRate: 1.0, 
+});
+
+// PWA Service Worker
+registerSW({ immediate: true }); 
+
+// YENİ: React Query İstemcisi Oluşturuluyor
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // Veriler 5 dakika boyunca taze kabul edilir (gereksiz ağ isteğini önler)
+      refetchOnWindowFocus: true, // Kullanıcı sekmeye dönünce veriyi arkada gizlice günceller
+      retry: 2, // Hata olursa 2 kez tekrar dener
+    },
+  },
+});
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    {/* YENİ: Uygulamayı QueryClientProvider ile sarmalıyoruz */}
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <HelmetProvider>
+          <App />
+          <Analytics />
+          <SpeedInsights />
+        </HelmetProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </React.StrictMode>
+);
 </file>
 
 <file path="src/pages/AdminController.jsx">
@@ -7324,6 +7605,7 @@ import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, load
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -7347,18 +7629,23 @@ function App() {
   const invitation = siteData.invitation;
   const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
 
+  // Sistem Dark Mode Kontrolü
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolvedTheme = prefersDark ? "dark" : activeTheme;
+
   // Dinamik Tema ve Favicon Yönetimi
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = activeTheme;
+    document.documentElement.dataset.theme = resolvedTheme;
+    
     const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
     favicon.rel = "icon"; 
     favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(activeTheme);
+    favicon.href = getFaviconUrl(resolvedTheme);
     if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, activeTheme]);
+  }, [isEn, resolvedTheme]);
 
-  // Sayfa İlk Açılışında Verilerin Yüklenmesi (Sadece 1 Kere Çalışır)
+  // Sayfa İlk Açılışında Verilerin Yüklenmesi
   useEffect(() => {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
@@ -7383,18 +7670,22 @@ function App() {
     initDatabaseData();
   }, [setSiteData, setAdminDraft, setWishes, setGuests]);
 
-  /* 
-    NOT: Buradaki gereksiz Supabase Realtime (schema-db-changes) aboneliği tamamen SİLİNDİ.
-    Çünkü useDatabaseManager.js dosyası zaten çok daha performanslı bir şekilde (bütün
-    tabloyu baştan indirmeden) eklenen kayıtları Zustand state'ine anlık ekliyor.
-  */
-  
   return (
     <LazyMotion features={domAnimation} strict>
+      {/* SUPABASE BAĞLANTI UYARISI EKLENDİ */}
+      {!isSupabaseReady() && (
+        <div style={{ 
+          background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', 
+          position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' 
+        }}>
+          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı (.env değişkenleri eksik). Uygulama şu an "Mock (Test) Modunda" çalışıyor ve veriler kalıcı olarak kaydedilmeyecektir.
+        </div>
+      )}
+
       <div 
         className="app" 
         lang={isEn ? "en" : "tr"} 
-        data-theme={activeTheme}
+        data-theme={resolvedTheme}
         style={{
           "--intro-image": `url(${invitation.introImage})`,
           "--hero-image": `url(${invitation.heroImage})`,
@@ -7418,6 +7709,16 @@ function App() {
               <AdminController />
             </ErrorBoundary>
           } />
+          <Route path="/:tenant_slug" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/:tenant_slug/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
         </Routes>
       </div>
     </LazyMotion>
@@ -7425,329 +7726,6 @@ function App() {
 }
 
 export default App;
-</file>
-
-<file path="src/components/invitation/InteractiveSections.jsx">
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import FocusTrap from 'focus-trap-react';
-import { Turnstile } from '@marsidev/react-turnstile';
-import { OptionGroup } from "../common/UIComponents";
-import { triggerConfetti } from "../../utils/helpers";
-import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../config/constants";
-import { getRsvpSchema, getWishSchema } from "../../validations/schemas"; 
-
-function DeadlineBanner({ isEn, title, text }) {
-  return (
-    <div className="rsvp-deadline-banner">
-      <div className="deadline-icon">⏳</div>
-      <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
-      <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
-    </div>
-  );
-}
-
-function DeclineModal({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) {
-  const handleClose = () => resetAndCloseModal();
-  if (!showDeclineModal) return null;
-
-  return createPortal(
-    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
-      <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
-        <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
-          <div className="app-modal-content">
-            <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
-            <p className="deadline-text modal-message">
-              {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
-            </p>
-          </div>
-
-          {!showDeclineGift ? (
-            <div className="app-modal-actions">
-              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
-                {t('ui.close')}
-              </button>
-              {showIban && giftData && (
-                <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}>
-                  <span>{t('ui.sendGift')}</span>
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="app-modal-content">
-              <div className="modal-gift-card">
-                <strong className="modal-gift-receiver">{giftData.receiver}</strong>
-                <span className="modal-gift-bank">{giftData.bankName}</span>
-                <code className="modal-gift-iban">{giftData.iban}</code>
-              </div>
-              <div className="app-modal-actions">
-                <button type="button" className="main-button" onClick={copyIban}>
-                  {copied ? t('ui.copied') : t('ui.copyIban')}
-                </button>
-                <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>
-                  {t('ui.closeBtn')}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </FocusTrap>,
-    document.body
-  );
-}
-
-export function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [showDeclineGift, setShowDeclineGift] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [urlGuestName, setUrlGuestName] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [formKey, setFormKey] = useState(0); 
-
-  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
-
-  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
-  });
-
-  const currentNote = watch("note") || "";
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const guestName = params.get("guest") || params.get("davetli") || "";
-    const countParam = params.get("count") || params.get("kisi") || "";
-
-    if (guestName) {
-      setUrlGuestName(guestName);
-      setValue("name", guestName);
-    }
-    if (countParam) setValue("note", `${countParam} Kişi`); 
-  }, [setValue]);
-
-  const todayStr = new Date().toLocaleDateString('en-CA'); 
-  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
-
-  const onSubmit = async (data) => {
-    if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return;
-
-    const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest({ ...data, turnstileToken });
-    
-    if (!isDeclining) triggerConfetti();
-    
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
-    if (isDeclining) setShowDeclineModal(true);
-  };
-
-  const resetAndCloseModal = useCallback(() => {
-    setShowDeclineModal(false);
-    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
-  }, []);
-
-  const copyIban = useCallback(() => {
-    if (giftData?.iban) {
-      navigator.clipboard.writeText(giftData.iban);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  }, [giftData?.iban]);
-
-  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ 
-    ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label 
-  })), [isEn, t]);
-
-  return (
-    <section className="card rsvp-card">
-      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
-      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
-      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
-      
-      {isDeadlinePassed ? (
-        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
-      ) : (
-        <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
-
-          {urlGuestName && (
-            <div className="guest-badge-banner">
-              {t('ui.prefilled', { name: urlGuestName })}
-              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
-            </div>
-          )}
-
-          <div style={{ width: '100%' }}>
-            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-          </div>
-
-          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
-
-          <div className="field-with-counter" style={{ marginTop: '12px' }}>
-            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
-            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
-          </div>
-
-          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-            <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
-          </div>
-
-          <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
-            {isSubmitting ? "..." : t('form.submitRsvp')}
-          </button>
-        </form>
-      )}
-
-      <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
-        <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-          {t('form.whatsappRsvp')}
-        </a>
-      </div>
-      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
-    </section>
-  );
-}
-
-export function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const guestList = Array.isArray(guests) ? guests : [];
-  
-  const totalResponses = guestList.length;
-  const attending = totalPersonCount !== undefined ? totalPersonCount : guestList.filter(g => g.attendance === "Katılacağım").length;
-  const notAttending = notAttendingCount !== undefined ? notAttendingCount : guestList.filter(g => g.attendance === "Katılamayacağım").length;
-
-  return (
-    <section className="card">
-      <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
-      <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
-      
-      {/* İstatistik Kutuları - Eşit Dağılımlı Flexbox ile Ortalandı */}
-      <div className="guest-stats" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: '12px', 
-        flexWrap: 'wrap', 
-        margin: '24px auto 16px', 
-        width: '100%' 
-      }}>
-        <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
-          <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{totalResponses}</strong>
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.totalResponses')}</span>
-        </div>
-        <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
-          <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{attending}</strong>
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.attending')}</span>
-        </div>
-        <div style={{ flex: '1 1 0', minWidth: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 8px', background: 'var(--paper)', border: '1px solid rgba(159, 79, 104, 0.15)', borderRadius: '12px' }}>
-          <strong style={{ fontSize: '22px', color: 'var(--rose-dark)', marginBottom: '4px' }}>{notAttending}</strong>
-          <span style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.notAttending')}</span>
-        </div>
-      </div>
-      
-      {/* Gizlilik Notu - İkon ve Metin Ayrılarak Ortalandı */}
-      <div className="private-note-card" style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
-        <p className="private-note-text" style={{ 
-          display: 'flex', 
-          alignItems: 'flex-start', 
-          justifyContent: 'center', 
-          textAlign: 'left', 
-          margin: '0 auto', 
-          color: 'var(--text-muted)', 
-          fontSize: '13.5px', 
-          lineHeight: '1.6', 
-          maxWidth: '90%' 
-        }}>
-          <span style={{ marginRight: '8px', fontSize: '15px', marginTop: '1px', flexShrink: 0 }}>🔒</span>
-          <span style={{ textAlign: 'center' }}>{t('ui.privateNote')}</span>
-        </p>
-      </div>
-    </section>
-  );
-}
-
-export function WishesSection({ copy, submitWish, approvedWishes }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
-  
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [formKey, setFormKey] = useState(0); 
-
-  const wishSchema = useMemo(() => getWishSchema(t), [t]);
-
-  const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(wishSchema),
-    defaultValues: { name: "", message: "", honeypot: "" }
-  });
-
-  const currentMessage = watch("message") || "";
-
-  const onSubmit = async (data) => {
-    if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return;
-
-    await submitWish({ ...data, turnstileToken });
-    triggerConfetti();
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
-  };
-
-  return (
-    <section className="card">
-      <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
-      <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
-      
-      <form key={`wish-form-${formKey}`} className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
-
-        <div style={{ width: '100%' }}>
-          <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-          {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-        </div>
-        
-        <div className="field-with-counter">
-          <Controller name="message" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>} />
-          <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
-          {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
-        </div>
-
-        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-          <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
-        </div>
-        
-        <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
-          {isSubmitting ? "..." : t('form.submitWish')}
-        </button>
-      </form>
-      
-      <div className="wish-list">
-        {wishes.length === 0 ? (
-          <p className="empty-text">{t('ui.noWishes')}</p>
-        ) : (
-          wishes.slice(0, 4).map((wish) => (
-            <div className="wish-item" key={wish.id}>
-              <p>"{wish.message}"</p>
-              <strong>{wish.name}</strong>
-            </div>
-          ))
-        )}
-      </div>
-    </section>
-  );
-}
 </file>
 
 <file path="src/pages/InvitationController.jsx">
@@ -7886,622 +7864,6 @@ export default function InvitationController() {
       </Suspense>
     </div>
   );
-}
-</file>
-
-<file path="src/hooks/useDatabaseManager.js">
-import { useCallback, useEffect } from "react";
-import { supabase } from "../supabaseClient";
-import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
-import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
-import { useAdminStore } from "../store/useAdminStore"; // EKLENDİ: Admin durumunu kontrol etmek için
-
-export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
-  
-  useEffect(() => {
-    if (!isSupabaseReady()) return;
-
-    const wishesChannel = supabase.channel("public:wishes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "wishes" }, (payload) => {
-        const isAdmin = useAdminStore.getState().isAdminUnlocked; // EKLENDİ: Anlık admin kontrolü
-        
-        if (payload.eventType === "INSERT") {
-          // Adminse hepsini, değilse sadece onaylıları anında gör
-          if (payload.new.approved || isAdmin) {
-            setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
-          }
-        } else if (payload.eventType === "UPDATE") {
-          if (isAdmin) {
-             setWishes((prev) => prev.map(w => w.id === payload.new.id ? dbWishToUi(payload.new) : w));
-          } else {
-             // Ziyaretçiler için: Onaylandıysa listeye ekle/güncelle, onayı alındıysa listeden gizle
-             if (payload.new.approved) {
-               setWishes((prev) => prev.some(w => w.id === payload.new.id) 
-                 ? prev.map(w => w.id === payload.new.id ? dbWishToUi(payload.new) : w)
-                 : [dbWishToUi(payload.new), ...prev]);
-             } else {
-               setWishes((prev) => prev.filter(w => w.id !== payload.new.id));
-             }
-          }
-        } else if (payload.eventType === "DELETE") {
-          setWishes((prev) => prev.filter(w => w.id !== payload.old.id));
-        }
-      }).subscribe();
-
-    const guestsChannel = supabase.channel("public:guests")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
-      })
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "guests" }, (payload) => {
-        setGuests((prev) => prev.filter(g => g.id !== payload.old.id)); // EKLENDİ: Silinme dinleyicisi
-      }).subscribe();
-
-    return () => {
-      supabase.removeChannel(wishesChannel);
-      supabase.removeChannel(guestsChannel);
-    };
-  }, [setWishes, setGuests]);
-
-  useEffect(() => {
-    const syncOfflineData = async () => {
-      if (!navigator.onLine || !isSupabaseReady()) return;
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
-      if (offlineGuests.length > 0) {
-        for (const guest of offlineGuests) {
-          await supabase.functions.invoke('submit-form', {
-            body: { type: 'guest', data: guest, turnstileToken: "OFFLINE_TOKEN" },
-            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
-          });
-        }
-        localStorage.removeItem('offline_guests');
-      }
-
-      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
-      if (offlineWishes.length > 0) {
-        for (const wish of offlineWishes) {
-          await supabase.functions.invoke('submit-form', {
-            body: { type: 'wish', data: wish, turnstileToken: "OFFLINE_TOKEN" },
-            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
-          });
-        }
-        localStorage.removeItem('offline_wishes');
-      }
-
-      const offlineCheckins = JSON.parse(localStorage.getItem('offline_checkins') || '[]');
-      if (offlineCheckins.length > 0) {
-        for (const checkin of offlineCheckins) {
-          await supabase.from("guests").update({ has_arrived: checkin.status }).eq("id", checkin.id);
-        }
-        localStorage.removeItem('offline_checkins');
-        setAdminSaveMessage?.(isEn ? "Offline check-ins synced!" : "Çevrimdışı kapı girişleri senkronize edildi!");
-      }
-    };
-
-    window.addEventListener('online', syncOfflineData);
-    return () => window.removeEventListener('online', syncOfflineData);
-  }, [isEn, setAdminSaveMessage]);
-
-  const submitGuest = useCallback(async (formData) => {
-    if (formData.honeypot) return;
-    
-    const tempId = `temp-${Date.now()}`;
-    setGuests((prev) => [{ id: tempId, ...formData }, ...prev]);
-
-    if (!navigator.onLine) {
-      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
-      offlineGuests.push(uiGuestToDb(formData));
-      localStorage.setItem('offline_guests', JSON.stringify(offlineGuests));
-      await showAppAlert?.(isEn ? "Saved offline. Will sync automatically." : "İnternet yok. Bağlantı geldiğinde form otomatik gönderilecek.", { title: "Çevrimdışı 📶" });
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('submit-form', {
-        body: { type: 'guest', data: uiGuestToDb(formData), turnstileToken: formData.turnstileToken }
-      });
-      
-      if (error || !data.success) throw new Error(error?.message || data?.error || "Sunucu hatası.");
-      
-      setGuests((prev) => prev.map(g => g.id === tempId ? dbGuestToUi(data.data) : g));
-      if (formData.attendance === "Katılacağım") await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
-    } catch (error) {
-      setGuests((prev) => prev.filter(g => g.id !== tempId));
-      await showAppAlert?.(t('alerts.rsvpError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [setGuests, showAppAlert, t, isEn]);
-
-  const submitWish = useCallback(async (formData) => {
-    if (formData.honeypot) return;
-    const shouldPublishNow = !settings?.requireWishApproval;
-    const tempId = `temp-${Date.now()}`;
-
-    if (shouldPublishNow) {
-      setWishes((prev) => [{ id: tempId, ...formData, approved: true }, ...prev]);
-    }
-
-    if (!navigator.onLine) {
-      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
-      offlineWishes.push({ name: formData.name, message: formData.message, approved: shouldPublishNow });
-      localStorage.setItem('offline_wishes', JSON.stringify(offlineWishes));
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('submit-form', {
-        body: { 
-          type: 'wish', 
-          data: { name: formData.name, message: formData.message, approved: shouldPublishNow }, 
-          turnstileToken: formData.turnstileToken 
-        }
-      });
-      
-      if (error || !data.success) throw new Error(error?.message || data?.error || "Sunucu hatası.");
-      
-      if (shouldPublishNow) {
-        setWishes((prev) => prev.map(w => w.id === tempId ? dbWishToUi(data.data) : w));
-      }
-      await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: t('alerts.saveTitle') });
-    } catch (error) {
-      if (shouldPublishNow) setWishes((prev) => prev.filter(w => w.id !== tempId));
-      await showAppAlert?.(t('alerts.wishError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
-    }
-  }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
-
-  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
-    const nextStatus = !currentStatus;
-    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
-
-    if (!navigator.onLine) {
-      const offlineCheckins = JSON.parse(localStorage.getItem('offline_checkins') || '[]');
-      const filtered = offlineCheckins.filter(c => c.id !== guestId);
-      filtered.push({ id: guestId, status: nextStatus });
-      localStorage.setItem('offline_checkins', JSON.stringify(filtered));
-      setAdminSaveMessage?.(isEn ? "Saved offline." : "Giriş cihaza kaydedildi (Çevrimdışı).");
-      return;
-    }
-
-    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
-    if (error) { 
-      setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
-      setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
-    }
-  }, [setGuests, setAdminSaveMessage, isEn]);
-
-  const assignTable = useCallback(async (guestId, tableNumber) => {
-    const currentGuest = guests.find(g => g.id === guestId);
-    const prevTable = currentGuest?.tableNumber;
-
-    setGuests(prev => prev.map(g => g.id === guestId ? { ...g, tableNumber } : g));
-
-    if (!navigator.onLine) {
-      setAdminSaveMessage?.(isEn ? "Table assigned offline." : "Masa çevrimdışı atandı.");
-      return;
-    }
-
-    const { error } = await supabase.from('guests').update({ table_number: tableNumber || null }).eq('id', guestId);
-    if (error) {
-      setGuests(prev => prev.map(g => g.id === guestId ? { ...g, tableNumber: prevTable } : g));
-      setAdminSaveMessage?.(isEn ? "Error assigning table." : "Masa atanamadı.");
-    }
-  }, [guests, setGuests, setAdminSaveMessage, isEn]);
-
-  const clearGuests = useCallback(async () => {
-    const confirmed = await showAppConfirm?.(
-      isEn ? "Delete all RSVP records? This cannot be undone." : "Tüm katılım kayıtları silinsin mi? Bu işlem geri alınamaz.",
-      { title: isEn ? "Clear Guests" : "Tümünü Sil", tone: "danger" }
-    );
-    if (!confirmed) return;
-
-    const previousGuests = [...guests];
-    setGuests([]); 
-
-    if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from('guests').delete().not('id', 'is', null);
-      if (error) {
-        setGuests(previousGuests);
-        setAdminSaveMessage?.(isEn ? "Error clearing guests." : "Kayıtlar silinemedi.");
-      } else {
-        setAdminSaveMessage?.(isEn ? "All guests cleared." : "Tüm katılım kayıtları başarıyla silindi.");
-      }
-    }
-  }, [guests, setGuests, showAppConfirm, setAdminSaveMessage, isEn]);
-
-  const clearWishes = useCallback(async () => {
-    const confirmed = await showAppConfirm?.(
-      isEn ? "Delete all guestbook messages? This cannot be undone." : "Tüm anı defteri mesajları silinsin mi? Bu işlem geri alınamaz.",
-      { title: isEn ? "Clear Guestbook" : "Tümünü Sil", tone: "danger" }
-    );
-    if (!confirmed) return;
-
-    const previousWishes = [...wishes];
-    setWishes([]); 
-
-    if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from('wishes').delete().not('id', 'is', null);
-      if (error) {
-        setWishes(previousWishes);
-        setAdminSaveMessage?.(isEn ? "Error clearing wishes." : "Mesajlar silinemedi.");
-      } else {
-        setAdminSaveMessage?.(isEn ? "All wishes cleared." : "Tüm mesajlar başarıyla silindi.");
-      }
-    }
-  }, [wishes, setWishes, showAppConfirm, setAdminSaveMessage, isEn]);
-
-  const deleteGuest = useCallback(async (guestId) => {
-    const confirmed = await showAppConfirm?.(
-      isEn ? "Delete this RSVP record?" : "Bu katılım kaydı silinsin mi?",
-      { title: isEn ? "Delete Record" : "Kaydı Sil", tone: "danger" }
-    );
-    if (!confirmed) return;
-
-    const previousGuests = [...guests];
-    setGuests(prev => prev.filter(g => g.id !== guestId));
-
-    if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from('guests').delete().eq('id', guestId);
-      if (error) {
-        setGuests(previousGuests);
-        setAdminSaveMessage?.(isEn ? "Error deleting record." : "Kayıt silinemedi.");
-      } else {
-        setAdminSaveMessage?.(isEn ? "Record deleted." : "Kayıt silindi.");
-      }
-    }
-  }, [guests, setGuests, showAppConfirm, setAdminSaveMessage, isEn]);
-
-  const deleteWish = useCallback(async (wishId) => {
-    const confirmed = await showAppConfirm?.(
-      isEn ? "Delete this message?" : "Bu mesaj silinsin mi?",
-      { title: isEn ? "Delete Message" : "Mesajı Sil", tone: "danger" }
-    );
-    if (!confirmed) return;
-
-    const previousWishes = [...wishes];
-    setWishes(prev => prev.filter(w => w.id !== wishId));
-
-    if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from('wishes').delete().eq('id', wishId);
-      if (error) {
-        setWishes(previousWishes);
-        setAdminSaveMessage?.(isEn ? "Error deleting message." : "Mesaj silinemedi.");
-      } else {
-        setAdminSaveMessage?.(isEn ? "Message deleted." : "Mesaj silindi.");
-      }
-    }
-  }, [wishes, setWishes, showAppConfirm, setAdminSaveMessage, isEn]);
-
-  const toggleWishApproval = useCallback(async (wishId) => {
-    const wish = wishes.find(w => w.id === wishId);
-    if (!wish) return;
-
-    const newStatus = !wish.approved;
-    setWishes(prev => prev.map(w => w.id === wishId ? { ...w, approved: newStatus } : w));
-
-    if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from('wishes').update({ approved: newStatus }).eq('id', wishId);
-      if (error) {
-        setWishes(prev => prev.map(w => w.id === wishId ? { ...w, approved: !newStatus } : w));
-        setAdminSaveMessage?.(isEn ? "Could not change status." : "Durum değiştirilemedi.");
-      } else {
-        setAdminSaveMessage?.(isEn ? "Status updated." : "Mesaj durumu güncellendi.");
-      }
-    }
-  }, [wishes, setWishes, setAdminSaveMessage, isEn]);
-
-  const editWish = useCallback(async (wishId) => {
-    const wish = wishes.find(w => w.id === wishId);
-    if (!wish) return;
-
-    const newMessage = await showAppPrompt?.(
-      isEn ? "Edit the message text:" : "Bu mesajı düzenle:",
-      wish.message,
-      { title: isEn ? "Edit Message" : "Mesaj Düzenle", multiline: true }
-    );
-
-    if (newMessage !== null && newMessage.trim() !== wish.message) {
-      const updatedMessage = newMessage.trim();
-      setWishes(prev => prev.map(w => w.id === wishId ? { ...w, message: updatedMessage } : w));
-
-      if (navigator.onLine && isSupabaseReady()) {
-        const { error } = await supabase.from('wishes').update({ message: updatedMessage }).eq('id', wishId);
-        if (error) {
-          setWishes(prev => prev.map(w => w.id === wishId ? { ...w, message: wish.message } : w));
-          setAdminSaveMessage?.(isEn ? "Error updating message." : "Mesaj güncellenemedi.");
-        } else {
-           setAdminSaveMessage?.(isEn ? "Message updated." : "Mesaj başarıyla güncellendi.");
-        }
-      }
-    }
-  }, [wishes, setWishes, showAppPrompt, setAdminSaveMessage, isEn]);
-
-  const editGuest = useCallback(async (guestId) => {
-    const guest = guests.find(g => g.id === guestId);
-    if (!guest) return;
-
-    const newNote = await showAppPrompt?.(
-      isEn ? "Add/Edit admin note for this guest:" : "Bu misafirin notunu/kendi admin notunuzu düzenleyin:",
-      guest.note || "",
-      { title: isEn ? "Edit Note" : "Notu Düzenle", multiline: true }
-    );
-
-    if (newNote !== null && newNote.trim() !== (guest.note || "")) {
-      const updatedNote = newNote.trim();
-      setGuests(prev => prev.map(g => g.id === guestId ? { ...g, note: updatedNote } : g));
-
-      if (navigator.onLine && isSupabaseReady()) {
-        const { error } = await supabase.from('guests').update({ note: updatedNote }).eq('id', guestId);
-        if (error) {
-          setGuests(prev => prev.map(g => g.id === guestId ? { ...g, note: guest.note } : g));
-          setAdminSaveMessage?.(isEn ? "Error updating note." : "Not güncellenemedi.");
-        } else {
-           setAdminSaveMessage?.(isEn ? "Note updated." : "Misafir notu güncellendi.");
-        }
-      }
-    }
-  }, [guests, setGuests, showAppPrompt, setAdminSaveMessage, isEn]);
-
-  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
-}
-</file>
-
-<file path="src/hooks/useScrollNavigation.js">
-// src/hooks/useScrollNavigation.js
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  
-  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
-  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
-  const [showScrollDown, setShowScrollDown] = useState(false); 
-  const [isMobile, setIsMobile] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
-  const resizeTimerRef = useRef(null); 
-
-  // Ekran boyutunu izle
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
-
-  const getActiveDesktopIndex = (sections) => {
-    let activeIdx = 0;
-    sections.forEach((sec, idx) => {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.55) {
-        activeIdx = idx;
-      }
-    });
-    return activeIdx;
-  };
-
-  const scrollToNext = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      setCurrentSlideIndex(prev => {
-        const next = prev + 1;
-        return next < wrappers.length ? next : prev;
-      });
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const nextIdx = activeIdx + 1;
-      
-      if (nextIdx < sections.length) {
-        const nextSection = sections[nextIdx];
-        const rect = nextSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile]);
-
-  const scrollToPrev = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      const currentWrapper = wrappers[currentSlideIndex];
-      
-      if (currentWrapper && currentWrapper.scrollTop > 150) {
-        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      
-      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const currentSection = sections[activeIdx];
-      
-      if (currentSection) {
-        const currentRect = currentSection.getBoundingClientRect();
-        if (currentRect.top < -150) {
-           const absoluteTop = window.scrollY + currentRect.top;
-           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-           return;
-        }
-      }
-
-      const prevIdx = activeIdx - 1;
-      if (prevIdx >= 0) {
-        const prevSection = sections[prevIdx];
-        const rect = prevSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile, currentSlideIndex]);
-
-  const handleWheel = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
-    
-    const slideWrapper = e.target.closest('.slide-wrapper');
-    if (slideWrapper) {
-      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-      if (isScrollable) {
-        const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-
-        if (e.deltaY > 0 && !atBottom) return; 
-        if (e.deltaY < 0 && !atTop) return;    
-      }
-    }
-
-    if (e.deltaY > 0) scrollToNext();
-    else scrollToPrev();
-
-    isScrollingRef.current = true;
-    setTimeout(() => { isScrollingRef.current = false; }, 600);
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartYRef.current - touchEndY;
-
-    const slideWrapper = target.closest('.slide-wrapper');
-    if (slideWrapper) {
-       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-       if (isScrollable) {
-           const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-           if (diff > 0 && !atBottom) return;
-           if (diff < 0 && !atTop) return;
-       }
-    }
-
-    if (Math.abs(diff) > 40) { 
-      if (diff > 0) scrollToNext(); 
-      else scrollToPrev(); 
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 500); 
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    let isMounted = true;
-    let activeWrapper = null;
-
-    const handleScroll = () => {
-      if (!isMounted) return;
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         const currentWrapper = wrappers[currentSlideIndex];
-         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
-         
-         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
-         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
-      } else {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        
-        setShowScrollTop(scrollTop > 100);
-        
-        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
-        
-        if (scrollTop <= 10) {
-          setShowScrollDown(true);
-        } else {
-          setShowScrollDown(!isAtBottom);
-        }
-      }
-    };
-
-    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
-    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
-    const mountDelayTimer = setTimeout(() => {
-      if (!isMounted) return;
-      
-      handleScroll();
-
-      if (!isMobile) {
-        window.addEventListener('scroll', handleScroll, { passive: true });
-      }
-      
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         activeWrapper = wrappers[currentSlideIndex];
-         if (activeWrapper) {
-            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
-         }
-      }
-
-      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
-      const resizeObserver = new ResizeObserver(() => {
-        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-        resizeTimerRef.current = setTimeout(() => {
-          if (isMounted) handleScroll();
-        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
-      });
-      
-      resizeObserver.observe(document.body);
-
-    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
-
-    return () => {
-      isMounted = false;
-      clearTimeout(mountDelayTimer);
-      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-      
-      if (!isMobile) {
-        window.removeEventListener('scroll', handleScroll);
-      }
-      if (activeWrapper) {
-        activeWrapper.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-  
-  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }
 </file>
 
@@ -13341,6 +12703,622 @@ html[data-theme]
   .admin-editor-section
   .admin-check-field:has(input[type="checkbox"]:checked) {
   border-color: var(--amp-color, #e3b6c7) !important;
+}
+</file>
+
+<file path="src/hooks/useDatabaseManager.js">
+import { useCallback, useEffect } from "react";
+import { supabase } from "../supabaseClient";
+import { getSupabaseSetupMessage, isSupabaseReady } from "../services/database";
+import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+import { useAdminStore } from "../store/useAdminStore"; // EKLENDİ: Admin durumunu kontrol etmek için
+
+export function useDatabaseManager({ guests, setGuests, wishes, setWishes, settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn }) {
+  
+  useEffect(() => {
+    if (!isSupabaseReady()) return;
+
+    const wishesChannel = supabase.channel("public:wishes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "wishes" }, (payload) => {
+        const isAdmin = useAdminStore.getState().isAdminUnlocked; // EKLENDİ: Anlık admin kontrolü
+        
+        if (payload.eventType === "INSERT") {
+          // Adminse hepsini, değilse sadece onaylıları anında gör
+          if (payload.new.approved || isAdmin) {
+            setWishes((prev) => prev.some(w => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]);
+          }
+        } else if (payload.eventType === "UPDATE") {
+          if (isAdmin) {
+             setWishes((prev) => prev.map(w => w.id === payload.new.id ? dbWishToUi(payload.new) : w));
+          } else {
+             // Ziyaretçiler için: Onaylandıysa listeye ekle/güncelle, onayı alındıysa listeden gizle
+             if (payload.new.approved) {
+               setWishes((prev) => prev.some(w => w.id === payload.new.id) 
+                 ? prev.map(w => w.id === payload.new.id ? dbWishToUi(payload.new) : w)
+                 : [dbWishToUi(payload.new), ...prev]);
+             } else {
+               setWishes((prev) => prev.filter(w => w.id !== payload.new.id));
+             }
+          }
+        } else if (payload.eventType === "DELETE") {
+          setWishes((prev) => prev.filter(w => w.id !== payload.old.id));
+        }
+      }).subscribe();
+
+    const guestsChannel = supabase.channel("public:guests")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
+        if (payload.new) setGuests((prev) => prev.some(g => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
+        if (payload.new) setGuests((prev) => prev.map(g => g.id === payload.new.id ? dbGuestToUi(payload.new) : g));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "guests" }, (payload) => {
+        setGuests((prev) => prev.filter(g => g.id !== payload.old.id)); // EKLENDİ: Silinme dinleyicisi
+      }).subscribe();
+
+    return () => {
+      supabase.removeChannel(wishesChannel);
+      supabase.removeChannel(guestsChannel);
+    };
+  }, [setWishes, setGuests]);
+
+  useEffect(() => {
+    const syncOfflineData = async () => {
+      if (!navigator.onLine || !isSupabaseReady()) return;
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
+      if (offlineGuests.length > 0) {
+        for (const guest of offlineGuests) {
+          await supabase.functions.invoke('submit-form', {
+            body: { type: 'guest', data: guest, turnstileToken: "OFFLINE_TOKEN" },
+            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+          });
+        }
+        localStorage.removeItem('offline_guests');
+      }
+
+      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
+      if (offlineWishes.length > 0) {
+        for (const wish of offlineWishes) {
+          await supabase.functions.invoke('submit-form', {
+            body: { type: 'wish', data: wish, turnstileToken: "OFFLINE_TOKEN" },
+            headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+          });
+        }
+        localStorage.removeItem('offline_wishes');
+      }
+
+      const offlineCheckins = JSON.parse(localStorage.getItem('offline_checkins') || '[]');
+      if (offlineCheckins.length > 0) {
+        for (const checkin of offlineCheckins) {
+          await supabase.from("guests").update({ has_arrived: checkin.status }).eq("id", checkin.id);
+        }
+        localStorage.removeItem('offline_checkins');
+        setAdminSaveMessage?.(isEn ? "Offline check-ins synced!" : "Çevrimdışı kapı girişleri senkronize edildi!");
+      }
+    };
+
+    window.addEventListener('online', syncOfflineData);
+    return () => window.removeEventListener('online', syncOfflineData);
+  }, [isEn, setAdminSaveMessage]);
+
+  const submitGuest = useCallback(async (formData) => {
+    if (formData.honeypot) return;
+    
+    const tempId = `temp-${Date.now()}`;
+    setGuests((prev) => [{ id: tempId, ...formData }, ...prev]);
+
+    if (!navigator.onLine) {
+      const offlineGuests = JSON.parse(localStorage.getItem('offline_guests') || '[]');
+      offlineGuests.push(uiGuestToDb(formData));
+      localStorage.setItem('offline_guests', JSON.stringify(offlineGuests));
+      await showAppAlert?.(isEn ? "Saved offline. Will sync automatically." : "İnternet yok. Bağlantı geldiğinde form otomatik gönderilecek.", { title: "Çevrimdışı 📶" });
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { type: 'guest', data: uiGuestToDb(formData), turnstileToken: formData.turnstileToken }
+      });
+      
+      if (error || !data.success) throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      
+      setGuests((prev) => prev.map(g => g.id === tempId ? dbGuestToUi(data.data) : g));
+      if (formData.attendance === "Katılacağım") await showAppAlert?.(t('alerts.rsvpSuccess'), { title: t('alerts.saveTitle') });
+    } catch (error) {
+      setGuests((prev) => prev.filter(g => g.id !== tempId));
+      await showAppAlert?.(t('alerts.rsvpError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
+    }
+  }, [setGuests, showAppAlert, t, isEn]);
+
+  const submitWish = useCallback(async (formData) => {
+    if (formData.honeypot) return;
+    const shouldPublishNow = !settings?.requireWishApproval;
+    const tempId = `temp-${Date.now()}`;
+
+    if (shouldPublishNow) {
+      setWishes((prev) => [{ id: tempId, ...formData, approved: true }, ...prev]);
+    }
+
+    if (!navigator.onLine) {
+      const offlineWishes = JSON.parse(localStorage.getItem('offline_wishes') || '[]');
+      offlineWishes.push({ name: formData.name, message: formData.message, approved: shouldPublishNow });
+      localStorage.setItem('offline_wishes', JSON.stringify(offlineWishes));
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { 
+          type: 'wish', 
+          data: { name: formData.name, message: formData.message, approved: shouldPublishNow }, 
+          turnstileToken: formData.turnstileToken 
+        }
+      });
+      
+      if (error || !data.success) throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      
+      if (shouldPublishNow) {
+        setWishes((prev) => prev.map(w => w.id === tempId ? dbWishToUi(data.data) : w));
+      }
+      await showAppAlert?.(settings?.requireWishApproval ? t('alerts.wishSentApproval') : t('alerts.wishSaved'), { title: t('alerts.saveTitle') });
+    } catch (error) {
+      if (shouldPublishNow) setWishes((prev) => prev.filter(w => w.id !== tempId));
+      await showAppAlert?.(t('alerts.wishError', { message: error.message }), { title: t('alerts.saveErrorTitle') });
+    }
+  }, [setWishes, settings?.requireWishApproval, showAppAlert, t, isEn]);
+
+  const toggleCheckIn = useCallback(async (guestId, currentStatus) => {
+    const nextStatus = !currentStatus;
+    setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: nextStatus } : item)));
+
+    if (!navigator.onLine) {
+      const offlineCheckins = JSON.parse(localStorage.getItem('offline_checkins') || '[]');
+      const filtered = offlineCheckins.filter(c => c.id !== guestId);
+      filtered.push({ id: guestId, status: nextStatus });
+      localStorage.setItem('offline_checkins', JSON.stringify(filtered));
+      setAdminSaveMessage?.(isEn ? "Saved offline." : "Giriş cihaza kaydedildi (Çevrimdışı).");
+      return;
+    }
+
+    const { error } = await supabase.from("guests").update({ has_arrived: nextStatus }).eq("id", guestId);
+    if (error) { 
+      setGuests((prev) => prev.map((item) => (item.id === guestId ? { ...item, has_arrived: currentStatus } : item)));
+      setAdminSaveMessage?.(isEn ? "Could not update status." : "Durum güncellenemedi."); 
+    }
+  }, [setGuests, setAdminSaveMessage, isEn]);
+
+  const assignTable = useCallback(async (guestId, tableNumber) => {
+    const currentGuest = guests.find(g => g.id === guestId);
+    const prevTable = currentGuest?.tableNumber;
+
+    setGuests(prev => prev.map(g => g.id === guestId ? { ...g, tableNumber } : g));
+
+    if (!navigator.onLine) {
+      setAdminSaveMessage?.(isEn ? "Table assigned offline." : "Masa çevrimdışı atandı.");
+      return;
+    }
+
+    const { error } = await supabase.from('guests').update({ table_number: tableNumber || null }).eq('id', guestId);
+    if (error) {
+      setGuests(prev => prev.map(g => g.id === guestId ? { ...g, tableNumber: prevTable } : g));
+      setAdminSaveMessage?.(isEn ? "Error assigning table." : "Masa atanamadı.");
+    }
+  }, [guests, setGuests, setAdminSaveMessage, isEn]);
+
+  const clearGuests = useCallback(async () => {
+    const confirmed = await showAppConfirm?.(
+      isEn ? "Delete all RSVP records? This cannot be undone." : "Tüm katılım kayıtları silinsin mi? Bu işlem geri alınamaz.",
+      { title: isEn ? "Clear Guests" : "Tümünü Sil", tone: "danger" }
+    );
+    if (!confirmed) return;
+
+    const previousGuests = [...guests];
+    setGuests([]); 
+
+    if (navigator.onLine && isSupabaseReady()) {
+      const { error } = await supabase.from('guests').delete().not('id', 'is', null);
+      if (error) {
+        setGuests(previousGuests);
+        setAdminSaveMessage?.(isEn ? "Error clearing guests." : "Kayıtlar silinemedi.");
+      } else {
+        setAdminSaveMessage?.(isEn ? "All guests cleared." : "Tüm katılım kayıtları başarıyla silindi.");
+      }
+    }
+  }, [guests, setGuests, showAppConfirm, setAdminSaveMessage, isEn]);
+
+  const clearWishes = useCallback(async () => {
+    const confirmed = await showAppConfirm?.(
+      isEn ? "Delete all guestbook messages? This cannot be undone." : "Tüm anı defteri mesajları silinsin mi? Bu işlem geri alınamaz.",
+      { title: isEn ? "Clear Guestbook" : "Tümünü Sil", tone: "danger" }
+    );
+    if (!confirmed) return;
+
+    const previousWishes = [...wishes];
+    setWishes([]); 
+
+    if (navigator.onLine && isSupabaseReady()) {
+      const { error } = await supabase.from('wishes').delete().not('id', 'is', null);
+      if (error) {
+        setWishes(previousWishes);
+        setAdminSaveMessage?.(isEn ? "Error clearing wishes." : "Mesajlar silinemedi.");
+      } else {
+        setAdminSaveMessage?.(isEn ? "All wishes cleared." : "Tüm mesajlar başarıyla silindi.");
+      }
+    }
+  }, [wishes, setWishes, showAppConfirm, setAdminSaveMessage, isEn]);
+
+  const deleteGuest = useCallback(async (guestId) => {
+    const confirmed = await showAppConfirm?.(
+      isEn ? "Delete this RSVP record?" : "Bu katılım kaydı silinsin mi?",
+      { title: isEn ? "Delete Record" : "Kaydı Sil", tone: "danger" }
+    );
+    if (!confirmed) return;
+
+    const previousGuests = [...guests];
+    setGuests(prev => prev.filter(g => g.id !== guestId));
+
+    if (navigator.onLine && isSupabaseReady()) {
+      const { error } = await supabase.from('guests').delete().eq('id', guestId);
+      if (error) {
+        setGuests(previousGuests);
+        setAdminSaveMessage?.(isEn ? "Error deleting record." : "Kayıt silinemedi.");
+      } else {
+        setAdminSaveMessage?.(isEn ? "Record deleted." : "Kayıt silindi.");
+      }
+    }
+  }, [guests, setGuests, showAppConfirm, setAdminSaveMessage, isEn]);
+
+  const deleteWish = useCallback(async (wishId) => {
+    const confirmed = await showAppConfirm?.(
+      isEn ? "Delete this message?" : "Bu mesaj silinsin mi?",
+      { title: isEn ? "Delete Message" : "Mesajı Sil", tone: "danger" }
+    );
+    if (!confirmed) return;
+
+    const previousWishes = [...wishes];
+    setWishes(prev => prev.filter(w => w.id !== wishId));
+
+    if (navigator.onLine && isSupabaseReady()) {
+      const { error } = await supabase.from('wishes').delete().eq('id', wishId);
+      if (error) {
+        setWishes(previousWishes);
+        setAdminSaveMessage?.(isEn ? "Error deleting message." : "Mesaj silinemedi.");
+      } else {
+        setAdminSaveMessage?.(isEn ? "Message deleted." : "Mesaj silindi.");
+      }
+    }
+  }, [wishes, setWishes, showAppConfirm, setAdminSaveMessage, isEn]);
+
+  const toggleWishApproval = useCallback(async (wishId) => {
+    const wish = wishes.find(w => w.id === wishId);
+    if (!wish) return;
+
+    const newStatus = !wish.approved;
+    setWishes(prev => prev.map(w => w.id === wishId ? { ...w, approved: newStatus } : w));
+
+    if (navigator.onLine && isSupabaseReady()) {
+      const { error } = await supabase.from('wishes').update({ approved: newStatus }).eq('id', wishId);
+      if (error) {
+        setWishes(prev => prev.map(w => w.id === wishId ? { ...w, approved: !newStatus } : w));
+        setAdminSaveMessage?.(isEn ? "Could not change status." : "Durum değiştirilemedi.");
+      } else {
+        setAdminSaveMessage?.(isEn ? "Status updated." : "Mesaj durumu güncellendi.");
+      }
+    }
+  }, [wishes, setWishes, setAdminSaveMessage, isEn]);
+
+  const editWish = useCallback(async (wishId) => {
+    const wish = wishes.find(w => w.id === wishId);
+    if (!wish) return;
+
+    const newMessage = await showAppPrompt?.(
+      isEn ? "Edit the message text:" : "Bu mesajı düzenle:",
+      wish.message,
+      { title: isEn ? "Edit Message" : "Mesaj Düzenle", multiline: true }
+    );
+
+    if (newMessage !== null && newMessage.trim() !== wish.message) {
+      const updatedMessage = newMessage.trim();
+      setWishes(prev => prev.map(w => w.id === wishId ? { ...w, message: updatedMessage } : w));
+
+      if (navigator.onLine && isSupabaseReady()) {
+        const { error } = await supabase.from('wishes').update({ message: updatedMessage }).eq('id', wishId);
+        if (error) {
+          setWishes(prev => prev.map(w => w.id === wishId ? { ...w, message: wish.message } : w));
+          setAdminSaveMessage?.(isEn ? "Error updating message." : "Mesaj güncellenemedi.");
+        } else {
+           setAdminSaveMessage?.(isEn ? "Message updated." : "Mesaj başarıyla güncellendi.");
+        }
+      }
+    }
+  }, [wishes, setWishes, showAppPrompt, setAdminSaveMessage, isEn]);
+
+  const editGuest = useCallback(async (guestId) => {
+    const guest = guests.find(g => g.id === guestId);
+    if (!guest) return;
+
+    const newNote = await showAppPrompt?.(
+      isEn ? "Add/Edit admin note for this guest:" : "Bu misafirin notunu/kendi admin notunuzu düzenleyin:",
+      guest.note || "",
+      { title: isEn ? "Edit Note" : "Notu Düzenle", multiline: true }
+    );
+
+    if (newNote !== null && newNote.trim() !== (guest.note || "")) {
+      const updatedNote = newNote.trim();
+      setGuests(prev => prev.map(g => g.id === guestId ? { ...g, note: updatedNote } : g));
+
+      if (navigator.onLine && isSupabaseReady()) {
+        const { error } = await supabase.from('guests').update({ note: updatedNote }).eq('id', guestId);
+        if (error) {
+          setGuests(prev => prev.map(g => g.id === guestId ? { ...g, note: guest.note } : g));
+          setAdminSaveMessage?.(isEn ? "Error updating note." : "Not güncellenemedi.");
+        } else {
+           setAdminSaveMessage?.(isEn ? "Note updated." : "Misafir notu güncellendi.");
+        }
+      }
+    }
+  }, [guests, setGuests, showAppPrompt, setAdminSaveMessage, isEn]);
+
+  return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
+}
+</file>
+
+<file path="src/hooks/useScrollNavigation.js">
+// src/hooks/useScrollNavigation.js
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
+  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
+  const [showScrollDown, setShowScrollDown] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
+  const resizeTimerRef = useRef(null); 
+
+  // Ekran boyutunu izle
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
+
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
+  const scrollToNext = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      setCurrentSlideIndex(prev => {
+        const next = prev + 1;
+        return next < wrappers.length ? next : prev;
+      });
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
+      
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
+        const rect = nextSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const scrollToPrev = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      const currentWrapper = wrappers[currentSlideIndex];
+      
+      if (currentWrapper && currentWrapper.scrollTop > 150) {
+        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const currentSection = sections[activeIdx];
+      
+      if (currentSection) {
+        const currentRect = currentSection.getBoundingClientRect();
+        if (currentRect.top < -150) {
+           const absoluteTop = window.scrollY + currentRect.top;
+           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+           return;
+        }
+      }
+
+      const prevIdx = activeIdx - 1;
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
+        const rect = prevSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile, currentSlideIndex]);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
+    
+    const slideWrapper = e.target.closest('.slide-wrapper');
+    if (slideWrapper) {
+      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+      if (isScrollable) {
+        const atTop = slideWrapper.scrollTop <= 0;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+
+        if (e.deltaY > 0 && !atBottom) return; 
+        if (e.deltaY < 0 && !atTop) return;    
+      }
+    }
+
+    if (e.deltaY > 0) scrollToNext();
+    else scrollToPrev();
+
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 600);
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEndY;
+
+    const slideWrapper = target.closest('.slide-wrapper');
+    if (slideWrapper) {
+       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+       if (isScrollable) {
+           const atTop = slideWrapper.scrollTop <= 0;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+           if (diff > 0 && !atBottom) return;
+           if (diff < 0 && !atTop) return;
+       }
+    }
+
+    if (Math.abs(diff) > 40) { 
+      if (diff > 0) scrollToNext(); 
+      else scrollToPrev(); 
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 500); 
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    let isMounted = true;
+    let activeWrapper = null;
+
+    const handleScroll = () => {
+      if (!isMounted) return;
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         const currentWrapper = wrappers[currentSlideIndex];
+         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
+         
+         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
+         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
+      } else {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        
+        setShowScrollTop(scrollTop > 100);
+        
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
+        
+        if (scrollTop <= 10) {
+          setShowScrollDown(true);
+        } else {
+          setShowScrollDown(!isAtBottom);
+        }
+      }
+    };
+
+    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
+    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
+    const mountDelayTimer = setTimeout(() => {
+      if (!isMounted) return;
+      
+      handleScroll();
+
+      if (!isMobile) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+      
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         activeWrapper = wrappers[currentSlideIndex];
+         if (activeWrapper) {
+            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+         }
+      }
+
+      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
+      const resizeObserver = new ResizeObserver(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(() => {
+          if (isMounted) handleScroll();
+        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
+      });
+      
+      resizeObserver.observe(document.body);
+
+    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
+
+    return () => {
+      isMounted = false;
+      clearTimeout(mountDelayTimer);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+      }
+      if (activeWrapper) {
+        activeWrapper.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
+  
+  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }
 </file>
 
@@ -18851,6 +18829,13 @@ input[type="search"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Framer Motion elemanlarının görünmez kalmasını engellemek için */
+  .hero-section, .card, .story-node, .countdown-section {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 

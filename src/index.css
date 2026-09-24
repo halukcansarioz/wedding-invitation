@@ -1707,21 +1707,26 @@ input[type="search"] {
   }
 }
 
-/* Scroll performance - Disable animations on slow devices */
+/* Performans ve Erişilebilirlik (Reduced Motion) Optimizasyonu */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
   
-  /* Framer Motion elemanlarının görünmez kalmasını engellemek için */
-  .hero-section, .card, .story-node, .countdown-section {
-    opacity: 1 !important;
-    transform: none !important;
+  /* Lavanta temasındaki CPU/GPU yoran kelebek animasyonlarını tamamen kapat */
+  [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
+  [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
+    display: none !important;
+    animation: none !important;
+  }
+
+  /* LazyLoad iskelet animasyonunu durdur, sadece sabit arka plan rengi göster */
+  .image-skeleton {
+    animation: none !important;
+    background: var(--paper-soft) !important;
   }
 }
 

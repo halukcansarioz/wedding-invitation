@@ -19,9 +19,14 @@ export function GuestsAdminPanel({
 
   const adminDraft = useStore((state) => state.adminDraft);
   const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const showAppAlert = useStore((state) => state.showAppAlert); // Bildirimler için eklendi
+  const showAppAlert = useStore((state) => state.showAppAlert); 
 
   const [isScanning, setIsScanning] = useState(false);
+  
+  // WhatsApp Toplu Gönderim Kuyruğu State'leri
+  const [broadcastQueue, setBroadcastQueue] = useState([]);
+  const [currentBroadcastIndex, setCurrentBroadcastIndex] = useState(0);
+  const [broadcastMessage, setBroadcastMessage] = useState("");
 
   // QR Okuyucu Başlatma
   useEffect(() => {
@@ -48,10 +53,9 @@ export function GuestsAdminPanel({
     }
   }, [isScanning, toggleCheckIn]);
 
-  // YENİ EKLENEN BÖLÜM: Toplu WhatsApp Duyuru Sistemi (Mass Broadcast)
-  const sendMassWhatsApp = async () => {
+  // WhatsApp Kuyruk Başlatıcı
+  const startMassWhatsApp = () => {
     const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
-    
     if (attendingGuests.length === 0) {
       alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
       return;
@@ -61,39 +65,45 @@ export function GuestsAdminPanel({
       ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
       : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
 
-    const messageTemplate = prompt(
-      isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", 
-      defaultMsg
-    );
-
-    if (!messageTemplate) return; // İptal edildiyse çık
-
-    if (!window.confirm(isEn ? `Send message to ${attendingGuests.length} guests? (Pop-ups must be allowed)` : `${attendingGuests.length} kişiye sırayla WhatsApp mesajı gönderilecek. Tarayıcınızda pop-up engelleyici varsa izin vermelisiniz. Başlayalım mı?`)) return;
-
-    for (const guest of attendingGuests) {
-      const personalizedMessage = encodeURIComponent(
-        isEn 
-        ? `Hello ${guest.name},\n\n${messageTemplate}`
-        : `Merhaba ${guest.name},\n\n${messageTemplate}`
-      );
-      const waUrl = `https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${personalizedMessage}`;
-      
-      window.open(waUrl, '_blank');
-      // Sekmelerin arka arkaya kilitlenmemesi için 1.5 saniye bekleme
-      await new Promise(resolve => setTimeout(resolve, 1500)); 
+    const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
+    
+    if (msg) {
+      setBroadcastMessage(msg);
+      setBroadcastQueue(attendingGuests);
+      setCurrentBroadcastIndex(0);
     }
+  };
+
+  // Sonraki Mesajı Gönder
+  const sendNextMessage = () => {
+    if (currentBroadcastIndex >= broadcastQueue.length) return;
+    
+    const guest = broadcastQueue[currentBroadcastIndex];
+    const personalizedMessage = encodeURIComponent(
+      isEn ? `Hello ${guest.name},\n\n${broadcastMessage}` : `Merhaba ${guest.name},\n\n${broadcastMessage}`
+    );
+    
+    window.open(`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${personalizedMessage}`, '_blank');
+    setCurrentBroadcastIndex(prev => prev + 1);
+  };
+
+  // Kuyruğu İptal Et
+  const cancelBroadcast = () => {
+    setBroadcastQueue([]);
+    setCurrentBroadcastIndex(0);
   };
 
   const generateAiThankYou = async (guestName) => {
     showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
     try {
+      // Not: Kendi Supabase URL'nizi buraya girmelisiniz
       const res = await fetch('https://SİZİN_SUPABASE_PROJENİZ.supabase.co/functions/v1/ai-thank-you', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           guestName: guestName,
           coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
-          wishMessage: "Sizin adınıza çok sevindim, bir ömür boyu mutluluklar dilerim." // Bu kısmı ileride Wishes listesinden çekebiliriz
+          wishMessage: "Sizin adınıza çok sevindim, bir ömür boyu mutluluklar dilerim."
         })
       });
 
@@ -106,45 +116,6 @@ export function GuestsAdminPanel({
       alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
     }
   };
-
-  // Bu fonksiyonu bileşeninizin içine ekleyin
-  const handleSendPushNotification = async () => {
-    const title = prompt("Bildirim Başlığı:", "Düğünümüze Son 1 Gün!");
-    const body = prompt("Bildirim İçeriği:", "Hazırlıklar tamamlandı, yarın sizi aramızda görmek için sabırsızlanıyoruz.");
-    
-    if (!title || !body) return;
-
-    alert("Bildirimler gönderiliyor, lütfen bekleyin...");
-
-    try {
-      const res = await fetch('https://SİZİN_SUPABASE_PROJENİZ.supabase.co/functions/v1/send-push', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SİZİN_ADMIN_TOKENİNİZ}` // Güvenlik için
-        },
-        body: JSON.stringify({
-          title: title,
-          body: body,
-          url: "https://sizin-davetiye-linkiniz.com" // Bildirime tıklayınca açılacak link
-        })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        alert(`🎉 Başarılı! Toplam ${data.count} cihaza bildirim gönderildi.`);
-      } else {
-        alert("Hata oluştu: " + data.error);
-      }
-    } catch (error) {
-      alert("Bildirim sunucusuna ulaşılamadı.");
-    }
-  };
-
-  // JSX kısmında butonunuz:
-  <button type="button" className="main-button" onClick={handleSendPushNotification} style={{ backgroundColor: '#8e44ad', borderColor: '#8e44ad' }}>
-    🔔 Tüm Misafirlere Bildirim Gönder
-  </button>
   
   if (!adminDraft?.settings) return null;
 
@@ -178,12 +149,32 @@ export function GuestsAdminPanel({
         <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
           {isScanning ? "📷 Kamerayı Kapat" : "📷 QR ile Kapı Kontrolü"}
         </button>
-        {/* YENİ EKLENEN: Toplu Duyuru Butonu */}
-        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={sendMassWhatsApp}>
+        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
           {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
         </button>
       </div>
+
       {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden" }}></div>}
+
+      {/* Toplu Gönderim Kontrol Paneli */}
+      {broadcastQueue.length > 0 && (
+        <div style={{ background: 'var(--paper-soft)', border: '2px solid #25D366', padding: '20px', borderRadius: '12px', marginBottom: '20px', textAlign: 'center' }}>
+          <h4 style={{ color: '#25D366', marginTop: 0 }}>WhatsApp Toplu Gönderim</h4>
+          <p>Kişi {currentBroadcastIndex + 1} / {broadcastQueue.length}: <strong>{broadcastQueue[currentBroadcastIndex]?.name}</strong></p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '14px', flexWrap: 'wrap' }}>
+            {currentBroadcastIndex < broadcastQueue.length ? (
+              <button type="button" className="main-button" onClick={sendNextMessage} style={{ background: '#25D366', borderColor: '#25D366', margin: 0 }}>
+                Mesajı Gönder & Sonrakine Geç
+              </button>
+            ) : (
+              <span style={{ fontWeight: 'bold', color: '#25D366' }}>Tüm mesajlar gönderildi! 🎉</span>
+            )}
+            <button type="button" className="secondary-button danger-button" onClick={cancelBroadcast} style={{ margin: 0 }}>
+              Kapat
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
         <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
@@ -247,7 +238,6 @@ export function GuestsAdminPanel({
                             {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
                           </a>
                           
-                          {/* YENİ EKLENEN: AI Teşekkür Butonu */}
                           {adminDraft.settings.isPostWedding && (
                             <button 
                               type="button"

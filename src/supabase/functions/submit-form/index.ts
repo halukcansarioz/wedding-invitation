@@ -22,19 +22,26 @@ serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
+    let authError = null;
     
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-      if (user) isAdmin = true;
+      // JWT Token'ı Supabase Auth üzerinden doğrula
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (error || !user || user.role !== 'authenticated') {
+        authError = error?.message || "Geçersiz yetki";
+      } else {
+        isAdmin = true;
+      }
     }
 
     let isOfflineSync = false;
     
-    // GÜVENLİK GÜNCELLEMESİ: OFFLINE_TOKEN sadece admin tarafından kullanılabilir
+    // GÜVENLİK GÜNCELLEMESİ: Katı isAdmin ve Token kontrolü
     if (turnstileToken === "OFFLINE_TOKEN") {
       if (!isAdmin) {
-        throw new Error("Güvenlik İhlali: Çevrimdışı senkronizasyon sadece yetkili oturumlar (admin) tarafından yapılabilir.");
+        throw new Error(`Güvenlik İhlali: Çevrimdışı senkronizasyon reddedildi. Sebep: ${authError || 'Yetkisiz erişim'}`);
       }
       isOfflineSync = true;
     } else if (!isAdmin) {
@@ -65,7 +72,7 @@ serve(async (req) => {
       result = guestData;
     } else if (type === 'wish') {
       
-      // YENİ EKLENEN BÖLÜM: Küfür ve Argo Kontrolü
+      // Küfür ve Argo Kontrolü
       const messageText = (data.message || "").toLowerCase();
       const containsBadWord = BAD_WORDS.some(word => messageText.includes(word));
       

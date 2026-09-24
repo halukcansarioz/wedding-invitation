@@ -78,6 +78,16 @@ function App() {
 
   return (
     <LazyMotion features={domAnimation} strict>
+      {/* SUPABASE BAĞLANTI UYARISI EKLENDİ */}
+      {!isSupabaseReady() && (
+        <div style={{ 
+          background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', 
+          position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' 
+        }}>
+          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı (.env değişkenleri eksik). Uygulama şu an "Mock (Test) Modunda" çalışıyor ve veriler kalıcı olarak kaydedilmeyecektir.
+        </div>
+      )}
+
       <div 
         className="app" 
         lang={isEn ? "en" : "tr"} 
@@ -95,7 +105,6 @@ function App() {
         />
         
         <Routes>
-          {/* 1. Orijinal Rotalar (Standart Kullanım İçin) */}
           <Route path="/" element={
             <ErrorBoundary>
               {isAuthRecovery ? <AdminController /> : <InvitationController />}
@@ -106,8 +115,6 @@ function App() {
               <AdminController />
             </ErrorBoundary>
           } />
-
-          {/* 2. YENİ: SaaS (Multi-Tenant) Rotaları (Örn: /ahmet-ayse) */}
           <Route path="/:tenant_slug" element={
             <ErrorBoundary>
               {isAuthRecovery ? <AdminController /> : <InvitationController />}

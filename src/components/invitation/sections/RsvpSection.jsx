@@ -9,6 +9,7 @@ import { OptionGroup } from "../../common/UIComponents";
 import { triggerConfetti } from "../../../utils/helpers";
 import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
+import { subscribeToPushNotifications } from "../../common/PwaInstallBanner"; // EKLENDİ
 
 const DeadlineBanner = memo(({ isEn, title, text }) => (
   <div className="rsvp-deadline-banner">
@@ -90,7 +91,6 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
       setUrlGuestName(guestName);
       setValue("name", guestName);
     }
-    // Eğer akıllı link ile kişi sayısı geldiyse note kısmına yazdır
     if (countParam) setValue("note", `${countParam} Kişi`); 
   }, [setValue]);
 
@@ -104,7 +104,16 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest({ ...data, turnstileToken });
     
-    if (!isDeclining) triggerConfetti();
+    if (!isDeclining) {
+      triggerConfetti();
+      
+      // UX İYİLEŞTİRMESİ: Sadece katılan kişiye bildirim izni sor
+      setTimeout(() => {
+        if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
+          subscribeToPushNotifications();
+        }
+      }, 1500);
+    }
     
     reset();
     setTurnstileToken("");
