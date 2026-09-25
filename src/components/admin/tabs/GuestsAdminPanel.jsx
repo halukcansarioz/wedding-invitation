@@ -5,6 +5,7 @@ import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
 import { Html5QrcodeScanner } from "html5-qrcode"; 
+import { supabase } from "../../../supabaseClient";
 
 const AdminCharts = lazy(() => import('./AdminCharts'));
 
@@ -22,13 +23,7 @@ export function GuestsAdminPanel({
   const showAppAlert = useStore((state) => state.showAppAlert); 
 
   const [isScanning, setIsScanning] = useState(false);
-  
-  // WhatsApp Toplu Gönderim Kuyruğu State'leri
-  const [broadcastQueue, setBroadcastQueue] = useState([]);
-  const [currentBroadcastIndex, setCurrentBroadcastIndex] = useState(0);
-  const [broadcastMessage, setBroadcastMessage] = useState("");
 
-  // QR Okuyucu Başlatma
   useEffect(() => {
     if (isScanning) {
       const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
@@ -53,8 +48,7 @@ export function GuestsAdminPanel({
     }
   }, [isScanning, toggleCheckIn]);
 
-  // WhatsApp Kuyruk Başlatıcı
-  const startMassWhatsApp = () => {
+  const startMassWhatsApp = async () => {
     const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
     if (attendingGuests.length === 0) {
       alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
@@ -68,47 +62,35 @@ export function GuestsAdminPanel({
     const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
     
     if (msg) {
-      setBroadcastMessage(msg);
-      setBroadcastQueue(attendingGuests);
-      setCurrentBroadcastIndex(0);
+      showAppAlert(isEn ? "Sending messages..." : "Mesajlar arka planda gönderiliyor...", { title: "Bilgi ℹ️" });
+      
+      try {
+        const { error } = await supabase.functions.invoke('broadcast-whatsapp', {
+          body: { guests: attendingGuests, message: msg }
+        });
+        
+        if (error) throw error;
+        showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
+      } catch (err) {
+        showAppAlert(isEn ? "Failed to send messages." : "Mesajlar gönderilirken bir hata oluştu.", { tone: "error" });
+      }
     }
-  };
-
-  // Sonraki Mesajı Gönder
-  const sendNextMessage = () => {
-    if (currentBroadcastIndex >= broadcastQueue.length) return;
-    
-    const guest = broadcastQueue[currentBroadcastIndex];
-    const personalizedMessage = encodeURIComponent(
-      isEn ? `Hello ${guest.name},\n\n${broadcastMessage}` : `Merhaba ${guest.name},\n\n${broadcastMessage}`
-    );
-    
-    window.open(`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${personalizedMessage}`, '_blank');
-    setCurrentBroadcastIndex(prev => prev + 1);
-  };
-
-  // Kuyruğu İptal Et
-  const cancelBroadcast = () => {
-    setBroadcastQueue([]);
-    setCurrentBroadcastIndex(0);
   };
 
   const generateAiThankYou = async (guestName) => {
     showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
     try {
-      // Not: Kendi Supabase URL'nizi buraya girmelisiniz
-      const res = await fetch('https://SİZİN_SUPABASE_PROJENİZ.supabase.co/functions/v1/ai-thank-you', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('ai-thank-you', {
+        body: {
           guestName: guestName,
           coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
-          wishMessage: "Sizin adınıza çok sevindim, bir ömür boyu mutluluklar dilerim."
-        })
+          wishMessage: "Düğünümüze katıldığınız için teşekkür ederiz."
+        }
       });
 
-      const data = await res.json();
-      if(data.text) {
+      if (error) throw error;
+
+      if(data?.text) {
         prompt(isEn ? "Generated AI Message:" : "Üretilen AI Teşekkür Mesajı (Kopyalayabilirsiniz):", data.text);
       }
     } catch (err) {
@@ -156,27 +138,7 @@ export function GuestsAdminPanel({
 
       {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden" }}></div>}
 
-      {/* Toplu Gönderim Kontrol Paneli */}
-      {broadcastQueue.length > 0 && (
-        <div style={{ background: 'var(--paper-soft)', border: '2px solid #25D366', padding: '20px', borderRadius: '12px', marginBottom: '20px', textAlign: 'center' }}>
-          <h4 style={{ color: '#25D366', marginTop: 0 }}>WhatsApp Toplu Gönderim</h4>
-          <p>Kişi {currentBroadcastIndex + 1} / {broadcastQueue.length}: <strong>{broadcastQueue[currentBroadcastIndex]?.name}</strong></p>
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '14px', flexWrap: 'wrap' }}>
-            {currentBroadcastIndex < broadcastQueue.length ? (
-              <button type="button" className="main-button" onClick={sendNextMessage} style={{ background: '#25D366', borderColor: '#25D366', margin: 0 }}>
-                Mesajı Gönder & Sonrakine Geç
-              </button>
-            ) : (
-              <span style={{ fontWeight: 'bold', color: '#25D366' }}>Tüm mesajlar gönderildi! 🎉</span>
-            )}
-            <button type="button" className="secondary-button danger-button" onClick={cancelBroadcast} style={{ margin: 0 }}>
-              Kapat
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="admin-stats admin-stats-inside" style={{ gridTemplateColumns: "repeat(4, 1fr)", maxWidth: "100%", marginBottom: "14px" }}>
+      <div className="admin-stats admin-stats-inside" style={{ marginBottom: "14px" }}>
         <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
         <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
         <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
@@ -200,7 +162,7 @@ export function GuestsAdminPanel({
         <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
       </div>
 
-      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px" }}>
+      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px", overflowY: "auto" }}>
         {filteredGuests.length === 0 ? (
           <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
         ) : (

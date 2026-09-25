@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import webpush from "npm:web-push@3.6.7"; // NPM paketini Deno içine alıyoruz
+import webpush from "npm:web-push@3.6.7"; 
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,18 +11,29 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
+
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
+
     const { title, body, url } = await req.json();
 
-    // VAPID Ayarlarını Tanımla
     webpush.setVapidDetails(
-      'mailto:sizin-emailiniz@gmail.com', // Kendi e-postanızı yazın
-      Deno.env.get('VAPID_PUBLIC_KEY')!, // Public key'i de Supabase Secrets'a eklemeyi unutmayın
+      'mailto:sizin-emailiniz@gmail.com', 
+      Deno.env.get('VAPID_PUBLIC_KEY')!, 
       Deno.env.get('VAPID_PRIVATE_KEY')!
     );
 
-    // Supabase bağlantısını kur ve veritabanındaki abonelikleri çek
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!, 
+      SUPABASE_URL, 
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
@@ -32,10 +43,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ message: "Kayıtlı abone bulunamadı." }), { status: 200, headers: corsHeaders });
     }
 
-    // Gönderilecek Mesajın İçeriği
     const payload = JSON.stringify({ title, body, url });
 
-    // Tüm abonelere sırayla bildirimi fırlat
     const sendPromises = subscriptions.map((sub) => 
       webpush.sendNotification(sub.sub_data, payload).catch(error => {
         console.error("Bir aboneye bildirim gitmedi (belki abonelikten çıktı):", error);
@@ -46,7 +55,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true, count: subscriptions.length }), { headers: corsHeaders, status: 200 });
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 400 });
   }
 });

@@ -1,56 +1,65 @@
-// supabase/functions/ai-thank-you/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+
 serve(async (req) => {
-  // CORS (Ön Uç Tarafından Gelen İstekleri Kabul Etmek İçin)
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
+
+    const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
+
     const { guestName, coupleName, wishMessage } = await req.json();
 
-    // GEMINI_API_KEY bilginizi Supabase Secrets'a eklemeniz gerekmektedir.
-    // Örn: supabase secrets set GEMINI_API_KEY=AIzaSy...
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
-    
-    if (!geminiApiKey) {
-      throw new Error("GEMINI_API_KEY sunucuda eksik.");
-    }
-
-    const prompt = `Sen zarif ve samimi bir düğün asistanısın. ${coupleName} çifti adına, düğünlerine katılan ${guestName} isimli misafire kısa, duygusal ve akılda kalıcı bir teşekkür mesajı yaz. 
-    Misafirin anı defterine yazdığı not: "${wishMessage}". Bu nota atıfta bulunarak ona değer verildiğini hissettir. WhatsApp'tan gönderileceği için dozunda emojiler ekle. Mesaj direk okunabilir olsun, başına sonuna açıklamalar koyma.`;
-
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiApiKey}`, {
+    const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7 } 
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `Sen ${coupleName} çifti adına düğünlerine katılan misafirlere samimi, kısa ve içten bir teşekkür mesajı yazan bir asistansın. Mesaj WhatsApp üzerinden gönderilecek. Lütfen emoji kullan.`
+          },
+          {
+            role: "user",
+            content: `Misafir Adı: ${guestName}. Misafirin bize notu (varsa): "${wishMessage}". Bu misafire düğünümüze katıldığı için özel bir teşekkür mesajı oluştur.`
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
       })
     });
 
-    const aiData = await geminiRes.json();
-    const generatedText = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!generatedText) {
-      throw new Error("Yapay zeka yanıt üretemedi.");
-    }
+    const aiData = await openAiResponse.json();
+    const generatedText = aiData.choices[0].message.content.trim();
 
     return new Response(JSON.stringify({ success: true, text: generatedText }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
     });
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400
+      headers: corsHeaders, status: 400 
     });
   }
 });

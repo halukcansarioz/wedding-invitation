@@ -2,6 +2,7 @@ import { supabase } from "../supabaseClient";
 import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 import { optimizeImage } from "../utils/imageOptimizer";
 import { SiteData, Guest, Wish } from "../types";
+import { get, set } from 'idb-keyval'; // IndexedDB entegrasyonu
 
 export const getSupabaseUrl = (): string => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 export const getSupabaseKey = (): string => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
@@ -92,7 +93,6 @@ export const uploadMediaFile = async (rawFile: File, folder = "media"): Promise<
   return data.publicUrl;
 };
 
-// AI Fotoğraf Moderasyon Entegrasyonu
 export const uploadAndModerateGuestPhoto = async (rawFile: File): Promise<{ url: string | null, isApproved: boolean }> => {
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
   
@@ -123,12 +123,34 @@ export const deleteMediaFile = async (fileUrl: string): Promise<void> => {
     const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
     if (error) throw error;
   } catch (error) {
-    const failedDeletes = JSON.parse(localStorage.getItem('failed_deletes') || '[]');
+    const failedDeletes: string[] = (await get('failed_deletes')) || [];
     if (!failedDeletes.includes(fileUrl)) {
       failedDeletes.push(fileUrl);
-      localStorage.setItem('failed_deletes', JSON.stringify(failedDeletes));
+      await set('failed_deletes', failedDeletes);
     }
   }
+};
+
+export const syncFailedDeletes = async (): Promise<void> => {
+  const failedDeletes: string[] = (await get('failed_deletes')) || [];
+  if (failedDeletes.length === 0 || !navigator.onLine) return;
+
+  const remainingFails: string[] = [];
+  
+  for (const fileUrl of failedDeletes) {
+    try {
+      const urlObj = new URL(fileUrl);
+      const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
+      if (pathSegments.length < 2) continue;
+      const filePath = decodeURIComponent(pathSegments[1]);
+      const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+      if (error) throw error;
+    } catch (err) {
+      remainingFails.push(fileUrl);
+    }
+  }
+  
+  await set('failed_deletes', remainingFails);
 };
 
 export const restoreBackupToDatabase = async (parsedData: any): Promise<void> => {

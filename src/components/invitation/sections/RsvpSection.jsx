@@ -10,7 +10,6 @@ import { triggerConfetti } from "../../../utils/helpers";
 import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
 import { subscribeToPushNotifications } from "../../common/PwaInstallBanner";
-import { supabase } from "../../../supabaseClient";
 
 const DeadlineBanner = memo(({ isEn, title, text }) => (
   <div className="rsvp-deadline-banner">
@@ -73,16 +72,11 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
   const [turnstileToken, setTurnstileToken] = useState("");
   const [formKey, setFormKey] = useState(0); 
 
-  const [songQuery, setSongQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedSong, setSelectedSong] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
-
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
   const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", note: "", songRequest: "", honeypot: "" }
+    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
   });
 
   const currentNote = watch("note") || "";
@@ -100,37 +94,12 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     if (countParam) setValue("note", `${countParam} Kişi`); 
   }, [setValue]);
 
-  const searchSpotify = async (query) => {
-    if (query.length < 3) {
-      setSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const res = await supabase.functions.invoke('spotify-handler', {
-        body: { action: 'search', query }
-      });
-      if (res.data?.tracks) setSearchResults(res.data.tracks);
-    } catch (err) {
-      console.error("Spotify arama hatası", err);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
   const todayStr = new Date().toLocaleDateString('en-CA'); 
   const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
 
   const onSubmit = async (data) => {
     if (data.honeypot) return;
     if (!turnstileToken && navigator.onLine) return;
-
-    if (selectedSong) {
-      data.songRequest = `${selectedSong.name} - ${selectedSong.artist}`;
-      supabase.functions.invoke('spotify-handler', {
-        body: { action: 'add', trackUri: selectedSong.uri }
-      }).catch(console.error);
-    }
 
     const isDeclining = data.attendance === "Katılamayacağım";
     await submitGuest({ ...data, turnstileToken });
@@ -145,8 +114,6 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     }
     
     reset();
-    setSelectedSong(null);
-    setSongQuery("");
     setTurnstileToken("");
     setFormKey(prev => prev + 1);
     if (isDeclining) setShowDeclineModal(true);
@@ -192,51 +159,6 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
           </div>
 
           <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
-
-          <div className="spotify-search-container" style={{ position: 'relative', marginTop: '12px', width: '100%' }}>
-            {selectedSong ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', background: 'var(--paper)', border: '1px solid #1DB954', borderRadius: '12px' }}>
-                <img src={selectedSong.image} alt="album" style={{ width: '40px', height: '40px', borderRadius: '6px' }} />
-                <div style={{ flex: 1, textAlign: 'left' }}>
-                  <strong style={{ display: 'block', fontSize: '14px', color: 'var(--text-main)' }}>{selectedSong.name}</strong>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{selectedSong.artist}</span>
-                </div>
-                <button type="button" onClick={() => setSelectedSong(null)} style={{ border: 'none', background: 'none', color: '#e74c3c', cursor: 'pointer', fontSize: '18px' }}>✕</button>
-              </div>
-            ) : (
-              <>
-                <input 
-                  type="text" 
-                  placeholder={isEn ? "Search a song for the playlist... 🎵" : "Çalma listesi için bir şarkı ara... 🎵"} 
-                  value={songQuery}
-                  onChange={(e) => {
-                    setSongQuery(e.target.value);
-                    searchSpotify(e.target.value);
-                  }}
-                  style={{ borderColor: songQuery ? '#1DB954' : undefined, width: '100%', padding: '14px', borderRadius: '12px' }}
-                />
-                {isSearching && <span style={{ position: 'absolute', right: '12px', top: '14px', fontSize: '12px', color: '#1DB954' }}>Aranıyor...</span>}
-                
-                {searchResults.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', background: 'var(--paper)', zIndex: 10, borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', marginTop: '4px', overflow: 'hidden', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}>
-                    {searchResults.map(track => (
-                      <div 
-                        key={track.id} 
-                        onClick={() => { setSelectedSong(track); setSearchResults([]); setSongQuery(""); }}
-                        style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid rgba(0,0,0,0.05)' }}
-                      >
-                        <img src={track.image} alt="" style={{ width: '30px', height: '30px', borderRadius: '4px' }} />
-                        <div style={{ textAlign: 'left' }}>
-                          <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text-main)' }}>{track.name}</strong>
-                          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{track.artist}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
 
           <div className="field-with-counter" style={{ marginTop: '12px' }}>
             <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />

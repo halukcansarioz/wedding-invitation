@@ -1,6 +1,6 @@
-// src/hooks/useGuestsQuery.js
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { loadGuestsFromDatabase, supabase } from '../services/database';
+import { loadGuestsFromDatabase } from '../services/database';
+import { supabase } from '../supabaseClient';
 import { uiGuestToDb } from '../utils/helpers';
 
 export function useGuestsQuery() {

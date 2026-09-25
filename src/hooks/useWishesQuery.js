@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { loadPublishedWishesFromDatabase, supabase } from '../services/database';
+import { loadPublishedWishesFromDatabase } from '../services/database';
+import { supabase } from '../supabaseClient';
 
 export function useWishesQuery() {
   const queryClient = useQueryClient();

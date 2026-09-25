@@ -597,6 +597,9 @@ body #root .app .intro-page .envelope-seal span {
 
 /* --- MOBİL GÖRÜNÜM (RESPONSIVE) DÜZELTMELERİ --- */
 @media (max-width: 768px) {
+  .floating-actions {
+    display: none !important;
+  }
   /* 1. Admin Paneli: İstatistikleri 4 yerine 2 sütuna indir */
   .admin-stats-inside {
     grid-template-columns: repeat(2, 1fr) !important;

@@ -7,11 +7,10 @@ import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
-import LandingPage from "./pages/LandingPage";
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -35,11 +34,9 @@ function App() {
   const invitation = siteData.invitation;
   const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
 
-  // Sistem Dark Mode Kontrolü
   const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const resolvedTheme = prefersDark ? "dark" : activeTheme;
 
-  // Dinamik Tema ve Favicon Yönetimi
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
     document.documentElement.dataset.theme = resolvedTheme;
@@ -51,7 +48,6 @@ function App() {
     if (!favicon.parentNode) document.head.appendChild(favicon);
   }, [isEn, resolvedTheme]);
 
-  // Sayfa İlk Açılışında Verilerin Yüklenmesi
   useEffect(() => {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
@@ -69,6 +65,9 @@ function App() {
         setAdminDraft(normalizedSettings);
         setWishes(dbWishes || []);
         setGuests(dbGuests || []);
+        
+        // Arka planda silinememiş fotoğrafların temizlenmesi (Garbage Collection)
+        syncFailedDeletes();
       } catch (error) {
         console.error("Veritabanından veriler okunamadı:", error);
       }
@@ -78,7 +77,6 @@ function App() {
 
   return (
     <LazyMotion features={domAnimation} strict>
-      {/* SUPABASE BAĞLANTI UYARISI EKLENDİ */}
       {!isSupabaseReady() && (
         <div style={{ 
           background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', 
