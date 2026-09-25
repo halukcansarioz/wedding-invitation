@@ -136,133 +136,95 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 
 @media (max-width: 768px) {
-  .rsvp-form, 
-  .wish-form {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+  .slideshow-container {
+    position: relative;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    background: var(--paper); 
   }
 
-  .rsvp-form > div, 
-  .wish-form > div {
-    width: 100% !important;
+  .slide-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
   }
 
-  /* Form elemanları ve ana butonlar */
-  .rsvp-form input,
-  .rsvp-form textarea,
-  .wish-form input,
-  .wish-form textarea,
-  .option-group,
-  .option-button,
-  .form-button {
+  /* Kartların Mobil Slayt İçine Oturması */
+  .slide-wrapper > section {
     width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    box-sizing: border-box !important;
-    border-radius: 20px !important; 
-  }
-  
-  .option-button,
-  .form-button {
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
-  .rsvp-whatsapp-button {
-    width: 100% !important;
-    max-width: 100% !important;
+    max-width: 500px !important;
+    max-height: 85vh !important; 
+    overflow-y: auto !important; 
     margin: 0 !important;
-    box-sizing: border-box !important;
     border-radius: 20px !important;
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    padding: 24px !important;
     
-    /* Tema renklerine uygun zarif bir ikincil buton stili */
-    background: var(--paper, #fff) !important;
-    border: 1.5px solid var(--amp-color, #9f4f68) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    font-weight: 700 !important;
-    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
+    /* Form doldururken veya uzun yazılarda iç scroll çubuğunu gizle */
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
   }
 
-  .rsvp-whatsapp-button:hover {
-    background: var(--amp-color, #9f4f68) !important;
-    color: #fff !important;
+  .slide-wrapper > section::-webkit-scrollbar {
+    display: none; 
   }
 
-  .option-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
+  /* Arka Planı Resim olan Karşılama Ekranı (Hero Section) İstisnası */
+  .slide-wrapper > .hero-section {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 
-  .rsvp-actions {
-    width: 100% !important;
-    margin-top: 16px !important;
-    display: flex !important;
-    justify-content: center !important;
-  }
-  
-  .story-timeline-container, 
-  .schedule-list, 
-  .wish-list, 
-  .guest-list,
-  .ceremony-grid,
-  .info-list,
-  .rsvp-form,
-  .wish-form {
-    max-height: none !important; 
-    height: auto !important;
-    overflow: visible !important;
+  /* SLAYT KONTROL BUTONLARI (Mobilde) */
+  .slide-controls {
+    position: absolute;
+    bottom: 32px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 9999;
   }
 
-  .card h2, .countdown-section h2, .section-label {
-    line-height: 1.35 !important;
-    padding-bottom: 2px !important;
+  .slide-btn {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2) !important;
+    min-width: unset !important;
+    margin: 0 !important;
   }
 
-  .admin-main-panel, 
-  .admin-editor, 
-  .admin-list, 
-  .admin-guest-list-container {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  .admin-edit-grid, .theme-picker-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 12px !important;
-  }
-  .admin-edit-grid > *, .theme-picker-grid > * {
-    flex: 1 1 100% !important;
-  }
-  
-  .admin-stats {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    padding-bottom: 8px !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  .admin-stats > div {
-    flex: 0 0 140px !important; 
+  /* İLERLEME ÇUBUĞU (Mobilde) */
+  .slide-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.05);
+    z-index: 9999;
   }
 
-  .app-modal-card {
-    max-height: 85dvh !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
+  .slide-progress-fill {
+    height: 100%;
+    background: var(--rose-dark);
+    transition: width 0.4s ease-out;
   }
 }
 
