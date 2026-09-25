@@ -71,6 +71,7 @@ src/
         TablePlanTab.jsx
         ThemeTab.jsx
         VisibilityTab.jsx
+        VisibilityTab.test.jsx
         WishesAdminPanel.jsx
       ui/
         AdminInputs.jsx
@@ -90,11 +91,14 @@ src/
       sections/
         CeremonySection.jsx
         CountdownSection.jsx
+        CountdownSection.test.jsx
         FamilySection.jsx
         FooterSection.jsx
         GallerySection.jsx
         GiftSection.jsx
+        GiftSection.test.jsx
         GuestsListSection.jsx
+        GuestsListSection.test.jsx
         HeroSection.jsx
         InvitationMessageSection.jsx
         index.js
@@ -138,6 +142,7 @@ src/
   store/
     useAdminStore.js
     useStore.js
+    useStore.test.js
   styles/
     admin.css
     base.css
@@ -165,6 +170,7 @@ src/
     imageWorker.js
   validations/
     schemas.js
+    schemas.test.js
   App.jsx
   index.css
   main.jsx
@@ -464,6 +470,52 @@ export function TablePlanTab({ guests, assignTable, isEn }) {
 }
 </file>
 
+<file path="src/components/admin/tabs/VisibilityTab.test.jsx">
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { VisibilityTab } from './VisibilityTab';
+import { useStore } from '../../../store/useStore';
+import { DEFAULT_SITE_DATA } from '../../../config/constants';
+
+// i18next Mock - i18n objesi ve language özelliği eklendi
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ 
+    t: (key) => key,
+    i18n: { language: 'tr' } // Hatanın çözüldüğü satır
+  })
+}));
+
+describe('VisibilityTab Bileşeni ve Zustand Entegrasyonu', () => {
+  beforeEach(() => {
+    // Testten önce mağazayı varsayılan ayarlarla başlat
+    useStore.setState({
+      adminDraft: { ...DEFAULT_SITE_DATA }
+    });
+  });
+
+  it('checkbox değiştirildiğinde Zustand adminDraft durumunu güncellemeli', () => {
+    render(<VisibilityTab isEn={false} />);
+    
+    // "visibility.gallery" etiketine sahip checkbox'ı bul
+    const galleryCheckbox = screen.getByLabelText('visibility.gallery');
+    
+    // Varsayılan olarak işaretli (true) olmalı
+    expect(galleryCheckbox.checked).toBe(true);
+    
+    // Tıklayarak işareti kaldır (false yap)
+    fireEvent.click(galleryCheckbox);
+    
+    // Hem ekranda işareti kalkmalı
+    expect(galleryCheckbox.checked).toBe(false);
+    
+    // Hem de Zustand store'daki "gallery" görünürlük ayarı false olmalı
+    const currentDraft = useStore.getState().adminDraft;
+    expect(currentDraft.settings.visibility.gallery).toBe(false);
+  });
+});
+</file>
+
 <file path="src/components/admin/ui/AdminInputs.jsx">
 import React from "react";
 import { Dropdown } from "../../common/UIComponents";
@@ -744,6 +796,175 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz" })
     </div>
   );
 }
+</file>
+
+<file path="src/components/invitation/sections/CountdownSection.test.jsx">
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { CountdownSection } from './CountdownSection';
+
+// Framer Motion Mock (React uyarılarını önlemek için animasyon proplarını filtreler)
+vi.mock('framer-motion', () => ({
+  m: {
+    section: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
+      <section {...props}>{children}</section>
+    ),
+    div: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
+      <div {...props}>{children}</div>
+    ),
+  },
+}));
+
+// i18next mock (Dil çevirilerini simüle eder)
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: { language: 'tr' }
+  }),
+}));
+
+describe('CountdownSection Bileşeni', () => {
+  const mockCopy = {
+    countdownLabel: "Geri Sayım",
+    countdownTitle: "Düğünümüze Kalan Süre"
+  };
+
+  it('zaman varken sayacı doğru şekilde render etmeli', () => {
+    const mockTimeLeft = { days: 10, hours: 5, minutes: 30, seconds: 15 };
+    
+    render(<CountdownSection copy={mockCopy} timeLeft={mockTimeLeft} />);
+    
+    expect(screen.getByText('10')).toBeInTheDocument(); 
+    expect(screen.getByText('5')).toBeInTheDocument();  
+    expect(screen.getByText('Düğünümüze Kalan Süre')).toBeInTheDocument();
+  });
+
+  it('zaman dolduğunda kutlama mesajını göstermeli', () => {
+    const mockFinishedTime = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    
+    render(<CountdownSection copy={mockCopy} timeLeft={mockFinishedTime} />);
+    
+    expect(screen.getByText('Bugün En Mutlu Günümüz!')).toBeInTheDocument();
+    expect(screen.queryByText('ui.days')).not.toBeInTheDocument();
+  });
+});
+</file>
+
+<file path="src/components/invitation/sections/GiftSection.test.jsx">
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { GiftSection } from './GiftSection';
+
+// Framer Motion Mock (React uyarılarını önlemek için animasyon proplarını filtreler)
+vi.mock('framer-motion', () => ({
+  m: {
+    section: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
+      <section {...props}>{children}</section>
+    ),
+    div: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
+      <div {...props}>{children}</div>
+    ),
+  },
+}));
+
+// i18next Mock
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: { language: 'tr' }
+  }),
+}));
+
+describe('GiftSection Bileşeni', () => {
+  const mockGiftData = {
+    title: "Hediye & Takı",
+    description: "Mutluluğumuzu paylaşmak isterseniz...",
+    receiver: "Ahmet Yılmaz",
+    bankName: "Garanti BBVA",
+    iban: "TR00 0000 0000 0000 0000 0000 00"
+  };
+
+  it('giftData yoksa hiçbir şey render etmemeli', () => {
+    const { container } = render(<GiftSection giftData={null} />);
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('banka ve IBAN bilgilerini doğru şekilde ekranda göstermeli', () => {
+    render(<GiftSection giftData={mockGiftData} />);
+    
+    expect(screen.getByText('Ahmet Yılmaz')).toBeInTheDocument();
+    expect(screen.getByText('Garanti BBVA')).toBeInTheDocument();
+    expect(screen.getByText('TR00 0000 0000 0000 0000 0000 00')).toBeInTheDocument();
+  });
+
+  it('Kopyala butonuna basıldığında metin değişmeli', () => {
+    // navigator.clipboard.writeText mock'laması
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockImplementation(() => Promise.resolve()),
+      },
+    });
+
+    render(<GiftSection giftData={mockGiftData} />);
+    
+    const copyBtn = screen.getByText('ui.copyIban');
+    fireEvent.click(copyBtn);
+    
+    // Kopyalandıktan sonra buton metni değişmeli
+    expect(screen.getByText('ui.copied')).toBeInTheDocument();
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(mockGiftData.iban);
+  });
+});
+</file>
+
+<file path="src/components/invitation/sections/GuestsListSection.test.jsx">
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { GuestsListSection } from './GuestsListSection';
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: { language: 'tr' }
+  }),
+}));
+
+describe('GuestsListSection Bileşeni', () => {
+  const mockCopy = {
+    guestsLabel: "Misafirler",
+    guestsTitle: "Misafir Listesi"
+  };
+
+  const mockGuests = [
+    { id: 1, attendance: "Katılacağım", personCount: "2" },
+    { id: 2, attendance: "Katılamayacağım", personCount: "1" },
+    { id: 3, attendance: "Katılacağım", personCount: "1" }
+  ];
+
+  it('misafir istatistiklerini doğru hesaplamalı ve göstermeli', () => {
+    render(<GuestsListSection copy={mockCopy} guests={mockGuests} />);
+    
+    // Toplam form yanıtı: 3
+    expect(screen.getByText('3')).toBeInTheDocument();
+    
+    // Katılan form sayısı: 2
+    expect(screen.getByText('2')).toBeInTheDocument();
+    
+    // Katılmayan form sayısı: 1
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
+  it('dışarıdan prop ile gelen sayıları öncelikli olarak kullanmalı', () => {
+    // Props ile ezilmiş değerler
+    render(<GuestsListSection copy={mockCopy} guests={mockGuests} totalPersonCount={10} notAttendingCount={5} />);
+    
+    expect(screen.getByText('10')).toBeInTheDocument(); // totalPersonCount
+    expect(screen.getByText('5')).toBeInTheDocument();  // notAttendingCount
+  });
+});
 </file>
 
 <file path="src/hooks/useAudio.js">
@@ -1283,6 +1504,62 @@ export default function LiveProjector() {
 }
 </file>
 
+<file path="src/store/useStore.test.js">
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useStore } from './useStore';
+import { DEFAULT_SITE_DATA } from '../config/constants';
+
+describe('useStore Zustand Durum Yönetimi', () => {
+  
+  // Her testten önce state'i varsayılana sıfırla
+  beforeEach(() => {
+    useStore.setState({
+      opened: false,
+      adminDraft: { ...DEFAULT_SITE_DATA },
+      guests: []
+    });
+  });
+
+  it('setOpened çağrıldığında opened durumu güncellenmeli', () => {
+    const { setOpened } = useStore.getState();
+    
+    expect(useStore.getState().opened).toBe(false);
+    
+    setOpened(true);
+    
+    expect(useStore.getState().opened).toBe(true);
+  });
+
+  it('updateDraftObject ile iç içe geçmiş objeler başarıyla güncellenmeli', () => {
+    const { updateDraftObject } = useStore.getState();
+    
+    // Varsayılan gelini kontrol et
+    expect(useStore.getState().adminDraft.invitation.bride).toBe("Handenur");
+    
+    // Değeri güncelle
+    updateDraftObject("invitation", "bride", "Ayşe");
+    
+    // Güncellendiğini doğrula
+    expect(useStore.getState().adminDraft.invitation.bride).toBe("Ayşe");
+    // Diğer verilerin bozulmadığından emin ol
+    expect(useStore.getState().adminDraft.invitation.groom).toBe("Haluk Can");
+  });
+
+  it('addDraftArrayItem ile diziye yeni bir eleman eklenebilmeli', () => {
+    const { addDraftArrayItem } = useStore.getState();
+    
+    const initialLength = useStore.getState().adminDraft.scheduleItems.length;
+    
+    const newItem = { time: "23:00", title: "After Party", description: "Gece devam ediyor" };
+    addDraftArrayItem("scheduleItems", newItem);
+    
+    const newItems = useStore.getState().adminDraft.scheduleItems;
+    expect(newItems.length).toBe(initialLength + 1);
+    expect(newItems[newItems.length - 1].title).toBe("After Party");
+  });
+});
+</file>
+
 <file path="src/styles/index.css">
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
 
@@ -1660,6 +1937,61 @@ self.onmessage = async function(e) {
     self.postMessage({ error: error.message, file });
   }
 };
+</file>
+
+<file path="src/validations/schemas.test.js">
+import { describe, it, expect } from 'vitest';
+import { getRsvpSchema, getWishSchema } from './schemas';
+import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH } from '../config/constants';
+
+// i18next t() fonksiyonunu simüle eden sahte fonksiyon
+const mockT = (key) => key;
+
+describe('Form Doğrulama Şemaları (Zod)', () => {
+  
+  describe('RSVP (LCV) Şeması', () => {
+    const rsvpSchema = getRsvpSchema(mockT);
+
+    it('geçerli verileri kabul etmeli', () => {
+      const validData = { name: "Ahmet Yılmaz", attendance: "Katılacağım", phone: "05554443322" };
+      const result = rsvpSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+    });
+
+    it('isim 3 karakterden kısaysa hata vermeli', () => {
+      const invalidData = { name: "Ali", attendance: "Katılacağım" }; // 3 karaktere izin var
+      expect(rsvpSchema.safeParse(invalidData).success).toBe(true);
+
+      const invalidData2 = { name: "Al", attendance: "Katılacağım" }; // 2 karakter hata vermeli
+      const result = rsvpSchema.safeParse(invalidData2);
+      expect(result.success).toBe(false);
+      expect(result.error.issues[0].message).toBe('form.missingNameMessage');
+    });
+
+    it('not alanı maksimum sınırı aşarsa hata vermeli', () => {
+      const longNote = "a".repeat(NOTE_MAX_LENGTH + 1);
+      const invalidData = { name: "Ahmet Yılmaz", attendance: "Katılacağım", note: longNote };
+      const result = rsvpSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('Anı Defteri (Wish) Şeması', () => {
+    const wishSchema = getWishSchema(mockT);
+
+    it('geçerli mesajları kabul etmeli', () => {
+      const validData = { name: "Ayşe", message: "Bir ömür boyu mutluluklar dilerim!" };
+      expect(wishSchema.safeParse(validData).success).toBe(true);
+    });
+
+    it('mesaj 5 karakterden kısaysa hata vermeli', () => {
+      const invalidData = { name: "Ayşe", message: "Kısa" };
+      const result = wishSchema.safeParse(invalidData);
+      expect(result.success).toBe(false);
+      expect(result.error.issues[0].message).toBe('form.missingWishMessage');
+    });
+  });
+});
 </file>
 
 <file path="src/components/admin/tabs/CeremonyTab.jsx">
@@ -2532,6 +2864,287 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
 });
 </file>
 
+<file path="src/config/constants.js">
+export const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
+export const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
+export const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
+
+export const THEME_FAVICON_COLORS = {
+  rose: { bg: "#fff5f8", circle: "#f8d7e2", petal: "#cf7c9a", stroke: "#9f4f68", center: "#fff1b8" },
+  sage: { bg: "#f5f8f5", circle: "#d7ebd7", petal: "#8cb38c", stroke: "#597359", center: "#fff1b8" },
+  gold: { bg: "#fdfbf7", circle: "#f3e9d2", petal: "#d4b872", stroke: "#9c8346", center: "#fff1b8" },
+  burgundy: { bg: "#fcf5f6", circle: "#ebccd2", petal: "#a3495d", stroke: "#702838", center: "#fff1b8" },
+  lavanta: { bg: "#f9f7fc", circle: "#e6dcf2", petal: "#9b7cbf", stroke: "#664b8a", center: "#fff1b8" },
+  minimal: { bg: "#ffffff", circle: "#f0f0f0", petal: "#b3b3b3", stroke: "#737373", center: "#ffffff" },
+  dark: { bg: "#2a2a2a", circle: "#404040", petal: "#8c8c8c", stroke: "#bfbfbf", center: "#404040" },
+};
+
+export const DEFAULT_SITE_DATA = {
+  invitation: {
+    bride: "Handenur",
+    groom: "Haluk Can",
+    dateText: "07 Ağustos 2027",
+    timeText: "19:00",
+    weddingDate: "2027-07-07T19:00:00",
+    rsvpDeadline: "2027-07-01", 
+    venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+    address: "Kadıköy / İstanbul",
+    mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
+    shareLink: DEFAULT_SHARE_LINK,
+    whatsappNumber: "905394933614",
+    introImage: "/images/themes/lavanta/8.jpg",
+    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
+    musicFile: DEFAULT_WEDDING_MUSIC_FILE,
+    musicName: DEFAULT_WEDDING_MUSIC_NAME,
+    gallery: [
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
+      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
+      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
+    ],
+    message: "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
+  },
+  familyInfo: {
+    brideFamilyTitle: "Gelin Ailesi",
+    brideFamilyName: "Çeltik Ailesi",
+    groomFamilyTitle: "Damat Ailesi",
+    groomFamilyName: "Sarıöz Ailesi",
+    text: "Ailelerimizin de katılımıyla bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.",
+  },
+  giftRegistry: {
+    title: "Hediye & Takı Gönderimi",
+    description: "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için hesap bilgilerimiz:",
+    receiver: "Haluk Can Sarıöz",
+    iban: "TR53 0011 1000 0000 0145 4005 17",
+    bankName: "QNB Bankası"
+  },
+  copy: {
+    introLabel: "Düğün Davetiyesi",
+    introText: "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
+    openButton: "Daveti Aç",
+    heroLabel: "Biz Evleniyoruz",
+    countdownLabel: "Geri Sayım",
+    countdownTitle: "Düğünümüze Kalan Süre",
+    invitationLabel: "Davet",
+    invitationTitle: "Mutluluğumuza Ortak Olur Musunuz?",
+    familyLabel: "Ailelerimiz",
+    familyTitle: "Ailelerimizin Katılımıyla",
+    ceremonyLabel: "Nikah ve Düğün",
+    ceremonyTitle: "Günün Detayları",
+    scheduleLabel: "Düğün Takvimi",
+    locationLabel: "Tarih ve Konum",
+    locationTitle: "Düğün Bilgileri",
+    galleryLabel: "Fotoğraflar",
+    galleryTitle: "Kır Düğünü Atmosferi",
+    rsvpLabel: "Katılım",
+    rsvpTitle: "Katılım Bildirimi",
+    rsvpText: "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
+    guestsLabel: "Misafirler",
+    guestsTitle: "Misafir Listesi",
+    wishesLabel: "Anı Defteri",
+    wishesTitle: "Güzel Dilekleriniz",
+    shareLabel: "Paylaş",
+    shareTitle: "Davetiyeyi Paylaş",
+    shareDescription: "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
+    thanksText: "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
+    footerSmall: "Made with love",
+    giftButton: "Hediye & Takı Gönder",
+    declineTitle: "Çok Üzüldük!",
+    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
+    deadlineTitle: "LCV Bildirim Süresi Doldu",
+    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.",
+    storyLabel: "Bizim Hikayemiz",
+    storyTitle: "Nasıl Tanıştık?"
+  },
+  eventDetails: [
+    {
+      label: "Nikah Töreni",
+      time: "19:00",
+      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+      description: "Mutluluğumuza ilk imzayı atacağımız özel an.",
+    },
+    {
+      label: "Düğün & Eğlence",
+      time: "20:00",
+      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
+      description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
+    },
+  ],
+  storyTimeline: [
+    {
+      date: "İlkbahar 2024",
+      title: "İlk Karşılaşma",
+      description: "Hikayemizin başladığı o güzel tesadüf ve sihirli an...",
+      image: ""
+    },
+    {
+      date: "22 Ağustos 2026",
+      title: "Büyük Teklif",
+      description: "Fenerbahçe Parkı'nın yeşillikleri arasında başlayan günümüz, Boğaz vapuru keyfi ve köprü manzaralı harika bir akşam yemeği eşliğinde 'Evet!' ile taçlandı.",
+      image: ""
+    }
+  ],
+  scheduleItems: [
+    { time: "18:30", title: "Misafir Karşılama", description: "Davetlilerimizin alana gelişi ve karşılama." },
+    { time: "19:00", title: "Nikah Töreni", description: "Nikah merasimimiz başlar." },
+    { time: "20:00", title: "Yemek ve Kutlama", description: "Yemek ikramı ve kutlama bölümü." },
+    { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
+  ],
+  settings: {
+    theme: "lavanta",
+    defaultTheme: "lavanta",
+    requireWishApproval: true,
+    isPostWedding: false, 
+    visibility: {
+      countdown: true,
+      family: true,
+      ceremony: true,
+      schedule: true,
+      location: true,
+      gallery: true,
+      rsvp: true,
+      guests: true,
+      wishes: true,
+      iban: true,
+      popupIban: true,
+    },
+  },
+  messages: {
+    whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
+    rsvpWhatsappMessage: "Merhaba, {couple} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.",
+    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız."
+  },
+};
+
+export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+export const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
+export const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
+export const NOTE_MAX_LENGTH = 160;
+export const WISH_MAX_LENGTH = 220;
+export const SITE_DATA_KEY = "wedding-site-data";
+
+export const THEMES = [
+  { label: "Pembe Romantik", value: "rose" },
+  { label: "Yeşil Kır Düğünü", value: "sage" },
+  { label: "Altın Krem", value: "gold" },
+  { label: "Bordo", value: "burgundy" },
+  { label: "Lavanta", value: "lavanta" },
+  { label: "Minimal Beyaz", value: "minimal" },
+  { label: "Koyu Tema", value: "dark" },
+];
+
+export const THEME_DEFAULT_IMAGES = {
+  rose: {
+    introImage: "/images/themes/rose/1.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4", 
+    gallery: [
+      "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
+      "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
+      "/images/themes/rose/sergey-semin-3gpzjLWHb0I-unsplash.jpg",
+      "/images/themes/rose/thomas-curryer-UDfxsawmiKk-unsplash.jpg",
+    ],
+  },
+  sage: {
+    introImage: "/images/themes/sage/3.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4", 
+    gallery: [
+      "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
+      "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
+      "/images/themes/sage/matthew-PmFCYjRqHN8-unsplash.jpg",
+      "/images/themes/sage/silvia-mara-Hi69z0dFLjA-unsplash.jpg",
+    ],
+  },
+  gold: {
+    introImage: "/images/themes/gold/5.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4", 
+    gallery: [
+      "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
+      "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
+      "/images/themes/gold/charlotte-cowell-cHzTNuMAIJs-unsplash.jpg",
+      "/images/themes/gold/thlt-lcx-R5d7yOCkPJU-unsplash.jpg",
+    ],
+  },
+  burgundy: {
+    introImage: "/images/themes/burgundy/7.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
+    gallery: [
+      "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
+      "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
+      "/images/themes/burgundy/11.jpg",
+      "/images/themes/burgundy/6.jpg",
+    ],
+  },
+  lavanta: {
+    introImage: "/images/themes/lavanta/8.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Lavanta.mp4",
+    gallery: [
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
+      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
+      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
+    ],
+  },
+  minimal: {
+    introImage: "/images/themes/minimal/9.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Minimal.mp4",
+    gallery: [
+      "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
+      "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
+      "/images/themes/minimal/max-letek-_zH2qqQ1dHA-unsplash.jpg",
+      "/images/themes/minimal/micah-sammie-chaffin-ECZeV9L7Pc4-unsplash.jpg",
+    ],
+  },
+  dark: {
+    introImage: "/images/themes/dark/10.jpg",
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Dark.mp4",
+    gallery: [
+      "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
+      "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
+      "/images/themes/dark/13.jpg",
+      "/images/themes/dark/mike-marrah-1kCJYMKROiU-unsplash.jpg",
+    ],
+  },
+};
+
+export const MAX_IMAGE_DIMENSION = 1400;
+export const IMAGE_QUALITY = 0.78;
+export const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
+
+export const INITIAL_GUEST_FORM = {
+  name: "",
+  attendance: "Katılacağım",
+  note: "",
+};
+
+export const INITIAL_WISH_FORM = {
+  name: "",
+  message: "",
+};
+
+export const ATTENDANCE_OPTIONS = [
+  { label: "Katılacağım", value: "Katılacağım" },
+  { label: "Katılamayacağım", value: "Katılamayacağım" },
+];
+
+export const PERSON_COUNT_OPTIONS = [
+  { label: "1 Kişi", value: "1" },
+  { label: "2 Kişi", value: "2" },
+  { label: "3 Kişi", value: "3" },
+  { label: "4 Kişi", value: "4" },
+];
+
+export const SIDE_OPTIONS = [
+  { label: "Gelin Tarafı", value: "Gelin Tarafı" },
+  { label: "Damat Tarafı", value: "Damat Tarafı" },
+  { label: "Ortak", value: "Ortak" },
+];
+
+export const CHILD_OPTIONS = [
+  { label: "Çocuk Yok", value: "Hayır" },
+  { label: "Çocuk Var", value: "Evet" },
+];
+</file>
+
 <file path="src/hooks/useAssetPreloader.js">
 import { useState, useEffect } from 'react';
 
@@ -3308,285 +3921,301 @@ export function LocationSection({ copy, invitation, googleCalendarLink }) {
 }
 </file>
 
-<file path="src/config/constants.js">
-export const DEFAULT_SHARE_LINK = "https://wedding-invitation-halook.vercel.app/";
-export const DEFAULT_WEDDING_MUSIC_FILE = "/music/river-flows-in-you.mp3?v=20260628";
-export const DEFAULT_WEDDING_MUSIC_NAME = "Yiruma – River Flows in You";
+<file path="src/i18n/locales/en.json">
+{
+  "invitation": {
+    "introLabel": "Wedding Invitation",
+    "introText": "You are invited to the most special day of our love story.",
+    "openButton": "Open Invitation 💌",
+    "heroLabel": "We Are Getting Married",
+    "countdownLabel": "Countdown",
+    "countdownTitle": "Time Left Until Our Wedding",
+    "invitationLabel": "Invitation",
+    "invitationTitle": "Will You Share Our Happiness?",
+    "familyLabel": "Our Families",
+    "familyTitle": "With the Joy of Our Families",
+    "ceremonyLabel": "Ceremony & Celebration",
+    "ceremonyTitle": "Details of the Day",
+    "scheduleLabel": "Wedding Schedule",
+    "locationLabel": "Date & Location",
+    "locationTitle": "Wedding Details",
+    "galleryLabel": "Photos",
+    "galleryTitle": "Outdoor Wedding Atmosphere",
+    "rsvpLabel": "RSVP",
+    "rsvpTitle": "RSVP Form",
+    "rsvpText": "Please let us know if you can attend to help us plan.",
+    "guestsLabel": "Guests",
+    "guestsTitle": "Guest List",
+    "wishesLabel": "Guestbook",
+    "wishesTitle": "Your Best Wishes",
+    "shareLabel": "Share",
+    "shareTitle": "Share the Invitation",
+    "shareDescription": "You can share our invitation with your loved ones.",
+    "thanksText": "Having you with us on this special day is the greatest gift.",
+    "footerSmall": "Made with love",
+    "declineTitle": "We'll Miss You! 😔",
+    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
+  },
+  "form": {
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Your Phone Number",
+    "notePlaceholder": "Please Specify The Number Of People",
+    "messagePlaceholder": "Your Message",
+    "submitRsvp": "Send RSVP 🕊️",
+    "submitWish": "Send Message 💌",
+    "whatsappRsvp": "RSVP via WhatsApp 💬",
+    "missingInfo": "Missing Info ⚠️",
+    "missingNameMessage": "Please enter your full name. ✍️",
+    "missingWishMessage": "Please enter your name and message. ✍️"
+  },
+  "ui": {
+    "time": "Time",
+    "scroll": "SCROLL",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "date": "Date",
+    "venue": "Venue",
+    "address": "Address",
+    "goToMap": "Go to Map 📍",
+    "addToCalendar": "Add to Calendar 📅",
+    "closeEsc": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "shareQr": "Share quickly via QR code.",
+    "shareWhatsapp": "Share via WhatsApp 💬",
+    "copyLink": "Copy Link 🔗",
+    "giftTitle": "Gift & Registry",
+    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
+    "copyIban": "Copy IBAN 📋",
+    "copied": "Copied! ✅",
+    "close": "OK 👍",
+    "closeBtn": "Close ❌",
+    "sendGift": "Would you like to send a gift? 🎁",    
+    "totalResponses": "Total Responses",
+    "attending": "Attending",
+    "notAttending": "Not Attending",
+    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
+    "noWishes": "No wishes yet.",
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save 💾",
+    "cancel": "Cancel 🚫",
+    "yes": "Yes ✔️",
+    "ok": "OK 👍"
+  },
+  "visibility": {
+    "countdown": "Countdown",
+    "family": "Family Info",
+    "ceremony": "Ceremony & Wedding",
+    "schedule": "Wedding Schedule",
+    "location": "Location (Map)",
+    "gallery": "Photo Gallery",
+    "rsvp": "RSVP Form",
+    "wishes": "Guestbook",
+    "iban": "Gift / IBAN Section",
+    "guests": "Guest List",
+    "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information ℹ️",
+    "errorTitle": "Error ❌",
+    "saveTitle": "Saved 🎉",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing 🔌",
+    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
+    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
+    "wishSaved": "Your wish has been saved. 💖",
+    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
+    "wishError": "Could not save message. Detail: {{message}} ❌",
+    "linkCopied": "Invitation link copied. 🔗",
+    "linkCopyError": "Could not copy link. ⚠️"
+  },
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status."
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
+  },
+  "guestPhotos": "Guest POV Photos",
+  "massMessageSuccess": "Mass messages successfully initiated.",
+  "aiGenerating": "AI assistant is preparing your message..."
+}
+</file>
 
-export const THEME_FAVICON_COLORS = {
-  rose: { bg: "#fff5f8", circle: "#f8d7e2", petal: "#cf7c9a", stroke: "#9f4f68", center: "#fff1b8" },
-  sage: { bg: "#f5f8f5", circle: "#d7ebd7", petal: "#8cb38c", stroke: "#597359", center: "#fff1b8" },
-  gold: { bg: "#fdfbf7", circle: "#f3e9d2", petal: "#d4b872", stroke: "#9c8346", center: "#fff1b8" },
-  burgundy: { bg: "#fcf5f6", circle: "#ebccd2", petal: "#a3495d", stroke: "#702838", center: "#fff1b8" },
-  lavanta: { bg: "#f9f7fc", circle: "#e6dcf2", petal: "#9b7cbf", stroke: "#664b8a", center: "#fff1b8" },
-  minimal: { bg: "#ffffff", circle: "#f0f0f0", petal: "#b3b3b3", stroke: "#737373", center: "#ffffff" },
-  dark: { bg: "#2a2a2a", circle: "#404040", petal: "#8c8c8c", stroke: "#bfbfbf", center: "#404040" },
-};
+<file path="src/i18n/locales/tr.json">
+{
+  "invitation": {
+    "introLabel": "Düğün Davetiyesi",
+    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
+    "openButton": "Daveti Aç 💌",
+    "heroLabel": "Biz Evleniyoruz",
+    "countdownLabel": "Geri Sayım",
+    "countdownTitle": "Düğünümüze Kalan Süre",
+    "invitationLabel": "Davet",
+    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
+    "familyLabel": "Ailelerimiz",
+    "familyTitle": "Ailelerimizin Katılımıyla",
+    "ceremonyLabel": "Nikah ve Düğün",
+    "ceremonyTitle": "Günün Detayları",
+    "scheduleLabel": "Düğün Takvimi",
+    "locationLabel": "Tarih ve Konum",
+    "locationTitle": "Düğün Bilgileri",
+    "galleryLabel": "Fotoğraflar",
+    "galleryTitle": "Kır Düğünü Atmosferi",
+    "rsvpLabel": "Katılım",
+    "rsvpTitle": "Katılım Bildirimi",
+    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
+    "guestsLabel": "Misafirler",
+    "guestsTitle": "Misafir Listesi",
+    "wishesLabel": "Anı Defteri",
+    "wishesTitle": "Güzel Dilekleriniz",
+    "shareLabel": "Paylaş",
+    "shareTitle": "Davetiyeyi Paylaş",
+    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
+    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
+    "footerSmall": "Made with love",
+    "declineTitle": "Çok Üzüldük! 😔",
+    "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
+    "deadlineTitle": "LCV Bildirim Süresi Doldu",
+    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
+  },
+  "form": {
+    "namePlaceholder": "Ad Soyad",
+    "phonePlaceholder": "Telefon Numaranız",
+    "notePlaceholder": "Kişi Sayısını Belirtiniz",
+    "messagePlaceholder": "Mesajınız",
+    "submitRsvp": "Katılımı Gönder 🕊️",
+    "submitWish": "Mesajı Gönder 💌",
+    "whatsappRsvp": "WhatsApp ile Bildir 💬",
+    "missingInfo": "Eksik Bilgi ⚠️",
+    "missingNameMessage": "Lütfen ad soyad gir. ✍️",
+    "missingWishMessage": "Lütfen isim ve mesaj gir. ✍️"
+  },
+  "ui": {
+    "time": "Saat",
+    "scroll": "KAYDIR",
+    "days": "Gün",
+    "hours": "Saat",
+    "mins": "Dakika",
+    "secs": "Saniye",
+    "date": "Tarih",
+    "venue": "Yer",
+    "address": "Adres",
+    "goToMap": "Konuma Git 📍",
+    "addToCalendar": "Takvime Ekle 📅",
+    "closeEsc": "Kapat (Esc)",
+    "prev": "Önceki (←)",
+    "next": "Sonraki (→)",
+    "shareQr": "QR kod ile hızlıca paylaşabilirsiniz.",
+    "shareWhatsapp": "WhatsApp ile Paylaş 💬",
+    "copyLink": "Linki Kopyala 🔗",
+    "giftTitle": "Hediye & Takı",
+    "giftDescription": "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için:",
+    "copyIban": "IBAN'ı Kopyala 📋",
+    "copied": "Kopyalandı ✅",
+    "close": "Tamam 👍",
+    "closeBtn": "Kapat ❌",
+    "sendGift": "Hediye Göndermek İster misiniz? 🎁",
+    "totalResponses": "Toplam Yanıt",
+    "attending": "Katılacak",
+    "notAttending": "Katılmayacak",
+    "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
+    "noWishes": "Henüz güzel dilek yok.",
+    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
+    "save": "Kaydet 💾",
+    "cancel": "Vazgeç 🚫",
+    "yes": "Evet ✔️",
+    "ok": "Tamam 👍"
+  },
+  "visibility": {
+    "countdown": "Geri Sayım",
+    "family": "Aile Bilgileri",
+    "ceremony": "Nikah ve Düğün",
+    "schedule": "Düğün Takvimi",
+    "location": "Konum (Harita)",
+    "gallery": "Fotoğraf Galerisi",
+    "rsvp": "Lcv (Katılım Formu)",
+    "wishes": "Anı Defteri",
+    "iban": "Hediye / IBAN Bölümü",
+    "guests": "Misafir Listesi",
+    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Bilgi ℹ️",
+    "errorTitle": "Hata ❌",
+    "saveTitle": "Bilgileriniz Alındı 🎉",
+    "saveErrorTitle": "Kayıt hatası 😔",
+    "supabaseMissingTitle": "Supabase bağlantısı eksik 🔌",
+    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz! 💌",
+    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}} ❌",
+    "wishSaved": "Güzel dileğin kaydedildi. 💖",
+    "wishSentApproval": "Güzel dileğin admin onayına gönderildi. ⏳",
+    "wishError": "Mesaj kaydedilemedi. Detay: {{message}} ❌",
+    "linkCopied": "Davetiye linki kopyalandı. 🔗",
+    "linkCopyError": "Link kopyalanamadı. ⚠️"
+  },
+  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
+    "clearGuestsTitle": "Katılım kayıtlarını sil",
+    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
+    "clearWishesTitle": "Anı defterini temizle",
+    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
+    "deleteGuestTitle": "Kaydı sil",
+    "editGuestTitle": "Katılım kaydını düzenle",
+    "fullName": "Ad Soyad",
+    "phone": "Telefon",
+    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
+    "personCount": "Kişi sayısı",
+    "side": "Taraf",
+    "hasChild": "Çocuk var mı? (Evet/Hayır)",
+    "songRequest": "Müzik isteği",
+    "note": "Not",
+    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
+    "deleteWishTitle": "Mesajı sil",
+    "editWishTitle": "Mesajı düzenle",
+    "message": "Mesaj",
+    "couldNotDelete": "Silinemedi.",
+    "couldNotUpdate": "Güncellenemedi.",
+    "couldNotChangeStatus": "Durum değiştirilemedi."
+  },
+    "navigation": {
+    "chooseApp": "Yol Tarifi Al",
+    "copyAddress": "Tam Adresi Kopyala 📋",
+    "addressCopied": "Adres Kopyalandı! ✅"
+  },
 
-export const DEFAULT_SITE_DATA = {
-  invitation: {
-    bride: "Handenur",
-    groom: "Haluk Can",
-    dateText: "07 Ağustos 2027",
-    timeText: "19:00",
-    weddingDate: "2027-07-07T19:00:00",
-    rsvpDeadline: "2027-07-01", 
-    venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
-    address: "Kadıköy / İstanbul",
-    mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
-    shareLink: DEFAULT_SHARE_LINK,
-    whatsappNumber: "905394933614",
-    introImage: "/images/themes/lavanta/8.jpg",
-    heroImage: "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg",
-    musicFile: DEFAULT_WEDDING_MUSIC_FILE,
-    musicName: DEFAULT_WEDDING_MUSIC_NAME,
-    gallery: [
-      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
-      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
-      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
-      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
-    ],
-    message: "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
-  },
-  familyInfo: {
-    brideFamilyTitle: "Gelin Ailesi",
-    brideFamilyName: "Çeltik Ailesi",
-    groomFamilyTitle: "Damat Ailesi",
-    groomFamilyName: "Sarıöz Ailesi",
-    text: "Ailelerimizin de katılımıyla bu özel günümüzde sizleri aramızda görmekten mutluluk duyarız.",
-  },
-  giftRegistry: {
-    title: "Hediye & Takı Gönderimi",
-    description: "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için hesap bilgilerimiz:",
-    receiver: "Haluk Can Sarıöz",
-    iban: "TR53 0011 1000 0000 0145 4005 17",
-    bankName: "QNB Bankası"
-  },
-  copy: {
-    introLabel: "Düğün Davetiyesi",
-    introText: "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
-    openButton: "Daveti Aç",
-    heroLabel: "Biz Evleniyoruz",
-    countdownLabel: "Geri Sayım",
-    countdownTitle: "Düğünümüze Kalan Süre",
-    invitationLabel: "Davet",
-    invitationTitle: "Mutluluğumuza Ortak Olur Musunuz?",
-    familyLabel: "Ailelerimiz",
-    familyTitle: "Ailelerimizin Katılımıyla",
-    ceremonyLabel: "Nikah ve Düğün",
-    ceremonyTitle: "Günün Detayları",
-    scheduleLabel: "Düğün Takvimi",
-    locationLabel: "Tarih ve Konum",
-    locationTitle: "Düğün Bilgileri",
-    galleryLabel: "Fotoğraflar",
-    galleryTitle: "Kır Düğünü Atmosferi",
-    rsvpLabel: "Katılım",
-    rsvpTitle: "Katılım Bildirimi",
-    rsvpText: "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
-    guestsLabel: "Misafirler",
-    guestsTitle: "Misafir Listesi",
-    wishesLabel: "Anı Defteri",
-    wishesTitle: "Güzel Dilekleriniz",
-    shareLabel: "Paylaş",
-    shareTitle: "Davetiyeyi Paylaş",
-    shareDescription: "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
-    thanksText: "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    footerSmall: "Made with love",
-    giftButton: "Hediye & Takı Gönder",
-    declineTitle: "Çok Üzüldük!",
-    declineMessage: "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
-    deadlineTitle: "LCV Bildirim Süresi Doldu",
-    deadlineText: "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz.",
-    storyLabel: "Bizim Hikayemiz",
-    storyTitle: "Nasıl Tanıştık?"
-  },
-  eventDetails: [
-    {
-      label: "Nikah Töreni",
-      time: "19:00",
-      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
-      description: "Mutluluğumuza ilk imzayı atacağımız özel an.",
-    },
-    {
-      label: "Düğün & Eğlence",
-      time: "20:00",
-      location: "Fenerbahçe Orduevi Plaj Düğün Salonu",
-      description: "Yemek, kutlama ve eğlence ile devam edecek güzel akşam.",
-    },
-  ],
-  storyTimeline: [
-    {
-      date: "İlkbahar 2024",
-      title: "İlk Karşılaşma",
-      description: "Hikayemizin başladığı o güzel tesadüf ve sihirli an...",
-      image: ""
-    },
-    {
-      date: "22 Ağustos 2026",
-      title: "Büyük Teklif",
-      description: "Fenerbahçe Parkı'nın yeşillikleri arasında başlayan günümüz, Boğaz vapuru keyfi ve köprü manzaralı harika bir akşam yemeği eşliğinde 'Evet!' ile taçlandı.",
-      image: ""
-    }
-  ],
-  scheduleItems: [
-    { time: "18:30", title: "Misafir Karşılama", description: "Davetlilerimizin alana gelişi ve karşılama." },
-    { time: "19:00", title: "Nikah Töreni", description: "Nikah merasimimiz başlar." },
-    { time: "20:00", title: "Yemek ve Kutlama", description: "Yemek ikramı ve kutlama bölümü." },
-    { time: "21:00", title: "Eğlence", description: "Müzik ve eğlence ile geceye devam." },
-  ],
-  settings: {
-    theme: "lavanta",
-    defaultTheme: "lavanta",
-    requireWishApproval: true,
-    isPostWedding: false, 
-    visibility: {
-      countdown: true,
-      family: true,
-      ceremony: true,
-      schedule: true,
-      location: true,
-      gallery: true,
-      rsvp: true,
-      guests: true,
-      wishes: true,
-      iban: true,
-      popupIban: true,
-    },
-  },
-  messages: {
-    whatsappShareMessage: "{couple} düğün davetiyesi 💍\n{link}",
-    rsvpWhatsappMessage: "Merhaba, {couple} düğün davetiyenizi aldım. Katılım durumumu bildirmek istiyorum.",
-    guestGreeting: "Sevgili {guest}, bu özel günümüzde sizi de aramızda görmekten mutluluk duyarız."
-  },
-};
-
-export const ADMIN_SESSION_TIMEOUT_MS = 30 * 60 * 1000;
-export const ADMIN_SESSION_LAST_ACTIVE_KEY = "wedding-admin-last-active";
-export const ADMIN_ACTIVITY_EVENTS = ["click", "keydown", "mousemove", "scroll", "touchstart"];
-export const NOTE_MAX_LENGTH = 160;
-export const WISH_MAX_LENGTH = 220;
-export const SITE_DATA_KEY = "wedding-site-data";
-
-export const THEMES = [
-  { label: "Pembe Romantik", value: "rose" },
-  { label: "Yeşil Kır Düğünü", value: "sage" },
-  { label: "Altın Krem", value: "gold" },
-  { label: "Bordo", value: "burgundy" },
-  { label: "Lavanta", value: "lavanta" },
-  { label: "Minimal Beyaz", value: "minimal" },
-  { label: "Koyu Tema", value: "dark" },
-];
-
-export const THEME_DEFAULT_IMAGES = {
-  rose: {
-    introImage: "/images/themes/rose/1.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4", 
-    gallery: [
-      "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
-      "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
-      "/images/themes/rose/sergey-semin-3gpzjLWHb0I-unsplash.jpg",
-      "/images/themes/rose/thomas-curryer-UDfxsawmiKk-unsplash.jpg",
-    ],
-  },
-  sage: {
-    introImage: "/images/themes/sage/3.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4", 
-    gallery: [
-      "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
-      "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
-      "/images/themes/sage/matthew-PmFCYjRqHN8-unsplash.jpg",
-      "/images/themes/sage/silvia-mara-Hi69z0dFLjA-unsplash.jpg",
-    ],
-  },
-  gold: {
-    introImage: "/images/themes/gold/5.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4", 
-    gallery: [
-      "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
-      "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",
-      "/images/themes/gold/charlotte-cowell-cHzTNuMAIJs-unsplash.jpg",
-      "/images/themes/gold/thlt-lcx-R5d7yOCkPJU-unsplash.jpg",
-    ],
-  },
-  burgundy: {
-    introImage: "/images/themes/burgundy/7.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Burgundy.mp4",
-    gallery: [
-      "/images/themes/burgundy/balint-henter-5F6ZgBbXnxo-unsplash.jpg",
-      "/images/themes/burgundy/joanna-kosinska-xHDOokMbumY-unsplash.jpg",
-      "/images/themes/burgundy/11.jpg",
-      "/images/themes/burgundy/6.jpg",
-    ],
-  },
-  lavanta: {
-    introImage: "/images/themes/lavanta/8.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Lavanta.mp4",
-    gallery: [
-      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
-      "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg",
-      "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg",
-      "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg",
-    ],
-  },
-  minimal: {
-    introImage: "/images/themes/minimal/9.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Minimal.mp4",
-    gallery: [
-      "/images/themes/minimal/kerri-shaver-E41FJBN09wc-unsplash.jpg",
-      "/images/themes/minimal/kerri-shaver-oDV14167o1o-unsplash.jpg",
-      "/images/themes/minimal/max-letek-_zH2qqQ1dHA-unsplash.jpg",
-      "/images/themes/minimal/micah-sammie-chaffin-ECZeV9L7Pc4-unsplash.jpg",
-    ],
-  },
-  dark: {
-    introImage: "/images/themes/dark/10.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Dark.mp4",
-    gallery: [
-      "/images/themes/dark/christina-fxsznsmRnFI-unsplash.jpg",
-      "/images/themes/dark/christina-o7yMtvuc8_0-unsplash.jpg",
-      "/images/themes/dark/13.jpg",
-      "/images/themes/dark/mike-marrah-1kCJYMKROiU-unsplash.jpg",
-    ],
-  },
-};
-
-export const MAX_IMAGE_DIMENSION = 1400;
-export const IMAGE_QUALITY = 0.78;
-export const MAX_AUDIO_FILE_SIZE = 3.8 * 1024 * 1024;
-
-export const INITIAL_GUEST_FORM = {
-  name: "",
-  attendance: "Katılacağım",
-  note: "",
-};
-
-export const INITIAL_WISH_FORM = {
-  name: "",
-  message: "",
-};
-
-export const ATTENDANCE_OPTIONS = [
-  { label: "Katılacağım", value: "Katılacağım" },
-  { label: "Katılamayacağım", value: "Katılamayacağım" },
-];
-
-export const PERSON_COUNT_OPTIONS = [
-  { label: "1 Kişi", value: "1" },
-  { label: "2 Kişi", value: "2" },
-  { label: "3 Kişi", value: "3" },
-  { label: "4 Kişi", value: "4" },
-];
-
-export const SIDE_OPTIONS = [
-  { label: "Gelin Tarafı", value: "Gelin Tarafı" },
-  { label: "Damat Tarafı", value: "Damat Tarafı" },
-  { label: "Ortak", value: "Ortak" },
-];
-
-export const CHILD_OPTIONS = [
-  { label: "Çocuk Yok", value: "Hayır" },
-  { label: "Çocuk Var", value: "Evet" },
-];
+  "guestPhotos": "Misafir POV Fotoğrafları",
+  "massMessageSuccess": "Toplu mesajlar başarıyla başlatıldı.",
+  "aiGenerating": "Yapay zeka asistanı mesajınızı hazırlıyor..."
+}
 </file>
 
 <file path="src/styles/variables.css">
@@ -4944,303 +5573,6 @@ export function useAdminSession({ isAdminPage, isEn }) {
 }
 </file>
 
-<file path="src/i18n/locales/en.json">
-{
-  "invitation": {
-    "introLabel": "Wedding Invitation",
-    "introText": "You are invited to the most special day of our love story.",
-    "openButton": "Open Invitation 💌",
-    "heroLabel": "We Are Getting Married",
-    "countdownLabel": "Countdown",
-    "countdownTitle": "Time Left Until Our Wedding",
-    "invitationLabel": "Invitation",
-    "invitationTitle": "Will You Share Our Happiness?",
-    "familyLabel": "Our Families",
-    "familyTitle": "With the Joy of Our Families",
-    "ceremonyLabel": "Ceremony & Celebration",
-    "ceremonyTitle": "Details of the Day",
-    "scheduleLabel": "Wedding Schedule",
-    "locationLabel": "Date & Location",
-    "locationTitle": "Wedding Details",
-    "galleryLabel": "Photos",
-    "galleryTitle": "Outdoor Wedding Atmosphere",
-    "rsvpLabel": "RSVP",
-    "rsvpTitle": "RSVP Form",
-    "rsvpText": "Please let us know if you can attend to help us plan.",
-    "guestsLabel": "Guests",
-    "guestsTitle": "Guest List",
-    "wishesLabel": "Guestbook",
-    "wishesTitle": "Your Best Wishes",
-    "shareLabel": "Share",
-    "shareTitle": "Share the Invitation",
-    "shareDescription": "You can share our invitation with your loved ones.",
-    "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You! 😔",
-    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
-    "deadlineTitle": "RSVP Deadline Passed",
-    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
-  },
-  "form": {
-    "namePlaceholder": "Full Name",
-    "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Please Specify The Number Of People",
-    "messagePlaceholder": "Your Message",
-    "submitRsvp": "Send RSVP 🕊️",
-    "submitWish": "Send Message 💌",
-    "whatsappRsvp": "RSVP via WhatsApp 💬",
-    "missingInfo": "Missing Info ⚠️",
-    "missingNameMessage": "Please enter your full name. ✍️",
-    "missingWishMessage": "Please enter your name and message. ✍️"
-  },
-  "ui": {
-    "time": "Time",
-    "scroll": "SCROLL",
-    "days": "Days",
-    "hours": "Hours",
-    "mins": "Mins",
-    "secs": "Secs",
-    "date": "Date",
-    "venue": "Venue",
-    "address": "Address",
-    "goToMap": "Go to Map 📍",
-    "addToCalendar": "Add to Calendar 📅",
-    "closeEsc": "Close (Esc)",
-    "prev": "Previous (←)",
-    "next": "Next (→)",
-    "shareQr": "Share quickly via QR code.",
-    "shareWhatsapp": "Share via WhatsApp 💬",
-    "copyLink": "Copy Link 🔗",
-    "giftTitle": "Gift & Registry",
-    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
-    "copyIban": "Copy IBAN 📋",
-    "copied": "Copied! ✅",
-    "close": "OK 👍",
-    "closeBtn": "Close ❌",
-    "sendGift": "Would you like to send a gift? 🎁",    
-    "totalResponses": "Total Responses",
-    "attending": "Attending",
-    "notAttending": "Not Attending",
-    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
-    "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
-    "save": "Save 💾",
-    "cancel": "Cancel 🚫",
-    "yes": "Yes ✔️",
-    "ok": "OK 👍"
-  },
-  "visibility": {
-    "countdown": "Countdown",
-    "family": "Family Info",
-    "ceremony": "Ceremony & Wedding",
-    "schedule": "Wedding Schedule",
-    "location": "Location (Map)",
-    "gallery": "Photo Gallery",
-    "rsvp": "RSVP Form",
-    "wishes": "Guestbook",
-    "iban": "Gift / IBAN Section",
-    "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Information ℹ️",
-    "errorTitle": "Error ❌",
-    "saveTitle": "Saved 🎉",
-    "saveErrorTitle": "Save error 😔",
-    "supabaseMissingTitle": "Supabase connection missing 🔌",
-    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
-    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
-    "wishSaved": "Your wish has been saved. 💖",
-    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
-    "wishError": "Could not save message. Detail: {{message}} ❌",
-    "linkCopied": "Invitation link copied. 🔗",
-    "linkCopyError": "Could not copy link. ⚠️"
-  },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Delete all RSVP records?",
-    "clearGuestsTitle": "Clear Guests",
-    "clearWishesConfirm": "Delete all guestbook messages?",
-    "clearWishesTitle": "Clear Guestbook",
-    "deleteGuestConfirm": "Delete this RSVP record?",
-    "deleteGuestTitle": "Delete Record",
-    "editGuestTitle": "Edit RSVP",
-    "fullName": "Full Name",
-    "phone": "Phone",
-    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
-    "personCount": "Person Count",
-    "side": "Side",
-    "hasChild": "Has children? (Evet/Hayır)",
-    "songRequest": "Song Request",
-    "note": "Note",
-    "deleteWishConfirm": "Delete this message?",
-    "deleteWishTitle": "Delete Message",
-    "editWishTitle": "Edit Message",
-    "message": "Message",
-    "couldNotDelete": "Could not delete.",
-    "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
-  },
-    "navigation": {
-    "chooseApp": "Choose Navigation App",
-    "copyAddress": "Copy Full Address 📋",
-    "addressCopied": "Address Copied! ✅"
-  },
-  "guestPhotos": "Guest POV Photos",
-  "massMessageSuccess": "Mass messages successfully initiated.",
-  "aiGenerating": "AI assistant is preparing your message..."
-}
-</file>
-
-<file path="src/i18n/locales/tr.json">
-{
-  "invitation": {
-    "introLabel": "Düğün Davetiyesi",
-    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
-    "openButton": "Daveti Aç 💌",
-    "heroLabel": "Biz Evleniyoruz",
-    "countdownLabel": "Geri Sayım",
-    "countdownTitle": "Düğünümüze Kalan Süre",
-    "invitationLabel": "Davet",
-    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
-    "familyLabel": "Ailelerimiz",
-    "familyTitle": "Ailelerimizin Katılımıyla",
-    "ceremonyLabel": "Nikah ve Düğün",
-    "ceremonyTitle": "Günün Detayları",
-    "scheduleLabel": "Düğün Takvimi",
-    "locationLabel": "Tarih ve Konum",
-    "locationTitle": "Düğün Bilgileri",
-    "galleryLabel": "Fotoğraflar",
-    "galleryTitle": "Kır Düğünü Atmosferi",
-    "rsvpLabel": "Katılım",
-    "rsvpTitle": "Katılım Bildirimi",
-    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
-    "guestsLabel": "Misafirler",
-    "guestsTitle": "Misafir Listesi",
-    "wishesLabel": "Anı Defteri",
-    "wishesTitle": "Güzel Dilekleriniz",
-    "shareLabel": "Paylaş",
-    "shareTitle": "Davetiyeyi Paylaş",
-    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
-    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    "footerSmall": "Made with love",
-    "declineTitle": "Çok Üzüldük! 😔",
-    "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
-    "deadlineTitle": "LCV Bildirim Süresi Doldu",
-    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
-  },
-  "form": {
-    "namePlaceholder": "Ad Soyad",
-    "phonePlaceholder": "Telefon Numaranız",
-    "notePlaceholder": "Kişi Sayısını Belirtiniz",
-    "messagePlaceholder": "Mesajınız",
-    "submitRsvp": "Katılımı Gönder 🕊️",
-    "submitWish": "Mesajı Gönder 💌",
-    "whatsappRsvp": "WhatsApp ile Bildir 💬",
-    "missingInfo": "Eksik Bilgi ⚠️",
-    "missingNameMessage": "Lütfen ad soyad gir. ✍️",
-    "missingWishMessage": "Lütfen isim ve mesaj gir. ✍️"
-  },
-  "ui": {
-    "time": "Saat",
-    "scroll": "KAYDIR",
-    "days": "Gün",
-    "hours": "Saat",
-    "mins": "Dakika",
-    "secs": "Saniye",
-    "date": "Tarih",
-    "venue": "Yer",
-    "address": "Adres",
-    "goToMap": "Konuma Git 📍",
-    "addToCalendar": "Takvime Ekle 📅",
-    "closeEsc": "Kapat (Esc)",
-    "prev": "Önceki (←)",
-    "next": "Sonraki (→)",
-    "shareQr": "QR kod ile hızlıca paylaşabilirsiniz.",
-    "shareWhatsapp": "WhatsApp ile Paylaş 💬",
-    "copyLink": "Linki Kopyala 🔗",
-    "giftTitle": "Hediye & Takı",
-    "giftDescription": "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için:",
-    "copyIban": "IBAN'ı Kopyala 📋",
-    "copied": "Kopyalandı ✅",
-    "close": "Tamam 👍",
-    "closeBtn": "Kapat ❌",
-    "sendGift": "Hediye Göndermek İster misiniz? 🎁",
-    "totalResponses": "Toplam Yanıt",
-    "attending": "Katılacak",
-    "notAttending": "Katılmayacak",
-    "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
-    "noWishes": "Henüz güzel dilek yok.",
-    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
-    "save": "Kaydet 💾",
-    "cancel": "Vazgeç 🚫",
-    "yes": "Evet ✔️",
-    "ok": "Tamam 👍"
-  },
-  "visibility": {
-    "countdown": "Geri Sayım",
-    "family": "Aile Bilgileri",
-    "ceremony": "Nikah ve Düğün",
-    "schedule": "Düğün Takvimi",
-    "location": "Konum (Harita)",
-    "gallery": "Fotoğraf Galerisi",
-    "rsvp": "Lcv (Katılım Formu)",
-    "wishes": "Anı Defteri",
-    "iban": "Hediye / IBAN Bölümü",
-    "guests": "Misafir Listesi",
-    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Bilgi ℹ️",
-    "errorTitle": "Hata ❌",
-    "saveTitle": "Bilgileriniz Alındı 🎉",
-    "saveErrorTitle": "Kayıt hatası 😔",
-    "supabaseMissingTitle": "Supabase bağlantısı eksik 🔌",
-    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz! 💌",
-    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}} ❌",
-    "wishSaved": "Güzel dileğin kaydedildi. 💖",
-    "wishSentApproval": "Güzel dileğin admin onayına gönderildi. ⏳",
-    "wishError": "Mesaj kaydedilemedi. Detay: {{message}} ❌",
-    "linkCopied": "Davetiye linki kopyalandı. 🔗",
-    "linkCopyError": "Link kopyalanamadı. ⚠️"
-  },
-  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
-    "clearGuestsTitle": "Katılım kayıtlarını sil",
-    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
-    "clearWishesTitle": "Anı defterini temizle",
-    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
-    "deleteGuestTitle": "Kaydı sil",
-    "editGuestTitle": "Katılım kaydını düzenle",
-    "fullName": "Ad Soyad",
-    "phone": "Telefon",
-    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
-    "personCount": "Kişi sayısı",
-    "side": "Taraf",
-    "hasChild": "Çocuk var mı? (Evet/Hayır)",
-    "songRequest": "Müzik isteği",
-    "note": "Not",
-    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
-    "deleteWishTitle": "Mesajı sil",
-    "editWishTitle": "Mesajı düzenle",
-    "message": "Mesaj",
-    "couldNotDelete": "Silinemedi.",
-    "couldNotUpdate": "Güncellenemedi.",
-    "couldNotChangeStatus": "Durum değiştirilemedi."
-  },
-    "navigation": {
-    "chooseApp": "Yol Tarifi Al",
-    "copyAddress": "Tam Adresi Kopyala 📋",
-    "addressCopied": "Adres Kopyalandı! ✅"
-  },
-
-  "guestPhotos": "Misafir POV Fotoğrafları",
-  "massMessageSuccess": "Toplu mesajlar başarıyla başlatıldı.",
-  "aiGenerating": "Yapay zeka asistanı mesajınızı hazırlıyor..."
-}
-</file>
-
 <file path="src/pages/AdminView.jsx">
 // src/pages/AdminView.jsx
 import React from "react";
@@ -5283,106 +5615,6 @@ export default function AdminView(props) {
     />
   );
 }
-</file>
-
-<file path="src/supabase/functions/submit-form/index.ts">
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
-
-// Basit bir küfür/argo filtresi listesi (Genişletebilirsiniz)
-const BAD_WORDS = ["küfür1", "argo2", "kötükelime", "spam"]; 
-
-const TURNSTILE_SECRET_KEY = Deno.env.get('TURNSTILE_SECRET_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-
-  try {
-    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { type, data, turnstileToken } = await req.json();
-
-    const authHeader = req.headers.get('Authorization');
-    let isAdmin = false;
-    
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-      if (user) isAdmin = true;
-    }
-
-    let isOfflineSync = false;
-    
-    // GÜVENLİK GÜNCELLEMESİ: OFFLINE_TOKEN sadece admin tarafından kullanılabilir
-    if (turnstileToken === "OFFLINE_TOKEN") {
-      if (!isAdmin) {
-        throw new Error("Güvenlik İhlali: Çevrimdışı senkronizasyon sadece yetkili oturumlar (admin) tarafından yapılabilir.");
-      }
-      isOfflineSync = true;
-    } else if (!isAdmin) {
-      // Normal ziyaretçiler için Turnstile zorunluluğu
-      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
-        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
-      }
-      
-      const formData = new URLSearchParams();
-      formData.append('secret', TURNSTILE_SECRET_KEY!);
-      formData.append('response', turnstileToken);
-
-      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        body: formData,
-      });
-      const turnstileData = await turnstileRes.json();
-      if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
-    }
-
-    let result;
-    if (type === 'guest') {
-      if (isOfflineSync) {
-        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
-      }
-      const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
-      if (error) throw error;
-      result = guestData;
-    } else if (type === 'wish') {
-      
-      // YENİ EKLENEN BÖLÜM: Küfür ve Argo Kontrolü
-      const messageText = (data.message || "").toLowerCase();
-      const containsBadWord = BAD_WORDS.some(word => messageText.includes(word));
-      
-      if (containsBadWord) {
-        throw new Error("Mesajınız topluluk kurallarına aykırı kelimeler içeriyor.");
-      }
-
-      if (isOfflineSync) {
-        data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
-      }
-      const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
-      if (error) throw error;
-      result = wishData;
-    } else {
-      throw new Error("Geçersiz form tipi.");
-    }
-
-    return new Response(JSON.stringify({ success: true, data: result }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
-    });
-  }
-})
 </file>
 
 <file path="src/utils/imageOptimizer.js">
@@ -5854,6 +6086,113 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
 }
 </file>
 
+<file path="src/supabase/functions/submit-form/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+
+// Basit bir küfür/argo filtresi listesi (Genişletebilirsiniz)
+const BAD_WORDS = ["küfür1", "argo2", "kötükelime", "spam"]; 
+
+const TURNSTILE_SECRET_KEY = Deno.env.get('TURNSTILE_SECRET_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const { type, data, turnstileToken } = await req.json();
+
+    const authHeader = req.headers.get('Authorization');
+    let isAdmin = false;
+    let authError = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      // JWT Token'ı Supabase Auth üzerinden doğrula
+      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      
+      if (error || !user || user.role !== 'authenticated') {
+        authError = error?.message || "Geçersiz yetki";
+      } else {
+        isAdmin = true;
+      }
+    }
+
+    let isOfflineSync = false;
+    
+    // GÜVENLİK GÜNCELLEMESİ: Katı isAdmin ve Token kontrolü
+    if (turnstileToken === "OFFLINE_TOKEN") {
+      if (!isAdmin) {
+        throw new Error(`Güvenlik İhlali: Çevrimdışı senkronizasyon reddedildi. Sebep: ${authError || 'Yetkisiz erişim'}`);
+      }
+      isOfflineSync = true;
+    } else if (!isAdmin) {
+      // Normal ziyaretçiler için Turnstile zorunluluğu
+      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
+        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
+      }
+      
+      const formData = new URLSearchParams();
+      formData.append('secret', TURNSTILE_SECRET_KEY!);
+      formData.append('response', turnstileToken);
+
+      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: formData,
+      });
+      const turnstileData = await turnstileRes.json();
+      if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
+    }
+
+    let result;
+    if (type === 'guest') {
+      if (isOfflineSync) {
+        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
+      }
+      const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
+      if (error) throw error;
+      result = guestData;
+    } else if (type === 'wish') {
+      
+      // Küfür ve Argo Kontrolü
+      const messageText = (data.message || "").toLowerCase();
+      const containsBadWord = BAD_WORDS.some(word => messageText.includes(word));
+      
+      if (containsBadWord) {
+        throw new Error("Mesajınız topluluk kurallarına aykırı kelimeler içeriyor.");
+      }
+
+      if (isOfflineSync) {
+        data.approved = false; // Çevrimdışı gönderilen mesajlar kesinlikle onaya düşer
+      }
+      const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
+      if (error) throw error;
+      result = wishData;
+    } else {
+      throw new Error("Geçersiz form tipi.");
+    }
+
+    return new Response(JSON.stringify({ success: true, data: result }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    });
+  }
+})
+</file>
+
 <file path="src/utils/helpers.js">
 import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
 
@@ -6189,195 +6528,44 @@ export const triggerConfetti = () => {
 };
 </file>
 
-<file path="src/components/invitation/sections/RsvpSection.jsx">
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
-import { createPortal } from "react-dom";
+<file path="src/components/admin/AdminPanelComponents.jsx">
+// src/components/admin/AdminPanelComponents.jsx
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import FocusTrap from 'focus-trap-react';
-import { Turnstile } from '@marsidev/react-turnstile';
-import { OptionGroup } from "../../common/UIComponents";
-import { triggerConfetti } from "../../../utils/helpers";
-import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
-import { getRsvpSchema } from "../../../validations/schemas";
-import { subscribeToPushNotifications } from "../../common/PwaInstallBanner"; // EKLENDİ
+import { 
+  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
+  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab 
+} from "./tabs";
 
-const DeadlineBanner = memo(({ isEn, title, text }) => (
-  <div className="rsvp-deadline-banner">
-    <div className="deadline-icon">⏳</div>
-    <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
-    <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
-  </div>
-));
+export function AdminPanelContent(props) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+  const { activeAdminTab } = props;
 
-const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) => {
-  const handleClose = () => resetAndCloseModal();
-  if (!showDeclineModal) return null;
-
-  return createPortal(
-    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
-      <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
-        <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
-          <div className="app-modal-content">
-            <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
-            <p className="deadline-text modal-message">
-              {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
-            </p>
-          </div>
-
-          {!showDeclineGift ? (
-            <div className="app-modal-actions">
-              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.close')}</button>
-              {showIban && giftData && (
-                <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}><span>{t('ui.sendGift')}</span></button>
-              )}
-            </div>
-          ) : (
-            <div className="app-modal-content">
-              <div className="modal-gift-card">
-                <strong className="modal-gift-receiver">{giftData.receiver}</strong>
-                <span className="modal-gift-bank">{giftData.bankName}</span>
-                <code className="modal-gift-iban">{giftData.iban}</code>
-              </div>
-              <div className="app-modal-actions">
-                <button type="button" className="main-button" onClick={copyIban}>{copied ? t('ui.copied') : t('ui.copyIban')}</button>
-                <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.closeBtn')}</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </FocusTrap>,
-    document.body
-  );
-});
-
-export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [showDeclineGift, setShowDeclineGift] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [urlGuestName, setUrlGuestName] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [formKey, setFormKey] = useState(0); 
-
-  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
-
-  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
-  });
-
-  const currentNote = watch("note") || "";
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const guestName = params.get("guest") || params.get("davetli") || "";
-    const countParam = params.get("count") || params.get("kisi") || "";
-
-    if (guestName) {
-      setUrlGuestName(guestName);
-      setValue("name", guestName);
-    }
-    if (countParam) setValue("note", `${countParam} Kişi`); 
-  }, [setValue]);
-
-  const todayStr = new Date().toLocaleDateString('en-CA'); 
-  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
-
-  const onSubmit = async (data) => {
-    if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return;
-
-    const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest({ ...data, turnstileToken });
-    
-    if (!isDeclining) {
-      triggerConfetti();
-      
-      // UX İYİLEŞTİRMESİ: Sadece katılan kişiye bildirim izni sor
-      setTimeout(() => {
-        if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
-          subscribeToPushNotifications();
-        }
-      }, 1500);
-    }
-    
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
-    if (isDeclining) setShowDeclineModal(true);
-  };
-
-  const resetAndCloseModal = useCallback(() => {
-    setShowDeclineModal(false);
-    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
-  }, []);
-
-  const copyIban = useCallback(() => {
-    if (giftData?.iban) {
-      navigator.clipboard.writeText(giftData.iban);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  }, [giftData?.iban]);
-
-  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label })), [isEn, t]);
-
-  return (
-    <section className="card rsvp-card">
-      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
-      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
-      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
-      
-      {isDeadlinePassed ? (
-        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
-      ) : (
-        <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
-
-          {urlGuestName && (
-            <div className="guest-badge-banner">
-              {t('ui.prefilled', { name: urlGuestName })}
-              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
-            </div>
-          )}
-
-          <div style={{ width: '100%' }}>
-            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-          </div>
-
-          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
-
-          <div className="field-with-counter" style={{ marginTop: '12px' }}>
-            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
-            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
-          </div>
-
-          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-            <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
-          </div>
-
-          <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
-            {isSubmitting ? "..." : t('form.submitRsvp')}
-          </button>
-        </form>
-      )}
-
-      <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
-        <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-          {t('form.whatsappRsvp')}
-        </a>
-      </div>
-      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
-    </section>
-  );
-});
+  switch (activeAdminTab) {
+    case "general": return <GeneralTab {...props} isEn={isEn} />;
+    case "theme": return <ThemeTab {...props} isEn={isEn} />;
+    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
+    case "guests": return <GuestsAdminPanel {...props} />;
+    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
+    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
+    case "personalLink": return <PersonalLinkPanel {...props} />;
+    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
+    case "security": return <SecurityTab {...props} isEn={isEn} />;
+    case "messages": return <MessagesTab {...props} isEn={isEn} />;
+    case "copy": return <CopyTab {...props} isEn={isEn} />;
+    case "family": return <FamilyTab {...props} isEn={isEn} />;
+    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
+    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
+    case "qr": return <QrTab {...props} isEn={isEn} />;
+    case "data": return <DataTab {...props} isEn={isEn} />;
+    case "gift": return <GiftTab {...props} isEn={isEn} />;
+    case "story": return <StoryTab {...props} isEn={isEn} />; 
+    case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
+    default: return null;
+  }
+}
 </file>
 
 <file path="src/services/database.js">
@@ -6571,44 +6759,195 @@ export const restoreBackupToDatabase = async (parsedData) => {
 };
 </file>
 
-<file path="src/components/admin/AdminPanelComponents.jsx">
-// src/components/admin/AdminPanelComponents.jsx
-import React from "react";
+<file path="src/components/invitation/sections/RsvpSection.jsx">
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { 
-  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
-  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab 
-} from "./tabs";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import FocusTrap from 'focus-trap-react';
+import { Turnstile } from '@marsidev/react-turnstile';
+import { OptionGroup } from "../../common/UIComponents";
+import { triggerConfetti } from "../../../utils/helpers";
+import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
+import { getRsvpSchema } from "../../../validations/schemas";
+import { subscribeToPushNotifications } from "../../common/PwaInstallBanner"; // EKLENDİ
 
-export function AdminPanelContent(props) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-  const { activeAdminTab } = props;
+const DeadlineBanner = memo(({ isEn, title, text }) => (
+  <div className="rsvp-deadline-banner">
+    <div className="deadline-icon">⏳</div>
+    <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
+    <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
+  </div>
+));
 
-  switch (activeAdminTab) {
-    case "general": return <GeneralTab {...props} isEn={isEn} />;
-    case "theme": return <ThemeTab {...props} isEn={isEn} />;
-    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
-    case "guests": return <GuestsAdminPanel {...props} />;
-    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
-    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
-    case "personalLink": return <PersonalLinkPanel {...props} />;
-    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
-    case "security": return <SecurityTab {...props} isEn={isEn} />;
-    case "messages": return <MessagesTab {...props} isEn={isEn} />;
-    case "copy": return <CopyTab {...props} isEn={isEn} />;
-    case "family": return <FamilyTab {...props} isEn={isEn} />;
-    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
-    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
-    case "qr": return <QrTab {...props} isEn={isEn} />;
-    case "data": return <DataTab {...props} isEn={isEn} />;
-    case "gift": return <GiftTab {...props} isEn={isEn} />;
-    case "story": return <StoryTab {...props} isEn={isEn} />; 
-    case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
-    default: return null;
-  }
-}
+const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) => {
+  const handleClose = () => resetAndCloseModal();
+  if (!showDeclineModal) return null;
+
+  return createPortal(
+    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
+      <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
+        <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
+          <div className="app-modal-content">
+            <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
+            <p className="deadline-text modal-message">
+              {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
+            </p>
+          </div>
+
+          {!showDeclineGift ? (
+            <div className="app-modal-actions">
+              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.close')}</button>
+              {showIban && giftData && (
+                <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}><span>{t('ui.sendGift')}</span></button>
+              )}
+            </div>
+          ) : (
+            <div className="app-modal-content">
+              <div className="modal-gift-card">
+                <strong className="modal-gift-receiver">{giftData.receiver}</strong>
+                <span className="modal-gift-bank">{giftData.bankName}</span>
+                <code className="modal-gift-iban">{giftData.iban}</code>
+              </div>
+              <div className="app-modal-actions">
+                <button type="button" className="main-button" onClick={copyIban}>{copied ? t('ui.copied') : t('ui.copyIban')}</button>
+                <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.closeBtn')}</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </FocusTrap>,
+    document.body
+  );
+});
+
+export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showDeclineGift, setShowDeclineGift] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [urlGuestName, setUrlGuestName] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [formKey, setFormKey] = useState(0); 
+
+  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
+
+  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(rsvpSchema),
+    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
+  });
+
+  const currentNote = watch("note") || "";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const guestName = params.get("guest") || params.get("davetli") || "";
+    const countParam = params.get("count") || params.get("kisi") || "";
+
+    if (guestName) {
+      setUrlGuestName(guestName);
+      setValue("name", guestName);
+    }
+    if (countParam) setValue("note", `${countParam} Kişi`); 
+  }, [setValue]);
+
+  const todayStr = new Date().toLocaleDateString('en-CA'); 
+  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
+
+  const onSubmit = async (data) => {
+    if (data.honeypot) return;
+    if (!turnstileToken && navigator.onLine) return;
+
+    const isDeclining = data.attendance === "Katılamayacağım";
+    await submitGuest({ ...data, turnstileToken });
+    
+    if (!isDeclining) {
+      triggerConfetti();
+      
+      // UX İYİLEŞTİRMESİ: Sadece katılan kişiye bildirim izni sor
+      setTimeout(() => {
+        if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
+          subscribeToPushNotifications();
+        }
+      }, 1500);
+    }
+    
+    reset();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1);
+    if (isDeclining) setShowDeclineModal(true);
+  };
+
+  const resetAndCloseModal = useCallback(() => {
+    setShowDeclineModal(false);
+    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
+  }, []);
+
+  const copyIban = useCallback(() => {
+    if (giftData?.iban) {
+      navigator.clipboard.writeText(giftData.iban);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }, [giftData?.iban]);
+
+  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label })), [isEn, t]);
+
+  return (
+    <section className="card rsvp-card">
+      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
+      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
+      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
+      
+      {isDeadlinePassed ? (
+        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
+      ) : (
+        <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
+
+          {urlGuestName && (
+            <div className="guest-badge-banner">
+              {t('ui.prefilled', { name: urlGuestName })}
+              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
+            </div>
+          )}
+
+          <div style={{ width: '100%' }}>
+            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
+            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+          </div>
+
+          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
+
+          <div className="field-with-counter" style={{ marginTop: '12px' }}>
+            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
+            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
+          </div>
+
+          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+            <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
+          </div>
+
+          <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
+            {isSubmitting ? "..." : t('form.submitRsvp')}
+          </button>
+        </form>
+      )}
+
+      <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+        <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+          {t('form.whatsappRsvp')}
+        </a>
+      </div>
+      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
+    </section>
+  );
+});
 </file>
 
 <file path="src/components/invitation/IntroPage.jsx">
@@ -6883,6 +7222,80 @@ function AdminDashboard(props) {
 }
 
 export default React.memo(AdminDashboard);
+</file>
+
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+// React.memo ile sarmalandı
+export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const isPostWedding = settings?.isPostWedding;
+  
+  return (
+    <m.section 
+      initial="hidden" animate="visible" variants={fadeUp}
+      className="hero-section" 
+    >
+      {invitation?.heroVideo ? (
+        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
+          <source src={invitation.heroVideo} type="video/mp4" />
+        </video>
+      ) : null}
+      
+      <div className="hero-content">
+        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
+        </p>
+
+        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <span>{invitation?.bride}</span>
+          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
+          <span>{invitation?.groom}</span>
+        </h1>
+        
+        {isPostWedding ? (
+          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
+          </p>
+        ) : (
+          <>
+            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {invitation?.dateText}
+            </p>
+            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {t('ui.time')} {invitation?.timeText}
+            </p>
+          </>
+        )}
+
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
+        
+        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
+      </div>
+    </m.section>
+  );
+});
 </file>
 
 <file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
@@ -7168,80 +7581,6 @@ export function GuestsAdminPanel({
     </AdminSection>
   );
 }
-</file>
-
-<file path="src/components/invitation/sections/HeroSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-// React.memo ile sarmalandı
-export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const isPostWedding = settings?.isPostWedding;
-  
-  return (
-    <m.section 
-      initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
-    >
-      {invitation?.heroVideo ? (
-        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      ) : null}
-      
-      <div className="hero-content">
-        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
-        </p>
-
-        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-          <span>{invitation?.bride}</span>
-          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
-          <span>{invitation?.groom}</span>
-        </h1>
-        
-        {isPostWedding ? (
-          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
-          </p>
-        ) : (
-          <>
-            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              {invitation?.dateText}
-            </p>
-            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-              {t('ui.time')} {invitation?.timeText}
-            </p>
-          </>
-        )}
-
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <span>{t('ui.scroll')}</span>
-        </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
-        )}
-      </div>
-    </m.section>
-  );
-});
 </file>
 
 <file path="src/store/useStore.js">
@@ -7591,143 +7930,6 @@ export default function AdminController() {
 }
 </file>
 
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { LazyMotion, domAnimation } from "framer-motion";
-import LandingPage from "./pages/LandingPage";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  // Sistem Dark Mode Kontrolü
-  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const resolvedTheme = prefersDark ? "dark" : activeTheme;
-
-  // Dinamik Tema ve Favicon Yönetimi
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = resolvedTheme;
-    
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(resolvedTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, resolvedTheme]);
-
-  // Sayfa İlk Açılışında Verilerin Yüklenmesi
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      {/* SUPABASE BAĞLANTI UYARISI EKLENDİ */}
-      {!isSupabaseReady() && (
-        <div style={{ 
-          background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', 
-          position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' 
-        }}>
-          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı (.env değişkenleri eksik). Uygulama şu an "Mock (Test) Modunda" çalışıyor ve veriler kalıcı olarak kaydedilmeyecektir.
-        </div>
-      )}
-
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={resolvedTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals
-          customAlert={customAlert} setCustomAlert={setCustomAlert}
-          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-        />
-        
-        <Routes>
-          <Route path="/" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-          <Route path="/:tenant_slug" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/:tenant_slug/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
-</file>
-
 <file path="src/pages/InvitationController.jsx">
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -7865,6 +8067,143 @@ export default function InvitationController() {
     </div>
   );
 }
+</file>
+
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { LazyMotion, domAnimation } from "framer-motion";
+import LandingPage from "./pages/LandingPage";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  // Sistem Dark Mode Kontrolü
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolvedTheme = prefersDark ? "dark" : activeTheme;
+
+  // Dinamik Tema ve Favicon Yönetimi
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = resolvedTheme;
+    
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(resolvedTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, resolvedTheme]);
+
+  // Sayfa İlk Açılışında Verilerin Yüklenmesi
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  return (
+    <LazyMotion features={domAnimation} strict>
+      {/* SUPABASE BAĞLANTI UYARISI EKLENDİ */}
+      {!isSupabaseReady() && (
+        <div style={{ 
+          background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', 
+          position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' 
+        }}>
+          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı (.env değişkenleri eksik). Uygulama şu an "Mock (Test) Modunda" çalışıyor ve veriler kalıcı olarak kaydedilmeyecektir.
+        </div>
+      )}
+
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={resolvedTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals
+          customAlert={customAlert} setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
+        />
+        
+        <Routes>
+          <Route path="/" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+          <Route path="/:tenant_slug" element={
+            <ErrorBoundary>
+              {isAuthRecovery ? <AdminController /> : <InvitationController />}
+            </ErrorBoundary>
+          } />
+          <Route path="/:tenant_slug/admin/*" element={
+            <ErrorBoundary>
+              <AdminController />
+            </ErrorBoundary>
+          } />
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
 </file>
 
 <file path="src/styles/admin.css">
@@ -18821,21 +19160,26 @@ input[type="search"] {
   }
 }
 
-/* Scroll performance - Disable animations on slow devices */
+/* Performans ve Erişilebilirlik (Reduced Motion) Optimizasyonu */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
   
-  /* Framer Motion elemanlarının görünmez kalmasını engellemek için */
-  .hero-section, .card, .story-node, .countdown-section {
-    opacity: 1 !important;
-    transform: none !important;
+  /* Lavanta temasındaki CPU/GPU yoran kelebek animasyonlarını tamamen kapat */
+  [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
+  [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
+    display: none !important;
+    animation: none !important;
+  }
+
+  /* LazyLoad iskelet animasyonunu durdur, sadece sabit arka plan rengi göster */
+  .image-skeleton {
+    animation: none !important;
+    background: var(--paper-soft) !important;
   }
 }
 

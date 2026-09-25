@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { AdminSection } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
 
 export function TablePlanTab({ guests, assignTable, isEn }) {
   const [search, setSearch] = useState("");
+  const showAppAlert = useStore(state => state.showAppAlert);
 
   const attendingGuests = useMemo(() =>
     guests.filter(g => g.attendance === "Katılacağım" && g.name.toLowerCase().includes(search.toLowerCase())),
@@ -22,25 +24,95 @@ export function TablePlanTab({ guests, assignTable, isEn }) {
 
   const unassigned = attendingGuests.filter(g => !g.tableNumber || String(g.tableNumber).trim() === "");
 
+  // YZ Asistanı: Misafirleri mantıksal gruplara göre otomatik yerleştirir
+  const autoAssignTables = () => {
+    if (!window.confirm(isEn ? "Auto-assign remaining guests?" : "Boşta olan misafirler taraf ve çocuk durumlarına göre gruplanarak masalara yerleştirilecek. Onaylıyor musunuz?")) return;
+
+    let currentTableNum = Object.keys(tables).length > 0 
+      ? Math.max(...Object.keys(tables).map(k => isNaN(Number(k)) ? 0 : Number(k))) + 1 
+      : 1;
+
+    let currentTableCapacity = 0;
+    const MAX_CAPACITY = 8; // Masalar varsayılan olarak 8 kişilik hesaplanır
+
+    // Taraf (Gelin/Damat) ve Çocuk Durumuna göre sıralama/gruplama
+    const sortedUnassigned = [...unassigned].sort((a, b) => {
+      if (a.side !== b.side) return a.side.localeCompare(b.side);
+      return (a.hasChild || "").localeCompare(b.hasChild || "");
+    });
+
+    sortedUnassigned.forEach(g => {
+      const pCount = Number(g.personCount || 1);
+      if (currentTableCapacity + pCount > MAX_CAPACITY && currentTableCapacity > 0) {
+        currentTableNum++;
+        currentTableCapacity = 0;
+      }
+      assignTable(g.id, String(currentTableNum));
+      currentTableCapacity += pCount;
+    });
+
+    showAppAlert(isEn ? "Auto-assignment complete." : "Otomatik yerleştirme tamamlandı.");
+  };
+
+  // Matbaa için optimize edilmiş PDF Çıktısı
+  const exportTablePlanPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text(isEn ? "Wedding Seating Chart" : "Dugun Oturma Plani", 20, 20);
+
+    let yOffset = 35;
+    doc.setFontSize(12);
+
+    Object.keys(tables).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})).forEach(tableNum => {
+      if (yOffset > 270) { doc.addPage(); yOffset = 20; }
+      
+      doc.setFont("helvetica", "bold");
+      doc.text(`${isEn ? "Table" : "Masa"} ${tableNum}`, 20, yOffset);
+      yOffset += 8;
+      
+      doc.setFont("helvetica", "normal");
+      tables[tableNum].forEach(g => {
+        if (yOffset > 280) { doc.addPage(); yOffset = 20; }
+        // Türkçe karakterleri PDF uyumlu hale getirme
+        const safeName = (g.name || "").replace(/ğ/g, 'g').replace(/Ğ/g, 'G').replace(/ü/g, 'u').replace(/Ü/g, 'U').replace(/ş/g, 's').replace(/Ş/g, 'S').replace(/ı/g, 'i').replace(/İ/g, 'I').replace(/ö/g, 'o').replace(/Ö/g, 'O').replace(/ç/g, 'c').replace(/Ç/g, 'C');
+        doc.text(`- ${safeName} (${g.personCount} ${isEn ? "Person" : "Kisi"})`, 25, yOffset);
+        yOffset += 7;
+      });
+      yOffset += 7;
+    });
+
+    doc.save("oturma-plani.pdf");
+  };
+
   return (
     <AdminSection title={isEn ? "Seating Chart" : "Oturma Planı"}>
       <p className="admin-help-text" style={{ marginBottom: "20px" }}>
         {isEn 
-          ? "Assign tables to your attending guests. (e.g., 1, 2, A, VIP)" 
-          : "Katılacak misafirlerinizi masalara yerleştirin. (Örn: 1, 2, A, VIP, Aile)"}
+          ? "Assign tables manually or use the AI Assistant." 
+          : "Katılacak misafirlerinizi manuel atayın veya YZ Asistanı ile otomatik doldurun."}
       </p>
 
-      <input
-        type="text"
-        className="admin-toolbar-search"
-        style={{ width: "100%", marginBottom: "24px" }}
-        placeholder={isEn ? "Search guest..." : "Misafir ara..."}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        <input
+          type="text"
+          className="admin-toolbar-search"
+          style={{ flex: 1, minWidth: '200px', margin: 0 }}
+          placeholder={isEn ? "Search guest..." : "Misafir ara..."}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button type="button" className="main-button" style={{ margin: 0 }} onClick={autoAssignTables}>
+          {isEn ? "🤖 AI Auto-Assign" : "🤖 YZ Otomatik Yerleştir"}
+        </button>
+        <button type="button" className="secondary-button" style={{ margin: 0 }} onClick={exportTablePlanPDF}>
+          {isEn ? "🖨️ Export PDF" : "🖨️ PDF Çıktısı Al"}
+        </button>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
-         
          {/* SOL: Atanmamış Misafirler */}
          <div className="admin-card" style={{ padding: "16px", background: "var(--paper-soft)", borderRadius: "16px" }}>
             <h4 style={{ color: "var(--rose-deep)", marginTop: 0 }}>

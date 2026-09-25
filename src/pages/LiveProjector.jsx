@@ -1,7 +1,8 @@
-// src/pages/LiveProjector.jsx
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { m, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../supabaseClient';
 import { useWishesQuery } from '../hooks/useWishesQuery';
 import { useStore } from '../store/useStore';
 
@@ -12,10 +13,25 @@ export default function LiveProjector() {
   const siteData = useStore(state => state.siteData);
   const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
   
-  // React Query ile onaylı mesajları çekiyoruz (Realtime olarak arkada güncellenir)
   const { wishes } = useWishesQuery();
-  
+  const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Supabase Realtime Aboneliği: Veritabanındaki değişiklikleri anlık dinler
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:wishes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, 
+        () => {
+          // Yeni bir mesaj onaylandığında arayüzü anında güncelle
+          queryClient.invalidateQueries({ queryKey: ['wishes'] });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   // Her 8 saniyede bir ekrandaki mesajı sinematik olarak değiştir
   useEffect(() => {
@@ -23,7 +39,7 @@ export default function LiveProjector() {
     
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % wishes.length);
-    }, 8000); // 8 saniyede bir döner
+    }, 8000);
 
     return () => clearInterval(interval);
   }, [wishes]);
@@ -31,7 +47,7 @@ export default function LiveProjector() {
   // Sayfayı her zaman tam ekran karanlık modda tut
   useEffect(() => {
     document.documentElement.dataset.theme = "dark";
-    document.body.style.overflow = "hidden"; // Scroll'u kapat
+    document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = "auto"; };
   }, []);
 

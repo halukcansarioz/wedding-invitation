@@ -1,8 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({ 
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+        suppressWarnings: true // EKLENEN SATIR: Geliştirme uyarılarını gizler
+      }
+    })
+  ],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -10,7 +20,7 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**', 
       '**/dist/**', 
-      '**/tests/**' // Playwright test klasörünü Vitest'ten gizler
+      '**/tests/**' 
     ],
   }
 });
