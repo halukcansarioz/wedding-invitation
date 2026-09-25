@@ -13,3 +13,5 @@ export { FooterSection } from './FooterSection';
 export { RsvpSection } from './RsvpSection';
 export { WishesSection } from './WishesSection';
 export { GuestsListSection } from './GuestsListSection';
+export { GuestCameraSection } from './GuestCameraSection';
+export { SmartAlbumSection } from './SmartAlbumSection';

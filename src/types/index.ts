@@ -39,6 +39,7 @@ export interface SiteSettings {
     wishes: boolean;
     iban: boolean;
     popupIban: boolean;
+    creditCard: boolean;
   };
 }
 

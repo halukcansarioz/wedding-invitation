@@ -17,34 +17,22 @@ export default function LiveProjector() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Supabase Realtime Aboneliği: Veritabanındaki değişiklikleri anlık dinler
   useEffect(() => {
     const channel = supabase
       .channel('public:wishes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, 
-        () => {
-          // Yeni bir mesaj onaylandığında arayüzü anında güncelle
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
           queryClient.invalidateQueries({ queryKey: ['wishes'] });
-        }
-      )
+      })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [queryClient]);
 
-  // Her 8 saniyede bir ekrandaki mesajı sinematik olarak değiştir
   useEffect(() => {
     if (!wishes || wishes.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % wishes.length);
-    }, 8000);
-
+    const interval = setInterval(() => { setCurrentIndex((prev) => (prev + 1) % wishes.length); }, 8000);
     return () => clearInterval(interval);
   }, [wishes]);
 
-  // Sayfayı her zaman tam ekran karanlık modda tut
   useEffect(() => {
     document.documentElement.dataset.theme = "dark";
     document.body.style.overflow = "hidden";
@@ -54,12 +42,7 @@ export default function LiveProjector() {
   const activeWish = wishes[currentIndex];
 
   return (
-    <div style={{
-      width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', 
-      display: 'flex', flexDirection: 'column', alignItems: 'center', 
-      justifyContent: 'center', position: 'relative', overflow: 'hidden'
-    }}>
-      {/* Sinematik Işık Efektleri */}
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(159, 79, 104, 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
       <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
 
@@ -70,7 +53,7 @@ export default function LiveProjector() {
         {isEn ? "Live Guestbook" : "Canlı Anı Defteri"}
       </p>
 
-      <div style={{ width: '80%', maxWidth: '900px', height: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+      <div style={{ width: '80%', maxWidth: '900px', minHeight: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
         <AnimatePresence mode="wait">
           {activeWish ? (
             <m.div
@@ -79,20 +62,25 @@ export default function LiveProjector() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
               transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              style={{ textAlign: 'center' }}
+              style={{ textAlign: 'center', width: '100%' }}
             >
-              <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: '30px' }}>
+              <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeWish.message_translated ? '15px' : '30px' }}>
                 "{activeWish.message}"
               </p>
-              <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600' }}>
+              
+              {/* SİNEMATİK AI ALTYAZISI */}
+              {activeWish.message_translated && (
+                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
+                  ({activeWish.message_translated})
+                </p>
+              )}
+
+              <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
                 — {activeWish.name}
               </strong>
             </m.div>
           ) : (
-            <m.p 
-              initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} 
-              style={{ color: '#fff', fontSize: '1.5rem' }}
-            >
+            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
               {isEn ? "Waiting for the first message..." : "İlk mesaj bekleniyor..."}
             </m.p>
           )}

@@ -14,6 +14,7 @@ export function GiftTab({ isEn }) {
       <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
         <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label={isEn ? "Show Gift Section" : "Bu bölümü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
         <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={isEn ? "Gift Button for Non-Attending" : "Katılmayanlar İçin Hediye Butonu (Modal)"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.creditCard ?? false} label={isEn ? "Show Credit Card Button" : "Kredi Kartı ile Gönder Butonunu Göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, creditCard: v })} />
       </div>
       <div className="admin-edit-grid">
         <AdminField label={isEn ? "Title" : "Başlık"} onChange={(v) => updateDraftObject("giftRegistry", "title", v)} value={adminDraft.giftRegistry?.title} />

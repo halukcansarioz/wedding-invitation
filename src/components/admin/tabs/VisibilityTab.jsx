@@ -28,6 +28,7 @@ export function VisibilityTab({ isEn }) {
         <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
         <AdminCheckbox checked={adminDraft.settings.visibility?.iban ?? true} label={t('visibility.iban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, iban: v })} />
         <AdminCheckbox checked={adminDraft.settings.visibility?.popupIban ?? true} label={t('visibility.popupIban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, popupIban: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.creditCard ?? false} label={isEn ? "Credit Card Button" : "Kredi Kartı Butonu"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, creditCard: v })} />
       </div>
     </AdminSection>
   );

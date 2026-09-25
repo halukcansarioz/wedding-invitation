@@ -1,7 +1,56 @@
-// src/store/useAdminStore.js
 import { create } from 'zustand';
+import { User } from '@supabase/supabase-js';
 
-export const useAdminStore = create((set) => ({
+interface AdminStoreState {
+  isAdminUnlocked: boolean;
+  adminUser: User | null;
+  adminEmail: string;
+  adminPassword: string;
+  adminError: string;
+  adminLoginNotice: string;
+  adminSaveMessage: string;
+  adminAuthLoading: boolean;
+  showForgotPassword: boolean;
+  forgotPasswordEmail: string;
+  forgotPasswordMessage: string;
+  forgotPasswordLoading: boolean;
+  isPasswordRecovery: boolean;
+  recoveryPassword: string;
+  recoveryPasswordAgain: string;
+  recoveryMessage: string;
+  recoveryLoading: boolean;
+  adminCurrentPassword: string;
+  adminNewPassword: string;
+  adminNewPasswordAgain: string;
+  adminPasswordMessage: string;
+}
+
+interface AdminStoreActions {
+  setIsAdminUnlocked: (status: boolean) => void;
+  setAdminUser: (user: User | null) => void;
+  setAdminEmail: (email: string) => void;
+  setAdminPassword: (pass: string) => void;
+  setAdminError: (error: string) => void;
+  setAdminLoginNotice: (notice: string) => void;
+  setAdminSaveMessage: (msg: string) => void;
+  setAdminAuthLoading: (loading: boolean) => void;
+  setShowForgotPassword: (show: boolean) => void;
+  setForgotPasswordEmail: (email: string) => void;
+  setForgotPasswordMessage: (msg: string) => void;
+  setForgotPasswordLoading: (loading: boolean) => void;
+  setIsPasswordRecovery: (isRec: boolean) => void;
+  setRecoveryPassword: (pass: string) => void;
+  setRecoveryPasswordAgain: (pass: string) => void;
+  setRecoveryMessage: (msg: string) => void;
+  setRecoveryLoading: (loading: boolean) => void;
+  setAdminCurrentPassword: (pass: string) => void;
+  setAdminNewPassword: (pass: string) => void;
+  setAdminNewPasswordAgain: (pass: string) => void;
+  setAdminPasswordMessage: (msg: string) => void;
+  clearAdminAuth: () => void;
+}
+
+export const useAdminStore = create<AdminStoreState & AdminStoreActions>((set) => ({
   isAdminUnlocked: false,
   adminUser: null,
   adminEmail: "",

@@ -140,6 +140,7 @@ export const DEFAULT_SITE_DATA = {
       wishes: true,
       iban: true,
       popupIban: true,
+      creditCard: false
     },
   },
   messages: {
