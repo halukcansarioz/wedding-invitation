@@ -45,26 +45,16 @@ export function PwaInstallBanner() {
   const isEn = i18n.language?.startsWith('en') || false;
   const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
 
-  if (!isInstallable) return null;
+  // YENİ: Hem kurulabilir değilse hem de iOS ise BİLEŞENİ GİZLE (Arkada görünmesini engeller)
+  if (!isInstallable || isIos) {
+    return null; 
+  }
 
   const handleInstallClick = async () => {
     await promptInstall();
     // Kullanıcı uygulamayı yükleme adımlarını tamamladıktan sonra bildirim izni iste
     subscribeToPushNotifications();
   };
-
-  if (isIos) {
-    return (
-      <div className="pwa-banner-wrapper ios-pwa-banner">
-        <span className="pwa-banner-text">
-          {isEn ? "📱 Tap 'Share' icon then 'Add to Home Screen'" : "📱 Kolay erişim için 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin"}
-        </span>
-        <button onClick={() => setIsInstallable(false)} className="secondary-button pwa-banner-btn" style={{ minWidth: 'auto', padding: '4px 12px' }}>
-          ✕
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="pwa-banner-wrapper">
