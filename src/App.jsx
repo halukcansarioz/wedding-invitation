@@ -5,6 +5,7 @@ import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
+import LiveProjector from "./pages/LiveProjector"; // EKLENDİ: Barkovizyon Bileşeni
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
@@ -66,7 +67,6 @@ function App() {
         setWishes(dbWishes || []);
         setGuests(dbGuests || []);
         
-        // Arka planda silinememiş fotoğrafların temizlenmesi (Garbage Collection)
         syncFailedDeletes();
       } catch (error) {
         console.error("Veritabanından veriler okunamadı:", error);
@@ -103,26 +103,15 @@ function App() {
         />
         
         <Routes>
-          <Route path="/" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
-          <Route path="/:tenant_slug" element={
-            <ErrorBoundary>
-              {isAuthRecovery ? <AdminController /> : <InvitationController />}
-            </ErrorBoundary>
-          } />
-          <Route path="/:tenant_slug/admin/*" element={
-            <ErrorBoundary>
-              <AdminController />
-            </ErrorBoundary>
-          } />
+          {/* Ana Domain Rotaları */}
+          <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+          <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> {/* EKLENDİ */}
+
+          {/* Subfolder (Örn: /demo-cift) Rotaları */}
+          <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+          <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> {/* EKLENDİ */}
         </Routes>
       </div>
     </LazyMotion>

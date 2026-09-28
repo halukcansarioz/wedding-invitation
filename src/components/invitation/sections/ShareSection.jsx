@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
+import { getQrImageUrl } from "../../../utils/helpers";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -11,13 +12,15 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
+  const safeQrUrl = qrImageUrl || getQrImageUrl();
+
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.shareLabel') : copy?.shareLabel}</p>
       <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
       <p>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
       <div className="qr-public-card">
-        <img src={qrImageUrl} alt="QR Code" loading="lazy" />
+        <img src={safeQrUrl} alt="QR Code" loading="lazy" />
         <span>{t('ui.shareQr')}</span>
       </div>
       <div className="button-group">

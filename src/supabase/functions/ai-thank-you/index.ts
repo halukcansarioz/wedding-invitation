@@ -1,0 +1,66 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı.");
+
+    const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
+
+    const { guestName, coupleName } = await req.json();
+
+    if (!OPENAI_API_KEY) throw new Error("OpenAI API Anahtarı tanımlanmamış.");
+
+    const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "Sen profesyonel ve sıcak bir tonla çalışan, yeni evlenmiş çiftin (gelin ve damat) asistanısın. Çift adına düğüne gelen misafirlere teşekkür mesajı yazıyorsun. Mesajlar kısa, samimi ve WhatsApp üzerinden gönderilmeye uygun olmalı. Emoji kullanabilirsin."
+          },
+          {
+            role: "user",
+            content: `Düğünümüze katılan misafirimiz "${guestName}" için, biz "${coupleName}" adına sıcak ve içten bir teşekkür mesajı yazar mısın? Sadece mesajı döndür.`
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
+      })
+    });
+
+    const aiData = await openAiResponse.json();
+    const text = aiData.choices[0].message.content.trim();
+
+    return new Response(JSON.stringify({ success: true, text }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    });
+
+  } catch (error: any) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
+      headers: corsHeaders, status: 400 
+    });
+  }
+});

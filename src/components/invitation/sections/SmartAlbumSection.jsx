@@ -52,7 +52,7 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card" style={{ background: "linear-gradient(145deg, #1c141a, #241a21)", color: "#fff", borderColor: "rgba(255,255,255,0.1)" }}>
       <div style={{ textAlign: 'center' }}>
-        <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>🪄</span>
+        <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>✨</span>
         <h2 style={{ color: "#fff", marginBottom: "8px" }}>
           {isEn ? "Find Your Photos" : "Kendi Fotoğraflarını Bul"}
         </h2>

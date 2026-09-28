@@ -4,7 +4,7 @@ import { buildPersonalLink, normalizeText, formatMessageTemplate, getQrImageUrl 
 describe('Helpers Utilities Test Suite', () => {
   
   it('normalizeText removes accents, trims and converts to lowercase', () => {
-    expect(normalizeText("  Özlem & Çağatay  ")).toBe("özlem & çağatay"); // Note: toLocaleLowerCase returns turkish equivalents
+    expect(normalizeText("  Özlem & Çağatay  ")).toBe("özlem & çağatay"); 
     expect(normalizeText("IŞIK")).toBe("ışık");
   });
 
@@ -28,7 +28,7 @@ describe('Helpers Utilities Test Suite', () => {
 
   it('getQrImageUrl returns the correct API endpoint', () => {
     const link = "https://example.com";
-    expect(getQrImageUrl(link)).toContain("api.qrserver.com");
+    expect(getQrImageUrl(link)).toContain("quickchart.io");
     expect(getQrImageUrl(link)).toContain(encodeURIComponent(link));
   });
 

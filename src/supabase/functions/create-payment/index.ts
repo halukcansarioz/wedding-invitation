@@ -1,4 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14.14.0';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,21 +16,33 @@ serve(async (req) => {
 
   try {
     const { amount, guestName, note } = await req.json();
+    const origin = req.headers.get('origin') || 'http://localhost:5173';
 
-    // TODO: Burada Iyzico veya PayTR API'sine istek atılarak bir Checkout URL oluşturulur.
-    // Örnek Stripe/Iyzico Payload'u:
-    /*
-    const paymentSession = await fetch('https://api.iyzipay.com/v1/checkout', {
-       method: 'POST',
-       headers: { 'Authorization': `Bearer ${Deno.env.get('PAYMENT_API_KEY')}` },
-       body: JSON.stringify({ price: amount, buyerName: guestName, description: note })
+    if (!Deno.env.get('STRIPE_SECRET_KEY')) {
+       throw new Error("Stripe Secret Key ortam değişkenlerinde eksik.");
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'try',
+            product_data: {
+              name: 'Düğün Hediyesi',
+              description: `${guestName} tarafından gönderilen hediye. Not: ${note}`,
+            },
+            unit_amount: amount * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${origin}/?payment=success`,
+      cancel_url: `${origin}/?payment=cancel`,
     });
-    */
 
-    // Simülasyon: Başarılı ödeme linki döndürülüyor
-    const mockPaymentUrl = `https://sandbox-checkout.iyzico.com/pay/${Date.now()}`;
-
-    return new Response(JSON.stringify({ success: true, paymentUrl: mockPaymentUrl }), { 
+    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 

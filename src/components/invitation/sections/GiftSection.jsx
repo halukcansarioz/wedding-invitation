@@ -2,7 +2,7 @@ import React, { useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
 import { supabase } from "../../../supabaseClient";
-import { useStore } from "../../../store/useStore"; // Admin ayarlarını okumak için eklendi
+import { useStore } from "../../../store/useStore";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -13,7 +13,6 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
-  // Admin panelinden gelen kredi kartı görünürlük ayarını okuyoruz
   const settings = useStore((state) => state.siteData?.settings);
   const showCreditCard = settings?.visibility?.creditCard ?? false;
 
@@ -29,17 +28,30 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
   };
 
   const handleCreditCardPayment = async () => {
+    const userAmount = window.prompt(
+      isEn ? "Enter the amount you want to send (TL):" : "Göndermek istediğiniz tutarı girin (TL):", 
+      "1000"
+    );
+
+    if (!userAmount || isNaN(userAmount) || Number(userAmount) <= 0) return;
+
     setIsRedirecting(true);
     try {
       const res = await supabase.functions.invoke('create-payment', {
-        body: { amount: 1000, guestName: "Misafir", note: "Düğün Hediyesi" }
+        body: { 
+          amount: Number(userAmount), 
+          guestName: "Düğün Misafiri", 
+          note: "Davetiye Üzerinden Online Hediye" 
+        }
       });
       
       if (res.data?.paymentUrl) {
         window.location.href = res.data.paymentUrl;
+      } else {
+        throw new Error("Ödeme linki oluşturulamadı.");
       }
     } catch (error) {
-      alert(isEn ? "Payment system is currently unavailable." : "Ödeme altyapısına şu an ulaşılamıyor.");
+      alert(isEn ? "Payment system is currently unavailable." : "Ödeme altyapısına şu an ulaşılamıyor. Lütfen IBAN ile devam edin.");
     } finally {
       setIsRedirecting(false);
     }
@@ -64,67 +76,24 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
         textAlign: 'center', 
         border: '1px solid rgba(159, 79, 104, 0.08)' 
       }}>
-        <strong className="gift-card-receiver" style={{ 
-          display: 'block', 
-          fontSize: '16px', 
-          color: 'var(--rose-dark)', 
-          fontWeight: '700', 
-          marginBottom: '4px' 
-        }}>
+        <strong className="gift-card-receiver" style={{ display: 'block', fontSize: '16px', color: 'var(--rose-dark)', fontWeight: '700', marginBottom: '4px' }}>
           {giftData.receiver}
         </strong>
-        <span className="gift-card-bank" style={{ 
-          display: 'block', 
-          fontSize: '13px', 
-          color: 'var(--text-muted)', 
-          marginBottom: '14px' 
-        }}>
+        <span className="gift-card-bank" style={{ display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
           {giftData.bankName}
         </span>
-        <code className="gift-card-iban" style={{ 
-          display: 'inline-block', 
-          fontSize: '14px', 
-          padding: '10px 18px', 
-          background: 'var(--paper)', 
-          borderRadius: '8px', 
-          border: '1px dashed var(--rose-dark)', 
-          color: 'var(--text-main)', 
-          letterSpacing: '1px', 
-          wordBreak: 'break-all' 
-        }}>
+        <code className="gift-card-iban" style={{ display: 'inline-block', fontSize: '14px', padding: '10px 18px', background: 'var(--paper)', borderRadius: '8px', border: '1px dashed var(--rose-dark)', color: 'var(--text-main)', letterSpacing: '1px', wordBreak: 'break-all' }}>
           {giftData.iban}
         </code>
       </div>
       
-      {/* TASARIM DÜZELTMESİ: Flexbox kapsayıcısı eklendi */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        gap: '16px', 
-        flexWrap: 'wrap', 
-        width: '100%', 
-        maxWidth: '500px', 
-        margin: '0 auto' 
-      }}>
-        <button 
-          type="button" 
-          className="secondary-button gift-copy-button" 
-          onClick={copyIban} 
-          style={{ margin: 0, flex: '1 1 auto', minWidth: '200px' }}
-        >
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', flexWrap: 'wrap', width: '100%', maxWidth: '500px', margin: '0 auto' }}>
+        <button type="button" className="secondary-button gift-copy-button" onClick={copyIban} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px' }}>
           {copied ? t('ui.copied') : t('ui.copyIban')}
         </button>
 
-        {/* Kredi kartı butonu sadece Admin'den aktif edildiyse görünür */}
         {showCreditCard && (
-          <button 
-            type="button" 
-            className="main-button" 
-            onClick={handleCreditCardPayment} 
-            disabled={isRedirecting} 
-            style={{ margin: 0, flex: '1 1 auto', minWidth: '200px' }}
-          >
+          <button type="button" className="main-button" onClick={handleCreditCardPayment} disabled={isRedirecting} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px', background: 'linear-gradient(135deg, #27ae60, #2ecc71)', borderColor: '#27ae60' }}>
             💳 {isRedirecting ? (isEn ? "Redirecting..." : "Yönlendiriliyor...") : (isEn ? "Send via Credit Card" : "Kredi Kartı ile Gönder")}
           </button>
         )}

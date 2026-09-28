@@ -79,7 +79,8 @@ export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personC
 };
 
 export const getQrImageUrl = (url) => {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url || "")}`;
+  const validUrl = url || (typeof window !== "undefined" ? window.location.href : "https://davetiyem.ai");
+  return `https://quickchart.io/qr?text=${encodeURIComponent(validUrl)}&size=300&margin=2`;
 };
 
 export const formatMessageTemplate = (template, variables = {}) => {

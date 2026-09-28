@@ -34,9 +34,19 @@ export default function LiveProjector() {
   }, [wishes]);
 
   useEffect(() => {
+    const prevTheme = document.documentElement.dataset.theme; 
+    
     document.documentElement.dataset.theme = "dark";
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = "auto"; };
+    
+    return () => { 
+      document.body.style.overflow = "auto"; 
+      if (prevTheme) {
+        document.documentElement.dataset.theme = prevTheme;
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    };
   }, []);
 
   const activeWish = wishes[currentIndex];
@@ -68,7 +78,6 @@ export default function LiveProjector() {
                 "{activeWish.message}"
               </p>
               
-              {/* SİNEMATİK AI ALTYAZISI */}
               {activeWish.message_translated && (
                 <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
                   ({activeWish.message_translated})

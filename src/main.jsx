@@ -6,12 +6,14 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { registerSW } from 'virtual:pwa-register';
 import * as Sentry from '@sentry/react'; 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // EKLENDİ: React Query
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { get, set, del } from 'idb-keyval';
 import './i18n/config';
 import App from './App';
 import './index.css';
 
-// Sentry konfigürasyonu
 Sentry.init({
   dsn: import.meta.env.VITE_SENTRY_DSN || "",
   integrations: [
@@ -23,24 +25,37 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0, 
 });
 
-// PWA Service Worker
 registerSW({ immediate: true }); 
 
-// YENİ: React Query İstemcisi Oluşturuluyor
+// IndexedDB Asenkron Persister (Çevrimdışı verileri IndexedDB'de tutar)
+const indexedDBPersister = createAsyncStoragePersister({
+  storage: {
+    getItem: async (key) => await get(key),
+    setItem: async (key, value) => await set(key, value),
+    removeItem: async (key) => await del(key),
+  },
+});
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // Veriler 5 dakika boyunca taze kabul edilir (gereksiz ağ isteğini önler)
-      refetchOnWindowFocus: true, // Kullanıcı sekmeye dönünce veriyi arkada gizlice günceller
-      retry: 2, // Hata olursa 2 kez tekrar dener
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 60 * 24, 
+      refetchOnWindowFocus: true, 
+      retry: 2, 
+    },
+    mutations: {
+      networkMode: 'offlineFirst', // İnternet yoksa mutation'ı kuyruğa alır
     },
   },
 });
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* YENİ: Uygulamayı QueryClientProvider ile sarmalıyoruz */}
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider 
+      client={queryClient}
+      persistOptions={{ persister: indexedDBPersister, maxAge: 1000 * 60 * 60 * 24 }}
+    >
       <BrowserRouter>
         <HelmetProvider>
           <App />
@@ -48,6 +63,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <SpeedInsights />
         </HelmetProvider>
       </BrowserRouter>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   </React.StrictMode>
 );

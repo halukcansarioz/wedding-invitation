@@ -8,6 +8,7 @@ import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
 import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
 import { restoreBackupToDatabase } from '../services/database'; 
+import { useAudio } from '../hooks/useAudio'; // DÜZELTME: Müzik kancası eklendi
 import '../styles/admin.css';
 
 const AdminView = lazy(() => import('./AdminView'));
@@ -17,7 +18,6 @@ export default function AdminController() {
   const isEn = i18n.language?.startsWith('en') || false;
   const navigate = useNavigate();
 
-  // Zustand State Bağlantıları
   const siteData = useStore((state) => state.siteData);
   const guests = useStore((state) => state.guests);
   const setGuests = useStore((state) => state.setGuests);
@@ -29,7 +29,7 @@ export default function AdminController() {
   const showAppAlert = useStore((state) => state.showAppAlert);
   
   const adminDraft = useStore((state) => state.adminDraft);
-  const setAdminDraft = useStore((state) => state.setAdminDraft); // EKLENDİ: Taslağı sıfırlamak için
+  const setAdminDraft = useStore((state) => state.setAdminDraft); 
   const personalLinkName = useStore((state) => state.personalLinkName);
   const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
   const dataImportText = useStore((state) => state.dataImportText);
@@ -37,7 +37,6 @@ export default function AdminController() {
   
   const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
 
-  // Yerel Filtreleme State'leri
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
   const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
   const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
@@ -56,14 +55,15 @@ export default function AdminController() {
   });
 
   const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
+  
+  // DÜZELTME: Admin panele müzik kontrol işlevselliği bağlandı
+  const { isMusicPlaying, toggleMusic } = useAudio(adminDraft.invitation?.musicFile);
 
-  // EKLENDİ VE DÜZELTİLDİ: Çıkış yaparken hayalet temayı temizle
   const closeAdminPage = useCallback(() => {
     document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta");
     navigate("/");
   }, [navigate, siteData.settings?.theme]);
 
-  // EKLENDİ: "Varsayılana Döndür" (Değişiklikleri İptal Et) Butonunun İşlevi
   const resetSiteContent = useCallback(async () => {
     const confirmed = await showAppConfirm(
       isEn 
@@ -73,14 +73,13 @@ export default function AdminController() {
     );
     
     if (confirmed) {
-      setAdminDraft(siteData); // Taslağı, veritabanından gelen asıl veriye eşitler
-      document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta"); // Temayı aslına döndürür
+      setAdminDraft(siteData); 
+      document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta"); 
       setAdminSaveMessage(isEn ? "Changes discarded." : "Tüm değişiklikler iptal edildi.");
       setTimeout(() => setAdminSaveMessage(""), 3000);
     }
   }, [siteData, setAdminDraft, showAppConfirm, setAdminSaveMessage, isEn]);
 
-  // JSON İçe Aktarma
   const importAllDataJson = async () => {
     if (!dataImportText || !dataImportText.trim()) {
       showAppAlert(isEn ? "Please paste the backup JSON content." : "Lütfen JSON yedeğini metin kutusuna yapıştırın.", { title: isEn ? "Error" : "Hata" });
@@ -131,7 +130,9 @@ export default function AdminController() {
         logoutAdmin={logoutAdmin} 
         
         closeAdminPage={closeAdminPage} 
-        resetSiteContent={resetSiteContent} // EKLENDİ: Artık buton işlevsel!
+        resetSiteContent={resetSiteContent} 
+        isMusicPlaying={isMusicPlaying} // EKLENDİ
+        toggleMusic={toggleMusic} // EKLENDİ
         
         guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
         adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}

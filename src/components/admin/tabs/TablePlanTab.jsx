@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { AdminSection } from "../../AdminUI";
-import { useStore } from "../../../store/useStore";
 import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
 
-// Sürüklenebilir Misafir Bileşeni
 function DraggableGuest({ guest, isEn }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: guest.id });
   const style = transform 
@@ -21,7 +19,6 @@ function DraggableGuest({ guest, isEn }) {
   );
 }
 
-// Bırakılabilir Masa Bileşeni
 function DroppableTable({ tableNum, guests, isEn, assignTable }) {
   const { isOver, setNodeRef } = useDroppable({ id: `table-${tableNum}` });
   const tableTotal = guests.reduce((acc, g) => acc + Number(g.personCount || 1), 0);
@@ -57,14 +54,13 @@ function DroppableTable({ tableNum, guests, isEn, assignTable }) {
 
 export function TablePlanTab({ guests, assignTable, isEn }) {
   const [search, setSearch] = useState("");
-  const showAppAlert = useStore(state => state.showAppAlert);
 
   const attendingGuests = useMemo(() =>
     guests.filter(g => g.attendance === "Katılacağım" && g.name.toLowerCase().includes(search.toLowerCase())),
   [guests, search]);
 
   const unassigned = attendingGuests.filter(g => !g.tableNumber || String(g.tableNumber).trim() === "");
-  const tables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // İsteğe göre masa sayısını artırabilirsiniz
+  const tables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; 
 
   const handleDragEnd = (event) => {
     const { active, over } = event;

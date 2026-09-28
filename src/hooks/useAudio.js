@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { DEFAULT_WEDDING_MUSIC_FILE } from "../config/constants";
 
 export function useAudio(musicFile) {
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);

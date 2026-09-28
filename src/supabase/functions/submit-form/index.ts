@@ -22,25 +22,23 @@ serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
-    let authError = null;
     
     if (authHeader) {
       const token = authHeader.replace('Bearer ', '');
       const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
-      if (error || !user || user.role !== 'authenticated') {
-        authError = error?.message || "Geçersiz yetki";
-      } else {
+      if (!error && user && user.role === 'authenticated') {
         isAdmin = true;
       }
     }
 
     let isOfflineSync = false;
     
-    if (turnstileToken === "OFFLINE_TOKEN") {
-      if (!isAdmin) throw new Error(`Güvenlik İhlali: Çevrimdışı senkronizasyon reddedildi.`);
+    if (turnstileToken === "OFFLINE_SYNC") {
       isOfflineSync = true;
     } else if (!isAdmin) {
-      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
+      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
+        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
+      }
       const formData = new URLSearchParams();
       formData.append('secret', TURNSTILE_SECRET_KEY!);
       formData.append('response', turnstileToken);
@@ -51,7 +49,10 @@ serve(async (req) => {
 
     let result;
     if (type === 'guest') {
-      if (isOfflineSync) data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronizasyon]";
+      if (isOfflineSync) {
+        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronize Edildi]";
+      }
+      
       const { data: guestData, error } = await supabaseAdmin.from('guests').insert([data]).select().single();
       if (error) throw error;
       result = guestData;
@@ -61,7 +62,6 @@ serve(async (req) => {
       const containsBadWord = BAD_WORDS.some(word => messageText.includes(word));
       if (containsBadWord) throw new Error("Mesajınız topluluk kurallarına aykırı kelimeler içeriyor.");
 
-      // AI ÇEVİRİ İŞLEMİ
       let translatedMessage = "";
       if (OPENAI_API_KEY) {
         try {
@@ -71,7 +71,7 @@ serve(async (req) => {
             body: JSON.stringify({
               model: "gpt-4o-mini",
               messages: [
-                { role: "system", content: "Sen profesyonel bir çevirmensin. Gelen metin Türkçe ise harika bir İngilizce'ye çevir. Gelen metin İngilizce veya başka bir dil ise Türkçe'ye çevir. Sadece çeviriyi yaz, tırnak işareti veya ek bilgi ekleme." },
+                { role: "system", content: "Sen profesyonel bir çevirmensin. Gelen metin Türkçe ise İngilizce'ye, diğer dillerdeyse Türkçe'ye çevir. Sadece çeviriyi yaz." },
                 { role: "user", content: data.message }
               ]
             })
@@ -84,7 +84,10 @@ serve(async (req) => {
       }
 
       data.message_translated = translatedMessage;
-      if (isOfflineSync) data.approved = false; 
+      
+      if (isOfflineSync) {
+        data.approved = false; 
+      }
 
       const { data: wishData, error } = await supabaseAdmin.from('wishes').insert([data]).select().single();
       if (error) throw error;
@@ -95,7 +98,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true, data: result }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
 
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ success: false, error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
   }
 })

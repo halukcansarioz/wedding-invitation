@@ -3,6 +3,13 @@ import React, { useState } from 'react';
 export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "1 / 1" }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const cdnUrl = import.meta.env.VITE_CDN_URL;
+  let finalSrc = src;
+  
+  if (cdnUrl && finalSrc && finalSrc.includes('supabase.co/storage/v1/object/public/')) {
+    finalSrc = finalSrc.replace(/https:\/\/[^/]+\/storage\/v1\/object\/public\//, cdnUrl);
+  }
+
   return (
     <div 
       className={`lazy-image-wrapper ${className || ''}`} 
@@ -15,7 +22,6 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
       }}
       onClick={onClick}
     >
-      {/* İskelet Arka Planı ve Animasyonu */}
       {!isLoaded && (
         <div 
           className="image-skeleton" 
@@ -30,7 +36,7 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
         />
       )}
       <img
-        src={src} // DÜZELTİLDİ: Supabase Pro'ya özel olan `/render/image/` dönüşümü kaldırıldı!
+        src={finalSrc}
         alt={alt}
         loading="lazy"
         onLoad={() => setIsLoaded(true)}

@@ -1,16 +1,34 @@
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
+import { useCountdown } from "../../../hooks/useCountdown";
+import { useStore } from "../../../store/useStore";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
 };
 
-export const CountdownSection = memo(function CountdownSection({ copy, timeLeft }) {
+export const CountdownSection = memo(function CountdownSection({ copy, timeLeft: propTimeLeft, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  const isFinished = timeLeft?.days === 0 && timeLeft?.hours === 0 && timeLeft?.minutes === 0 && timeLeft?.seconds === 0;
+  
+  // EKLENDİ: Üst bileşenden (InvitationController) timeLeft prop'u unutulursa veya geçilmezse, 
+  // veritabanındaki (veya store'daki) weddingDate değerini alıp sayacı içeride çalıştırıyoruz.
+  const storeWeddingDate = useStore(state => state.siteData?.invitation?.weddingDate);
+  const targetDate = invitation?.weddingDate || storeWeddingDate;
+  
+  const calculatedTimeLeft = useCountdown(targetDate);
+  
+  // Eğer prop olarak geldiyse onu kullan (Geriye dönük uyumluluk/Testler için), gelmediyse içeride hesaplananı kullan
+  const timeLeft = propTimeLeft || calculatedTimeLeft;
+
+  // DÜZELTİLDİ: timeLeft'in tamamen tanımsız (undefined) olması durumunda hata vermemesi için güvenli kontrol
+  const isFinished = 
+    (timeLeft?.days || 0) === 0 && 
+    (timeLeft?.hours || 0) === 0 && 
+    (timeLeft?.minutes || 0) === 0 && 
+    (timeLeft?.seconds || 0) === 0;
 
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">

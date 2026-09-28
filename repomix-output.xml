@@ -86,6 +86,7 @@ src/
       LightboxModal.jsx
       LocalizedDate.jsx
       PwaInstallBanner.jsx
+      ResponsiveSlideShow.jsx
       UIComponents.jsx
     invitation/
       sections/
@@ -577,6 +578,130 @@ export const LocalizedDate = ({ dateString = "2026-08-22T19:00:00" }) => {
 
   return <span>{formattedDate}</span>;
 };
+</file>
+
+<file path="src/components/common/ResponsiveSlideShow.jsx">
+import React, { useState, useEffect, useRef } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
+
+export function ResponsiveSlideShow({ children }) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
+
+  // Ekran genişliğini dinleyerek Mobil/Web ayrımını yapıyoruz
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile(); // İlk açılışta kontrol et
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Yalnızca mobilde scroll kilitleme (Web tarafı etkilenmez)
+  useEffect(() => {
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+    };
+  }, [isMobile]);
+
+  // Görünür olan bölümleri listeye alıyoruz
+  const sections = React.Children.toArray(children).filter(child => child);
+
+  const goNext = () => {
+    if (isAnimating || currentIndex === sections.length - 1) return;
+    setIsAnimating(true);
+    setCurrentIndex(prev => prev + 1);
+    setTimeout(() => setIsAnimating(false), 800);
+  };
+
+  const goPrev = () => {
+    if (isAnimating || currentIndex === 0) return;
+    setIsAnimating(true);
+    setCurrentIndex(prev => prev - 1);
+    setTimeout(() => setIsAnimating(false), 800);
+  };
+
+  // Dokunmatik ekranda parmak kaydırma (Swipe) algılama
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    touchEndY.current = e.changedTouches[0].clientY;
+    const swipeDistance = touchStartY.current - touchEndY.current;
+    const minSwipeDistance = 50;
+
+    if (swipeDistance > minSwipeDistance) goNext(); 
+    else if (swipeDistance < -minSwipeDistance) goPrev(); 
+  };
+
+  // WEB (Masaüstü) Görünümü: Klasik alt alta kaydırmalı tasarım
+  if (!isMobile) {
+    return <div className="invitation-page">{children}</div>;
+  }
+
+  // MOBİL Görünüm: Slayt yapısı ve animasyonlu geçiş
+  return (
+    <div 
+      className="slideshow-container"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <AnimatePresence mode="wait">
+        <m.div
+          key={currentIndex}
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -40, scale: 0.95 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="slide-wrapper"
+        >
+          {sections[currentIndex]}
+        </m.div>
+      </AnimatePresence>
+
+      {/* Üst İlerleme Çubuğu */}
+      <div className="slide-progress-bar">
+        <div 
+          className="slide-progress-fill" 
+          style={{ width: `${((currentIndex + 1) / sections.length) * 100}%` }} 
+        />
+      </div>
+
+      {/* Kontrol Butonları */}
+      <div className="slide-controls">
+        <button 
+          type="button" 
+          className="secondary-button slide-btn" 
+          onClick={goPrev} 
+          disabled={currentIndex === 0 || isAnimating}
+          style={{ opacity: currentIndex === 0 ? 0.3 : 1 }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </button>
+        <button 
+          type="button" 
+          className="main-button slide-btn" 
+          onClick={goNext} 
+          disabled={currentIndex === sections.length - 1 || isAnimating}
+          style={{ opacity: currentIndex === sections.length - 1 ? 0.3 : 1 }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  );
+}
 </file>
 
 <file path="src/components/common/UIComponents.jsx">
@@ -5920,89 +6045,6 @@ export function AdminPanelContent(props) {
 }
 </file>
 
-<file path="src/components/common/PwaInstallBanner.jsx">
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { usePWAInstall } from '../../hooks/usePWAInstall';
-import { supabase } from '../../supabaseClient';
-
-// VAPID anahtarınızı ortam değişkenlerinden alıyoruz
-const PUBLIC_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
-// URL Base64 string'i Uint8Array'e çeviren yardımcı fonksiyon
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-export const subscribeToPushNotifications = async () => {
-  if ('serviceWorker' in navigator && 'PushManager' in window && PUBLIC_VAPID_KEY) {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
-      });
-
-      // Abonelik bilgilerini Supabase veritabanına kaydedin
-      await supabase.from('push_subscriptions').insert([
-        { sub_data: subscription, created_at: new Date() }
-      ]);
-      
-      console.log("Push bildirimlerine başarıyla abone olundu!");
-    } catch (error) {
-      console.error("Bildirim izni alınamadı:", error);
-    }
-  }
-};
-
-export function PwaInstallBanner() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
-
-  if (!isInstallable) return null;
-
-  const handleInstallClick = async () => {
-    await promptInstall();
-    // Kullanıcı uygulamayı yükleme adımlarını tamamladıktan sonra bildirim izni iste
-    subscribeToPushNotifications();
-  };
-
-  if (isIos) {
-    return (
-      <div className="pwa-banner-wrapper ios-pwa-banner">
-        <span className="pwa-banner-text">
-          {isEn ? "📱 Tap 'Share' icon then 'Add to Home Screen'" : "📱 Kolay erişim için 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin"}
-        </span>
-        <button onClick={() => setIsInstallable(false)} className="secondary-button pwa-banner-btn" style={{ minWidth: 'auto', padding: '4px 12px' }}>
-          ✕
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="pwa-banner-wrapper">
-      <span className="pwa-banner-text">
-        {isEn ? "📱 Install App for Easy Access" : "📱 Kolay Erişim İçin Yükle"}
-      </span>
-      {/* Kurulum butonuna basıldığında hem PWA kurulur hem Push izni istenir */}
-      <button onClick={handleInstallClick} className="main-button pwa-banner-btn">
-        {isEn ? "Install" : "Yükle"}
-      </button>
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/invitation/sections/CeremonySection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -6981,6 +7023,186 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
 }
 </file>
 
+<file path="src/components/common/PwaInstallBanner.jsx">
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { usePWAInstall } from '../../hooks/usePWAInstall';
+import { supabase } from '../../supabaseClient';
+
+// VAPID anahtarınızı ortam değişkenlerinden alıyoruz
+const PUBLIC_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+// URL Base64 string'i Uint8Array'e çeviren yardımcı fonksiyon
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export const subscribeToPushNotifications = async () => {
+  if ('serviceWorker' in navigator && 'PushManager' in window && PUBLIC_VAPID_KEY) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+      });
+
+      // Abonelik bilgilerini Supabase veritabanına kaydedin
+      await supabase.from('push_subscriptions').insert([
+        { sub_data: subscription, created_at: new Date() }
+      ]);
+      
+      console.log("Push bildirimlerine başarıyla abone olundu!");
+    } catch (error) {
+      console.error("Bildirim izni alınamadı:", error);
+    }
+  }
+};
+
+export function PwaInstallBanner() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
+
+  // YENİ: Hem kurulabilir değilse hem de iOS ise BİLEŞENİ GİZLE (Arkada görünmesini engeller)
+  if (!isInstallable || isIos) {
+    return null; 
+  }
+
+  const handleInstallClick = async () => {
+    await promptInstall();
+    // Kullanıcı uygulamayı yükleme adımlarını tamamladıktan sonra bildirim izni iste
+    subscribeToPushNotifications();
+  };
+
+  return (
+    <div className="pwa-banner-wrapper">
+      <span className="pwa-banner-text">
+        {isEn ? "📱 Install App for Easy Access" : "📱 Kolay Erişim İçin Yükle"}
+      </span>
+      {/* Kurulum butonuna basıldığında hem PWA kurulur hem Push izni istenir */}
+      <button onClick={handleInstallClick} className="main-button pwa-banner-btn">
+        {isEn ? "Install" : "Yükle"}
+      </button>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/invitation/IntroPage.jsx">
+import React, { useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { triggerConfetti } from "../../utils/helpers";
+
+export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  const openText = isEn 
+    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
+    : copy.openButton;
+
+  const handleOpen = useCallback(() => {
+    if (!isHeroLoaded) return;
+    triggerConfetti();
+    openInvitation();
+  }, [openInvitation, isHeroLoaded]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isOpening || !isHeroLoaded) return;
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        handleOpen();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpening, handleOpen, isHeroLoaded]);
+
+  return (
+    <section className={`intro-page ${isOpening ? "opening" : ""}`}>
+      <div className="petal-layer" aria-hidden="true">
+        {Array.from({ length: 16 }).map((_, index) => (
+          <span key={index}></span>
+        ))}
+      </div>
+
+      <div className="envelope-container">
+        <div className="envelope-back"></div>
+
+        <div className="intro-card">
+          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
+            ❀
+          </div>
+          
+          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
+
+          <h1 className="couple-title">
+            <span>{invitation.bride}</span>
+            <em>&</em>
+            <span>{invitation.groom}</span>
+          </h1>
+
+          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
+        </div>
+
+        <div className="envelope-front"></div>
+        <div className="envelope-flap"></div>
+
+        {personalGuestName && (
+          <div className="envelope-guest-badge">
+            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
+            {personalTableNumber && (
+              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
+                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
+              </span>
+            )}
+          </div>
+        )}
+
+        <button 
+          className="envelope-seal" 
+          onClick={handleOpen}
+          style={{ 
+            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
+            pointerEvents: isOpening ? "none" : "auto",
+            cursor: isHeroLoaded ? "pointer" : "wait",
+            transition: "opacity 0.4s ease"
+          }}
+        >
+          <span 
+            style={{ 
+              display: 'block', 
+              textAlign: 'center', 
+              lineHeight: '1.2',
+              color: '#ffffff', 
+              WebkitTextFillColor: '#ffffff',
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
+              fontWeight: '900',
+              fontSize: isHeroLoaded ? '18px' : '15px',
+              letterSpacing: '0.5px'
+            }}
+          >
+            {!isHeroLoaded ? (isEn ? "Loading..." : "Yükleniyor...") : openText}
+          </span>
+        </button>
+      </div>
+    </section>
+  );
+}
+</file>
+
 <file path="src/styles/modals.css">
 .global-modal-input,
 .global-modal-text,
@@ -7776,113 +7998,6 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: false, error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
   }
 })
-</file>
-
-<file path="src/components/invitation/IntroPage.jsx">
-import React, { useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { triggerConfetti } from "../../utils/helpers";
-
-export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const openText = isEn 
-    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
-    : copy.openButton;
-
-  const handleOpen = useCallback(() => {
-    if (!isHeroLoaded) return;
-    triggerConfetti();
-    openInvitation();
-  }, [openInvitation, isHeroLoaded]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isOpening || !isHeroLoaded) return;
-      if (e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        handleOpen();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpening, handleOpen, isHeroLoaded]);
-
-  return (
-    <section className={`intro-page ${isOpening ? "opening" : ""}`}>
-      <div className="petal-layer" aria-hidden="true">
-        {Array.from({ length: 16 }).map((_, index) => (
-          <span key={index}></span>
-        ))}
-      </div>
-
-      <div className="envelope-container">
-        <div className="envelope-back"></div>
-
-        <div className="intro-card">
-          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
-            ❀
-          </div>
-          
-          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
-
-          <h1 className="couple-title">
-            <span>{invitation.bride}</span>
-            <em>&</em>
-            <span>{invitation.groom}</span>
-          </h1>
-
-          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
-        </div>
-
-        <div className="envelope-front"></div>
-        <div className="envelope-flap"></div>
-
-        {personalGuestName && (
-          <div className="envelope-guest-badge">
-            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
-            {personalTableNumber && (
-              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
-                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
-              </span>
-            )}
-          </div>
-        )}
-
-        <button 
-          className="envelope-seal" 
-          onClick={handleOpen}
-          style={{ 
-            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
-            pointerEvents: isOpening ? "none" : "auto",
-            cursor: isHeroLoaded ? "pointer" : "wait",
-            transition: "opacity 0.4s ease"
-          }}
-        >
-          <span 
-            style={{ 
-              display: 'block', 
-              textAlign: 'center', 
-              lineHeight: '1.2',
-              color: '#ffffff', 
-              WebkitTextFillColor: '#ffffff',
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
-              fontWeight: '900',
-              fontSize: isHeroLoaded ? '18px' : '15px',
-              letterSpacing: '0.5px'
-            }}
-          >
-            {!isHeroLoaded ? (isEn ? "Loading..." : "Yükleniyor...") : openText}
-          </span>
-        </button>
-      </div>
-    </section>
-  );
-}
 </file>
 
 <file path="src/components/invitation/sections/HeroSection.jsx">
@@ -8741,145 +8856,6 @@ function App() {
 }
 
 export default App;
-</file>
-
-<file path="src/pages/InvitationController.jsx">
-import React, { Suspense, lazy, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet-async"; // EKLENDİ: Meta etiketleri için
-import { useAudio } from "../hooks/useAudio";
-import { useScrollNavigation } from "../hooks/useScrollNavigation";
-import IntroPage from "../components/invitation/IntroPage";
-import { FloatingMenu } from "../components/common/FloatingMenu";
-import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
-import { useAssetPreloader } from "../hooks/useAssetPreloader";
-import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
-import { useStore } from "../store/useStore";
-import '../styles/invitation.css';
-
-const InvitationView = lazy(() => import("./InvitationView"));
-
-export default function InvitationController() {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const siteData = useStore((state) => state.siteData);
-  const opened = useStore((state) => state.opened);
-  const setOpened = useStore((state) => state.setOpened);
-  const isOpening = useStore((state) => state.isOpening);
-  const setIsOpening = useStore((state) => state.setIsOpening);
-
-  const invitation = siteData.invitation;
-  const isHeroLoaded = useAssetPreloader(invitation.heroImage);
-  const personalGuestName = getGuestNameFromUrl();
-  const currentShareLink = invitation.shareLink || getCurrentShareLink();
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
-
-  const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
-  
-  const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
-
-  useEffect(() => {
-    if (!opened) return;
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [opened, handleWheel, handleTouchStart, handleTouchEnd]);
-
-  const openInvitation = () => {
-    setIsOpening(true);
-    startMusic().catch(console.error);
-    setTimeout(() => setOpened(true), 4000);
-  };
-
-  // EKLENDİ: Dinamik SEO ve Meta Etiket Bilgileri
-  const pageTitle = isEn ? `${coupleName} | Wedding Invitation` : `${coupleName} | Düğün Davetiyesi`;
-  const pageDescription = invitation.message || (isEn ? "You are invited to our wedding." : "Düğün davetiyemize davetlisiniz.");
-  // Eğer video varsa ve görsel yoksa intro imajını yedek (fallback) olarak kullan
-  const ogImage = invitation.heroImage || invitation.introImage;
-
-  // Ortak render fonksiyonu (Kod tekrarını önlemek için)
-  const renderSEO = () => (
-    <Helmet>
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      
-      {/* Open Graph / Facebook / WhatsApp */}
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content={currentShareLink} />
-      <meta property="og:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:site_name" content={coupleName} />
-      
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={currentShareLink} />
-      <meta name="twitter:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
-      <meta name="twitter:description" content={pageDescription} />
-      <meta name="twitter:image" content={ogImage} />
-    </Helmet>
-  );
-
-  if (!opened) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
-        {renderSEO()}
-        <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
-        <IntroPage 
-          isOpening={isOpening} 
-          copy={siteData.copy} 
-          invitation={invitation} 
-          personalGuestName={personalGuestName} 
-          personalTableNumber={getTableFromUrl()}
-          openInvitation={openInvitation} 
-          isHeroLoaded={isHeroLoaded}
-        />
-        <FloatingMenu 
-          isEn={isEn} 
-          toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
-          shareText={shareText} 
-          toggleMusic={toggleMusic} 
-          isMusicPlaying={isMusicPlaying} 
-          showScrollDown={false} 
-          scrollToNext={scrollToNext} 
-          showScrollTop={false} 
-          scrollToPrev={scrollToPrev} 
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
-      {renderSEO()}
-      <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
-      <PwaInstallBanner />
-      <FloatingMenu 
-        isEn={isEn} 
-        toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
-        shareText={shareText} 
-        toggleMusic={toggleMusic} 
-        isMusicPlaying={isMusicPlaying} 
-        showScrollDown={showScrollDown} 
-        scrollToNext={scrollToNext} 
-        showScrollTop={showScrollTop} 
-        scrollToPrev={scrollToPrev} 
-      />
-      <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
-        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} currentSlideIndex={currentSlideIndex} />
-      </Suspense>
-    </div>
-  );
-}
 </file>
 
 <file path="src/styles/admin.css">
@@ -13721,6 +13697,145 @@ html[data-theme]
 }
 </file>
 
+<file path="src/pages/InvitationController.jsx">
+import React, { Suspense, lazy, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async"; // EKLENDİ: Meta etiketleri için
+import { useAudio } from "../hooks/useAudio";
+import { useScrollNavigation } from "../hooks/useScrollNavigation";
+import IntroPage from "../components/invitation/IntroPage";
+import { FloatingMenu } from "../components/common/FloatingMenu";
+import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
+import { useAssetPreloader } from "../hooks/useAssetPreloader";
+import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
+import { useStore } from "../store/useStore";
+import '../styles/invitation.css';
+
+const InvitationView = lazy(() => import("./InvitationView"));
+
+export default function InvitationController() {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  const siteData = useStore((state) => state.siteData);
+  const opened = useStore((state) => state.opened);
+  const setOpened = useStore((state) => state.setOpened);
+  const isOpening = useStore((state) => state.isOpening);
+  const setIsOpening = useStore((state) => state.setIsOpening);
+
+  const invitation = siteData.invitation;
+  const isHeroLoaded = useAssetPreloader(invitation.heroImage);
+  const personalGuestName = getGuestNameFromUrl();
+  const currentShareLink = invitation.shareLink || getCurrentShareLink();
+  const coupleName = `${invitation.bride} & ${invitation.groom}`;
+  const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
+
+  const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
+  
+  const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
+
+  useEffect(() => {
+    if (!opened) return;
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [opened, handleWheel, handleTouchStart, handleTouchEnd]);
+
+  const openInvitation = () => {
+    setIsOpening(true);
+    startMusic().catch(console.error);
+    setTimeout(() => setOpened(true), 4000);
+  };
+
+  // EKLENDİ: Dinamik SEO ve Meta Etiket Bilgileri
+  const pageTitle = isEn ? `${coupleName} | Wedding Invitation` : `${coupleName} | Düğün Davetiyesi`;
+  const pageDescription = invitation.message || (isEn ? "You are invited to our wedding." : "Düğün davetiyemize davetlisiniz.");
+  // Eğer video varsa ve görsel yoksa intro imajını yedek (fallback) olarak kullan
+  const ogImage = invitation.heroImage || invitation.introImage;
+
+  // Ortak render fonksiyonu (Kod tekrarını önlemek için)
+  const renderSEO = () => (
+    <Helmet>
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
+      
+      {/* Open Graph / Facebook / WhatsApp */}
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={currentShareLink} />
+      <meta property="og:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
+      <meta property="og:description" content={pageDescription} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:site_name" content={coupleName} />
+      
+      {/* Twitter */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={currentShareLink} />
+      <meta name="twitter:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
+      <meta name="twitter:description" content={pageDescription} />
+      <meta name="twitter:image" content={ogImage} />
+    </Helmet>
+  );
+
+  if (!opened) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
+        {renderSEO()}
+        <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
+        <IntroPage 
+          isOpening={isOpening} 
+          copy={siteData.copy} 
+          invitation={invitation} 
+          personalGuestName={personalGuestName} 
+          personalTableNumber={getTableFromUrl()}
+          openInvitation={openInvitation} 
+          isHeroLoaded={isHeroLoaded}
+        />
+        <FloatingMenu 
+          isEn={isEn} 
+          toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
+          shareText={shareText} 
+          toggleMusic={toggleMusic} 
+          isMusicPlaying={isMusicPlaying} 
+          showScrollDown={false} 
+          scrollToNext={scrollToNext} 
+          showScrollTop={false} 
+          scrollToPrev={scrollToPrev} 
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
+      {renderSEO()}
+      <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
+      <PwaInstallBanner />
+      <FloatingMenu 
+        isEn={isEn} 
+        toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
+        shareText={shareText} 
+        toggleMusic={toggleMusic} 
+        isMusicPlaying={isMusicPlaying} 
+        showScrollDown={showScrollDown} 
+        scrollToNext={scrollToNext} 
+        showScrollTop={showScrollTop} 
+        scrollToPrev={scrollToPrev} 
+      />
+      <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
+        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} currentSlideIndex={currentSlideIndex} />
+      </Suspense>
+    </div>
+  );
+}
+</file>
+
 <file path="src/hooks/useDatabaseManager.js">
 import { useCallback, useEffect } from "react";
 import { supabase } from "../supabaseClient";
@@ -14338,11 +14453,9 @@ export function useScrollNavigation(isAdminPage, opened) {
 </file>
 
 <file path="src/pages/InvitationView.jsx">
-import React, { useMemo } from "react";
+import React from "react";
 import { useStore } from "../store/useStore";
-import { useGuestsQuery } from "../hooks/useGuestsQuery";
-import { useWishesQuery } from "../hooks/useWishesQuery";
-import { formatMessageTemplate, getQrImageUrl } from "../utils/helpers";
+import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
 import {
   HeroSection,
   CountdownSection,
@@ -14355,291 +14468,56 @@ import {
   GallerySection,
   ShareSection,
   GiftSection,
-  FooterSection,
   RsvpSection,
   WishesSection,
   GuestsListSection,
   GuestCameraSection,
-  SmartAlbumSection
+  SmartAlbumSection,
+  FooterSection
 } from "../components/invitation/sections";
 
-export default function InvitationView({ scrollToNext, scrollToPrev, currentSlideIndex }) {
+export default function InvitationView(props) {
   const siteData = useStore((state) => state.siteData);
-  const guests = useStore((state) => state.guests);
-  const { addGuest } = useGuestsQuery();
-  const { wishes, addWish } = useWishesQuery();
-
-  const { invitation, copy, familyInfo, settings, giftRegistry, eventDetails, scheduleItems, storyTimeline, messages } = siteData;
-  const visibility = settings.visibility || {};
-
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const rsvpWhatsappText = encodeURIComponent(formatMessageTemplate(messages.rsvpWhatsappMessage, { couple: coupleName }));
-  const shareText = encodeURIComponent(formatMessageTemplate(messages.whatsappShareMessage, { couple: coupleName, link: invitation.shareLink }));
-  const qrImageUrl = getQrImageUrl(invitation.shareLink);
-  const guestGreetingText = formatMessageTemplate(messages.guestGreeting, { guest: "", couple: coupleName }).replace("Sevgili ,", "").trim();
-
-  const personalTableNumber = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("table") : "";
+  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
+  
+  const v = settings?.visibility || {};
 
   return (
-    <main className="invitation-page">
-      <HeroSection 
-        invitation={invitation} 
-        copy={copy} 
-        guestGreeting={guestGreetingText} 
-        personalTableNumber={personalTableNumber} 
-        scrollToNext={scrollToNext} 
-        settings={settings}
-      />
-
-      <div className="content-wrapper">
-        {visibility.countdown && !settings.isPostWedding && <CountdownSection copy={copy} timeLeft={{ days: 0, hours: 0, minutes: 0, seconds: 0 }} />}
-        
-        <InvitationMessageSection copy={copy} invitation={invitation} />
-        
-        {visibility.family && <FamilySection copy={copy} familyInfo={familyInfo} />}
-        
-        {visibility.story && <StorySection copy={copy} storyTimeline={storyTimeline} />}
-        
-        {visibility.ceremony && !settings.isPostWedding && <CeremonySection copy={copy} eventDetails={eventDetails} />}
-        
-        {visibility.schedule && !settings.isPostWedding && <ScheduleSection copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-        
-        {visibility.location && !settings.isPostWedding && <LocationSection copy={copy} invitation={invitation} />}
-        
-        {/* Düğün Sonrası Akıllı Albüm (AI Yüz Tanıma) */}
-        {settings.isPostWedding && <SmartAlbumSection />}
-
-        {visibility.gallery && (
-          <>
-            <GallerySection copy={copy} invitation={invitation} />
-            <GuestCameraSection />
-          </>
-        )}
-        
-        {visibility.rsvp && !settings.isPostWedding && (
-          <RsvpSection 
-            copy={copy} 
-            submitGuest={addGuest} 
-            invitation={invitation} 
-            rsvpWhatsappText={rsvpWhatsappText} 
-            showIban={visibility.popupIban} 
-            giftData={giftRegistry} 
-            personalTableNumber={personalTableNumber}
-          />
-        )}
-        
-        {visibility.guests && !settings.isPostWedding && <GuestsListSection copy={copy} guests={guests} />}
-        
-        {visibility.wishes && <WishesSection copy={copy} submitWish={addWish} approvedWishes={wishes} />}
-        
-        {visibility.iban && <GiftSection giftData={giftRegistry} />}
-        
-        <ShareSection copy={copy} qrImageUrl={qrImageUrl} shareText={shareText} />
-      </div>
-
-      <FooterSection coupleName={coupleName} invitation={invitation} copy={copy} />
-    </main>
+    <ResponsiveSlideShow>
+      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
+      
+      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
+      
+      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
+      
+      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
+      
+      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
+      
+      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
+      
+      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
+      
+      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.guests && <GuestCameraSection {...props} />}
+      
+      {v.guests && <SmartAlbumSection {...props} />}
+      
+      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.wishes && <WishesSection {...props} copy={copy} />}
+      
+      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
+      
+      <ShareSection {...props} copy={copy} />
+      
+      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
+    </ResponsiveSlideShow>
   );
 }
-</file>
-
-<file path="src/components/common/FloatingMenu.jsx">
-import React, { memo } from "react";
-
-export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, 
-  toggleLanguage, 
-  shareText, 
-  toggleMusic, 
-  isMusicPlaying, 
-  showScrollDown, 
-  scrollToNext, 
-  showScrollTop, 
-  scrollToPrev 
-}) {
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        /* ZIPLAMA ANİMASYONLARI */
-        @keyframes syncContainerBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-
-        @keyframes syncDesktopBounce {
-          0%, 100% { transform: translateY(-50%); }
-          50% { transform: translateY(calc(-50% - 8px)); }
-        }
-
-        /* ANA MENÜ ÇERÇEVESİ */
-        #main-dock {
-          position: fixed !important;
-          z-index: 999999 !important;
-          pointer-events: auto !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 8px !important;
-          
-          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
-          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
-          
-          flex-direction: row !important;
-          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-          top: auto !important;
-          left: 0 !important;
-          right: 0 !important;
-          margin: 0 auto !important;
-          width: fit-content !important;
-          height: auto !important;
-        }
-
-        #main-dock:hover {
-          animation-play-state: paused !important;
-        }
-
-        /* TEKİL BUTONLAR VE ANİMASYONLARI */
-        #main-dock .dock-btn {
-          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
-          
-          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
-          margin: 0 6px !important; 
-          
-          width: 48px !important;
-          height: 48px !important;
-          min-width: 48px !important;
-          border-radius: 50% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          
-          background: var(--theme-surface, #ffffff) !important;
-          color: var(--amp-color, #9f4f68) !important;
-          border: 1.5px solid var(--amp-color, #9f4f68) !important;
-          
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-          cursor: pointer !important;
-          overflow: hidden !important; 
-          opacity: 1 !important;
-          visibility: visible !important;
-          transform: scale(1) !important;
-        }
-
-        #main-dock .dock-btn:hover,
-        #main-dock .dock-btn:active {
-          transform: scale(1.08) !important;
-          background: var(--amp-color, #9f4f68) !important;
-          color: var(--theme-surface, #ffffff) !important;
-        }
-
-        #main-dock .dock-btn svg {
-          width: 22px !important;
-          height: 22px !important;
-          flex-shrink: 0 !important;
-          transition: all 0.5s ease !important;
-        }
-
-        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
-        #main-dock .hidden-btn {
-          opacity: 0 !important;
-          visibility: hidden !important;
-          width: 0 !important;
-          min-width: 0 !important;
-          height: 0 !important;
-          padding: 0 !important;
-          border-width: 0 !important;
-          
-          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
-          margin: 0 0 !important; 
-          
-          transform: scale(0) !important; 
-        }
-
-        #main-dock .hidden-btn svg {
-          width: 0 !important;
-          height: 0 !important;
-        }
-
-        /* MASAÜSTÜ GÖRÜNÜM */
-        @media (min-width: 651px) {
-          #main-dock {
-            flex-direction: column !important;
-            right: 32px !important;          
-            left: auto !important;
-            top: 50% !important;             
-            bottom: auto !important;         
-            margin: 0 !important; 
-            height: fit-content !important;
-            width: auto !important;
-            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
-          }
-          
-          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
-          #main-dock .dock-btn {
-            margin: 6px 0 !important;
-          }
-
-          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
-          #main-dock .hidden-btn {
-             margin: 0 0 !important;
-          }
-        }
-      `}} />
-
-      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v4" />
-            <path d="M12 16h.01" />
-          </svg>
-        </a>
-      </div>
-
-      <div id="main-dock">
-        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
-          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
-        </button>
-
-        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isMusicPlaying ? (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </>
-            ) : (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-                <line x1="3" y1="3" x2="21" y2="21" />
-              </>
-            )}
-          </svg>
-        </button>
-
-        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"></line>
-            <polyline points="5 12 12 5 19 12"></polyline>
-          </svg>
-        </button>
-        
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="19 12 12 19 5 12"></polyline>
-          </svg>
-        </button>
-      </div>
-    </>
-  );
-});
 </file>
 
 <file path="src/styles/base.css">
@@ -15792,6 +15670,205 @@ button {
 }
 </file>
 
+<file path="src/components/common/FloatingMenu.jsx">
+import React, { memo } from "react";
+
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
+}) {
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        /* ZIPLAMA ANİMASYONLARI */
+        @keyframes syncContainerBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @keyframes syncDesktopBounce {
+          0%, 100% { transform: translateY(-50%); }
+          50% { transform: translateY(calc(-50% - 8px)); }
+        }
+
+        /* ANA MENÜ ÇERÇEVESİ */
+        #main-dock {
+          position: fixed !important;
+          z-index: 999999 !important;
+          pointer-events: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 8px !important;
+          
+          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
+          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
+          
+          flex-direction: row !important;
+          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+          top: auto !important;
+          left: 0 !important;
+          right: 0 !important;
+          margin: 0 auto !important;
+          width: fit-content !important;
+          height: auto !important;
+        }
+
+        #main-dock:hover {
+          animation-play-state: paused !important;
+        }
+
+        /* TEKİL BUTONLAR VE ANİMASYONLARI */
+        #main-dock .dock-btn {
+          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+          
+          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
+          margin: 0 6px !important; 
+          
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          
+          background: var(--theme-surface, #ffffff) !important;
+          color: var(--amp-color, #9f4f68) !important;
+          border: 1.5px solid var(--amp-color, #9f4f68) !important;
+          
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+          cursor: pointer !important;
+          overflow: hidden !important; 
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: scale(1) !important;
+        }
+
+        #main-dock .dock-btn:hover,
+        #main-dock .dock-btn:active {
+          transform: scale(1.08) !important;
+          background: var(--amp-color, #9f4f68) !important;
+          color: var(--theme-surface, #ffffff) !important;
+        }
+
+        #main-dock .dock-btn svg {
+          width: 22px !important;
+          height: 22px !important;
+          flex-shrink: 0 !important;
+          transition: all 0.5s ease !important;
+        }
+
+        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
+        #main-dock .hidden-btn {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          width: 0 !important;
+          min-width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          border-width: 0 !important;
+          
+          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
+          margin: 0 0 !important; 
+          
+          transform: scale(0) !important; 
+        }
+
+        #main-dock .hidden-btn svg {
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        /* MASAÜSTÜ GÖRÜNÜM */
+        @media (min-width: 651px) {
+          #main-dock {
+            flex-direction: column !important;
+            right: 32px !important;          
+            left: auto !important;
+            top: 50% !important;             
+            bottom: auto !important;         
+            margin: 0 !important; 
+            height: fit-content !important;
+            width: auto !important;
+            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
+          }
+          
+          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
+          #main-dock .dock-btn {
+            margin: 6px 0 !important;
+          }
+
+          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
+          #main-dock .hidden-btn {
+             margin: 0 0 !important;
+          }
+        }
+      `}} />
+
+      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
+      </div>
+
+      <div id="main-dock">
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMusicPlaying ? (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+              </>
+            )}
+          </svg>
+        </button>
+
+        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+});
+</file>
+
 <file path="src/styles/responsive.css">
 /* src/styles/responsive.css */
 
@@ -15931,133 +16008,95 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 
 @media (max-width: 768px) {
-  .rsvp-form, 
-  .wish-form {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+  .slideshow-container {
+    position: relative;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+    background: var(--paper); 
   }
 
-  .rsvp-form > div, 
-  .wish-form > div {
-    width: 100% !important;
+  .slide-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
   }
 
-  /* Form elemanları ve ana butonlar */
-  .rsvp-form input,
-  .rsvp-form textarea,
-  .wish-form input,
-  .wish-form textarea,
-  .option-group,
-  .option-button,
-  .form-button {
+  /* Kartların Mobil Slayt İçine Oturması */
+  .slide-wrapper > section {
     width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    box-sizing: border-box !important;
-    border-radius: 20px !important; 
-  }
-  
-  .option-button,
-  .form-button {
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  /* WhatsApp Butonu için Özel Estetik İyileştirme (Diğer butonlarla tam uyumlu) */
-  .rsvp-whatsapp-button {
-    width: 100% !important;
-    max-width: 100% !important;
+    max-width: 500px !important;
+    max-height: 85vh !important; 
+    overflow-y: auto !important; 
     margin: 0 !important;
-    box-sizing: border-box !important;
     border-radius: 20px !important;
-    padding: 16px 18px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important;
+    padding: 24px !important;
     
-    /* Tema renklerine uygun zarif bir ikincil buton stili */
-    background: var(--paper, #fff) !important;
-    border: 1.5px solid var(--amp-color, #9f4f68) !important;
-    color: var(--amp-color, #9f4f68) !important;
-    font-weight: 700 !important;
-    box-shadow: 0 8px 20px rgba(159, 79, 104, 0.12) !important;
+    /* Form doldururken veya uzun yazılarda iç scroll çubuğunu gizle */
+    -ms-overflow-style: none;  
+    scrollbar-width: none;  
   }
 
-  .rsvp-whatsapp-button:hover {
-    background: var(--amp-color, #9f4f68) !important;
-    color: #fff !important;
+  .slide-wrapper > section::-webkit-scrollbar {
+    display: none; 
   }
 
-  .option-group {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
+  /* Arka Planı Resim olan Karşılama Ekranı (Hero Section) İstisnası */
+  .slide-wrapper > .hero-section {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 
-  .rsvp-actions {
-    width: 100% !important;
-    margin-top: 16px !important;
-    display: flex !important;
-    justify-content: center !important;
-  }
-  
-  .story-timeline-container, 
-  .schedule-list, 
-  .wish-list, 
-  .guest-list,
-  .ceremony-grid,
-  .info-list,
-  .rsvp-form,
-  .wish-form {
-    max-height: none !important; 
-    height: auto !important;
-    overflow: visible !important;
+  /* SLAYT KONTROL BUTONLARI (Mobilde) */
+  .slide-controls {
+    position: absolute;
+    bottom: 32px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 9999;
   }
 
-  .card h2, .countdown-section h2, .section-label {
-    line-height: 1.35 !important;
-    padding-bottom: 2px !important;
+  .slide-btn {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2) !important;
+    min-width: unset !important;
+    margin: 0 !important;
   }
 
-  .admin-main-panel, 
-  .admin-editor, 
-  .admin-list, 
-  .admin-guest-list-container {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  .admin-edit-grid, .theme-picker-grid {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 12px !important;
-  }
-  .admin-edit-grid > *, .theme-picker-grid > * {
-    flex: 1 1 100% !important;
-  }
-  
-  .admin-stats {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    padding-bottom: 8px !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-  .admin-stats > div {
-    flex: 0 0 140px !important; 
+  /* İLERLEME ÇUBUĞU (Mobilde) */
+  .slide-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.05);
+    z-index: 9999;
   }
 
-  .app-modal-card {
-    max-height: 85dvh !important;
-    overflow-y: auto !important;
-    overscroll-behavior: contain !important;
+  .slide-progress-fill {
+    height: 100%;
+    background: var(--rose-dark);
+    transition: width 0.4s ease-out;
   }
 }
 

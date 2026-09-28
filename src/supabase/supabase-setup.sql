@@ -114,4 +114,21 @@ insert to authenticated with check (bucket_id = 'wedding-media');
 create policy "Authenticated can update wedding media" on storage.objects for
 update to authenticated using (bucket_id = 'wedding-media') with check (bucket_id = 'wedding-media');
 create policy "Authenticated can delete wedding media" on storage.objects for delete to authenticated using (bucket_id = 'wedding-media');
--- (Mevcut 'insert into public.invitation_settings' JSON tema içeriğinizi bu bölümün altına olduğu gibi bırakabilirsiniz.)
+-- =========================================================================================
+-- EKLENDİ: MİSAFİR POV FOTOĞRAFLARI TABLOSU VE İZİNLERİ
+-- =========================================================================================
+create table if not exists public.guest_photos (
+  id uuid primary key default gen_random_uuid(),
+  image_url text not null,
+  approved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.guest_photos enable row level security;
+-- Ziyaretçiler sadece onaylanmış misafir fotoğraflarını çekebilir
+create policy "Anyone can read approved guest photos" on public.guest_photos for
+select to anon using (approved = true);
+-- Ziyaretçiler fotoğraf yüklediklerinde veritabanına kayıt atabilmelidir
+create policy "Anon can insert guest photos" on public.guest_photos for
+insert to anon with check (true);
+-- Yöneticiler fotoğrafları silebilir veya onaylayabilir
+create policy "Authenticated can manage guest photos" on public.guest_photos for all to authenticated using (true) with check (true);

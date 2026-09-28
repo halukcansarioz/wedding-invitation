@@ -6,20 +6,20 @@ import { uiGuestToDb } from '../utils/helpers';
 export function useGuestsQuery() {
   const queryClient = useQueryClient();
 
-  // 1. Veriyi Çekme (Fetch & Cache)
   const { data: guests = [], isLoading, isError } = useQuery({
     queryKey: ['guests'],
     queryFn: loadGuestsFromDatabase,
   });
 
-  // 2. Veri Ekleme (Mutation) ve İyimser Güncelleme
   const addGuestMutation = useMutation({
     mutationFn: async (newGuestData) => {
+      const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
+      
       const { data, error } = await supabase.functions.invoke('submit-form', {
         body: { 
           type: 'guest', 
           data: uiGuestToDb(newGuestData), 
-          turnstileToken: newGuestData.turnstileToken 
+          turnstileToken: token 
         }
       });
 
@@ -29,11 +29,9 @@ export function useGuestsQuery() {
       return data.data;
     },
     onMutate: async (newGuest) => {
-      // Devam eden işlemleri durdur
       await queryClient.cancelQueries({ queryKey: ['guests'] });
       const previousGuests = queryClient.getQueryData(['guests']);
       
-      // Anında arayüze ekle (Kullanıcı beklemez)
       queryClient.setQueryData(['guests'], (old = []) => [
         { 
           id: `temp-${Date.now()}`, 
@@ -53,14 +51,12 @@ export function useGuestsQuery() {
       return { previousGuests };
     },
     onError: (err, newGuest, context) => {
-      // Hata olursa eski haline döndür
       if (context?.previousGuests) {
         queryClient.setQueryData(['guests'], context.previousGuests);
       }
       console.error("LCV eklenirken hata oluştu:", err);
     },
     onSettled: () => {
-      // Gerçek veriyi arkada tekrar çek
       queryClient.invalidateQueries({ queryKey: ['guests'] });
     }
   });
