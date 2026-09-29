@@ -132,7 +132,12 @@
     "message": "Message",
     "couldNotDelete": "Could not delete.",
     "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
+    "couldNotChangeStatus": "Could not change status.",
+    "dashboardOverview": "Dashboard Overview",
+    "payments": "Received Gifts & Payments",
+    "notifications": "Push Notifications",
+    "tableQrCards": "Table QR Cards",
+    "storageCleanup": "Storage Cleanup"
   },
     "navigation": {
     "chooseApp": "Choose Navigation App",

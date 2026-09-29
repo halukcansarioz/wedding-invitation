@@ -10,7 +10,7 @@ export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDr
   setAdminDraft: (draftOrUpdater) => set((state) => ({
     adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
   })),
-  activeAdminTab: "general",
+  activeAdminTab: "overview",
   setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
   personalLinkName: "",
   setPersonalLinkName: (name) => set({ personalLinkName: name }),

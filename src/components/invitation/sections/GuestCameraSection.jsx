@@ -14,9 +14,57 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const showAppAlert = useStore((state) => state.showAppAlert);
+  const siteData = useStore((state) => state.siteData);
   
+  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
+  const dateText = siteData?.invitation?.dateText || "";
+
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Filigran / Çerçeve Basma Fonksiyonu
+  const applyPhotoboothFilter = (originalFile) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(originalFile);
+      
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Orijinal Fotoğraf
+        ctx.drawImage(img, 0, 0);
+
+        // Alt Kısma Gradient Karartma (Okunabilirlik İçin)
+        const gradient = ctx.createLinearGradient(0, canvas.height - 150, 0, canvas.height);
+        gradient.addColorStop(0, "transparent");
+        gradient.addColorStop(1, "rgba(0,0,0,0.7)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+
+        // Çiftin İsmi
+        const fontSizeTitle = Math.floor(canvas.width * 0.05);
+        ctx.font = `bold ${fontSizeTitle}px serif`;
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(coupleName, canvas.width / 2, canvas.height - 60);
+        
+        // Tarih
+        const fontSizeDate = Math.floor(canvas.width * 0.025);
+        ctx.font = `${fontSizeDate}px sans-serif`;
+        ctx.fillStyle = "#f1c40f"; 
+        ctx.fillText(dateText, canvas.width / 2, canvas.height - 25);
+
+        canvas.toBlob((blob) => {
+          if (!blob) { reject(new Error("Canvas conversion failed")); return; }
+          resolve(new File([blob], `photobooth_${Date.now()}.jpg`, { type: "image/jpeg" }));
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = reject;
+    });
+  };
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
@@ -24,16 +72,22 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
 
     setIsUploading(true);
     try {
-      const { isApproved } = await uploadAndModerateGuestPhoto(file);
+      showAppAlert(isEn ? "Applying wedding frame..." : "Düğün çerçevesi uygulanıyor...", { title: "Fotoğraf Kabini" });
+      
+      // Fotoğrafa filigran bas
+      const watermarkedFile = await applyPhotoboothFilter(file);
+
+      showAppAlert(isEn ? "Uploading to shared album..." : "Ortak albüme yükleniyor...", { title: "Yükleniyor" });
+      const { isApproved } = await uploadAndModerateGuestPhoto(watermarkedFile);
       
       if (isApproved) {
         triggerConfetti();
-        showAppAlert(isEn ? "Awesome! Your photo is added to the gallery." : "Harika! Fotoğrafınız galeriye eklendi.", { tone: "success" });
+        showAppAlert(isEn ? "Awesome! Your photo is added to the gallery." : "Harika! Çerçeveli fotoğrafınız galeriye eklendi.", { tone: "success" });
       } else {
         showAppAlert(isEn ? "Photo received. It will be published after admin review." : "Fotoğraf alındı. Gelin ve damat onayından sonra yayınlanacak.", { tone: "info" });
       }
     } catch (error) {
-      showAppAlert(isEn ? "Could not upload photo." : "Fotoğraf yüklenemedi. Lütfen tekrar deneyin.", { tone: "error", title: "Hata" });
+      showAppAlert(isEn ? "Could not process photo." : "Fotoğraf işlenemedi. Lütfen tekrar deneyin.", { tone: "error", title: "Hata" });
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -42,12 +96,12 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
 
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? "Guest POV" : "Misafir Gözünden"}</p>
+      <p className="section-label">{isEn ? "AR Photobooth" : "Dijital Fotoğraf Kabini"}</p>
       <h2>{isEn ? "Share Your Memories" : "Anılarınızı Paylaşın"}</h2>
       <p>
         {isEn 
-          ? "Take a photo right now or choose from your gallery to add it to our shared digital album!" 
-          : "Şu an bir fotoğraf çekerek veya galerinizden seçerek ortak dijital albümümüze anında katkıda bulunun!"}
+          ? "Take a photo right now! We will automatically add our wedding frame and put it in the shared album." 
+          : "Şu an bir fotoğraf çekin! Düğün çerçevenizi otomatik olarak ekleyip dev ekrana ve ortak albümümüze yollayalım."}
       </p>
       
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
@@ -64,9 +118,9 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
           className="main-button" 
           onClick={() => fileInputRef.current?.click()} 
           disabled={isUploading}
-          style={{ padding: "16px 32px", fontSize: "16px" }}
+          style={{ padding: "16px 32px", fontSize: "16px", background: "linear-gradient(135deg, #e67e22, #d35400)", borderColor: "#d35400" }}
         >
-          📸 {isUploading ? (isEn ? "Analyzing AI & Uploading..." : "Yapay Zeka Tarıyor & Yükleniyor...") : (isEn ? "Open Camera / Gallery" : "Kamera / Galeri Aç")}
+          📸 {isUploading ? (isEn ? "Processing..." : "İşleniyor & Yükleniyor...") : (isEn ? "Open Camera" : "Kamera / Galeri Aç")}
         </button>
       </div>
     </m.section>

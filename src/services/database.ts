@@ -131,29 +131,36 @@ export const deleteMediaFile = async (fileUrl: string): Promise<void> => {
   }
 };
 
-export const syncFailedDeletes = async (): Promise<void> => {
+export const syncFailedDeletes = async (): Promise<{ successCount: number, failCount: number }> => {
   const failedDeletes: string[] = (await get('failed_deletes')) || [];
-  if (failedDeletes.length === 0 || !navigator.onLine) return;
+  
+  if (failedDeletes.length === 0 || !navigator.onLine) {
+    return { successCount: 0, failCount: failedDeletes.length };
+  }
 
   const remainingFails: string[] = [];
+  let successCount = 0;
   
   for (const fileUrl of failedDeletes) {
     try {
       const urlObj = new URL(fileUrl);
       const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
       if (pathSegments.length < 2) continue;
+      
       const filePath = decodeURIComponent(pathSegments[1]);
       const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+      
       if (error) throw error;
+      successCount++;
     } catch (err) {
       remainingFails.push(fileUrl);
     }
   }
   
   await set('failed_deletes', remainingFails);
+  return { successCount, failCount: remainingFails.length };
 };
 
-// EKLENDİ: Storage Garbage Collection (IndexedDB)
 export const runStorageGarbageCollection = async (): Promise<void> => {
   try {
     const failedDeletes: string[] = (await get('failed_deletes')) || [];

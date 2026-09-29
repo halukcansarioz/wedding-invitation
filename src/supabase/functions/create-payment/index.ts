@@ -20,7 +20,6 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    // YENİ: Veritabanı tabanlı Rate Limiting (Stripe Spam koruması)
     if(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
         const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
         const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
@@ -61,6 +60,11 @@ serve(async (req) => {
       mode: 'payment',
       success_url: `${origin}/?payment=success`,
       cancel_url: `${origin}/?payment=cancel`,
+      // YENİ EKLENDİ: Ödeme tamamlandığında veritabanına yazmak için gereken veriler
+      metadata: {
+        guestName: guestName || 'Bilinmeyen Misafir',
+        note: note || ''
+      }
     });
 
     return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 

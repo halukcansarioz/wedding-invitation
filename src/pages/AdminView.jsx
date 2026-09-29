@@ -8,6 +8,7 @@ export default function AdminView(props) {
   const activeAdminTab = useStore(state => state.activeAdminTab);
   
   const adminTabs = [
+    { id: "overview", label: "Sistem Özeti", description: "İstatistikler ve bekleyen onaylar" }, 
     { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
     { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
     { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
@@ -18,7 +19,7 @@ export default function AdminView(props) {
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
     { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
     { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
-    // YENİ EKLENEN: Misafir Fotoğrafları Sekmesi
+    { id: "payments", label: "Gelen Hediyeler & Ödemeler", description: "Stripe üzerinden gelen takı ve hediyeler" },
     { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
     { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
     { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
@@ -26,6 +27,7 @@ export default function AdminView(props) {
     { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
     { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
     { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
+    { id: "notifications", label: "Anlık Bildirimler", description: "PWA kullanıcılarına Push bildirim yolla" }
   ];
 
   const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];

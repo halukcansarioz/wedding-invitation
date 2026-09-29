@@ -1,6 +1,7 @@
 import React from "react";
 import { useStore } from "../store/useStore";
 import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
+import { usePaymentFeedback } from '../hooks/usePaymentFeedback';
 import {
   HeroSection,
   CountdownSection,
@@ -26,6 +27,8 @@ export default function InvitationView(props) {
   const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
   
   const v = settings?.visibility || {};
+
+  usePaymentFeedback();
 
   return (
     <ResponsiveSlideShow>

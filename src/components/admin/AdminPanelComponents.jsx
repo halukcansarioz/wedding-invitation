@@ -2,9 +2,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { 
-  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
+  OverviewTab, GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
   VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab 
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab, PaymentsTab, NotificationsTab 
 } from "./tabs";
 
 export function AdminPanelContent(props) {
@@ -32,6 +32,9 @@ export function AdminPanelContent(props) {
     case "gift": return <GiftTab {...props} isEn={isEn} />;
     case "story": return <StoryTab {...props} isEn={isEn} />; 
     case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
-    default: return null;
+    case "payments": return <PaymentsTab {...props} isEn={isEn} />;
+    case "notifications": return <NotificationsTab {...props} isEn={isEn} />;
+    case "overview": return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
+    default: return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
   }
 }

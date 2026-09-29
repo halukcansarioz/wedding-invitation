@@ -132,7 +132,12 @@
     "message": "Mesaj",
     "couldNotDelete": "Silinemedi.",
     "couldNotUpdate": "Güncellenemedi.",
-    "couldNotChangeStatus": "Durum değiştirilemedi."
+    "couldNotChangeStatus": "Durum değiştirilemedi.",
+    "dashboardOverview": "Sistem Özeti",
+    "payments": "Gelen Hediyeler & Ödemeler",
+    "notifications": "Anlık Bildirimler",
+    "tableQrCards": "Masa QR Kartları",
+    "storageCleanup": "Depolama Temizliği"
   },
     "navigation": {
     "chooseApp": "Yol Tarifi Al",

@@ -18,3 +18,6 @@ export { GiftTab } from './GiftTab';
 export { StoryTab } from './StoryTab';
 export { TablePlanTab } from './TablePlanTab';
 export { GuestPhotosTab } from './GuestPhotosTab';
+export { PaymentsTab } from './PaymentsTab';
+export { NotificationsTab } from './NotificationsTab';
+export { OverviewTab } from './OverviewTab';
