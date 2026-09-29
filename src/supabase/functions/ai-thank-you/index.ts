@@ -4,36 +4,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// --- IN-MEMORY RATE LIMITER ---
-const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 Dakika
-const MAX_REQUESTS = 5; // 1 Dakikada maksimum 5 istek
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-  if (record.count >= MAX_REQUESTS) return true;
-  record.count++;
-  return false;
-}
-// ------------------------------
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (isRateLimited(ip)) {
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // DB tabanlı rate limiting check
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `ai_thank_you_${ip}`,
+      max_req: 5,
+      window_seconds: 60
+    });
+
+    if (isLimited || rateLimitError) {
       return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
       });
@@ -62,14 +54,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: "Sen profesyonel ve sıcak bir tonla çalışan, yeni evlenmiş çiftin (gelin ve damat) asistanısın. Çift adına düğüne gelen misafirlere teşekkür mesajı yazıyorsun. Mesajlar kısa, samimi ve WhatsApp üzerinden gönderilmeye uygun olmalı. Emoji kullanabilirsin."
-          },
-          {
-            role: "user",
-            content: `Düğünümüze katılan misafirimiz "${guestName}" için, biz "${coupleName}" adına sıcak ve içten bir teşekkür mesajı yazar mısın? Sadece mesajı döndür.`
-          }
+          { role: "system", content: "Sen profesyonel ve sıcak bir tonla çalışan, yeni evlenmiş çiftin (gelin ve damat) asistanısın. Çift adına düğüne gelen misafirlere teşekkür mesajı yazıyorsun. Mesajlar kısa, samimi ve WhatsApp üzerinden gönderilmeye uygun olmalı. Emoji kullanabilirsin." },
+          { role: "user", content: `Düğünümüze katılan misafirimiz "${guestName}" için, biz "${coupleName}" adına sıcak ve içten bir teşekkür mesajı yazar mısın? Sadece mesajı döndür.` }
         ],
         max_tokens: 150,
         temperature: 0.7

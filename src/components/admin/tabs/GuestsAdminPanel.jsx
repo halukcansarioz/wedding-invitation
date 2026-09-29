@@ -4,8 +4,8 @@ import { Virtuoso } from "react-virtuoso";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
-import { Html5QrcodeScanner } from "html5-qrcode"; 
 import { supabase } from "../../../supabaseClient";
+// DİKKAT: import { Html5QrcodeScanner } from "html5-qrcode"; statik importu performans için kaldırıldı!
 
 const AdminCharts = lazy(() => import('./AdminCharts'));
 
@@ -23,30 +23,52 @@ export function GuestsAdminPanel({
   const showAppAlert = useStore((state) => state.showAppAlert); 
 
   const [isScanning, setIsScanning] = useState(false);
+  const [scannerInstance, setScannerInstance] = useState(null);
 
+  // YENİ: Dinamik Import Mantığı
   useEffect(() => {
-    if (isScanning) {
-      const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-      scanner.render(
-        (decodedText) => {
-          scanner.clear();
+    let activeScanner = null;
+
+    const startScanner = async () => {
+      if (isScanning) {
+        try {
+          // Kütüphaneyi sadece butona basıldığında (on-demand) indiriyoruz!
+          const { Html5QrcodeScanner } = await import("html5-qrcode");
+          
+          activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+          setScannerInstance(activeScanner);
+
+          activeScanner.render(
+            (decodedText) => {
+              activeScanner.clear();
+              setIsScanning(false);
+              const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+              const guestId = urlParams.get('id');
+              if (guestId) {
+                 toggleCheckIn(guestId, false); 
+                 alert(isEn ? "✅ Guest check-in successful!" : "✅ Misafir başarıyla onaylandı!");
+              } else {
+                 alert(isEn ? "❌ Invalid QR code." : "❌ Geçersiz QR kod.");
+              }
+            },
+            (error) => { /* Hataları yoksay */ }
+          );
+        } catch (err) {
+          console.error("QR Kütüphanesi yüklenemedi:", err);
+          showAppAlert("Kamera başlatılamadı.", { tone: "error" });
           setIsScanning(false);
-          const urlParams = new URLSearchParams(decodedText.split('?')[1]);
-          const guestId = urlParams.get('id');
-          if (guestId) {
-             toggleCheckIn(guestId, false); 
-             alert("✅ Misafir başarıyla onaylandı!");
-          } else {
-             alert("❌ Geçersiz QR kod.");
-          }
-        },
-        (error) => { /* Hataları yoksay */ }
-      );
-      return () => {
-        scanner.clear().catch(console.error);
-      };
-    }
-  }, [isScanning, toggleCheckIn]);
+        }
+      }
+    };
+
+    startScanner();
+
+    return () => {
+      if (activeScanner) {
+        activeScanner.clear().catch(console.error);
+      }
+    };
+  }, [isScanning, toggleCheckIn, isEn, showAppAlert]);
 
   const startMassWhatsApp = async () => {
     const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
@@ -84,7 +106,6 @@ export function GuestsAdminPanel({
         body: {
           guestName: guestName,
           coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
-          wishMessage: "Düğünümüze katıldığınız için teşekkür ederiz."
         }
       });
 
@@ -129,14 +150,14 @@ export function GuestsAdminPanel({
       
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
-          {isScanning ? "📷 Kamerayı Kapat" : "📷 QR ile Kapı Kontrolü"}
+          {isScanning ? (isEn ? "📷 Close Camera" : "📷 Kamerayı Kapat") : (isEn ? "📷 QR Check-in" : "📷 QR ile Kapı Kontrolü")}
         </button>
         <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
           {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
         </button>
       </div>
 
-      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden" }}></div>}
+      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--admin-border-color)" }}></div>}
 
       <div className="admin-stats admin-stats-inside" style={{ marginBottom: "14px" }}>
         <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>

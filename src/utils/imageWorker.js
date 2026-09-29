@@ -1,13 +1,24 @@
+import heic2any from "heic2any";
+
 self.onmessage = async function(e) {
   const { file, maxDim, quality } = e.data;
+  let processBlob = file;
   
-  if (!self.createImageBitmap || !self.OffscreenCanvas) {
-    self.postMessage({ error: "OffscreenCanvas not supported", file });
-    return;
-  }
-
   try {
-    const bitmap = await createImageBitmap(file);
+    // 1. Eğer dosya HEIC/HEIF ise Web Worker içinde arka planda JPEG'e çevrilir
+    if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+      const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: quality });
+      processBlob = Array.isArray(converted) ? converted[0] : converted;
+    }
+
+    if (!self.createImageBitmap || !self.OffscreenCanvas) {
+      // Offscreen Canvas desteklenmiyorsa fall-back için raw datayı geri yolluyoruz
+      self.postMessage({ error: "OffscreenCanvas not supported", file: processBlob });
+      return;
+    }
+
+    // 2. Klasik Sıkıştırma (Resize + WebP Dönüşümü)
+    const bitmap = await createImageBitmap(processBlob);
     let { width, height } = bitmap;
 
     if (width > maxDim || height > maxDim) {
@@ -27,6 +38,7 @@ self.onmessage = async function(e) {
     const blob = await canvas.convertToBlob({ type: "image/webp", quality: quality });
     self.postMessage({ blob });
   } catch (error) {
-    self.postMessage({ error: error.message, file });
+    // Herhangi bir işlem hatasında orijinal dosyayı paslıyoruz
+    self.postMessage({ error: error.message, file: processBlob });
   }
 };

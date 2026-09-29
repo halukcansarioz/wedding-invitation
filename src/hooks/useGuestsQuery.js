@@ -12,17 +12,27 @@ export function useGuestsQuery() {
     queryFn: loadGuestsFromDatabase,
   });
 
-  // YENİ: Supabase Realtime ile Canlı Akış (Admin Panel için)
   useEffect(() => {
-    const channel = supabase
-      .channel('public:guests')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
-        // Veritabanında bir değişiklik olduğunda anında arayüzü günceller
-        queryClient.invalidateQueries({ queryKey: ['guests'] });
-      })
-      .subscribe();
+    let channel;
+    let isMounted = true;
+
+    const setupSubscription = () => {
+      channel = supabase
+        .channel('public:guests')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
+          if (isMounted) queryClient.invalidateQueries({ queryKey: ['guests'] });
+        })
+        .subscribe();
+    };
+
+    setupSubscription();
       
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel).catch((err) => console.warn("Kanal temizlenirken hata:", err));
+      }
+    };
   }, [queryClient]);
 
   const addGuestMutation = useMutation({
@@ -30,11 +40,7 @@ export function useGuestsQuery() {
       const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
       
       const { data, error } = await supabase.functions.invoke('submit-form', {
-        body: { 
-          type: 'guest', 
-          data: uiGuestToDb(newGuestData), 
-          turnstileToken: token 
-        }
+        body: { type: 'guest', data: uiGuestToDb(newGuestData), turnstileToken: token }
       });
 
       if (error || !data.success) {
@@ -65,9 +71,7 @@ export function useGuestsQuery() {
       return { previousGuests };
     },
     onError: (err, newGuest, context) => {
-      if (context?.previousGuests) {
-        queryClient.setQueryData(['guests'], context.previousGuests);
-      }
+      if (context?.previousGuests) queryClient.setQueryData(['guests'], context.previousGuests);
       console.error("LCV eklenirken hata oluştu:", err);
     },
     onSettled: () => {
@@ -75,11 +79,5 @@ export function useGuestsQuery() {
     }
   });
 
-  return { 
-    guests, 
-    isLoading, 
-    isError, 
-    addGuest: addGuestMutation.mutateAsync,
-    isAdding: addGuestMutation.isPending
-  };
+  return { guests, isLoading, isError, addGuest: addGuestMutation.mutateAsync, isAdding: addGuestMutation.isPending };
 }

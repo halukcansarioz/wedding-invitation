@@ -4,36 +4,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// --- IN-MEMORY RATE LIMITER ---
-const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; 
-const MAX_REQUESTS = 10; // Görsel moderasyonu için dakikada maks 10 istek
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-  if (record.count >= MAX_REQUESTS) return true;
-  record.count++;
-  return false;
-}
-// ------------------------------
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (isRateLimited(ip)) {
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // DB tabanlı rate limiting check
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `moderate_photo_${ip}`,
+      max_req: 10,
+      window_seconds: 60
+    });
+
+    if (isLimited || rateLimitError) {
       return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
       });
@@ -74,7 +66,6 @@ serve(async (req) => {
 
     const aiData = await openAiResponse.json();
     const judgment = aiData.choices[0].message.content.trim().toUpperCase();
-
     const isSafe = judgment === 'SAFE';
 
     return new Response(JSON.stringify({ success: true, isSafe, judgment }), { 

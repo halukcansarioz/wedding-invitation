@@ -18,13 +18,26 @@ export default function LiveProjector() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const channel = supabase
-      .channel('public:wishes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
-          queryClient.invalidateQueries({ queryKey: ['wishes'] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    let channel;
+    let isMounted = true;
+
+    const setupChannel = () => {
+      channel = supabase
+        .channel('public:wishes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
+            if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
+        })
+        .subscribe();
+    };
+
+    setupChannel();
+    
+    return () => { 
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel).catch(console.error);
+      }
+    };
   }, [queryClient]);
 
   useEffect(() => {
@@ -53,7 +66,6 @@ export default function LiveProjector() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* SABİT PEMBE RENK YERİNE DİNAMİK TEMA RENGİ EKLENDİ */}
       <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
       <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
 

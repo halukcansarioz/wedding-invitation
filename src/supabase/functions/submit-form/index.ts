@@ -17,9 +17,23 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
     const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { type, data, turnstileToken } = await req.json();
+    
+    // YENİ: Veritabanı tabanlı Rate Limiting (Dakikada maks 20 form gönderimi)
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `submit_form_${ip}`,
+      max_req: 20,
+      window_seconds: 60
+    });
 
+    if (isLimited || rateLimitError) {
+      return new Response(JSON.stringify({ success: false, error: "Çok fazla form gönderimi. Lütfen biraz bekleyin." }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      });
+    }
+
+    const { type, data, turnstileToken } = await req.json();
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
     
