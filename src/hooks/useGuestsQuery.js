@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loadGuestsFromDatabase } from '../services/database';
 import { supabase } from '../supabaseClient';
@@ -10,6 +11,19 @@ export function useGuestsQuery() {
     queryKey: ['guests'],
     queryFn: loadGuestsFromDatabase,
   });
+
+  // YENİ: Supabase Realtime ile Canlı Akış (Admin Panel için)
+  useEffect(() => {
+    const channel = supabase
+      .channel('public:guests')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
+        // Veritabanında bir değişiklik olduğunda anında arayüzü günceller
+        queryClient.invalidateQueries({ queryKey: ['guests'] });
+      })
+      .subscribe();
+      
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
 
   const addGuestMutation = useMutation({
     mutationFn: async (newGuestData) => {

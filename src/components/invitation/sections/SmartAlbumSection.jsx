@@ -50,13 +50,13 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
   };
 
   return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card" style={{ background: "linear-gradient(145deg, #1c141a, #241a21)", color: "#fff", borderColor: "rgba(255,255,255,0.1)" }}>
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card smart-album-card">
       <div style={{ textAlign: 'center' }}>
         <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>✨</span>
-        <h2 style={{ color: "#fff", marginBottom: "8px" }}>
+        <h2 style={{ marginBottom: "8px" }}>
           {isEn ? "Find Your Photos" : "Kendi Fotoğraflarını Bul"}
         </h2>
-        <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: "24px", fontSize: "15px" }}>
+        <p style={{ marginBottom: "24px", fontSize: "15px" }}>
           {isEn 
             ? "Take a quick selfie, and our AI will instantly find all professional photos you appear in from the wedding night!" 
             : "Hemen bir selfie çek, yapay zeka düğün gecesine ait binlerce profesyonel kare arasından sadece senin olduğun fotoğrafları bulup getirsin!"}
@@ -77,26 +77,26 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
               className="main-button" 
               onClick={() => fileInputRef.current?.click()} 
               disabled={isScanning}
-              style={{ padding: "16px 32px", fontSize: "16px", background: "linear-gradient(135deg, #d36a86, #7a203b)", border: "none", color: "#fff" }}
+              style={{ padding: "16px 32px", fontSize: "16px" }}
             >
               📷 {isScanning ? (isEn ? "Scanning the Album..." : "Albüm Taranıyor (Yapay Zeka)...") : (isEn ? "Take a Selfie to Search" : "Aramak İçin Selfie Çek")}
             </button>
             {searched && !isScanning && matchedPhotos.length === 0 && (
-              <p style={{ marginTop: "16px", color: "#e74c3c" }}>{isEn ? "No matching photos found." : "Maalesef albümde size ait bir kare bulunamadı."}</p>
+              <p style={{ marginTop: "16px", color: "var(--btn-danger-bg)" }}>{isEn ? "No matching photos found." : "Maalesef albümde size ait bir kare bulunamadı."}</p>
             )}
           </>
         ) : (
           <div style={{ marginTop: "24px" }}>
-            <h3 style={{ color: "var(--gold)", marginBottom: "16px" }}>{isEn ? `Found ${matchedPhotos.length} Photos!` : `${matchedPhotos.length} Fotoğraf Bulundu!`}</h3>
+            <h3 style={{ color: "var(--rose-dark)", marginBottom: "16px" }}>{isEn ? `Found ${matchedPhotos.length} Photos!` : `${matchedPhotos.length} Fotoğraf Bulundu!`}</h3>
             <div className="gallery-grid">
               {matchedPhotos.map((photoUrl, index) => (
                 <a href={photoUrl} download target="_blank" rel="noreferrer" key={index} style={{ display: 'block', textDecoration: 'none' }}>
                   <LazyImage src={photoUrl} alt={`Sizin fotoğrafınız ${index + 1}`} style={{ borderRadius: "8px" }} />
-                  <span style={{ display: 'block', marginTop: '8px', fontSize: '12px', color: '#d36a86' }}>📥 {isEn ? "Download HD" : "HD İndir"}</span>
+                  <span style={{ display: 'block', marginTop: '8px', fontSize: '12px', color: 'var(--rose-dark)', fontWeight: 'bold' }}>📥 {isEn ? "Download HD" : "HD İndir"}</span>
                 </a>
               ))}
             </div>
-            <button onClick={() => { setSearched(false); setMatchedPhotos([]); }} className="secondary-button" style={{ marginTop: "24px", color: "#fff", borderColor: "rgba(255,255,255,0.3)" }}>
+            <button onClick={() => { setSearched(false); setMatchedPhotos([]); }} className="secondary-button" style={{ marginTop: "24px" }}>
               {isEn ? "Search Again" : "Tekrar Ara"}
             </button>
           </div>

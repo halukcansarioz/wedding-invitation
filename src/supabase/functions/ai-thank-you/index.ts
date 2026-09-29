@@ -10,10 +10,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// --- IN-MEMORY RATE LIMITER ---
+const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 Dakika
+const MAX_REQUESTS = 5; // 1 Dakikada maksimum 5 istek
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+  if (record.count >= MAX_REQUESTS) return true;
+  record.count++;
+  return false;
+}
+// ------------------------------
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    if (isRateLimited(ip)) {
+      return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      });
+    }
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) throw new Error("Eksik yetkilendirme başlığı.");
 

@@ -5,7 +5,7 @@ import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
-import LiveProjector from "./pages/LiveProjector"; // EKLENDİ: Barkovizyon Bileşeni
+import LiveProjector from "./pages/LiveProjector"; 
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
@@ -37,6 +37,18 @@ function App() {
 
   const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   const resolvedTheme = prefersDark ? "dark" : activeTheme;
+
+  // YENİ: Otomatik Dil Algılama ve Ayarlama
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && !localStorage.getItem('i18nextLng')) {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.startsWith('tr')) {
+        i18n.changeLanguage('tr');
+      } else {
+        i18n.changeLanguage('en');
+      }
+    }
+  }, [i18n]);
 
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
@@ -78,12 +90,26 @@ function App() {
   return (
     <LazyMotion features={domAnimation} strict>
       {!isSupabaseReady() && (
-        <div style={{ 
-          background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', 
-          position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' 
-        }}>
-          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı (.env değişkenleri eksik). Uygulama şu an "Mock (Test) Modunda" çalışıyor ve veriler kalıcı olarak kaydedilmeyecektir.
+        <div style={{ background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' }}>
+          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı. Mock Modunda çalışıyor.
         </div>
+      )}
+
+      {/* YENİ: Floating Language Switcher */}
+      {!isAuthRecovery && !location.pathname.includes('/admin') && (
+        <button 
+          onClick={() => i18n.changeLanguage(isEn ? 'tr' : 'en')}
+          style={{
+            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
+            width: '46px', height: '46px', borderRadius: '50%',
+            background: 'var(--theme-surface)', border: '2px solid rgba(var(--theme-rgb), 0.4)',
+            color: 'var(--rose-deep)', fontWeight: 'bold', cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
+          }}
+        >
+          {isEn ? 'TR' : 'EN'}
+        </button>
       )}
 
       <div 
@@ -96,22 +122,16 @@ function App() {
           "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
         }}
       >
-        <GlobalModals
-          customAlert={customAlert} setCustomAlert={setCustomAlert}
-          customConfirm={customConfirm} setCustomConfirm={setCustomConfirm}
-          customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t}
-        />
+        <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
         
         <Routes>
-          {/* Ana Domain Rotaları */}
           <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
           <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> {/* EKLENDİ */}
+          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
 
-          {/* Subfolder (Örn: /demo-cift) Rotaları */}
           <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
           <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> {/* EKLENDİ */}
+          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
         </Routes>
       </div>
     </LazyMotion>

@@ -10,30 +10,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// --- IN-MEMORY RATE LIMITER ---
+const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; 
+const MAX_REQUESTS = 10; // Görsel moderasyonu için dakikada maks 10 istek
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return false;
+  }
+  if (record.count >= MAX_REQUESTS) return true;
+  record.count++;
+  return false;
+}
+// ------------------------------
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    // 1. JWT Token Kontrolü (Güvenlik Katmanı)
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    if (isRateLimited(ip)) {
+      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      });
     }
 
-    // 2. Token'ın Geçerliliğini Supabase ile Doğrulama
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
+
     const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: { headers: { Authorization: authHeader } }
     });
     
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    
-    if (authError || !user) {
-      throw new Error("Geçersiz veya süresi dolmuş oturum.");
-    }
+    if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
 
     const { imageUrl } = await req.json();
 
-    // 3. OpenAI GPT-4o-Mini Vision Modeli ile içerik analizi
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {

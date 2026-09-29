@@ -10,6 +10,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { get, set, del } from 'idb-keyval';
+import { runStorageGarbageCollection } from './services/database'; // EKLENDİ
 import './i18n/config';
 import App from './App';
 import './index.css';
@@ -27,7 +28,7 @@ Sentry.init({
 
 registerSW({ immediate: true }); 
 
-// IndexedDB Asenkron Persister (Çevrimdışı verileri IndexedDB'de tutar)
+// IndexedDB Asenkron Persister
 const indexedDBPersister = createAsyncStoragePersister({
   storage: {
     getItem: async (key) => await get(key),
@@ -45,10 +46,13 @@ const queryClient = new QueryClient({
       retry: 2, 
     },
     mutations: {
-      networkMode: 'offlineFirst', // İnternet yoksa mutation'ı kuyruğa alır
+      networkMode: 'offlineFirst',
     },
   },
 });
+
+// EKLENDİ: Storage çöplerini (Gereksiz IndexedDB verilerini) temizle
+runStorageGarbageCollection();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

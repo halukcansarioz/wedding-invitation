@@ -74,7 +74,7 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
         margin: '16px auto 24px auto', 
         maxWidth: '450px',
         textAlign: 'center', 
-        border: '1px solid rgba(159, 79, 104, 0.08)' 
+        border: '1px solid rgba(var(--theme-rgb), 0.15)' 
       }}>
         <strong className="gift-card-receiver" style={{ display: 'block', fontSize: '16px', color: 'var(--rose-dark)', fontWeight: '700', marginBottom: '4px' }}>
           {giftData.receiver}

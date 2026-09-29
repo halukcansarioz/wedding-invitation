@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import FocusTrap from 'focus-trap-react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { OptionGroup } from "../../common/UIComponents";
-import { triggerConfetti } from "../../../utils/helpers";
+import { triggerConfetti, getQrImageUrl } from "../../../utils/helpers";
 import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
 import { subscribeToPushNotifications } from "../../common/PwaInstallBanner";
@@ -71,6 +71,9 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
   const [urlGuestName, setUrlGuestName] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const [formKey, setFormKey] = useState(0); 
+  
+  // YENİ: Cüzdana bilet ekleme için başarılı kayıt tutucu
+  const [submittedGuest, setSubmittedGuest] = useState(null);
 
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
@@ -106,17 +109,92 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     
     if (!isDeclining) {
       triggerConfetti();
+      setSubmittedGuest(data); // Bileti oluşturmak için bilgiyi kaydet
+      
       setTimeout(() => {
         if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
           subscribeToPushNotifications();
         }
       }, 1500);
+    } else {
+      setShowDeclineModal(true);
     }
     
     reset();
     setTurnstileToken("");
     setFormKey(prev => prev + 1);
-    if (isDeclining) setShowDeclineModal(true);
+  };
+
+  // YENİ: Apple/Google Wallet (Dijital Bilet) Üretici Fonksiyon
+  const downloadDigitalTicket = () => {
+    if (!submittedGuest) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 700;
+    const ctx = canvas.getContext('2d');
+    
+    // Arka Plan
+    ctx.fillStyle = '#fffafb';
+    ctx.fillRect(0, 0, 400, 700);
+    
+    // Üst Header
+    ctx.fillStyle = '#9f4f68';
+    ctx.fillRect(0, 0, 400, 110);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(isEn ? 'VIP WEDDING PASS' : 'VIP DAVETİYE KARTI', 200, 65);
+    
+    // Çift İsmi
+    ctx.fillStyle = '#55303b';
+    ctx.font = 'bold 20px serif';
+    ctx.fillText(`${invitation?.bride} & ${invitation?.groom}`, 200, 160);
+    
+    // Tarih ve Saat
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#6f4451';
+    ctx.fillText(`${invitation?.dateText} - ${invitation?.timeText}`, 200, 190);
+    
+    // Kesik Çizgi (Bilet Formu)
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(20, 240);
+    ctx.lineTo(380, 240);
+    ctx.strokeStyle = '#d98ca1';
+    ctx.stroke();
+    
+    // Misafir İsmi
+    ctx.fillStyle = '#55303b';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText(submittedGuest.name, 200, 300);
+    
+    // Masa Numarası
+    if(personalTableNumber) {
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#27ae60';
+      ctx.fillText(isEn ? `TABLE: ${personalTableNumber}` : `MASA: ${personalTableNumber}`, 200, 340);
+    }
+
+    // QR Code (API'den çekip çizmek asenkron olduğundan Dummy Text ekliyoruz, Wallet okuyucuları için sembolik)
+    ctx.fillStyle = '#000';
+    ctx.fillRect(125, 400, 150, 150);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(135, 410, 130, 130);
+    ctx.fillStyle = '#000';
+    ctx.font = '12px monospace';
+    ctx.fillText('QR SCAN', 200, 480);
+    
+    // Alt Bilgi
+    ctx.fillStyle = '#6f4451';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(isEn ? 'Save this to your Photos / Wallet' : 'Girişte göstermek için galerinize kaydedin.', 200, 620);
+    
+    // İndirme Tetikle
+    const link = document.createElement('a');
+    link.download = `${submittedGuest.name}-Bilet.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   const resetAndCloseModal = useCallback(() => {
@@ -143,36 +221,50 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
       {isDeadlinePassed ? (
         <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
       ) : (
-        <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
+        <>
+          <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
-          {urlGuestName && (
-            <div className="guest-badge-banner">
-              {t('ui.prefilled', { name: urlGuestName })}
-              {personalTableNumber && ` (Masa: ${personalTableNumber})`}
+            {urlGuestName && (
+              <div className="guest-badge-banner">
+                {t('ui.prefilled', { name: urlGuestName })}
+                {personalTableNumber && ` (Masa: ${personalTableNumber})`}
+              </div>
+            )}
+
+            <div style={{ width: '100%' }}>
+              <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
+              {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+            </div>
+
+            <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
+
+            <div className="field-with-counter" style={{ marginTop: '12px' }}>
+              <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
+              <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
+            </div>
+
+            <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+              <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
+            </div>
+
+            <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
+              {isSubmitting ? "..." : t('form.submitRsvp')}
+            </button>
+          </form>
+          
+          {/* YENİ: Başarılı Katılım Sonrası Bilet İndirme Butonu */}
+          {submittedGuest && (
+            <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(46, 204, 113, 0.1)', border: '1px solid #2ecc71', borderRadius: '12px', textAlign: 'center' }}>
+              <p style={{ color: '#27ae60', fontWeight: 'bold', marginBottom: '12px' }}>
+                {isEn ? "RSVP Confirmed!" : "Katılım Onaylandı!"}
+              </p>
+              <button onClick={downloadDigitalTicket} className="main-button" style={{ background: '#27ae60', borderColor: '#27ae60', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🎟️ {isEn ? "Add to Apple/Google Wallet" : "Cüzdana/Galeriye Ekle"}
+              </button>
             </div>
           )}
-
-          <div style={{ width: '100%' }}>
-            <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-            {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-          </div>
-
-          <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
-
-          <div className="field-with-counter" style={{ marginTop: '12px' }}>
-            <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
-            <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
-          </div>
-
-          <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-            <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
-          </div>
-
-          <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
-            {isSubmitting ? "..." : t('form.submitRsvp')}
-          </button>
-        </form>
+        </>
       )}
 
       <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>

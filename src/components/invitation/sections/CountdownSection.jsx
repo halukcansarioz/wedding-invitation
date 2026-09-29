@@ -13,17 +13,12 @@ export const CountdownSection = memo(function CountdownSection({ copy, timeLeft:
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
-  // EKLENDİ: Üst bileşenden (InvitationController) timeLeft prop'u unutulursa veya geçilmezse, 
-  // veritabanındaki (veya store'daki) weddingDate değerini alıp sayacı içeride çalıştırıyoruz.
   const storeWeddingDate = useStore(state => state.siteData?.invitation?.weddingDate);
   const targetDate = invitation?.weddingDate || storeWeddingDate;
   
   const calculatedTimeLeft = useCountdown(targetDate);
-  
-  // Eğer prop olarak geldiyse onu kullan (Geriye dönük uyumluluk/Testler için), gelmediyse içeride hesaplananı kullan
   const timeLeft = propTimeLeft || calculatedTimeLeft;
 
-  // DÜZELTİLDİ: timeLeft'in tamamen tanımsız (undefined) olması durumunda hata vermemesi için güvenli kontrol
   const isFinished = 
     (timeLeft?.days || 0) === 0 && 
     (timeLeft?.hours || 0) === 0 && 
@@ -43,7 +38,7 @@ export const CountdownSection = memo(function CountdownSection({ copy, timeLeft:
           justifyContent: 'center',
           padding: '8% 5%',
           background: 'var(--paper-soft)',
-          border: '1px solid rgba(159, 79, 104, 0.15)',
+          border: '1px solid rgba(var(--theme-rgb), 0.15)',
           borderRadius: '16px',
           margin: '20px auto 0',
           width: '100%',

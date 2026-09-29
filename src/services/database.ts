@@ -2,7 +2,7 @@ import { supabase } from "../supabaseClient";
 import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 import { optimizeImage } from "../utils/imageOptimizer";
 import { SiteData, Guest, Wish } from "../types";
-import { get, set } from 'idb-keyval'; // IndexedDB entegrasyonu
+import { get, set } from 'idb-keyval'; 
 
 export const getSupabaseUrl = (): string => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 export const getSupabaseKey = (): string => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
@@ -151,6 +151,21 @@ export const syncFailedDeletes = async (): Promise<void> => {
   }
   
   await set('failed_deletes', remainingFails);
+};
+
+// EKLENDİ: Storage Garbage Collection (IndexedDB)
+export const runStorageGarbageCollection = async (): Promise<void> => {
+  try {
+    const failedDeletes: string[] = (await get('failed_deletes')) || [];
+    if (failedDeletes.length > 50) {
+      // IndexedDB şişmemesi için sadece son 50 silinmeyen kaydı tutuyoruz
+      const trimmed = failedDeletes.slice(-50);
+      await set('failed_deletes', trimmed);
+      console.log("[Garbage Collection] 'failed_deletes' temizlendi.");
+    }
+  } catch (error) {
+    console.error("[Garbage Collection] Hatası:", error);
+  }
 };
 
 export const restoreBackupToDatabase = async (parsedData: any): Promise<void> => {
