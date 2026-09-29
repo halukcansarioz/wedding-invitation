@@ -439,8 +439,8 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
     height: auto !important;
     max-height: none !important;
     top: auto !important;
-    bottom: 40px !important; /* Menünün en alta kaymasını (sarkmasını) engeller */
-    right: 32px !important;  /* Sağ taraftan güvenli bir boşluk bırakır */
+    bottom: 40px !important; 
+    right: 32px !important;  
   }
   html body .app .glass-dock .wa-btn {
     display: none !important;
@@ -459,22 +459,22 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 .guest-stats {
   display: flex;
-  justify-content: center; /* Kutuları yatayda ortalar */
+  justify-content: center; 
   align-items: center;
-  gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
-  flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+  gap: 16px; 
+  flex-wrap: wrap; 
   width: 100%;
 }
 
 .guest-stats > div {
-  flex: 1 !important; /* 3 kutuyu da ekrana eşit böl */
+  flex: 1 !important; 
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   width: 100% !important;
   padding: 16px 4px !important;
-  border-radius: 16px !important; /* Köşeleri daha estetik yap */
+  border-radius: 16px !important; 
   box-sizing: border-box !important;
 }
 
@@ -485,13 +485,12 @@ h1, h2, h3, p, span, strong, a, em, .couple-title, .guest-item, .wish-item, .inf
 }
 
 .guest-stats > div span {
-  font-size: 11px !important; /* "Katılmayacak" gibi uzun kelimelerin taşmaması için */
+  font-size: 11px !important; 
   text-align: center !important;
   line-height: 1.2 !important;
   word-wrap: break-word !important;
 }
 
-/* Altındaki gizlilik notunun da karta tam oturması için */
 .private-note-card {
   width: 100% !important;
   box-sizing: border-box !important;

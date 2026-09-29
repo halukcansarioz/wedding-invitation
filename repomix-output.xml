@@ -125,6 +125,7 @@ src/
     useDatabaseManager.js
     useExportData.js
     useGuestsQuery.js
+    useLocale.js
     usePWAInstall.js
     useScrollNavigation.js
     useWishesQuery.js
@@ -143,6 +144,11 @@ src/
   services/
     database.ts
   store/
+    slices/
+      adminDraftSlice.ts
+      dataSlice.ts
+      uiSlice.ts
+    storeTypes.ts
     useAdminStore.ts
     useStore.test.js
     useStore.ts
@@ -1181,6 +1187,24 @@ export function useExportData(isEn) {
 }
 </file>
 
+<file path="src/hooks/useLocale.js">
+import { useTranslation } from "react-i18next";
+
+export function useLocale() {
+  const { t, i18n } = useTranslation();
+  
+  // Dil ingilizce mi kontrolünü tek bir merkeze alıyoruz
+  const isEn = i18n.language?.startsWith('en') || false;
+  
+  // İleride dil değiştirme fonksiyonunu da buraya entegre edebilirsiniz
+  const toggleLanguage = () => {
+    i18n.changeLanguage(isEn ? 'tr' : 'en');
+  };
+
+  return { t, i18n, isEn, toggleLanguage };
+}
+</file>
+
 <file path="src/i18n/config.js">
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
@@ -1205,6 +1229,219 @@ i18n
   });
 
 export default i18n;
+</file>
+
+<file path="src/store/slices/adminDraftSlice.ts">
+import { StateCreator } from 'zustand';
+import { MainStoreState, AdminDraftSlice } from '../storeTypes';
+import { loadStoredSiteData, normalizeSiteData } from '../../utils/helpers';
+import { saveSettingsToDatabase } from '../../services/database';
+import { useAdminStore } from '../useAdminStore';
+import { SiteData } from '../../types';
+
+export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDraftSlice> = (set, get) => ({
+  adminDraft: loadStoredSiteData() as SiteData,
+  setAdminDraft: (draftOrUpdater) => set((state) => ({
+    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
+  })),
+  activeAdminTab: "general",
+  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
+  personalLinkName: "",
+  setPersonalLinkName: (name) => set({ personalLinkName: name }),
+  dataImportText: "",
+  setDataImportText: (text) => set({ dataImportText: text }),
+
+  updateDraftObject: (group, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [group]: {
+        ...(state.adminDraft[group] as Record<string, any>),
+        [key]: value
+      }
+    }
+  })),
+
+  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => {
+    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: arrayTarget.map((item, i) => i === index ? { ...item, [key]: value } : item)
+      }
+    };
+  }),
+
+  addDraftArrayItem: (arrayKey, item) => set((state) => {
+    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: [...arrayTarget, item]
+      }
+    };
+  }),
+
+  removeDraftArrayItem: (arrayKey, index) => set((state) => {
+    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: arrayTarget.filter((_, i) => i !== index)
+      }
+    };
+  }),
+
+  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
+    const newArray = [...((state.adminDraft[arrayKey] || []) as any[])];
+    if (index + direction < 0 || index + direction >= newArray.length) return state;
+    const temp = newArray[index];
+    newArray[index] = newArray[index + direction];
+    newArray[index + direction] = temp;
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: newArray
+      }
+    };
+  }),
+
+  saveSiteContent: async (isEn) => {
+    const { adminDraft, setSiteData, setAdminDraft } = get();
+    const { setAdminSaveMessage } = useAdminStore.getState();
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: ((adminDraft.invitation.gallery as string[]) || []).map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    }) as SiteData;
+    
+    try {
+      await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
+      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    } catch (error) {
+      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+    }
+  }
+});
+</file>
+
+<file path="src/store/slices/dataSlice.ts">
+import { StateCreator } from 'zustand';
+import { MainStoreState, DataSlice } from '../storeTypes';
+import { loadStoredSiteData } from '../../utils/helpers';
+import { SiteData } from '../../types';
+
+export const createDataSlice: StateCreator<MainStoreState, [], [], DataSlice> = (set) => ({
+  siteData: loadStoredSiteData() as SiteData,
+  setSiteData: (data) => set({ siteData: data }),
+  guests: [],
+  setGuests: (guests) => set({ guests }),
+  wishes: [],
+  setWishes: (wishes) => set({ wishes }),
+});
+</file>
+
+<file path="src/store/slices/uiSlice.ts">
+import { StateCreator } from 'zustand';
+import { MainStoreState, UISlice } from '../storeTypes';
+import toast from 'react-hot-toast';
+
+export const createUISlice: StateCreator<MainStoreState, [], [], UISlice> = (set) => ({
+  opened: false,
+  setOpened: (opened) => set({ opened }),
+  isOpening: false,
+  setIsOpening: (isOpening) => set({ isOpening }),
+
+  customAlert: null,
+  setCustomAlert: (alert) => set({ customAlert: alert }),
+  showAppAlert: (message, options = {}) => new Promise((resolve) => {
+    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
+    if (isError) toast.error(message);
+    else toast.success(message);
+    resolve(true);
+  }),
+
+  customConfirm: null,
+  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
+  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
+    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
+  }),
+
+  customPrompt: null,
+  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
+  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
+    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
+  }),
+});
+</file>
+
+<file path="src/store/storeTypes.ts">
+import { SiteData, Guest, Wish } from '../types';
+
+export interface CustomAlertOptions {
+  title?: string;
+  multiline?: boolean;
+  confirmText?: string;
+  tone?: 'warning' | 'danger' | 'success' | 'info';
+}
+
+export interface CustomModalState {
+  title: string;
+  message?: string;
+  label?: string;
+  value?: string;
+  multiline?: boolean;
+  resolve: (val: any) => void;
+}
+
+export interface UISlice {
+  opened: boolean;
+  setOpened: (opened: boolean) => void;
+  isOpening: boolean;
+  setIsOpening: (isOpening: boolean) => void;
+  customAlert: CustomModalState | null;
+  setCustomAlert: (alert: CustomModalState | null) => void;
+  showAppAlert: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
+  customConfirm: CustomModalState | null;
+  setCustomConfirm: (confirm: CustomModalState | null) => void;
+  showAppConfirm: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
+  customPrompt: CustomModalState | null;
+  setCustomPrompt: (prompt: CustomModalState | null) => void;
+  showAppPrompt: (label: string, defaultValue?: string, options?: CustomAlertOptions) => Promise<string | null>;
+}
+
+export interface DataSlice {
+  siteData: SiteData;
+  setSiteData: (data: SiteData) => void;
+  guests: Guest[];
+  setGuests: (guests: Guest[]) => void;
+  wishes: Wish[];
+  setWishes: (wishes: Wish[]) => void;
+}
+
+export interface AdminDraftSlice {
+  adminDraft: SiteData;
+  setAdminDraft: (draftOrUpdater: SiteData | ((prev: SiteData) => SiteData)) => void;
+  activeAdminTab: string;
+  setActiveAdminTab: (tab: string) => void;
+  personalLinkName: string;
+  setPersonalLinkName: (name: string) => void;
+  dataImportText: string;
+  setDataImportText: (text: string) => void;
+  updateDraftObject: <K extends keyof SiteData>(group: K, key: string, value: any) => void;
+  updateDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, key: string, value: any) => void;
+  addDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, item: any) => void;
+  removeDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number) => void;
+  moveDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, direction: number) => void;
+  saveSiteContent: (isEn: boolean) => Promise<void>;
+}
+
+export type MainStoreState = UISlice & DataSlice & AdminDraftSlice;
 </file>
 
 <file path="src/store/useAdminStore.ts">
@@ -1376,307 +1613,12 @@ describe('useStore Zustand Durum Yönetimi', () => {
 });
 </file>
 
-<file path="src/store/useStore.ts">
-import { create } from 'zustand';
-import { loadStoredSiteData, normalizeSiteData } from '../utils/helpers';
-import toast from 'react-hot-toast';
-import { saveSettingsToDatabase } from '../services/database';
-import { useAdminStore } from './useAdminStore';
-import { SiteData, Guest, Wish } from '../types';
-
-interface CustomAlertOptions {
-  title?: string;
-  multiline?: boolean;
-  confirmText?: string;
-  tone?: 'warning' | 'danger' | 'success' | 'info';
-}
-
-interface CustomModalState {
-  title: string;
-  message?: string;
-  label?: string;
-  value?: string;
-  multiline?: boolean;
-  resolve: (val: any) => void;
-}
-
-interface MainStoreState {
-  // UI Slice
-  opened: boolean;
-  setOpened: (opened: boolean) => void;
-  isOpening: boolean;
-  setIsOpening: (isOpening: boolean) => void;
-  customAlert: CustomModalState | null;
-  setCustomAlert: (alert: CustomModalState | null) => void;
-  showAppAlert: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
-  customConfirm: CustomModalState | null;
-  setCustomConfirm: (confirm: CustomModalState | null) => void;
-  showAppConfirm: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
-  customPrompt: CustomModalState | null;
-  setCustomPrompt: (prompt: CustomModalState | null) => void;
-  showAppPrompt: (label: string, defaultValue?: string, options?: CustomAlertOptions) => Promise<string | null>;
-
-  // Data Slice
-  siteData: SiteData;
-  setSiteData: (data: SiteData) => void;
-  guests: Guest[];
-  setGuests: (guests: Guest[]) => void;
-  wishes: Wish[];
-  setWishes: (wishes: Wish[]) => void;
-
-  // Admin Draft Slice
-  adminDraft: SiteData;
-  setAdminDraft: (draftOrUpdater: SiteData | ((prev: SiteData) => SiteData)) => void;
-  activeAdminTab: string;
-  setActiveAdminTab: (tab: string) => void;
-  personalLinkName: string;
-  setPersonalLinkName: (name: string) => void;
-  dataImportText: string;
-  setDataImportText: (text: string) => void;
-  updateDraftObject: <K extends keyof SiteData>(group: K, key: string, value: any) => void;
-  updateDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, key: string, value: any) => void;
-  addDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, item: any) => void;
-  removeDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number) => void;
-  moveDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, direction: number) => void;
-  saveSiteContent: (isEn: boolean) => Promise<void>;
-}
-
-export const useStore = create<MainStoreState>((set, get) => ({
-  // UI Slice Implementation
-  opened: false,
-  setOpened: (opened) => set({ opened }),
-  isOpening: false,
-  setIsOpening: (isOpening) => set({ isOpening }),
-
-  customAlert: null,
-  setCustomAlert: (alert) => set({ customAlert: alert }),
-  showAppAlert: (message, options = {}) => new Promise((resolve) => {
-    const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
-    if (isError) toast.error(message);
-    else toast.success(message);
-    resolve(true);
-  }),
-
-  customConfirm: null,
-  setCustomConfirm: (confirm) => set({ customConfirm: confirm }),
-  showAppConfirm: (message, options = {}) => new Promise((resolve) => {
-    set({ customConfirm: { message, title: options.title || "Onay 🤔", resolve } });
-  }),
-
-  customPrompt: null,
-  setCustomPrompt: (prompt) => set({ customPrompt: prompt }),
-  showAppPrompt: (label, defaultValue = "", options = {}) => new Promise((resolve) => {
-    set({ customPrompt: { label, value: defaultValue, title: options.title || "Düzenle ✏️", resolve, multiline: options.multiline } });
-  }),
-
-  // Data Slice Implementation
-  siteData: loadStoredSiteData() as SiteData,
-  setSiteData: (data) => set({ siteData: data }),
-  guests: [],
-  setGuests: (guests) => set({ guests }),
-  wishes: [],
-  setWishes: (wishes) => set({ wishes }),
-
-  // Admin Draft Slice Implementation
-  adminDraft: loadStoredSiteData() as SiteData,
-  setAdminDraft: (draftOrUpdater) => set((state) => ({
-    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
-  })),
-  activeAdminTab: "general",
-  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
-  personalLinkName: "",
-  setPersonalLinkName: (name) => set({ personalLinkName: name }),
-  dataImportText: "",
-  setDataImportText: (text) => set({ dataImportText: text }),
-
-  updateDraftObject: (group, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [group]: {
-        ...(state.adminDraft[group] as Record<string, any>),
-        [key]: value
-      }
-    }
-  })),
-
-  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: arrayTarget.map((item, i) => i === index ? { ...item, [key]: value } : item)
-      }
-    };
-  }),
-
-  addDraftArrayItem: (arrayKey, item) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: [...arrayTarget, item]
-      }
-    };
-  }),
-
-  removeDraftArrayItem: (arrayKey, index) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: arrayTarget.filter((_, i) => i !== index)
-      }
-    };
-  }),
-
-  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
-    const newArray = [...((state.adminDraft[arrayKey] || []) as any[])];
-    if (index + direction < 0 || index + direction >= newArray.length) return state;
-    const temp = newArray[index];
-    newArray[index] = newArray[index + direction];
-    newArray[index + direction] = temp;
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: newArray
-      }
-    };
-  }),
-
-  saveSiteContent: async (isEn) => {
-    const { adminDraft, setSiteData, setAdminDraft } = get();
-    const { setAdminSaveMessage } = useAdminStore.getState();
-    const cleanedData = normalizeSiteData({ 
-      ...adminDraft, 
-      invitation: { 
-        ...adminDraft.invitation, 
-        gallery: ((adminDraft.invitation.gallery as string[]) || []).map((img) => String(img || "").trim()).filter(Boolean) 
-      } 
-    }) as SiteData;
-    
-    try {
-      await saveSettingsToDatabase(cleanedData);
-      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
-      setSiteData(cleanedData); 
-      setAdminDraft(cleanedData);
-      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
-    } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
-    }
-  }
-}));
-</file>
-
 <file path="src/styles/index.css">
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Noto+Serif:wght@400;600;700;800&family=Playfair+Display:wght@400;600;700;800&subset=latin-ext&display=swap");
 
 @import "./variables.css";
 @import "./base.css";
 @import "./responsive.css";
-</file>
-
-<file path="src/supabase/functions/broadcast-whatsapp/index.ts">
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const WHATSAPP_API_KEY = Deno.env.get('WHATSAPP_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-
-  try {
-    // 1. JWT Token Kontrolü (Güvenlik)
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
-
-    const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-      global: { headers: { Authorization: authHeader } }
-    });
-    
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
-
-    // 2. Mesaj Gönderimi
-    const { guests, message } = await req.json();
-
-    const sendPromises = guests.map(async (guest: any) => {
-      const personalizedMessage = `Merhaba ${guest.name},\n\n${message}`;
-      
-      // Aşağıdaki fetch kodu WhatsApp Cloud API içindir. (Kendi API Provider'ınıza göre uyarlayabilirsiniz)
-      /*
-      return fetch('https://graph.facebook.com/v17.0/YOUR_PHONE_NUMBER_ID/messages', {
-        method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${WHATSAPP_API_KEY}`, 
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: guest.phone.replace(/\D/g, ""),
-          type: "text",
-          text: { body: personalizedMessage }
-        })
-      });
-      */
-      
-      return Promise.resolve({ success: true, phone: guest.phone }); // Simülasyon
-    });
-
-    const results = await Promise.allSettled(sendPromises);
-
-    return new Response(JSON.stringify({ success: true, processed: results.length }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
-    });
-
-  } catch (error: any) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
-    });
-  }
-});
-</file>
-
-<file path="src/utils/imageWorker.js">
-self.onmessage = async function(e) {
-  const { file, maxDim, quality } = e.data;
-  
-  if (!self.createImageBitmap || !self.OffscreenCanvas) {
-    self.postMessage({ error: "OffscreenCanvas not supported", file });
-    return;
-  }
-
-  try {
-    const bitmap = await createImageBitmap(file);
-    let { width, height } = bitmap;
-
-    if (width > maxDim || height > maxDim) {
-      if (width > height) {
-        height = Math.round((height * maxDim) / width);
-        width = maxDim;
-      } else {
-        width = Math.round((width * maxDim) / height);
-        height = maxDim;
-      }
-    }
-
-    const canvas = new OffscreenCanvas(width, height);
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(bitmap, 0, 0, width, height);
-
-    const blob = await canvas.convertToBlob({ type: "image/webp", quality: quality });
-    self.postMessage({ blob });
-  } catch (error) {
-    self.postMessage({ error: error.message, file });
-  }
-};
 </file>
 
 <file path="src/validations/schemas.test.js">
@@ -2642,50 +2584,67 @@ export default function LandingPage() {
 }
 </file>
 
-<file path="src/supabase/functions/ai-thank-you/index.ts">
+<file path="src/store/useStore.ts">
+import { create } from 'zustand';
+import { MainStoreState } from './storeTypes';
+import { createUISlice } from './slices/uiSlice';
+import { createDataSlice } from './slices/dataSlice';
+import { createAdminDraftSlice } from './slices/adminDraftSlice';
+
+// Diğer bileşenlerdeki tüm import'ların kırılmaması için 
+// slice mimarisi burada birleştiriliyor.
+export const useStore = create<MainStoreState>((...a) => ({
+  ...createUISlice(...a),
+  ...createDataSlice(...a),
+  ...createAdminDraftSlice(...a)
+}));
+</file>
+
+<file path="src/supabase/functions/broadcast-whatsapp/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// --- IN-MEMORY RATE LIMITER ---
-const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 Dakika
-const MAX_REQUESTS = 5; // 1 Dakikada maksimum 5 istek
+const WHATSAPP_API_KEY = Deno.env.get('WHATSAPP_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
+// Array'i belirli boyutlardaki küçük paketlere bölen yardımcı fonksiyon
+function chunkArray<T>(array: T[], size: number): T[][] {
+  const chunked: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunked.push(array.slice(i, i + size));
   }
-  if (record.count >= MAX_REQUESTS) return true;
-  record.count++;
-  return false;
+  return chunked;
 }
-// ------------------------------
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (isRateLimited(ip)) {
-      return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), { 
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // DB tabanlı Rate Limiting
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `broadcast_whatsapp_${ip}`,
+      max_req: 3, // Toplu mesaj atma işlemi nadir yapılır, limiti sıkı tutuyoruz
+      window_seconds: 60
+    });
+
+    if (isLimited || rateLimitError) {
+      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
       });
     }
 
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı.");
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
 
     const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: { headers: { Authorization: authHeader } }
@@ -2694,158 +2653,37 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
 
-    const { guestName, coupleName } = await req.json();
-
-    if (!OPENAI_API_KEY) throw new Error("OpenAI API Anahtarı tanımlanmamış.");
-
-    const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "Sen profesyonel ve sıcak bir tonla çalışan, yeni evlenmiş çiftin (gelin ve damat) asistanısın. Çift adına düğüne gelen misafirlere teşekkür mesajı yazıyorsun. Mesajlar kısa, samimi ve WhatsApp üzerinden gönderilmeye uygun olmalı. Emoji kullanabilirsin."
-          },
-          {
-            role: "user",
-            content: `Düğünümüze katılan misafirimiz "${guestName}" için, biz "${coupleName}" adına sıcak ve içten bir teşekkür mesajı yazar mısın? Sadece mesajı döndür.`
-          }
-        ],
-        max_tokens: 150,
-        temperature: 0.7
-      })
-    });
-
-    const aiData = await openAiResponse.json();
-    const text = aiData.choices[0].message.content.trim();
-
-    return new Response(JSON.stringify({ success: true, text }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
-    });
-
-  } catch (error: any) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
-    });
-  }
-});
-</file>
-
-<file path="src/supabase/functions/create-payment/index.ts">
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from 'https://esm.sh/stripe@14.14.0';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-});
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-
-  try {
-    const { amount, guestName, note } = await req.json();
-    const origin = req.headers.get('origin') || 'http://localhost:5173';
-
-    if (!Deno.env.get('STRIPE_SECRET_KEY')) {
-       throw new Error("Stripe Secret Key ortam değişkenlerinde eksik.");
+    const { guests, message } = await req.json();
+    if (!guests || !Array.isArray(guests) || guests.length === 0) {
+      throw new Error("Geçerli bir misafir listesi bulunamadı.");
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'try',
-            product_data: {
-              name: 'Düğün Hediyesi',
-              description: `${guestName} tarafından gönderilen hediye. Not: ${note}`,
-            },
-            unit_amount: amount * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `${origin}/?payment=success`,
-      cancel_url: `${origin}/?payment=cancel`,
-    });
+    // YENİ: Toplu istekleri 50'şerli paketlere böler (Batch Processing)
+    // Bu sayede Deno bellek şişmesi ve Timeout problemleri engellenir.
+    const chunks = chunkArray(guests, 50);
+    const allResults = [];
 
-    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-    });
-
-  } catch (error: any) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
-    });
-  }
-});
-</file>
-
-<file path="src/supabase/functions/face-match/index.ts">
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// --- IN-MEMORY RATE LIMITER ---
-const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; 
-const MAX_REQUESTS = 10; 
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-  if (record.count >= MAX_REQUESTS) return true;
-  record.count++;
-  return false;
-}
-// ------------------------------
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (isRateLimited(ip)) {
-      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+    for (const chunk of chunks) {
+      const sendPromises = chunk.map(async (guest: any) => {
+        const personalizedMessage = `Merhaba ${guest.name},\n\n${message}`;
+        
+        // Simüle edilmiş API isteği (Gerçekte WhatsApp Cloud API'ye gider)
+        // await fetch('https://graph.facebook.com/...');
+        
+        return Promise.resolve({ success: true, phone: guest.phone });
       });
+
+      // Paketteki 50 işlemi bekle
+      const chunkResults = await Promise.allSettled(sendPromises);
+      allResults.push(...chunkResults);
+      
+      // Diğer pakete geçmeden önce Deno Event Loop'u rahatlatmak için küçük bir bekleme
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    const { sourceImageUrl } = await req.json();
+    const successfulCount = allResults.filter(r => r.status === 'fulfilled').length;
 
-    if (!sourceImageUrl) {
-      throw new Error("Görsel URL'i eksik.");
-    }
-
-    const mockMatches = [
-      "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/images/demo-match-1.jpg",
-      "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/images/demo-match-2.jpg"
-    ];
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    return new Response(JSON.stringify({ success: true, matches: mockMatches }), { 
+    return new Response(JSON.stringify({ success: true, processed: successfulCount, total: guests.length }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
     });
 
@@ -2919,143 +2757,6 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 400 });
   }
 });
-</file>
-
-<file path="src/supabase/supabase-setup.sql">
-create extension if not exists pgcrypto;
-create table if not exists public.invitation_settings (
-  id text primary key,
-  content jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
-insert into public.invitation_settings (id, content, updated_at)
-values ('main', '{}'::jsonb, now()) on conflict (id) do nothing;
-create table if not exists public.guests (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  phone text,
-  attendance text not null default 'Katılacağım',
-  person_count text not null default '1',
-  side text not null default 'Gelin Tarafı',
-  has_child text not null default 'Hayır',
-  song_request text,
-  note text,
-  has_arrived boolean not null default false,
-  created_at timestamptz not null default now()
-);
-alter table public.guests
-add column if not exists song_request text;
-alter table public.guests
-add column if not exists has_arrived boolean not null default false;
-create table if not exists public.wishes (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  message text not null,
-  approved boolean not null default false,
-  created_at timestamptz not null default now()
-);
-alter table public.invitation_settings enable row level security;
-alter table public.guests enable row level security;
-alter table public.wishes enable row level security;
--- Eski policy'leri temizle.
-drop policy if exists "Public can read settings" on public.invitation_settings;
-drop policy if exists "Authenticated can manage settings" on public.invitation_settings;
-drop policy if exists "Anyone can add guests" on public.guests;
-drop policy if exists "Authenticated can manage guests" on public.guests;
-drop policy if exists "Anyone can add wishes" on public.wishes;
-drop policy if exists "Anyone can read approved wishes" on public.wishes;
-drop policy if exists "Authenticated can manage wishes" on public.wishes;
--- Ayarlar Policy
-create policy "Public can read settings" on public.invitation_settings for
-select to anon,
-  authenticated using (id = 'main');
-create policy "Authenticated can manage settings" on public.invitation_settings for all to authenticated using (true) with check (true);
--- Guests Policy: GÜVENLİK GÜNCELLEMESİ (Ziyaretçiler artık doğrudan insert yapamaz, sadece yöneticiler (authenticated) işlem yapabilir)
-create policy "Authenticated can manage guests" on public.guests for all to authenticated using (true) with check (true);
--- Wishes Policy: GÜVENLİK GÜNCELLEMESİ (Ziyaretçiler onaylı mesajları okur, doğrudan insert yapamaz)
-create policy "Anyone can read approved wishes" on public.wishes for
-select to anon using (approved = true);
-create policy "Authenticated can manage wishes" on public.wishes for all to authenticated using (true) with check (true);
--- =========================================================================================
--- GÜVENLİ INSERT FONKSİYONLARI (RPC)
--- Ziyaretçilerin sadece bu fonksiyonlar üzerinden veri eklemesine izin verilir (SECURITY DEFINER)
--- =========================================================================================
-CREATE OR REPLACE FUNCTION submit_guest_secure(guest_data jsonb, token text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE inserted_row record;
-BEGIN -- İleride Cloudflare Turnstile / reCAPTCHA kontrolünü bu bloğa ekleyebilirsiniz.
-INSERT INTO public.guests (
-    name,
-    phone,
-    attendance,
-    person_count,
-    side,
-    has_child,
-    song_request,
-    note
-  )
-VALUES (
-    guest_data->>'name',
-    guest_data->>'phone',
-    guest_data->>'attendance',
-    COALESCE(guest_data->>'person_count', '1'),
-    COALESCE(guest_data->>'side', 'Gelin Tarafı'),
-    COALESCE(guest_data->>'has_child', 'Hayır'),
-    guest_data->>'song_request',
-    guest_data->>'note'
-  )
-RETURNING * INTO inserted_row;
-RETURN row_to_json(inserted_row)::jsonb;
-END;
-$$;
-CREATE OR REPLACE FUNCTION submit_wish_secure(
-    wish_name text,
-    wish_message text,
-    is_approved boolean,
-    token text
-  ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE inserted_row record;
-BEGIN -- İleride Cloudflare Turnstile / reCAPTCHA kontrolünü bu bloğa ekleyebilirsiniz.
-INSERT INTO public.wishes (name, message, approved)
-VALUES (wish_name, wish_message, is_approved)
-RETURNING * INTO inserted_row;
-RETURN row_to_json(inserted_row)::jsonb;
-END;
-$$;
--- Storage Ayarları
-insert into storage.buckets (id, name, public)
-values ('wedding-media', 'wedding-media', true) on conflict (id) do
-update
-set public = true;
-drop policy if exists "Public can view wedding media" on storage.objects;
-drop policy if exists "Authenticated can upload wedding media" on storage.objects;
-drop policy if exists "Authenticated can update wedding media" on storage.objects;
-drop policy if exists "Authenticated can delete wedding media" on storage.objects;
-create policy "Public can view wedding media" on storage.objects for
-select to anon,
-  authenticated using (bucket_id = 'wedding-media');
-create policy "Authenticated can upload wedding media" on storage.objects for
-insert to authenticated with check (bucket_id = 'wedding-media');
-create policy "Authenticated can update wedding media" on storage.objects for
-update to authenticated using (bucket_id = 'wedding-media') with check (bucket_id = 'wedding-media');
-create policy "Authenticated can delete wedding media" on storage.objects for delete to authenticated using (bucket_id = 'wedding-media');
--- =========================================================================================
--- EKLENDİ: MİSAFİR POV FOTOĞRAFLARI TABLOSU VE İZİNLERİ
--- =========================================================================================
-create table if not exists public.guest_photos (
-  id uuid primary key default gen_random_uuid(),
-  image_url text not null,
-  approved boolean not null default false,
-  created_at timestamptz not null default now()
-);
-alter table public.guest_photos enable row level security;
--- Ziyaretçiler sadece onaylanmış misafir fotoğraflarını çekebilir
-create policy "Anyone can read approved guest photos" on public.guest_photos for
-select to anon using (approved = true);
--- Ziyaretçiler fotoğraf yüklediklerinde veritabanına kayıt atabilmelidir
-create policy "Anon can insert guest photos" on public.guest_photos for
-insert to anon with check (true);
--- Yöneticiler fotoğrafları silebilir veya onaylayabilir
-create policy "Authenticated can manage guest photos" on public.guest_photos for all to authenticated using (true) with check (true);
 </file>
 
 <file path="src/types/index.ts">
@@ -3152,6 +2853,53 @@ describe('Helpers Utilities Test Suite', () => {
   });
 
 });
+</file>
+
+<file path="src/utils/imageWorker.js">
+import heic2any from "heic2any";
+
+self.onmessage = async function(e) {
+  const { file, maxDim, quality } = e.data;
+  let processBlob = file;
+  
+  try {
+    // 1. Eğer dosya HEIC/HEIF ise Web Worker içinde arka planda JPEG'e çevrilir
+    if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+      const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: quality });
+      processBlob = Array.isArray(converted) ? converted[0] : converted;
+    }
+
+    if (!self.createImageBitmap || !self.OffscreenCanvas) {
+      // Offscreen Canvas desteklenmiyorsa fall-back için raw datayı geri yolluyoruz
+      self.postMessage({ error: "OffscreenCanvas not supported", file: processBlob });
+      return;
+    }
+
+    // 2. Klasik Sıkıştırma (Resize + WebP Dönüşümü)
+    const bitmap = await createImageBitmap(processBlob);
+    let { width, height } = bitmap;
+
+    if (width > maxDim || height > maxDim) {
+      if (width > height) {
+        height = Math.round((height * maxDim) / width);
+        width = maxDim;
+      } else {
+        width = Math.round((width * maxDim) / height);
+        height = maxDim;
+      }
+    }
+
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    const blob = await canvas.convertToBlob({ type: "image/webp", quality: quality });
+    self.postMessage({ blob });
+  } catch (error) {
+    // Herhangi bir işlem hatasında orijinal dosyayı paslıyoruz
+    self.postMessage({ error: error.message, file: processBlob });
+  }
+};
 </file>
 
 <file path="src/validations/schemas.js">
@@ -4814,50 +4562,42 @@ export const restoreBackupToDatabase = async (parsedData: any): Promise<void> =>
 };
 </file>
 
-<file path="src/supabase/functions/moderate-photo/index.ts">
+<file path="src/supabase/functions/ai-thank-you/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// --- IN-MEMORY RATE LIMITER ---
-const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; 
-const MAX_REQUESTS = 10; // Görsel moderasyonu için dakikada maks 10 istek
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-    return false;
-  }
-  if (record.count >= MAX_REQUESTS) return true;
-  record.count++;
-  return false;
-}
-// ------------------------------
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    if (isRateLimited(ip)) {
-      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // DB tabanlı rate limiting check
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `ai_thank_you_${ip}`,
+      max_req: 5,
+      window_seconds: 60
+    });
+
+    if (isLimited || rateLimitError) {
+      return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
       });
     }
 
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı.");
 
     const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: { headers: { Authorization: authHeader } }
@@ -4866,7 +4606,9 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
 
-    const { imageUrl } = await req.json();
+    const { guestName, coupleName } = await req.json();
+
+    if (!OPENAI_API_KEY) throw new Error("OpenAI API Anahtarı tanımlanmamış.");
 
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -4877,25 +4619,19 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: "Bu görseli analiz et. Düğün, eğlence, insan, selfie veya manzara içeriyorsa 'SAFE' dön. Çıplaklık, şiddet, rahatsız edici veya yasa dışı bir içerik varsa sadece 'UNSAFE' dön. Başka hiçbir kelime yazma." },
-              { type: "image_url", image_url: { url: imageUrl } }
-            ]
-          }
+          { role: "system", content: "Sen profesyonel ve sıcak bir tonla çalışan, yeni evlenmiş çiftin (gelin ve damat) asistanısın. Çift adına düğüne gelen misafirlere teşekkür mesajı yazıyorsun. Mesajlar kısa, samimi ve WhatsApp üzerinden gönderilmeye uygun olmalı. Emoji kullanabilirsin." },
+          { role: "user", content: `Düğünümüze katılan misafirimiz "${guestName}" için, biz "${coupleName}" adına sıcak ve içten bir teşekkür mesajı yazar mısın? Sadece mesajı döndür.` }
         ],
-        max_tokens: 10
+        max_tokens: 150,
+        temperature: 0.7
       })
     });
 
     const aiData = await openAiResponse.json();
-    const judgment = aiData.choices[0].message.content.trim().toUpperCase();
+    const text = aiData.choices[0].message.content.trim();
 
-    const isSafe = judgment === 'SAFE';
-
-    return new Response(JSON.stringify({ success: true, isSafe, judgment }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ success: true, text }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
     });
 
   } catch (error: any) {
@@ -4904,6 +4640,295 @@ serve(async (req) => {
     });
   }
 });
+</file>
+
+<file path="src/supabase/functions/create-payment/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14.14.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
+});
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    // YENİ: Veritabanı tabanlı Rate Limiting (Stripe Spam koruması)
+    if(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+          client_ip: `create_payment_${ip}`,
+          max_req: 10,
+          window_seconds: 60
+        });
+
+        if (isLimited || rateLimitError) {
+          return new Response(JSON.stringify({ success: false, error: "Çok fazla ödeme isteği oluşturuldu. Lütfen 1 dakika bekleyin." }), { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+          });
+        }
+    }
+
+    const { amount, guestName, note } = await req.json();
+    const origin = req.headers.get('origin') || 'http://localhost:5173';
+
+    if (!Deno.env.get('STRIPE_SECRET_KEY')) {
+       throw new Error("Stripe Secret Key ortam değişkenlerinde eksik.");
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'try',
+            product_data: {
+              name: 'Düğün Hediyesi',
+              description: `${guestName} tarafından gönderilen hediye. Not: ${note}`,
+            },
+            unit_amount: amount * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${origin}/?payment=success`,
+      cancel_url: `${origin}/?payment=cancel`,
+    });
+
+    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    });
+
+  } catch (error: any) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
+      headers: corsHeaders, status: 400 
+    });
+  }
+});
+</file>
+
+<file path="src/supabase/functions/face-match/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // DB tabanlı rate limiting check
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `face_match_${ip}`,
+      max_req: 10,
+      window_seconds: 60
+    });
+
+    if (isLimited || rateLimitError) {
+      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı. Birazdan tekrar deneyin." }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      });
+    }
+
+    const { sourceImageUrl } = await req.json();
+    if (!sourceImageUrl) throw new Error("Görsel URL'i eksik.");
+
+    // Simülasyon Gecikmesi
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    const mockMatches = [
+      "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/images/demo-match-1.jpg",
+      "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/images/demo-match-2.jpg"
+    ];
+
+    return new Response(JSON.stringify({ success: true, matches: mockMatches }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    });
+
+  } catch (error: any) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
+      headers: corsHeaders, status: 400 
+    });
+  }
+});
+</file>
+
+<file path="src/supabase/supabase-setup.sql">
+create extension if not exists pgcrypto;
+create table if not exists public.invitation_settings (
+  id text primary key,
+  content jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+insert into public.invitation_settings (id, content, updated_at)
+values ('main', '{}'::jsonb, now()) on conflict (id) do nothing;
+create table if not exists public.guests (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  phone text,
+  attendance text not null default 'Katılacağım',
+  person_count text not null default '1',
+  side text not null default 'Gelin Tarafı',
+  has_child text not null default 'Hayır',
+  song_request text,
+  note text,
+  has_arrived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.wishes (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  message text not null,
+  approved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+-- RATE LIMIT TABLOSU (YENİ EKLENDİ)
+create table if not exists public.rate_limits (
+  id text primary key,
+  count int not null default 1,
+  reset_time timestamptz not null
+);
+alter table public.rate_limits enable row level security;
+-- EDGE FUNCTION RATE LIMIT KONTROL RPC'Sİ (YENİ EKLENDİ)
+CREATE OR REPLACE FUNCTION check_rate_limit(client_ip text, max_req int, window_seconds int) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE current_count int;
+current_reset timestamptz;
+BEGIN
+SELECT count,
+  reset_time INTO current_count,
+  current_reset
+FROM public.rate_limits
+WHERE id = client_ip;
+-- Eğer kayıt yoksa veya süre dolduysa sıfırla
+IF current_reset IS NULL
+OR now() > current_reset THEN
+INSERT INTO public.rate_limits (id, count, reset_time)
+VALUES (
+    client_ip,
+    1,
+    now() + (window_seconds || ' seconds')::interval
+  ) ON CONFLICT (id) DO
+UPDATE
+SET count = 1,
+  reset_time = now() + (window_seconds || ' seconds')::interval;
+RETURN false;
+END IF;
+-- Limit aşıldıysa true dön
+IF current_count >= max_req THEN RETURN true;
+END IF;
+-- Aksi takdirde sayacı artır
+UPDATE public.rate_limits
+SET count = count + 1
+WHERE id = client_ip;
+RETURN false;
+END;
+$$;
+-- Mevcut Security Policy'ler
+alter table public.invitation_settings enable row level security;
+alter table public.guests enable row level security;
+alter table public.wishes enable row level security;
+drop policy if exists "Public can read settings" on public.invitation_settings;
+drop policy if exists "Authenticated can manage settings" on public.invitation_settings;
+drop policy if exists "Authenticated can manage guests" on public.guests;
+drop policy if exists "Anyone can read approved wishes" on public.wishes;
+drop policy if exists "Authenticated can manage wishes" on public.wishes;
+create policy "Public can read settings" on public.invitation_settings for
+select to anon,
+  authenticated using (id = 'main');
+create policy "Authenticated can manage settings" on public.invitation_settings for all to authenticated using (true) with check (true);
+create policy "Authenticated can manage guests" on public.guests for all to authenticated using (true) with check (true);
+create policy "Anyone can read approved wishes" on public.wishes for
+select to anon using (approved = true);
+create policy "Authenticated can manage wishes" on public.wishes for all to authenticated using (true) with check (true);
+-- Güvenli Form Gönderim Fonksiyonları (RPC)
+CREATE OR REPLACE FUNCTION submit_guest_secure(guest_data jsonb, token text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE inserted_row record;
+BEGIN
+INSERT INTO public.guests (
+    name,
+    phone,
+    attendance,
+    person_count,
+    side,
+    has_child,
+    song_request,
+    note
+  )
+VALUES (
+    guest_data->>'name',
+    guest_data->>'phone',
+    guest_data->>'attendance',
+    COALESCE(guest_data->>'person_count', '1'),
+    COALESCE(guest_data->>'side', 'Gelin Tarafı'),
+    COALESCE(guest_data->>'has_child', 'Hayır'),
+    guest_data->>'song_request',
+    guest_data->>'note'
+  )
+RETURNING * INTO inserted_row;
+RETURN row_to_json(inserted_row)::jsonb;
+END;
+$$;
+CREATE OR REPLACE FUNCTION submit_wish_secure(
+    wish_name text,
+    wish_message text,
+    is_approved boolean,
+    token text
+  ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE inserted_row record;
+BEGIN
+INSERT INTO public.wishes (name, message, approved)
+VALUES (wish_name, wish_message, is_approved)
+RETURNING * INTO inserted_row;
+RETURN row_to_json(inserted_row)::jsonb;
+END;
+$$;
+-- Storage ve Guest Photos
+insert into storage.buckets (id, name, public)
+values ('wedding-media', 'wedding-media', true) on conflict (id) do
+update
+set public = true;
+create policy "Public can view wedding media" on storage.objects for
+select to anon,
+  authenticated using (bucket_id = 'wedding-media');
+create policy "Authenticated can upload wedding media" on storage.objects for
+insert to authenticated with check (bucket_id = 'wedding-media');
+create policy "Authenticated can update wedding media" on storage.objects for
+update to authenticated using (bucket_id = 'wedding-media') with check (bucket_id = 'wedding-media');
+create policy "Authenticated can delete wedding media" on storage.objects for delete to authenticated using (bucket_id = 'wedding-media');
+create table if not exists public.guest_photos (
+  id uuid primary key default gen_random_uuid(),
+  image_url text not null,
+  approved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+alter table public.guest_photos enable row level security;
+create policy "Anyone can read approved guest photos" on public.guest_photos for
+select to anon using (approved = true);
+create policy "Anon can insert guest photos" on public.guest_photos for
+insert to anon with check (true);
+create policy "Authenticated can manage guest photos" on public.guest_photos for all to authenticated using (true) with check (true);
 </file>
 
 <file path="src/supabaseClient.js">
@@ -5781,94 +5806,6 @@ export function useAdminSession({ isAdminPage, isEn }) {
 }
 </file>
 
-<file path="src/hooks/useGuestsQuery.js">
-import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { loadGuestsFromDatabase } from '../services/database';
-import { supabase } from '../supabaseClient';
-import { uiGuestToDb } from '../utils/helpers';
-
-export function useGuestsQuery() {
-  const queryClient = useQueryClient();
-
-  const { data: guests = [], isLoading, isError } = useQuery({
-    queryKey: ['guests'],
-    queryFn: loadGuestsFromDatabase,
-  });
-
-  // YENİ: Supabase Realtime ile Canlı Akış (Admin Panel için)
-  useEffect(() => {
-    const channel = supabase
-      .channel('public:guests')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
-        // Veritabanında bir değişiklik olduğunda anında arayüzü günceller
-        queryClient.invalidateQueries({ queryKey: ['guests'] });
-      })
-      .subscribe();
-      
-    return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
-
-  const addGuestMutation = useMutation({
-    mutationFn: async (newGuestData) => {
-      const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
-      
-      const { data, error } = await supabase.functions.invoke('submit-form', {
-        body: { 
-          type: 'guest', 
-          data: uiGuestToDb(newGuestData), 
-          turnstileToken: token 
-        }
-      });
-
-      if (error || !data.success) {
-        throw new Error(error?.message || data?.error || "Sunucu hatası.");
-      }
-      return data.data;
-    },
-    onMutate: async (newGuest) => {
-      await queryClient.cancelQueries({ queryKey: ['guests'] });
-      const previousGuests = queryClient.getQueryData(['guests']);
-      
-      queryClient.setQueryData(['guests'], (old = []) => [
-        { 
-          id: `temp-${Date.now()}`, 
-          name: newGuest.name, 
-          attendance: newGuest.attendance,
-          phone: newGuest.phone || "",
-          personCount: String(newGuest.personCount || 1),
-          side: newGuest.side || "Gelin Tarafı",
-          hasChild: newGuest.hasChild || "Hayır",
-          note: newGuest.note || "",
-          has_arrived: false,
-          createdAt: new Date().toISOString()
-        }, 
-        ...old
-      ]);
-
-      return { previousGuests };
-    },
-    onError: (err, newGuest, context) => {
-      if (context?.previousGuests) {
-        queryClient.setQueryData(['guests'], context.previousGuests);
-      }
-      console.error("LCV eklenirken hata oluştu:", err);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['guests'] });
-    }
-  });
-
-  return { 
-    guests, 
-    isLoading, 
-    isError, 
-    addGuest: addGuestMutation.mutateAsync,
-    isAdding: addGuestMutation.isPending
-  };
-}
-</file>
-
 <file path="src/pages/AdminView.jsx">
 // src/pages/AdminView.jsx
 import React from "react";
@@ -6544,6 +6481,89 @@ html[data-theme="dark"] body .app .gallery-grid img {
 }
 </file>
 
+<file path="src/supabase/functions/moderate-photo/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    // DB tabanlı rate limiting check
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `moderate_photo_${ip}`,
+      max_req: 10,
+      window_seconds: 60
+    });
+
+    if (isLimited || rateLimitError) {
+      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      });
+    }
+
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) throw new Error("Eksik yetkilendirme başlığı (Authorization header).");
+
+    const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
+      global: { headers: { Authorization: authHeader } }
+    });
+    
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
+
+    const { imageUrl } = await req.json();
+
+    const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Bu görseli analiz et. Düğün, eğlence, insan, selfie veya manzara içeriyorsa 'SAFE' dön. Çıplaklık, şiddet, rahatsız edici veya yasa dışı bir içerik varsa sadece 'UNSAFE' dön. Başka hiçbir kelime yazma." },
+              { type: "image_url", image_url: { url: imageUrl } }
+            ]
+          }
+        ],
+        max_tokens: 10
+      })
+    });
+
+    const aiData = await openAiResponse.json();
+    const judgment = aiData.choices[0].message.content.trim().toUpperCase();
+    const isSafe = judgment === 'SAFE';
+
+    return new Response(JSON.stringify({ success: true, isSafe, judgment }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+
+  } catch (error: any) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
+      headers: corsHeaders, status: 400 
+    });
+  }
+});
+</file>
+
 <file path="src/supabase/functions/verify-submission/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
@@ -6915,111 +6935,89 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
 }
 </file>
 
-<file path="src/pages/LiveProjector.jsx">
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { m, AnimatePresence } from 'framer-motion';
-import { useQueryClient } from '@tanstack/react-query';
+<file path="src/hooks/useGuestsQuery.js">
+import { useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { loadGuestsFromDatabase } from '../services/database';
 import { supabase } from '../supabaseClient';
-import { useWishesQuery } from '../hooks/useWishesQuery';
-import { useStore } from '../store/useStore';
+import { uiGuestToDb } from '../utils/helpers';
 
-export default function LiveProjector() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const siteData = useStore(state => state.siteData);
-  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
-  
-  const { wishes } = useWishesQuery();
+export function useGuestsQuery() {
   const queryClient = useQueryClient();
-  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const { data: guests = [], isLoading, isError } = useQuery({
+    queryKey: ['guests'],
+    queryFn: loadGuestsFromDatabase,
+  });
 
   useEffect(() => {
-    const channel = supabase
-      .channel('public:wishes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
-          queryClient.invalidateQueries({ queryKey: ['wishes'] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [queryClient]);
+    let channel;
+    let isMounted = true;
 
-  useEffect(() => {
-    if (!wishes || wishes.length === 0) return;
-    const interval = setInterval(() => { setCurrentIndex((prev) => (prev + 1) % wishes.length); }, 8000);
-    return () => clearInterval(interval);
-  }, [wishes]);
+    const setupSubscription = () => {
+      channel = supabase
+        .channel('public:guests')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
+          if (isMounted) queryClient.invalidateQueries({ queryKey: ['guests'] });
+        })
+        .subscribe();
+    };
 
-  useEffect(() => {
-    const prevTheme = document.documentElement.dataset.theme; 
-    
-    document.documentElement.dataset.theme = "dark";
-    document.body.style.overflow = "hidden";
-    
+    setupSubscription();
+      
     return () => { 
-      document.body.style.overflow = "auto"; 
-      if (prevTheme) {
-        document.documentElement.dataset.theme = prevTheme;
-      } else {
-        document.documentElement.removeAttribute('data-theme');
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel).catch((err) => console.warn("Kanal temizlenirken hata:", err));
       }
     };
-  }, []);
+  }, [queryClient]);
 
-  const activeWish = wishes[currentIndex];
-
-  return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* SABİT PEMBE RENK YERİNE DİNAMİK TEMA RENGİ EKLENDİ */}
-      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
-      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
-
-      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
-        {coupleName}
-      </h1>
-      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '60px', zIndex: 10 }}>
-        {isEn ? "Live Guestbook" : "Canlı Anı Defteri"}
-      </p>
-
-      <div style={{ width: '80%', maxWidth: '900px', minHeight: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-        <AnimatePresence mode="wait">
-          {activeWish ? (
-            <m.div
-              key={activeWish.id}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              style={{ textAlign: 'center', width: '100%' }}
-            >
-              <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeWish.message_translated ? '15px' : '30px' }}>
-                "{activeWish.message}"
-              </p>
-              
-              {activeWish.message_translated && (
-                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
-                  ({activeWish.message_translated})
-                </p>
-              )}
-
-              <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
-                — {activeWish.name}
-              </strong>
-            </m.div>
-          ) : (
-            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
-              {isEn ? "Waiting for the first message..." : "İlk mesaj bekleniyor..."}
-            </m.p>
-          )}
-        </AnimatePresence>
-      </div>
+  const addGuestMutation = useMutation({
+    mutationFn: async (newGuestData) => {
+      const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
       
-      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
-        {isEn ? "Scan the QR code on your table to send a message to the screen!" : "Ekrana mesaj göndermek için masanızdaki QR kodu okutun!"}
-      </div>
-    </div>
-  );
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { type: 'guest', data: uiGuestToDb(newGuestData), turnstileToken: token }
+      });
+
+      if (error || !data.success) {
+        throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      }
+      return data.data;
+    },
+    onMutate: async (newGuest) => {
+      await queryClient.cancelQueries({ queryKey: ['guests'] });
+      const previousGuests = queryClient.getQueryData(['guests']);
+      
+      queryClient.setQueryData(['guests'], (old = []) => [
+        { 
+          id: `temp-${Date.now()}`, 
+          name: newGuest.name, 
+          attendance: newGuest.attendance,
+          phone: newGuest.phone || "",
+          personCount: String(newGuest.personCount || 1),
+          side: newGuest.side || "Gelin Tarafı",
+          hasChild: newGuest.hasChild || "Hayır",
+          note: newGuest.note || "",
+          has_arrived: false,
+          createdAt: new Date().toISOString()
+        }, 
+        ...old
+      ]);
+
+      return { previousGuests };
+    },
+    onError: (err, newGuest, context) => {
+      if (context?.previousGuests) queryClient.setQueryData(['guests'], context.previousGuests);
+      console.error("LCV eklenirken hata oluştu:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['guests'] });
+    }
+  });
+
+  return { guests, isLoading, isError, addGuest: addGuestMutation.mutateAsync, isAdding: addGuestMutation.isPending };
 }
 </file>
 
@@ -7211,93 +7209,6 @@ export default function LiveProjector() {
   .lightbox-next {
     right: 12px;
   }
-}
-</file>
-
-<file path="src/utils/imageOptimizer.js">
-import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
-import heic2any from "heic2any"; // npm install heic2any
-
-// OffscreenCanvas desteklenmeyen tarayıcılar (Eski Safari vb.) için Main-Thread Fallback
-function fallbackOptimize(file, resolve) {
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement("canvas");
-    let { width, height } = img;
-    const maxDim = MAX_IMAGE_DIMENSION || 1400;
-    
-    if (width > maxDim || height > maxDim) {
-      if (width > height) { 
-        height = Math.round((height * maxDim) / width); 
-        width = maxDim; 
-      } else { 
-        width = Math.round((width * maxDim) / height); 
-        height = maxDim; 
-      }
-    }
-    
-    canvas.width = width; 
-    canvas.height = height;
-    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-    
-    canvas.toBlob((blob) => {
-      resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
-    }, "image/webp", IMAGE_QUALITY || 0.8);
-  };
-  img.onerror = () => resolve(file);
-  img.src = URL.createObjectURL(file);
-}
-
-export async function optimizeImage(file) {
-  if (!file) return file;
-
-  let processFile = file;
-
-  // YENİ: iOS HEIC Desteği (Sunucuya gitmeden önce tarayıcıda JPEG'e çevrilir)
-  if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
-    try {
-      const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.8 });
-      // Eğer heic2any array dönerse ilkini alıyoruz
-      const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-      processFile = new File([finalBlob], file.name.replace(/\.heic$/i, ".jpg"), { type: "image/jpeg" });
-    } catch (err) {
-      console.error("HEIC dönüşüm hatası:", err);
-    }
-  }
-
-  if (!processFile.type.startsWith("image/")) return processFile;
-  if (processFile.type === "image/svg+xml" || processFile.type === "image/gif") return processFile;
-
-  return new Promise((resolve) => {
-    const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
-    
-    worker.onmessage = (e) => {
-      if (e.data.blob) {
-        const cleanName = processFile.name.replace(/\.[^/.]+$/, "");
-        const optimizedFile = new File([e.data.blob], `${cleanName}.webp`, {
-          type: "image/webp",
-          lastModified: Date.now(),
-        });
-        resolve(optimizedFile);
-      } else if (e.data.error === "OffscreenCanvas not supported") {
-        fallbackOptimize(processFile, resolve); 
-      } else {
-        resolve(processFile); 
-      }
-      worker.terminate();
-    };
-
-    worker.onerror = () => {
-      fallbackOptimize(processFile, resolve);
-      worker.terminate();
-    };
-
-    worker.postMessage({ 
-      file: processFile, 
-      maxDim: MAX_IMAGE_DIMENSION || 1400, 
-      quality: IMAGE_QUALITY || 0.8 
-    });
-  });
 }
 </file>
 
@@ -7745,6 +7656,126 @@ function AdminDashboard(props) {
 export default React.memo(AdminDashboard);
 </file>
 
+<file path="src/pages/LiveProjector.jsx">
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { m, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../supabaseClient';
+import { useWishesQuery } from '../hooks/useWishesQuery';
+import { useStore } from '../store/useStore';
+
+export default function LiveProjector() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const siteData = useStore(state => state.siteData);
+  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
+  
+  const { wishes } = useWishesQuery();
+  const queryClient = useQueryClient();
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    let channel;
+    let isMounted = true;
+
+    const setupChannel = () => {
+      channel = supabase
+        .channel('public:wishes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
+            if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
+        })
+        .subscribe();
+    };
+
+    setupChannel();
+    
+    return () => { 
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel).catch(console.error);
+      }
+    };
+  }, [queryClient]);
+
+  useEffect(() => {
+    if (!wishes || wishes.length === 0) return;
+    const interval = setInterval(() => { setCurrentIndex((prev) => (prev + 1) % wishes.length); }, 8000);
+    return () => clearInterval(interval);
+  }, [wishes]);
+
+  useEffect(() => {
+    const prevTheme = document.documentElement.dataset.theme; 
+    
+    document.documentElement.dataset.theme = "dark";
+    document.body.style.overflow = "hidden";
+    
+    return () => { 
+      document.body.style.overflow = "auto"; 
+      if (prevTheme) {
+        document.documentElement.dataset.theme = prevTheme;
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    };
+  }, []);
+
+  const activeWish = wishes[currentIndex];
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+
+      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
+        {coupleName}
+      </h1>
+      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '60px', zIndex: 10 }}>
+        {isEn ? "Live Guestbook" : "Canlı Anı Defteri"}
+      </p>
+
+      <div style={{ width: '80%', maxWidth: '900px', minHeight: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+        <AnimatePresence mode="wait">
+          {activeWish ? (
+            <m.div
+              key={activeWish.id}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{ textAlign: 'center', width: '100%' }}
+            >
+              <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeWish.message_translated ? '15px' : '30px' }}>
+                "{activeWish.message}"
+              </p>
+              
+              {activeWish.message_translated && (
+                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
+                  ({activeWish.message_translated})
+                </p>
+              )}
+
+              <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
+                — {activeWish.name}
+              </strong>
+            </m.div>
+          ) : (
+            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
+              {isEn ? "Waiting for the first message..." : "İlk mesaj bekleniyor..."}
+            </m.p>
+          )}
+        </AnimatePresence>
+      </div>
+      
+      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
+        {isEn ? "Scan the QR code on your table to send a message to the screen!" : "Ekrana mesaj göndermek için masanızdaki QR kodu okutun!"}
+      </div>
+    </div>
+  );
+}
+</file>
+
 <file path="src/utils/helpers.js">
 import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
 
@@ -8081,6 +8112,153 @@ export const triggerConfetti = () => {
 };
 </file>
 
+<file path="src/utils/imageOptimizer.js">
+import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
+
+function fallbackOptimize(file, resolve) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    let { width, height } = img;
+    const maxDim = MAX_IMAGE_DIMENSION || 1400;
+    
+    if (width > maxDim || height > maxDim) {
+      if (width > height) { 
+        height = Math.round((height * maxDim) / width); 
+        width = maxDim; 
+      } else { 
+        width = Math.round((width * maxDim) / height); 
+        height = maxDim; 
+      }
+    }
+    
+    canvas.width = width; 
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+    
+    canvas.toBlob((blob) => {
+      resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
+    }, "image/webp", IMAGE_QUALITY || 0.8);
+  };
+  img.onerror = () => resolve(file);
+  img.src = URL.createObjectURL(file);
+}
+
+export async function optimizeImage(file) {
+  if (!file) return file;
+
+  // Geçersiz dosya formatları direkt bypass ediliyor
+  if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) return file;
+  if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
+
+  return new Promise((resolve) => {
+    // Worker modül olarak başlatılıyor ki import fonksiyonlarını tanısın
+    const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
+    
+    worker.onmessage = (e) => {
+      if (e.data.blob) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+        const optimizedFile = new File([e.data.blob], `${cleanName}.webp`, {
+          type: "image/webp",
+          lastModified: Date.now(),
+        });
+        resolve(optimizedFile);
+      } else if (e.data.error === "OffscreenCanvas not supported") {
+        fallbackOptimize(e.data.file, resolve); 
+      } else {
+        resolve(e.data.file); 
+      }
+      worker.terminate();
+    };
+
+    worker.onerror = () => {
+      fallbackOptimize(file, resolve);
+      worker.terminate();
+    };
+
+    worker.postMessage({ 
+      file: file, 
+      maxDim: MAX_IMAGE_DIMENSION || 1400, 
+      quality: IMAGE_QUALITY || 0.8 
+    });
+  });
+}
+</file>
+
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+// React.memo ile sarmalandı
+export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const isPostWedding = settings?.isPostWedding;
+  
+  return (
+    <m.section 
+      initial="hidden" animate="visible" variants={fadeUp}
+      className="hero-section" 
+    >
+      {invitation?.heroVideo ? (
+        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
+          <source src={invitation.heroVideo} type="video/mp4" />
+        </video>
+      ) : null}
+      
+      <div className="hero-content">
+        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
+        </p>
+
+        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <span>{invitation?.bride}</span>
+          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
+          <span>{invitation?.groom}</span>
+        </h1>
+        
+        {isPostWedding ? (
+          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
+          </p>
+        ) : (
+          <>
+            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {invitation?.dateText}
+            </p>
+            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {t('ui.time')} {invitation?.timeText}
+            </p>
+          </>
+        )}
+
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
+        
+        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
+      </div>
+    </m.section>
+  );
+});
+</file>
+
 <file path="src/supabase/functions/submit-form/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
@@ -8101,9 +8279,23 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
     const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    const { type, data, turnstileToken } = await req.json();
+    
+    // YENİ: Veritabanı tabanlı Rate Limiting (Dakikada maks 20 form gönderimi)
+    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+      client_ip: `submit_form_${ip}`,
+      max_req: 20,
+      window_seconds: 60
+    });
 
+    if (isLimited || rateLimitError) {
+      return new Response(JSON.stringify({ success: false, error: "Çok fazla form gönderimi. Lütfen biraz bekleyin." }), { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      });
+    }
+
+    const { type, data, turnstileToken } = await req.json();
     const authHeader = req.headers.get('Authorization');
     let isAdmin = false;
     
@@ -8186,327 +8378,6 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: false, error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
   }
 })
-</file>
-
-<file path="src/components/invitation/sections/HeroSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-// React.memo ile sarmalandı
-export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const isPostWedding = settings?.isPostWedding;
-  
-  return (
-    <m.section 
-      initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
-    >
-      {invitation?.heroVideo ? (
-        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      ) : null}
-      
-      <div className="hero-content">
-        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
-        </p>
-
-        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-          <span>{invitation?.bride}</span>
-          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
-          <span>{invitation?.groom}</span>
-        </h1>
-        
-        {isPostWedding ? (
-          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
-          </p>
-        ) : (
-          <>
-            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              {invitation?.dateText}
-            </p>
-            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-              {t('ui.time')} {invitation?.timeText}
-            </p>
-          </>
-        )}
-
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <span>{t('ui.scroll')}</span>
-        </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
-        )}
-      </div>
-    </m.section>
-  );
-});
-</file>
-
-<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
-import React, { Suspense, lazy, useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Virtuoso } from "react-virtuoso";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { useStore } from "../../../store/useStore";
-import { Html5QrcodeScanner } from "html5-qrcode"; 
-import { supabase } from "../../../supabaseClient";
-
-const AdminCharts = lazy(() => import('./AdminCharts'));
-
-export function GuestsAdminPanel({ 
-  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
-  filteredGuests, editGuest, deleteGuest, clearGuests,
-  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
-  toggleCheckIn
-}) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const showAppAlert = useStore((state) => state.showAppAlert); 
-
-  const [isScanning, setIsScanning] = useState(false);
-
-  useEffect(() => {
-    if (isScanning) {
-      const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-      scanner.render(
-        (decodedText) => {
-          scanner.clear();
-          setIsScanning(false);
-          const urlParams = new URLSearchParams(decodedText.split('?')[1]);
-          const guestId = urlParams.get('id');
-          if (guestId) {
-             toggleCheckIn(guestId, false); 
-             alert("✅ Misafir başarıyla onaylandı!");
-          } else {
-             alert("❌ Geçersiz QR kod.");
-          }
-        },
-        (error) => { /* Hataları yoksay */ }
-      );
-      return () => {
-        scanner.clear().catch(console.error);
-      };
-    }
-  }, [isScanning, toggleCheckIn]);
-
-  const startMassWhatsApp = async () => {
-    const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
-    if (attendingGuests.length === 0) {
-      alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
-      return;
-    }
-
-    const defaultMsg = isEn 
-      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
-      : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
-
-    const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
-    
-    if (msg) {
-      showAppAlert(isEn ? "Sending messages..." : "Mesajlar arka planda gönderiliyor...", { title: "Bilgi ℹ️" });
-      
-      try {
-        const { error } = await supabase.functions.invoke('broadcast-whatsapp', {
-          body: { guests: attendingGuests, message: msg }
-        });
-        
-        if (error) throw error;
-        showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
-      } catch (err) {
-        showAppAlert(isEn ? "Failed to send messages." : "Mesajlar gönderilirken bir hata oluştu.", { tone: "error" });
-      }
-    }
-  };
-
-  const generateAiThankYou = async (guestName) => {
-    showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
-    try {
-      const { data, error } = await supabase.functions.invoke('ai-thank-you', {
-        body: {
-          guestName: guestName,
-          coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
-          wishMessage: "Düğünümüze katıldığınız için teşekkür ederiz."
-        }
-      });
-
-      if (error) throw error;
-
-      if(data?.text) {
-        prompt(isEn ? "Generated AI Message:" : "Üretilen AI Teşekkür Mesajı (Kopyalayabilirsiniz):", data.text);
-      }
-    } catch (err) {
-      console.error(err);
-      alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
-    }
-  };
-  
-  if (!adminDraft?.settings) return null;
-
-  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
-  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-
-  const sideData = [
-    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
-  ].filter(d => d.value > 0);
-
-  const checkInData = [
-    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
-    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
-  ];
-
-  const bride = adminDraft.invitation.bride || "Gelin";
-  const groom = adminDraft.invitation.groom || "Damat";
-  const mapLink = adminDraft.invitation.mapLink || "";
-
-  return (
-    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
-      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-      </div>
-      
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
-          {isScanning ? "📷 Kamerayı Kapat" : "📷 QR ile Kapı Kontrolü"}
-        </button>
-        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
-          {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
-        </button>
-      </div>
-
-      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden" }}></div>}
-
-      <div className="admin-stats admin-stats-inside" style={{ marginBottom: "14px" }}>
-        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
-        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
-        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
-        <div className="admin-guest-badge arrived">
-          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
-          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
-        </div>
-      </div>
-
-      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
-        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
-      </Suspense>
-
-      <div className="admin-toolbar-flex">
-        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
-        <div className="admin-toolbar-filter">
-          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
-        </div>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
-      </div>
-
-      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px", overflowY: "auto" }}>
-        {filteredGuests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
-        ) : (
-          <Virtuoso
-            style={{ height: '100%', width: '100%' }}
-            data={filteredGuests}
-            itemContent={(index, guest) => {
-              const isAttending = guest.attendance === "Katılacağım";
-              
-              const whatsappMsg = encodeURIComponent(
-                isEn 
-                ? `Hello ${guest.name},\n\nYour RSVP for ${bride} & ${groom}'s wedding has been confirmed. ✅\n\n${guest.tableNumber ? `🍽️ Reserved Table: ${guest.tableNumber}\n\n` : ''}📍 Location:\n${mapLink}\n\nWe can't wait to celebrate with you! 🎉`
-                : `Merhaba ${guest.name},\n\n${bride} & ${groom} düğün davetiyemize LCV (katılım) kaydınız başarıyla alınmıştır. ✅\n\n${guest.tableNumber ? `🍽️ Sizin İçin Ayrılan Masa: ${guest.tableNumber}\n\n` : ''}📍 Konum ve Yol Tarifi:\n${mapLink}\n\nSizi aramızda görmek için sabırsızlanıyoruz! 🎉`
-              );
-
-              return (
-                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
-                  <div className="admin-guest-header">
-                    <strong>{guest.name}</strong>
-                  </div>
-                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
-                  
-                  {guest.phone && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
-                      <span>📞 {guest.phone}</span>
-                      {isAttending && (
-                        <>
-                          <a 
-                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="secondary-button" 
-                            style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
-                          >
-                            {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
-                          </a>
-                          
-                          {adminDraft.settings.isPostWedding && (
-                            <button 
-                              type="button"
-                              onClick={() => generateAiThankYou(guest.name)}
-                              className="secondary-button"
-                              style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#8e44ad', borderColor: '#8e44ad', fontWeight: 'bold' }}
-                            >
-                              {isEn ? "AI Thank You 🤖" : "AI Teşekkür Et 🤖"}
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
-                  {guest.note && <em>Not: {guest.note}</em>}
-                  
-                  <div className="admin-row-actions admin-guest-actions">
-                    <button 
-                      type="button" 
-                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
-                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
-                    >
-                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
-                    </button>
-                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
-                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
-                    </button>
-                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
-                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        )}
-      </div>
-    </AdminSection>
-  );
-}
 </file>
 
 <file path="src/components/invitation/sections/RsvpSection.jsx">
@@ -8790,6 +8661,274 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
 });
 </file>
 
+<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
+import React, { Suspense, lazy, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
+import { supabase } from "../../../supabaseClient";
+// DİKKAT: import { Html5QrcodeScanner } from "html5-qrcode"; statik importu performans için kaldırıldı!
+
+const AdminCharts = lazy(() => import('./AdminCharts'));
+
+export function GuestsAdminPanel({ 
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+  filteredGuests, editGuest, deleteGuest, clearGuests,
+  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
+  toggleCheckIn
+}) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const showAppAlert = useStore((state) => state.showAppAlert); 
+
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannerInstance, setScannerInstance] = useState(null);
+
+  // YENİ: Dinamik Import Mantığı
+  useEffect(() => {
+    let activeScanner = null;
+
+    const startScanner = async () => {
+      if (isScanning) {
+        try {
+          // Kütüphaneyi sadece butona basıldığında (on-demand) indiriyoruz!
+          const { Html5QrcodeScanner } = await import("html5-qrcode");
+          
+          activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+          setScannerInstance(activeScanner);
+
+          activeScanner.render(
+            (decodedText) => {
+              activeScanner.clear();
+              setIsScanning(false);
+              const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+              const guestId = urlParams.get('id');
+              if (guestId) {
+                 toggleCheckIn(guestId, false); 
+                 alert(isEn ? "✅ Guest check-in successful!" : "✅ Misafir başarıyla onaylandı!");
+              } else {
+                 alert(isEn ? "❌ Invalid QR code." : "❌ Geçersiz QR kod.");
+              }
+            },
+            (error) => { /* Hataları yoksay */ }
+          );
+        } catch (err) {
+          console.error("QR Kütüphanesi yüklenemedi:", err);
+          showAppAlert("Kamera başlatılamadı.", { tone: "error" });
+          setIsScanning(false);
+        }
+      }
+    };
+
+    startScanner();
+
+    return () => {
+      if (activeScanner) {
+        activeScanner.clear().catch(console.error);
+      }
+    };
+  }, [isScanning, toggleCheckIn, isEn, showAppAlert]);
+
+  const startMassWhatsApp = async () => {
+    const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
+    if (attendingGuests.length === 0) {
+      alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
+      return;
+    }
+
+    const defaultMsg = isEn 
+      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
+      : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
+
+    const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
+    
+    if (msg) {
+      showAppAlert(isEn ? "Sending messages..." : "Mesajlar arka planda gönderiliyor...", { title: "Bilgi ℹ️" });
+      
+      try {
+        const { error } = await supabase.functions.invoke('broadcast-whatsapp', {
+          body: { guests: attendingGuests, message: msg }
+        });
+        
+        if (error) throw error;
+        showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
+      } catch (err) {
+        showAppAlert(isEn ? "Failed to send messages." : "Mesajlar gönderilirken bir hata oluştu.", { tone: "error" });
+      }
+    }
+  };
+
+  const generateAiThankYou = async (guestName) => {
+    showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-thank-you', {
+        body: {
+          guestName: guestName,
+          coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
+        }
+      });
+
+      if (error) throw error;
+
+      if(data?.text) {
+        prompt(isEn ? "Generated AI Message:" : "Üretilen AI Teşekkür Mesajı (Kopyalayabilirsiniz):", data.text);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
+    }
+  };
+  
+  if (!adminDraft?.settings) return null;
+
+  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
+  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+
+  const sideData = [
+    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
+  ].filter(d => d.value > 0);
+
+  const checkInData = [
+    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
+    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
+  ];
+
+  const bride = adminDraft.invitation.bride || "Gelin";
+  const groom = adminDraft.invitation.groom || "Damat";
+  const mapLink = adminDraft.invitation.mapLink || "";
+
+  return (
+    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
+      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+      </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
+          {isScanning ? (isEn ? "📷 Close Camera" : "📷 Kamerayı Kapat") : (isEn ? "📷 QR Check-in" : "📷 QR ile Kapı Kontrolü")}
+        </button>
+        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
+          {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
+        </button>
+      </div>
+
+      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--admin-border-color)" }}></div>}
+
+      <div className="admin-stats admin-stats-inside" style={{ marginBottom: "14px" }}>
+        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
+        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
+        <div className="admin-guest-badge arrived">
+          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
+          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
+        </div>
+      </div>
+
+      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
+        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
+      </Suspense>
+
+      <div className="admin-toolbar-flex">
+        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
+        <div className="admin-toolbar-filter">
+          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
+        </div>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
+
+      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px", overflowY: "auto" }}>
+        {filteredGuests.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredGuests}
+            itemContent={(index, guest) => {
+              const isAttending = guest.attendance === "Katılacağım";
+              
+              const whatsappMsg = encodeURIComponent(
+                isEn 
+                ? `Hello ${guest.name},\n\nYour RSVP for ${bride} & ${groom}'s wedding has been confirmed. ✅\n\n${guest.tableNumber ? `🍽️ Reserved Table: ${guest.tableNumber}\n\n` : ''}📍 Location:\n${mapLink}\n\nWe can't wait to celebrate with you! 🎉`
+                : `Merhaba ${guest.name},\n\n${bride} & ${groom} düğün davetiyemize LCV (katılım) kaydınız başarıyla alınmıştır. ✅\n\n${guest.tableNumber ? `🍽️ Sizin İçin Ayrılan Masa: ${guest.tableNumber}\n\n` : ''}📍 Konum ve Yol Tarifi:\n${mapLink}\n\nSizi aramızda görmek için sabırsızlanıyoruz! 🎉`
+              );
+
+              return (
+                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
+                  <div className="admin-guest-header">
+                    <strong>{guest.name}</strong>
+                  </div>
+                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
+                  
+                  {guest.phone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                      <span>📞 {guest.phone}</span>
+                      {isAttending && (
+                        <>
+                          <a 
+                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="secondary-button" 
+                            style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
+                          >
+                            {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
+                          </a>
+                          
+                          {adminDraft.settings.isPostWedding && (
+                            <button 
+                              type="button"
+                              onClick={() => generateAiThankYou(guest.name)}
+                              className="secondary-button"
+                              style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#8e44ad', borderColor: '#8e44ad', fontWeight: 'bold' }}
+                            >
+                              {isEn ? "AI Thank You 🤖" : "AI Teşekkür Et 🤖"}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
+                  {guest.note && <em>Not: {guest.note}</em>}
+                  
+                  <div className="admin-row-actions admin-guest-actions">
+                    <button 
+                      type="button" 
+                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
+                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
+                    >
+                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
+                    </button>
+                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
+                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
+                    </button>
+                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
+                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
 <file path="src/main.jsx">
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -8863,164 +9002,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </PersistQueryClientProvider>
   </React.StrictMode>
 );
-</file>
-
-<file path="src/pages/AdminController.jsx">
-import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { useStore } from '../store/useStore';
-import { useAdminStore } from '../store/useAdminStore';
-import { useAdminSession } from '../hooks/useAdminSession';
-import { useDatabaseManager } from '../hooks/useDatabaseManager';
-import { useExportData } from '../hooks/useExportData';
-import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
-import { restoreBackupToDatabase } from '../services/database'; 
-import { useAudio } from '../hooks/useAudio'; // DÜZELTME: Müzik kancası eklendi
-import '../styles/admin.css';
-
-const AdminView = lazy(() => import('./AdminView'));
-
-export default function AdminController() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const navigate = useNavigate();
-
-  const siteData = useStore((state) => state.siteData);
-  const guests = useStore((state) => state.guests);
-  const setGuests = useStore((state) => state.setGuests);
-  const wishes = useStore((state) => state.wishes);
-  const setWishes = useStore((state) => state.setWishes);
-  
-  const showAppConfirm = useStore((state) => state.showAppConfirm);
-  const showAppPrompt = useStore((state) => state.showAppPrompt);
-  const showAppAlert = useStore((state) => state.showAppAlert);
-  
-  const adminDraft = useStore((state) => state.adminDraft);
-  const setAdminDraft = useStore((state) => state.setAdminDraft); 
-  const personalLinkName = useStore((state) => state.personalLinkName);
-  const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
-  const dataImportText = useStore((state) => state.dataImportText);
-  const setDataImportText = useStore((state) => state.setDataImportText);
-  
-  const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
-
-  const [adminGuestSearch, setAdminGuestSearch] = useState("");
-  const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
-  const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
-  const [adminGuestChildFilter, setAdminGuestChildFilter] = useState("all");
-  const [adminWishSearch, setAdminWishSearch] = useState("");
-  const [adminWishStatusFilter, setAdminWishStatusFilter] = useState("all");
-
-  const currentShareLink = useMemo(() => adminDraft.invitation.shareLink || window.location.origin, [adminDraft.invitation.shareLink]);
-  const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
-  const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
-
-  const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
-
-  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable } = useDatabaseManager({
-    guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
-  });
-
-  const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
-  
-  // DÜZELTME: Admin panele müzik kontrol işlevselliği bağlandı
-  const { isMusicPlaying, toggleMusic } = useAudio(adminDraft.invitation?.musicFile);
-
-  const closeAdminPage = useCallback(() => {
-    document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta");
-    navigate("/");
-  }, [navigate, siteData.settings?.theme]);
-
-  const resetSiteContent = useCallback(async () => {
-    const confirmed = await showAppConfirm(
-      isEn 
-        ? "Discard all unsaved changes and revert to the latest saved version?" 
-        : "Kaydedilmemiş tüm değişiklikleri iptal edip son kaydedilen sürüme dönmek istiyor musunuz?",
-      { title: isEn ? "Discard Changes" : "Değişiklikleri İptal Et", tone: "warning" }
-    );
-    
-    if (confirmed) {
-      setAdminDraft(siteData); 
-      document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta"); 
-      setAdminSaveMessage(isEn ? "Changes discarded." : "Tüm değişiklikler iptal edildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
-    }
-  }, [siteData, setAdminDraft, showAppConfirm, setAdminSaveMessage, isEn]);
-
-  const importAllDataJson = async () => {
-    if (!dataImportText || !dataImportText.trim()) {
-      showAppAlert(isEn ? "Please paste the backup JSON content." : "Lütfen JSON yedeğini metin kutusuna yapıştırın.", { title: isEn ? "Error" : "Hata" });
-      return;
-    }
-    try {
-      const parsedData = JSON.parse(dataImportText);
-      const confirmed = await showAppConfirm(
-        isEn ? "Restore this backup? Current data will be overwritten." : "Bu yedeği geri yüklemek istediğinize emin misiniz? Mevcut verilerin üzerine yazılacaktır.",
-        { title: isEn ? "Restore Backup" : "Yedeği Geri Yükle", tone: "danger" }
-      );
-      if (!confirmed) return;
-
-      await restoreBackupToDatabase(parsedData);
-      setAdminSaveMessage(isEn ? "Backup restored! Please refresh." : "Yedek yüklendi! Lütfen sayfayı yenileyin.");
-      setDataImportText("");
-      setTimeout(() => window.location.reload(), 2000);
-    } catch (error) {
-      showAppAlert(isEn ? "Invalid JSON." : "Geçersiz JSON formatı.", { title: isEn ? "Error" : "Hata" });
-    }
-  };
-
-  const filteredGuests = useMemo(() => guests.filter((guest) => {
-    const searchMatch = normalizeText(`${guest.name} ${guest.phone}`).includes(normalizeText(adminGuestSearch));
-    const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
-    const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
-    const childMatch = adminGuestChildFilter === "all" || guest.hasChild === adminGuestChildFilter;
-    return searchMatch && attendanceMatch && sideMatch && childMatch;
-  }), [guests, adminGuestSearch, adminGuestAttendanceFilter, adminGuestSideFilter, adminGuestChildFilter]);
-
-  const filteredWishes = useMemo(() => wishes.filter((wish) => {
-    const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
-    const isApproved = wish.approved !== false;
-    const statusMatch = adminWishStatusFilter === "all" || (adminWishStatusFilter === "approved" && isApproved) || (adminWishStatusFilter === "pending" && !isApproved);
-    return searchMatch && statusMatch;
-  }), [wishes, adminWishSearch, adminWishStatusFilter]);
-
-  const copyAdminLink = useCallback(async (linkToCopy, msg) => { try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(msg); } catch {} }, [setAdminSaveMessage]);
-  const downloadQrCode = () => { window.open(qrImageUrl, "_blank"); };
-
-  return (
-    <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
-      <AdminView
-        submitAdminPassword={submitAdminPassword} 
-        completePasswordRecovery={completePasswordRecovery}
-        sendPasswordResetEmail={sendPasswordResetEmail} 
-        changeAdminPassword={changeAdminPassword} 
-        logoutAdmin={logoutAdmin} 
-        
-        closeAdminPage={closeAdminPage} 
-        resetSiteContent={resetSiteContent} 
-        isMusicPlaying={isMusicPlaying} // EKLENDİ
-        toggleMusic={toggleMusic} // EKLENDİ
-        
-        guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
-        adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
-        adminGuestSideFilter={adminGuestSideFilter} setAdminGuestSideFilter={setAdminGuestSideFilter} adminGuestChildFilter={adminGuestChildFilter}
-        setAdminGuestChildFilter={setAdminGuestChildFilter} filteredGuests={filteredGuests} editGuest={editGuest} deleteGuest={deleteGuest}
-        clearGuests={clearGuests} wishes={wishes} adminWishSearch={adminWishSearch} setAdminWishSearch={setAdminWishSearch}
-        adminWishStatusFilter={adminWishStatusFilter} setAdminWishStatusFilter={setAdminWishStatusFilter} filteredWishes={filteredWishes}
-        toggleWishApproval={toggleWishApproval} editWish={editWish} deleteWish={deleteWish} clearWishes={clearWishes}
-        qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
-        personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
-        
-        exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} 
-        dataImportText={dataImportText} setDataImportText={setDataImportText} importAllDataJson={importAllDataJson}
-        exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
-        exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
-        toggleCheckIn={toggleCheckIn} assignTable={assignTable}
-      />
-    </Suspense>
-  );
-}
 </file>
 
 <file path="src/styles/admin.css">
@@ -13862,6 +13843,164 @@ html[data-theme]
 }
 </file>
 
+<file path="src/pages/AdminController.jsx">
+import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '../store/useStore';
+import { useAdminStore } from '../store/useAdminStore';
+import { useAdminSession } from '../hooks/useAdminSession';
+import { useDatabaseManager } from '../hooks/useDatabaseManager';
+import { useExportData } from '../hooks/useExportData';
+import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
+import { restoreBackupToDatabase } from '../services/database'; 
+import { useAudio } from '../hooks/useAudio'; // DÜZELTME: Müzik kancası eklendi
+import '../styles/admin.css';
+
+const AdminView = lazy(() => import('./AdminView'));
+
+export default function AdminController() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const navigate = useNavigate();
+
+  const siteData = useStore((state) => state.siteData);
+  const guests = useStore((state) => state.guests);
+  const setGuests = useStore((state) => state.setGuests);
+  const wishes = useStore((state) => state.wishes);
+  const setWishes = useStore((state) => state.setWishes);
+  
+  const showAppConfirm = useStore((state) => state.showAppConfirm);
+  const showAppPrompt = useStore((state) => state.showAppPrompt);
+  const showAppAlert = useStore((state) => state.showAppAlert);
+  
+  const adminDraft = useStore((state) => state.adminDraft);
+  const setAdminDraft = useStore((state) => state.setAdminDraft); 
+  const personalLinkName = useStore((state) => state.personalLinkName);
+  const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
+  const dataImportText = useStore((state) => state.dataImportText);
+  const setDataImportText = useStore((state) => state.setDataImportText);
+  
+  const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
+
+  const [adminGuestSearch, setAdminGuestSearch] = useState("");
+  const [adminGuestAttendanceFilter, setAdminGuestAttendanceFilter] = useState("all");
+  const [adminGuestSideFilter, setAdminGuestSideFilter] = useState("all");
+  const [adminGuestChildFilter, setAdminGuestChildFilter] = useState("all");
+  const [adminWishSearch, setAdminWishSearch] = useState("");
+  const [adminWishStatusFilter, setAdminWishStatusFilter] = useState("all");
+
+  const currentShareLink = useMemo(() => adminDraft.invitation.shareLink || window.location.origin, [adminDraft.invitation.shareLink]);
+  const qrImageUrl = useMemo(() => getQrImageUrl(currentShareLink), [currentShareLink]);
+  const personalGuestLink = useMemo(() => buildPersonalLink(currentShareLink, personalLinkName), [currentShareLink, personalLinkName]);
+
+  const { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin } = useAdminSession({ isAdminPage: true, isEn });
+
+  const { clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable } = useDatabaseManager({
+    guests, setGuests, wishes, setWishes, settings: adminDraft.settings, showAppAlert, showAppConfirm, showAppPrompt, setAdminSaveMessage, t, isEn
+  });
+
+  const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
+  
+  // DÜZELTME: Admin panele müzik kontrol işlevselliği bağlandı
+  const { isMusicPlaying, toggleMusic } = useAudio(adminDraft.invitation?.musicFile);
+
+  const closeAdminPage = useCallback(() => {
+    document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta");
+    navigate("/");
+  }, [navigate, siteData.settings?.theme]);
+
+  const resetSiteContent = useCallback(async () => {
+    const confirmed = await showAppConfirm(
+      isEn 
+        ? "Discard all unsaved changes and revert to the latest saved version?" 
+        : "Kaydedilmemiş tüm değişiklikleri iptal edip son kaydedilen sürüme dönmek istiyor musunuz?",
+      { title: isEn ? "Discard Changes" : "Değişiklikleri İptal Et", tone: "warning" }
+    );
+    
+    if (confirmed) {
+      setAdminDraft(siteData); 
+      document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta"); 
+      setAdminSaveMessage(isEn ? "Changes discarded." : "Tüm değişiklikler iptal edildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    }
+  }, [siteData, setAdminDraft, showAppConfirm, setAdminSaveMessage, isEn]);
+
+  const importAllDataJson = async () => {
+    if (!dataImportText || !dataImportText.trim()) {
+      showAppAlert(isEn ? "Please paste the backup JSON content." : "Lütfen JSON yedeğini metin kutusuna yapıştırın.", { title: isEn ? "Error" : "Hata" });
+      return;
+    }
+    try {
+      const parsedData = JSON.parse(dataImportText);
+      const confirmed = await showAppConfirm(
+        isEn ? "Restore this backup? Current data will be overwritten." : "Bu yedeği geri yüklemek istediğinize emin misiniz? Mevcut verilerin üzerine yazılacaktır.",
+        { title: isEn ? "Restore Backup" : "Yedeği Geri Yükle", tone: "danger" }
+      );
+      if (!confirmed) return;
+
+      await restoreBackupToDatabase(parsedData);
+      setAdminSaveMessage(isEn ? "Backup restored! Please refresh." : "Yedek yüklendi! Lütfen sayfayı yenileyin.");
+      setDataImportText("");
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (error) {
+      showAppAlert(isEn ? "Invalid JSON." : "Geçersiz JSON formatı.", { title: isEn ? "Error" : "Hata" });
+    }
+  };
+
+  const filteredGuests = useMemo(() => guests.filter((guest) => {
+    const searchMatch = normalizeText(`${guest.name} ${guest.phone}`).includes(normalizeText(adminGuestSearch));
+    const attendanceMatch = adminGuestAttendanceFilter === "all" || guest.attendance === adminGuestAttendanceFilter;
+    const sideMatch = adminGuestSideFilter === "all" || guest.side === adminGuestSideFilter;
+    const childMatch = adminGuestChildFilter === "all" || guest.hasChild === adminGuestChildFilter;
+    return searchMatch && attendanceMatch && sideMatch && childMatch;
+  }), [guests, adminGuestSearch, adminGuestAttendanceFilter, adminGuestSideFilter, adminGuestChildFilter]);
+
+  const filteredWishes = useMemo(() => wishes.filter((wish) => {
+    const searchMatch = normalizeText(`${wish.name} ${wish.message}`).includes(normalizeText(adminWishSearch));
+    const isApproved = wish.approved !== false;
+    const statusMatch = adminWishStatusFilter === "all" || (adminWishStatusFilter === "approved" && isApproved) || (adminWishStatusFilter === "pending" && !isApproved);
+    return searchMatch && statusMatch;
+  }), [wishes, adminWishSearch, adminWishStatusFilter]);
+
+  const copyAdminLink = useCallback(async (linkToCopy, msg) => { try { await navigator.clipboard.writeText(linkToCopy); setAdminSaveMessage(msg); } catch {} }, [setAdminSaveMessage]);
+  const downloadQrCode = () => { window.open(qrImageUrl, "_blank"); };
+
+  return (
+    <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
+      <AdminView
+        submitAdminPassword={submitAdminPassword} 
+        completePasswordRecovery={completePasswordRecovery}
+        sendPasswordResetEmail={sendPasswordResetEmail} 
+        changeAdminPassword={changeAdminPassword} 
+        logoutAdmin={logoutAdmin} 
+        
+        closeAdminPage={closeAdminPage} 
+        resetSiteContent={resetSiteContent} 
+        isMusicPlaying={isMusicPlaying} // EKLENDİ
+        toggleMusic={toggleMusic} // EKLENDİ
+        
+        guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
+        adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
+        adminGuestSideFilter={adminGuestSideFilter} setAdminGuestSideFilter={setAdminGuestSideFilter} adminGuestChildFilter={adminGuestChildFilter}
+        setAdminGuestChildFilter={setAdminGuestChildFilter} filteredGuests={filteredGuests} editGuest={editGuest} deleteGuest={deleteGuest}
+        clearGuests={clearGuests} wishes={wishes} adminWishSearch={adminWishSearch} setAdminWishSearch={setAdminWishSearch}
+        adminWishStatusFilter={adminWishStatusFilter} setAdminWishStatusFilter={setAdminWishStatusFilter} filteredWishes={filteredWishes}
+        toggleWishApproval={toggleWishApproval} editWish={editWish} deleteWish={deleteWish} clearWishes={clearWishes}
+        qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
+        personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
+        
+        exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} 
+        dataImportText={dataImportText} setDataImportText={setDataImportText} importAllDataJson={importAllDataJson}
+        exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
+        exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
+        toggleCheckIn={toggleCheckIn} assignTable={assignTable}
+      />
+    </Suspense>
+  );
+}
+</file>
+
 <file path="src/App.jsx">
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
@@ -14758,74 +14897,6 @@ export function useScrollNavigation(isAdminPage, opened) {
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
   
   return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
-}
-</file>
-
-<file path="src/pages/InvitationView.jsx">
-import React from "react";
-import { useStore } from "../store/useStore";
-import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
-import {
-  HeroSection,
-  CountdownSection,
-  InvitationMessageSection,
-  FamilySection,
-  StorySection,
-  CeremonySection,
-  ScheduleSection,
-  LocationSection,
-  GallerySection,
-  ShareSection,
-  GiftSection,
-  RsvpSection,
-  WishesSection,
-  GuestsListSection,
-  GuestCameraSection,
-  SmartAlbumSection,
-  FooterSection
-} from "../components/invitation/sections";
-
-export default function InvitationView(props) {
-  const siteData = useStore((state) => state.siteData);
-  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
-  
-  const v = settings?.visibility || {};
-
-  return (
-    <ResponsiveSlideShow>
-      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
-      
-      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
-      
-      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
-      
-      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
-      
-      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
-      
-      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
-      
-      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-      
-      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.guests && <GuestCameraSection {...props} />}
-      
-      {v.guests && <SmartAlbumSection {...props} />}
-      
-      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.wishes && <WishesSection {...props} copy={copy} />}
-      
-      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
-      
-      <ShareSection {...props} copy={copy} />
-      
-      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
-    </ResponsiveSlideShow>
-  );
 }
 </file>
 
@@ -15976,6 +16047,74 @@ button {
 .floating-actions > *:not(.main-button):hover {
   animation: none !important; /* Animasyonu tamamen iptal et */
   transform: translateY(0) !important; /* Butonu orijinal yerine (aşağı) oturt */
+}
+</file>
+
+<file path="src/pages/InvitationView.jsx">
+import React from "react";
+import { useStore } from "../store/useStore";
+import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
+import {
+  HeroSection,
+  CountdownSection,
+  InvitationMessageSection,
+  FamilySection,
+  StorySection,
+  CeremonySection,
+  ScheduleSection,
+  LocationSection,
+  GallerySection,
+  ShareSection,
+  GiftSection,
+  RsvpSection,
+  WishesSection,
+  GuestsListSection,
+  GuestCameraSection,
+  SmartAlbumSection,
+  FooterSection
+} from "../components/invitation/sections";
+
+export default function InvitationView(props) {
+  const siteData = useStore((state) => state.siteData);
+  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
+  
+  const v = settings?.visibility || {};
+
+  return (
+    <ResponsiveSlideShow>
+      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
+      
+      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
+      
+      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
+      
+      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
+      
+      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
+      
+      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
+      
+      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
+      
+      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.guests && <GuestCameraSection {...props} />}
+      
+      {v.guests && <SmartAlbumSection {...props} />}
+      
+      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.wishes && <WishesSection {...props} copy={copy} />}
+      
+      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
+      
+      <ShareSection {...props} copy={copy} />
+      
+      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
+    </ResponsiveSlideShow>
+  );
 }
 </file>
 
