@@ -1,11 +1,13 @@
+// src/hooks/useGuestPhotosQuery.ts
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export function useGuestPhotosQuery() {
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState<any[]>([]);
 
   useEffect(() => {
     let isMounted = true;
+    const channelName = `public:guest_photos-${Date.now()}`;
 
     const fetchPhotos = async () => {
       const { data } = await supabase
@@ -18,9 +20,8 @@ export function useGuestPhotosQuery() {
 
     fetchPhotos();
 
-    // Veritabanında onaylanan yeni fotoğrafları anında dinle
     const channel = supabase
-      .channel('public:guest_photos')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_photos', filter: 'approved=eq.true' }, () => {
           if (isMounted) fetchPhotos();
       })

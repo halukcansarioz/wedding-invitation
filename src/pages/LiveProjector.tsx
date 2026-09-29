@@ -7,8 +7,9 @@ import { useWishesQuery } from '../hooks/useWishesQuery';
 import { useGuestPhotosQuery } from '../hooks/useGuestPhotosQuery';
 import { useStore } from '../store/useStore';
 import { LazyImage } from '../components/common/LazyImage';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
-export default function LiveProjector() {
+function LiveProjectorContent() {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
@@ -21,22 +22,21 @@ export default function LiveProjector() {
   
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Dilekleri ve Fotoğrafları tek bir akışta birleştir
   const displayItems = useMemo(() => {
-    const items = [];
+    const items: any[] = [];
     wishes?.forEach(w => items.push({ type: 'wish', data: w }));
     photos?.forEach(p => items.push({ type: 'photo', data: p }));
-    // Listeyi karıştır (Shuffle) veya sırayla göster
     return items.sort(() => Math.random() - 0.5);
   }, [wishes, photos]);
 
   useEffect(() => {
-    let channel;
+    let channel: ReturnType<typeof supabase.channel>;
     let isMounted = true;
+    const channelName = `public:wishes-${Date.now()}`;
 
     const setupChannel = () => {
       channel = supabase
-        .channel('public:wishes')
+        .channel(channelName)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
             if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
         })
@@ -55,7 +55,7 @@ export default function LiveProjector() {
     if (!displayItems || displayItems.length === 0) return;
     const interval = setInterval(() => { 
         setCurrentIndex((prev) => (prev + 1) % displayItems.length); 
-    }, 8000); // Her 8 saniyede bir değişir
+    }, 8000); 
     return () => clearInterval(interval);
   }, [displayItems]);
 
@@ -75,7 +75,6 @@ export default function LiveProjector() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* Arka Plan Efektleri */}
       <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
       <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
 
@@ -99,15 +98,15 @@ export default function LiveProjector() {
             >
               {activeItem.type === 'wish' ? (
                 <>
-                  <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeItem.data.message_translated ? '15px' : '30px' }}>
+                  <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: 300, marginBottom: activeItem.data.message_translated ? '15px' : '30px' }}>
                     "{activeItem.data.message}"
                   </p>
                   {activeItem.data.message_translated && (
-                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
+                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: 300 }}>
                       ({activeItem.data.message_translated})
                     </p>
                   )}
-                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
+                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: 600, display: 'inline-block' }}>
                     — {activeItem.data.name}
                   </strong>
                 </>
@@ -116,7 +115,7 @@ export default function LiveProjector() {
                   <div style={{ width: '100%', maxWidth: '600px', height: '400px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
                     <LazyImage src={activeItem.data.image_url} alt="Misafir POV" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.2rem', marginTop: '20px', letterSpacing: '2px', fontWeight: '400' }}>
+                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.2rem', marginTop: '20px', letterSpacing: '2px', fontWeight: 400 }}>
                     {isEn ? "Guest POV 📸" : "Misafir Kamerasından 📸"}
                   </strong>
                 </>
@@ -134,5 +133,13 @@ export default function LiveProjector() {
         {isEn ? "Scan the QR code to send a message or photo!" : "Ekrana mesaj veya fotoğraf göndermek için davetiyedeki formu kullanın!"}
       </div>
     </div>
+  );
+}
+
+export default function LiveProjector() {
+  return (
+    <ErrorBoundary>
+      <LiveProjectorContent />
+    </ErrorBoundary>
   );
 }

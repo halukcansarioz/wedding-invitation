@@ -5,13 +5,13 @@ import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 import AdminController from "./pages/AdminController";
-import LiveProjector from "./pages/LiveProjector"; 
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
+import LiveProjector from "./pages/LiveProjector.js";
 
 function App() {
   const { t, i18n } = useTranslation();

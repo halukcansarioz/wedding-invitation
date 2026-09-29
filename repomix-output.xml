@@ -63,6 +63,9 @@ src/
         GuestsAdminPanel.jsx
         index.js
         MessagesTab.jsx
+        NotificationsTab.jsx
+        OverviewTab.jsx
+        PaymentsTab.jsx
         PersonalLinkPanel.jsx
         QrTab.jsx
         ScheduleTab.jsx
@@ -120,12 +123,15 @@ src/
     useAdminSession.js
     useAssetPreloader.js
     useAudio.js
+    useAudioRecorder.js
     useCountdown.js
     useCountdown.test.js
     useDatabaseManager.js
     useExportData.js
+    useGuestPhotosQuery.js
     useGuestsQuery.js
     useLocale.js
+    usePaymentFeedback.js
     usePWAInstall.js
     useScrollNavigation.js
     useWishesQuery.js
@@ -174,9 +180,13 @@ src/
         index.ts
       send-push/
         index.ts
+      stripe-webhook/
+        index.ts
       submit-form/
         index.ts
       verify-submission/
+        index.ts
+      whatsapp-bot/
         index.ts
     supabase-setup.sql
   types/
@@ -367,6 +377,305 @@ export function GuestPhotosTab({ isEn }) {
 }
 </file>
 
+<file path="src/components/admin/tabs/NotificationsTab.jsx">
+import React, { useState } from "react";
+import { AdminSection, AdminField, AdminTextarea } from "../../AdminUI";
+import { supabase } from "../../../supabaseClient";
+
+export function NotificationsTab({ isEn }) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [url, setUrl] = useState("/");
+  const [isSending, setIsSending] = useState(false);
+  const [result, setResult] = useState("");
+
+  const handleSendNotification = async () => {
+    if (!title.trim() || !body.trim()) {
+      alert(isEn ? "Please provide a title and message." : "Lütfen bildirim başlığı ve mesajını doldurun.");
+      return;
+    }
+
+    setIsSending(true);
+    setResult("");
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-push', {
+        body: { title, body, url }
+      });
+
+      if (error) throw error;
+
+      setResult(
+        isEn 
+          ? `✅ Successfully sent to ${data?.count || 0} subscribers.` 
+          : `✅ Bildirim ${data?.count || 0} aboneye başarıyla iletildi.`
+      );
+      setTitle("");
+      setBody("");
+      setUrl("/");
+    } catch (err) {
+      console.error(err);
+      setResult(isEn ? "❌ Failed to send notification." : "❌ Bildirim gönderilirken bir hata oluştu.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <AdminSection title={isEn ? "Push Notifications" : "Anlık Bildirim Gönderimi (Push)"}>
+      <p className="admin-help-text" style={{ marginBottom: "24px" }}>
+        {isEn 
+          ? "Send instant push notifications to guests who have installed the invitation app on their phones." 
+          : "Davetiyeyi telefonuna (PWA olarak) kuran ve bildirim izni veren misafirlerinize anında bildirim gönderin."}
+      </p>
+
+      <div className="admin-edit-grid" style={{ marginBottom: "24px", gridTemplateColumns: "1fr" }}>
+        <AdminField 
+          label={isEn ? "Notification Title" : "Bildirim Başlığı"} 
+          value={title} 
+          onChange={setTitle} 
+          placeholder={isEn ? "Ex: Ceremony is Starting!" : "Örn: Nikah Töreni Başlıyor!"} 
+        />
+        <AdminTextarea 
+          label={isEn ? "Message Content" : "Mesaj İçeriği"} 
+          value={body} 
+          onChange={setBody} 
+          placeholder={isEn ? "Ex: Please take your seats, the bride and groom are arriving." : "Örn: Lütfen yerlerinizi alın, gelin ve damat salona giriş yapıyor."} 
+        />
+        <AdminField 
+          label={isEn ? "Redirect URL (Optional)" : "Yönlendirme Linki (İsteğe Bağlı)"} 
+          value={url} 
+          onChange={setUrl} 
+          placeholder={isEn ? "Ex: /gallery" : "Örn: /?masa=12 (Varsayılan: /)"} 
+        />
+      </div>
+
+      <div style={{ padding: "20px", background: "var(--paper-soft)", borderRadius: "12px", border: "1px solid var(--admin-border-color)" }}>
+        <button 
+          type="button" 
+          className="main-button" 
+          onClick={handleSendNotification}
+          disabled={isSending}
+          style={{ margin: 0, width: "100%", background: "linear-gradient(135deg, #8e44ad, #9b59b6)", borderColor: "#8e44ad" }}
+        >
+          {isSending 
+            ? (isEn ? "Broadcasting... 📡" : "Bildirimler İletiliyor... 📡") 
+            : (isEn ? "Send Push Notification 🚀" : "Anlık Bildirimi Gönder 🚀")}
+        </button>
+
+        {result && (
+          <p style={{ margin: "16px 0 0 0", textAlign: "center", fontSize: "14px", fontWeight: "bold", color: result.includes("✅") ? "#27ae60" : "#e74c3c" }}>
+            {result}
+          </p>
+        )}
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
+<file path="src/components/admin/tabs/OverviewTab.jsx">
+import React, { useEffect, useState } from "react";
+import { AdminSection } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
+import { supabase } from "../../../supabaseClient";
+
+export function OverviewTab({ guests, wishes, isEn, setActiveAdminTab }) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const [pendingPhotos, setPendingPhotos] = useState(0);
+  const [totalPayments, setTotalPayments] = useState(0);
+
+  useEffect(() => {
+    const fetchQuickStats = async () => {
+      // Bekleyen Fotoğrafları Say
+      const { count: photoCount } = await supabase
+        .from('guest_photos')
+        .select('*', { count: 'exact', head: true })
+        .eq('approved', false);
+      
+      setPendingPhotos(photoCount || 0);
+
+      // Tamamlanan Ödemeleri Hesapla
+      const { data: payments } = await supabase
+        .from('payments')
+        .select('amount')
+        .eq('status', 'completed');
+        
+      const sum = (payments || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
+      setTotalPayments(sum);
+    };
+
+    fetchQuickStats();
+  }, []);
+
+  const attendingCount = guests.filter(g => g.attendance === "Katılacağım").reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const pendingWishesCount = wishes.filter(w => !w.approved).length;
+
+  return (
+    <AdminSection title={isEn ? "Dashboard Overview" : "Sistem Özeti"}>
+      <h3 style={{ color: "var(--text-main)", marginBottom: "24px", fontWeight: "normal" }}>
+        {isEn ? "Welcome," : "Hoş Geldiniz,"} <strong>{adminDraft?.invitation?.bride} & {adminDraft?.invitation?.groom}</strong>
+      </h3>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "32px" }}>
+        
+        {/* Misafir İstatistiği */}
+        <div className="card" style={{ padding: "20px", textAlign: "center", cursor: "pointer" }} onClick={() => setActiveAdminTab("guests")}>
+          <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>👥</span>
+          <strong style={{ fontSize: "28px", color: "var(--rose-dark)", display: "block" }}>{attendingCount}</strong>
+          <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>{isEn ? "Expected Guests" : "Beklenen Misafir"}</span>
+        </div>
+
+        {/* Bekleyen Dilekler */}
+        <div className="card" style={{ padding: "20px", textAlign: "center", cursor: "pointer", border: pendingWishesCount > 0 ? "2px solid #f39c12" : "" }} onClick={() => setActiveAdminTab("wishes")}>
+          <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>💌</span>
+          <strong style={{ fontSize: "28px", color: pendingWishesCount > 0 ? "#f39c12" : "var(--rose-dark)", display: "block" }}>{pendingWishesCount}</strong>
+          <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>{isEn ? "Pending Wishes" : "Onay Bekleyen Mesaj"}</span>
+        </div>
+
+        {/* Bekleyen Fotoğraflar (POV) */}
+        <div className="card" style={{ padding: "20px", textAlign: "center", cursor: "pointer", border: pendingPhotos > 0 ? "2px solid #f39c12" : "" }} onClick={() => setActiveAdminTab("guestPhotos")}>
+          <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>📸</span>
+          <strong style={{ fontSize: "28px", color: pendingPhotos > 0 ? "#f39c12" : "var(--rose-dark)", display: "block" }}>{pendingPhotos}</strong>
+          <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>{isEn ? "Pending Photos" : "Onay Bekleyen Fotoğraf"}</span>
+        </div>
+
+        {/* Toplam Hediyeler */}
+        <div className="card" style={{ padding: "20px", textAlign: "center", cursor: "pointer" }} onClick={() => setActiveAdminTab("payments")}>
+          <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>🎁</span>
+          <strong style={{ fontSize: "24px", color: "#27ae60", display: "block", marginTop: "4px" }}>
+            {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(totalPayments)}
+          </strong>
+          <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>{isEn ? "Total Gifts" : "Gelen Hediyeler"}</span>
+        </div>
+
+      </div>
+
+      <div style={{ background: "var(--paper-soft)", padding: "24px", borderRadius: "16px", border: "1px solid var(--admin-border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+        <div>
+          <h4 style={{ margin: "0 0 8px 0", color: "var(--rose-deep)", fontSize: "18px" }}>{isEn ? "Live Projector" : "Canlı Barkovizyon"}</h4>
+          <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>
+            {isEn ? "Open the live stream to show approved photos and wishes on the big screen." : "Düğün gecesi onaylı fotoğrafları ve mesajları dev ekrana yansıtmak için akışı başlatın."}
+          </p>
+        </div>
+        <button 
+          type="button" 
+          className="main-button" 
+          onClick={() => window.open(`/${window.location.pathname.split('/')[1]}/live`, '_blank')}
+          style={{ margin: 0, background: "linear-gradient(135deg, #2c3e50, #000000)", borderColor: "#000" }}
+        >
+          {isEn ? "Launch Live Stream 🎬" : "Barkovizyonu Başlat 🎬"}
+        </button>
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
+<file path="src/components/admin/tabs/PaymentsTab.jsx">
+import React, { useState, useEffect } from "react";
+import { AdminSection } from "../../AdminUI";
+import { supabase } from "../../../supabaseClient";
+
+export function PaymentsTab({ isEn }) {
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchPayments = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('payments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+      setPayments(data || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
+  }, []);
+
+  const totalAmount = payments
+    .filter(p => p.status === 'completed')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  return (
+    <AdminSection title={isEn ? "Received Gifts & Payments" : "Gelen Hediyeler ve Ödemeler"}>
+      <p className="admin-help-text">
+        {isEn 
+          ? "Gifts and payments sent by your guests via credit card (Stripe) are listed here." 
+          : "Misafirlerinizin kredi kartı (Stripe) aracılığıyla gönderdiği takı ve hediyeler burada listelenir."}
+      </p>
+
+      <div className="admin-stats admin-stats-inside" style={{ marginBottom: "20px" }}>
+        <div>
+          <strong style={{ color: "#27ae60" }}>
+            {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(totalAmount)}
+          </strong>
+          <span>{isEn ? "Total Revenue" : "Toplam Gelen Tutar"}</span>
+        </div>
+        <div>
+          <strong>{payments.filter(p => p.status === 'completed').length}</strong>
+          <span>{isEn ? "Successful Transactions" : "Başarılı İşlem"}</span>
+        </div>
+        <button type="button" className="secondary-button" style={{ margin: "auto" }} onClick={fetchPayments}>
+          {isEn ? "Refresh 🔄" : "Yenile 🔄"}
+        </button>
+      </div>
+
+      {loading ? (
+        <p style={{ textAlign: "center", padding: "20px" }}>{isEn ? "Loading payments..." : "Ödemeler yükleniyor..."}</p>
+      ) : error ? (
+        <p style={{ color: "red", textAlign: "center" }}>{error}</p>
+      ) : payments.length === 0 ? (
+        <p className="empty-text">{isEn ? "No payments received yet." : "Henüz bir hediye/ödeme alınmamış."}</p>
+      ) : (
+        <div className="admin-list admin-list-full" style={{ maxHeight: "500px", overflowY: "auto" }}>
+          {payments.map(payment => (
+            <div key={payment.id} className="admin-row" style={{ borderLeftColor: payment.status === 'completed' ? "#27ae60" : "#f1c40f", marginBottom: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <strong style={{ fontSize: "16px" }}>{payment.guest_name}</strong>
+                <strong style={{ color: payment.status === 'completed' ? "#27ae60" : "#f39c12", fontSize: "16px" }}>
+                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+                </strong>
+              </div>
+              
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", color: "var(--text-muted)" }}>
+                <span>{new Date(payment.created_at).toLocaleString('tr-TR')}</span>
+                <span style={{ 
+                  padding: "4px 8px", 
+                  borderRadius: "8px", 
+                  background: payment.status === 'completed' ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)", 
+                  color: payment.status === 'completed' ? "#27ae60" : "#d35400", 
+                  fontWeight: "bold" 
+                }}>
+                  {payment.status === 'completed' ? (isEn ? "Completed" : "Başarılı") : (isEn ? "Pending" : "Bekliyor")}
+                </span>
+              </div>
+
+              {payment.note && (
+                <p style={{ margin: "10px 0 0 0", fontStyle: "italic", fontSize: "14px", padding: "8px", background: "var(--paper-soft)", borderRadius: "6px" }}>
+                  "{payment.note}"
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </AdminSection>
+  );
+}
+</file>
+
 <file path="src/components/admin/tabs/VisibilityTab.test.jsx">
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -508,6 +817,66 @@ export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isE
     </div>
   );
 }
+</file>
+
+<file path="src/components/common/GlobalModals.jsx">
+import React, { memo } from "react";
+import "../../styles/modals.css"; 
+
+export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
+  if (!customAlert && !customConfirm && !customPrompt) return null;
+
+  return (
+    <>
+      {customAlert && (
+        <div className="global-modal-overlay" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
+          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
+            <h3 className="global-modal-title">{customAlert.title}</h3>
+            <p className="global-modal-text">{customAlert.message}</p>
+            <button type="button" className="main-button global-modal-btn" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
+              {t('ui.ok')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {customConfirm && (
+        <div className="global-modal-overlay" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
+          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
+            <h3 className="global-modal-title">{customConfirm.title}</h3>
+            <p className="global-modal-text">{customConfirm.message}</p>
+            <div className="global-modal-actions">
+              <button type="button" className="main-button global-modal-btn" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }}>
+                {t('ui.yes')}
+              </button>
+              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
+                {t('ui.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {customPrompt && (
+        <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
+          <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
+            <h3 className="global-modal-title">{customPrompt.title}</h3>
+            <p className="global-modal-text">{customPrompt.label}</p>
+            {customPrompt.multiline ? (
+              <textarea autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
+            ) : (
+              <input autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
+            )}
+            <div className="global-modal-actions">
+              <button type="submit" className="main-button global-modal-btn">{t('ui.save')}</button>
+              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>{t('ui.cancel')}</button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
+  );
+});
 </file>
 
 <file path="src/components/common/LightboxModal.jsx">
@@ -940,83 +1309,6 @@ describe('GiftSection Bileşeni', () => {
 });
 </file>
 
-<file path="src/components/invitation/sections/GuestCameraSection.jsx">
-import React, { useState, useRef, memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { uploadAndModerateGuestPhoto } from "../../../services/database";
-import { useStore } from "../../../store/useStore";
-import { triggerConfetti } from "../../../utils/helpers";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const GuestCameraSection = memo(function GuestCameraSection() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const showAppAlert = useStore((state) => state.showAppAlert);
-  
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef(null);
-
-  const handleFileSelect = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const { isApproved } = await uploadAndModerateGuestPhoto(file);
-      
-      if (isApproved) {
-        triggerConfetti();
-        showAppAlert(isEn ? "Awesome! Your photo is added to the gallery." : "Harika! Fotoğrafınız galeriye eklendi.", { tone: "success" });
-      } else {
-        showAppAlert(isEn ? "Photo received. It will be published after admin review." : "Fotoğraf alındı. Gelin ve damat onayından sonra yayınlanacak.", { tone: "info" });
-      }
-    } catch (error) {
-      showAppAlert(isEn ? "Could not upload photo." : "Fotoğraf yüklenemedi. Lütfen tekrar deneyin.", { tone: "error", title: "Hata" });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? "Guest POV" : "Misafir Gözünden"}</p>
-      <h2>{isEn ? "Share Your Memories" : "Anılarınızı Paylaşın"}</h2>
-      <p>
-        {isEn 
-          ? "Take a photo right now or choose from your gallery to add it to our shared digital album!" 
-          : "Şu an bir fotoğraf çekerek veya galerinizden seçerek ortak dijital albümümüze anında katkıda bulunun!"}
-      </p>
-      
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
-        <input 
-          type="file" 
-          accept="image/*" 
-          capture="environment"
-          ref={fileInputRef} 
-          style={{ display: "none" }} 
-          onChange={handleFileSelect} 
-        />
-        <button 
-          type="button" 
-          className="main-button" 
-          onClick={() => fileInputRef.current?.click()} 
-          disabled={isUploading}
-          style={{ padding: "16px 32px", fontSize: "16px" }}
-        >
-          📸 {isUploading ? (isEn ? "Analyzing AI & Uploading..." : "Yapay Zeka Tarıyor & Yükleniyor...") : (isEn ? "Open Camera / Gallery" : "Kamera / Galeri Aç")}
-        </button>
-      </div>
-    </m.section>
-  );
-});
-</file>
-
 <file path="src/components/invitation/sections/GuestsListSection.test.jsx">
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -1063,6 +1355,73 @@ describe('GuestsListSection Bileşeni', () => {
     expect(screen.getByText('5')).toBeInTheDocument();  // notAttendingCount
   });
 });
+</file>
+
+<file path="src/hooks/useAudioRecorder.js">
+import { useState, useRef } from 'react';
+import { uploadMediaFile } from '../services/database';
+
+export function useAudioRecorder() {
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const mediaRecorderRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      const chunks = [];
+
+      mediaRecorderRef.current.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        setAudioBlob(blob);
+        clearInterval(timerRef.current);
+        // Mikrofonu kapat
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
+    } catch (err) {
+      console.error("Mikrofon izni alınamadı:", err);
+      alert("Ses kaydetmek için mikrofon erişimine izin vermeniz gerekiyor.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      clearInterval(timerRef.current);
+    }
+  };
+
+  const clearRecording = () => {
+    setAudioBlob(null);
+    setRecordingTime(0);
+  };
+
+  const uploadAudio = async () => {
+    if (!audioBlob) return null;
+    const file = new File([audioBlob], `wish_audio_${Date.now()}.webm`, { type: 'audio/webm' });
+    return await uploadMediaFile(file, 'audio_wishes'); 
+  };
+
+  return { 
+    isRecording, 
+    recordingTime, 
+    startRecording, 
+    stopRecording, 
+    clearRecording, 
+    audioBlob, 
+    uploadAudio 
+  };
+}
 </file>
 
 <file path="src/hooks/useCountdown.js">
@@ -1187,6 +1546,45 @@ export function useExportData(isEn) {
 }
 </file>
 
+<file path="src/hooks/useGuestPhotosQuery.js">
+import { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
+
+export function useGuestPhotosQuery() {
+  const [photos, setPhotos] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPhotos = async () => {
+      const { data } = await supabase
+        .from('guest_photos')
+        .select('*')
+        .eq('approved', true)
+        .order('created_at', { ascending: false });
+      if (data && isMounted) setPhotos(data);
+    };
+
+    fetchPhotos();
+
+    // Veritabanında onaylanan yeni fotoğrafları anında dinle
+    const channel = supabase
+      .channel('public:guest_photos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_photos', filter: 'approved=eq.true' }, () => {
+          if (isMounted) fetchPhotos();
+      })
+      .subscribe();
+
+    return () => { 
+      isMounted = false;
+      supabase.removeChannel(channel).catch(console.error); 
+    };
+  }, []);
+
+  return { photos };
+}
+</file>
+
 <file path="src/hooks/useLocale.js">
 import { useTranslation } from "react-i18next";
 
@@ -1202,6 +1600,42 @@ export function useLocale() {
   };
 
   return { t, i18n, isEn, toggleLanguage };
+}
+</file>
+
+<file path="src/hooks/usePaymentFeedback.js">
+import { useEffect } from 'react';
+import { useStore } from '../store/useStore';
+import { useTranslation } from 'react-i18next';
+
+export function usePaymentFeedback() {
+  const showAppAlert = useStore(state => state.showAppAlert);
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+
+    if (paymentStatus === 'success') {
+      showAppAlert(
+        isEn 
+          ? "Your gift has been successfully received. Thank you so much for your support! 💖" 
+          : "Hediyeniz başarıyla ulaştı. Desteğiniz için sonsuz teşekkürler! 💖", 
+        { tone: "success", title: "Başarılı 🎉" }
+      );
+      // URL'yi temizle
+      window.history.replaceState(null, "", window.location.pathname);
+    } else if (paymentStatus === 'cancel') {
+      showAppAlert(
+        isEn ? "Payment process was cancelled." : "Ödeme işlemi iptal edildi.", 
+        { tone: "info", title: "Bilgi" }
+      );
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, [showAppAlert, isEn]);
 }
 </file>
 
@@ -1229,105 +1663,6 @@ i18n
   });
 
 export default i18n;
-</file>
-
-<file path="src/store/slices/adminDraftSlice.ts">
-import { StateCreator } from 'zustand';
-import { MainStoreState, AdminDraftSlice } from '../storeTypes';
-import { loadStoredSiteData, normalizeSiteData } from '../../utils/helpers';
-import { saveSettingsToDatabase } from '../../services/database';
-import { useAdminStore } from '../useAdminStore';
-import { SiteData } from '../../types';
-
-export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDraftSlice> = (set, get) => ({
-  adminDraft: loadStoredSiteData() as SiteData,
-  setAdminDraft: (draftOrUpdater) => set((state) => ({
-    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
-  })),
-  activeAdminTab: "general",
-  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
-  personalLinkName: "",
-  setPersonalLinkName: (name) => set({ personalLinkName: name }),
-  dataImportText: "",
-  setDataImportText: (text) => set({ dataImportText: text }),
-
-  updateDraftObject: (group, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [group]: {
-        ...(state.adminDraft[group] as Record<string, any>),
-        [key]: value
-      }
-    }
-  })),
-
-  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: arrayTarget.map((item, i) => i === index ? { ...item, [key]: value } : item)
-      }
-    };
-  }),
-
-  addDraftArrayItem: (arrayKey, item) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: [...arrayTarget, item]
-      }
-    };
-  }),
-
-  removeDraftArrayItem: (arrayKey, index) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: arrayTarget.filter((_, i) => i !== index)
-      }
-    };
-  }),
-
-  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
-    const newArray = [...((state.adminDraft[arrayKey] || []) as any[])];
-    if (index + direction < 0 || index + direction >= newArray.length) return state;
-    const temp = newArray[index];
-    newArray[index] = newArray[index + direction];
-    newArray[index + direction] = temp;
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: newArray
-      }
-    };
-  }),
-
-  saveSiteContent: async (isEn) => {
-    const { adminDraft, setSiteData, setAdminDraft } = get();
-    const { setAdminSaveMessage } = useAdminStore.getState();
-    const cleanedData = normalizeSiteData({ 
-      ...adminDraft, 
-      invitation: { 
-        ...adminDraft.invitation, 
-        gallery: ((adminDraft.invitation.gallery as string[]) || []).map((img) => String(img || "").trim()).filter(Boolean) 
-      } 
-    }) as SiteData;
-    
-    try {
-      await saveSettingsToDatabase(cleanedData);
-      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
-      setSiteData(cleanedData); 
-      setAdminDraft(cleanedData);
-      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
-      setTimeout(() => setAdminSaveMessage(""), 3000);
-    } catch (error) {
-      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
-    }
-  }
-});
 </file>
 
 <file path="src/store/slices/dataSlice.ts">
@@ -1619,6 +1954,154 @@ describe('useStore Zustand Durum Yönetimi', () => {
 @import "./variables.css";
 @import "./base.css";
 @import "./responsive.css";
+</file>
+
+<file path="src/supabase/functions/stripe-webhook/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14.14.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
+});
+
+const cryptoProvider = Stripe.createSubtleCryptoProvider();
+
+serve(async (request) => {
+  const signature = request.headers.get('Stripe-Signature');
+  const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+
+  if (!signature || !webhookSecret) {
+    return new Response('Webhook secret veya imza eksik.', { status: 400 });
+  }
+
+  try {
+    const body = await request.text();
+    // Stripe imzasını doğrula (Güvenlik)
+    const event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      webhookSecret,
+      undefined,
+      cryptoProvider
+    );
+
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') || '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+    );
+
+    // Sadece başarılı ödeme (checkout tamamlanması) olayını dinliyoruz
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+
+      const guestName = session.metadata?.guestName || 'Bilinmeyen Misafir';
+      const note = session.metadata?.note || '';
+      const amount = session.amount_total ? session.amount_total / 100 : 0; // Kuruştan TL'ye çevir
+
+      // Veritabanına Başarılı Ödemeyi Kaydet
+      const { error } = await supabaseAdmin.from('payments').insert([{
+        guest_name: guestName,
+        amount: amount,
+        currency: session.currency?.toUpperCase() || 'TRY',
+        stripe_session_id: session.id,
+        status: 'completed',
+        note: note
+      }]);
+
+      if (error) {
+        console.error("Ödeme veritabanına kaydedilirken hata:", error);
+        return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+      }
+    }
+
+    return new Response(JSON.stringify({ received: true }), { status: 200 });
+
+  } catch (err: any) {
+    console.error(`Webhook Error: ${err.message}`);
+    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+  }
+});
+</file>
+
+<file path="src/supabase/functions/whatsapp-bot/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+const WHATSAPP_VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN');
+const WHATSAPP_ACCESS_TOKEN = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
+const PHONE_NUMBER_ID = Deno.env.get('PHONE_NUMBER_ID');
+
+serve(async (req) => {
+  // 1. Meta Webhook Kurulumu Doğrulaması (GET isteği için)
+  if (req.method === 'GET') {
+    const url = new URL(req.url);
+    if (url.searchParams.get("hub.verify_token") === WHATSAPP_VERIFY_TOKEN) {
+      return new Response(url.searchParams.get("hub.challenge"), { status: 200 });
+    }
+    return new Response("Forbidden", { status: 403 });
+  }
+
+  // 2. Gelen Mesajı İşleme (POST)
+  try {
+    const body = await req.json();
+    const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    
+    if (message && message.type === 'text') {
+      const userPhone = message.from;
+      const userText = message.text.body;
+
+      // OpenAI'ye düğün detaylarıyla prompt gönderme
+      const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${OPENAI_API_KEY}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { 
+              role: "system", 
+              content: "Sen Handenur ve Haluk Can'ın düğün asistanısın. Düğün tarihi 07 Ağustos 2027 saat 19:00'da. Adres: Fenerbahçe Orduevi Plaj Düğün Salonu, Kadıköy/İstanbul. Çocuk getirmek yasaktır, sadece yetişkinler. Takı/hediye için IBAN: TR53 0011 1000 0000 0145 4005 17. Davetlilerin sorularına nazik, kısa ve samimi bir dille emoji kullanarak cevap ver." 
+            },
+            { role: "user", content: userText }
+          ],
+          max_tokens: 150,
+          temperature: 0.3
+        })
+      });
+      
+      const aiData = await openAiRes.json();
+      const replyText = aiData.choices[0].message.content.trim();
+
+      // Meta API ile yanıtı WhatsApp'tan kullanıcıya iletme
+      const fbRes = await fetch(`https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ 
+          messaging_product: "whatsapp", 
+          to: userPhone, 
+          type: "text", 
+          text: { body: replyText } 
+        })
+      });
+
+      if (!fbRes.ok) {
+        console.error("WhatsApp gönderim hatası:", await fbRes.text());
+      }
+    }
+
+    return new Response("OK", { status: 200 });
+  } catch (error) {
+    console.error("Bot Error:", error);
+    return new Response("Error", { status: 500 });
+  }
+});
 </file>
 
 <file path="src/validations/schemas.test.js">
@@ -1977,36 +2460,6 @@ export function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLin
 }
 </file>
 
-<file path="src/components/admin/tabs/QrTab.jsx">
-import React from "react";
-import { AdminSection } from "../../AdminUI";
-
-export function QrTab({ saveSiteContent, qrImageUrl, downloadQrCode, currentShareLink, copyAdminLink, isEn }) {
-  return (
-    <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"} onSave={saveSiteContent}>
-      <p className="admin-help-text">{isEn ? "Download the QR code or copy the link." : "QR kodu indirebilir veya linki kopyalayabilirsiniz."}</p>
-      <div className="admin-qr-panel admin-panel-grid">
-        <div className="admin-qr-box">
-          <img src={qrImageUrl} alt="QR Code" className="admin-qr-image" />
-          <button type="button" className="main-button admin-qr-btn" onClick={downloadQrCode}>
-            {isEn ? "Download QR 📥" : "QR İndir 📥"}
-          </button>
-        </div>
-        <div className="admin-link-preview-box">
-          <div>
-            <span className="admin-link-preview-label">{isEn ? "General Invitation Link" : "Genel Davetiye Linki"}</span>
-            <input value={currentShareLink} readOnly className="admin-link-preview-input" />
-          </div>
-          <button type="button" className="secondary-button admin-link-copy-btn" onClick={() => copyAdminLink(currentShareLink, isEn ? "Invitation link copied!" : "Davetiye linki kopyalandı!")}>
-            {isEn ? "Copy Link 🔗" : "Linki Kopyala 🔗"}
-          </button>
-        </div>
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/ScheduleTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
@@ -2169,66 +2622,6 @@ export function AdminVideoField({ label, value, onFileSelect, onClear }) {
 }
 </file>
 
-<file path="src/components/common/GlobalModals.jsx">
-import React, { memo } from "react";
-import "../../styles/modals.css"; 
-
-export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
-  if (!customAlert && !customConfirm && !customPrompt) return null;
-
-  return (
-    <>
-      {customAlert && (
-        <div className="global-modal-overlay" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
-          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
-            <h3 className="global-modal-title">{customAlert.title}</h3>
-            <p className="global-modal-text">{customAlert.message}</p>
-            <button type="button" className="main-button global-modal-btn" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
-              {t('ui.ok')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {customConfirm && (
-        <div className="global-modal-overlay" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
-          <div className="global-modal-container" onClick={e => e.stopPropagation()}>
-            <h3 className="global-modal-title">{customConfirm.title}</h3>
-            <p className="global-modal-text">{customConfirm.message}</p>
-            <div className="global-modal-actions">
-              <button type="button" className="main-button global-modal-btn" onClick={() => { customConfirm.resolve(true); setCustomConfirm(null); }}>
-                {t('ui.yes')}
-              </button>
-              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
-                {t('ui.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {customPrompt && (
-        <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
-          <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
-            <h3 className="global-modal-title">{customPrompt.title}</h3>
-            <p className="global-modal-text">{customPrompt.label}</p>
-            {customPrompt.multiline ? (
-              <textarea autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
-            ) : (
-              <input autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
-            )}
-            <div className="global-modal-actions">
-              <button type="submit" className="main-button global-modal-btn">{t('ui.save')}</button>
-              <button type="button" className="secondary-button global-modal-btn" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>{t('ui.cancel')}</button>
-            </div>
-          </form>
-        </div>
-      )}
-    </>
-  );
-});
-</file>
-
 <file path="src/components/invitation/sections/FamilySection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -2278,6 +2671,137 @@ export const FooterSection = memo(function FooterSection({ coupleName, invitatio
       <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
       <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
     </m.footer>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/GuestCameraSection.jsx">
+import React, { useState, useRef, memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { uploadAndModerateGuestPhoto } from "../../../services/database";
+import { useStore } from "../../../store/useStore";
+import { triggerConfetti } from "../../../utils/helpers";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const GuestCameraSection = memo(function GuestCameraSection() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const showAppAlert = useStore((state) => state.showAppAlert);
+  const siteData = useStore((state) => state.siteData);
+  
+  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
+  const dateText = siteData?.invitation?.dateText || "";
+
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Filigran / Çerçeve Basma Fonksiyonu
+  const applyPhotoboothFilter = (originalFile) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(originalFile);
+      
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        // Orijinal Fotoğraf
+        ctx.drawImage(img, 0, 0);
+
+        // Alt Kısma Gradient Karartma (Okunabilirlik İçin)
+        const gradient = ctx.createLinearGradient(0, canvas.height - 150, 0, canvas.height);
+        gradient.addColorStop(0, "transparent");
+        gradient.addColorStop(1, "rgba(0,0,0,0.7)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+
+        // Çiftin İsmi
+        const fontSizeTitle = Math.floor(canvas.width * 0.05);
+        ctx.font = `bold ${fontSizeTitle}px serif`;
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(coupleName, canvas.width / 2, canvas.height - 60);
+        
+        // Tarih
+        const fontSizeDate = Math.floor(canvas.width * 0.025);
+        ctx.font = `${fontSizeDate}px sans-serif`;
+        ctx.fillStyle = "#f1c40f"; 
+        ctx.fillText(dateText, canvas.width / 2, canvas.height - 25);
+
+        canvas.toBlob((blob) => {
+          if (!blob) { reject(new Error("Canvas conversion failed")); return; }
+          resolve(new File([blob], `photobooth_${Date.now()}.jpg`, { type: "image/jpeg" }));
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = reject;
+    });
+  };
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      showAppAlert(isEn ? "Applying wedding frame..." : "Düğün çerçevesi uygulanıyor...", { title: "Fotoğraf Kabini" });
+      
+      // Fotoğrafa filigran bas
+      const watermarkedFile = await applyPhotoboothFilter(file);
+
+      showAppAlert(isEn ? "Uploading to shared album..." : "Ortak albüme yükleniyor...", { title: "Yükleniyor" });
+      const { isApproved } = await uploadAndModerateGuestPhoto(watermarkedFile);
+      
+      if (isApproved) {
+        triggerConfetti();
+        showAppAlert(isEn ? "Awesome! Your photo is added to the gallery." : "Harika! Çerçeveli fotoğrafınız galeriye eklendi.", { tone: "success" });
+      } else {
+        showAppAlert(isEn ? "Photo received. It will be published after admin review." : "Fotoğraf alındı. Gelin ve damat onayından sonra yayınlanacak.", { tone: "info" });
+      }
+    } catch (error) {
+      showAppAlert(isEn ? "Could not process photo." : "Fotoğraf işlenemedi. Lütfen tekrar deneyin.", { tone: "error", title: "Hata" });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+      <p className="section-label">{isEn ? "AR Photobooth" : "Dijital Fotoğraf Kabini"}</p>
+      <h2>{isEn ? "Share Your Memories" : "Anılarınızı Paylaşın"}</h2>
+      <p>
+        {isEn 
+          ? "Take a photo right now! We will automatically add our wedding frame and put it in the shared album." 
+          : "Şu an bir fotoğraf çekin! Düğün çerçevenizi otomatik olarak ekleyip dev ekrana ve ortak albümümüze yollayalım."}
+      </p>
+      
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
+        <input 
+          type="file" 
+          accept="image/*" 
+          capture="environment"
+          ref={fileInputRef} 
+          style={{ display: "none" }} 
+          onChange={handleFileSelect} 
+        />
+        <button 
+          type="button" 
+          className="main-button" 
+          onClick={() => fileInputRef.current?.click()} 
+          disabled={isUploading}
+          style={{ padding: "16px 32px", fontSize: "16px", background: "linear-gradient(135deg, #e67e22, #d35400)", borderColor: "#d35400" }}
+        >
+          📸 {isUploading ? (isEn ? "Processing..." : "İşleniyor & Yükleniyor...") : (isEn ? "Open Camera" : "Kamera / Galeri Aç")}
+        </button>
+      </div>
+    </m.section>
   );
 });
 </file>
@@ -2333,89 +2857,6 @@ export const ScheduleSection = memo(function ScheduleSection({ copy, invitation,
         ))}
       </div>
     </m.section>
-  );
-});
-</file>
-
-<file path="src/components/invitation/sections/WishesSection.jsx">
-import React, { useState, useMemo, memo } from "react";
-import { useTranslation } from "react-i18next";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Turnstile } from '@marsidev/react-turnstile';
-import { triggerConfetti } from "../../../utils/helpers";
-import { WISH_MAX_LENGTH } from "../../../config/constants";
-import { getWishSchema } from "../../../validations/schemas";
-
-export const WishesSection = memo(function WishesSection({ copy, submitWish, approvedWishes }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
-  
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [formKey, setFormKey] = useState(0); 
-
-  const wishSchema = useMemo(() => getWishSchema(t), [t]);
-
-  const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(wishSchema),
-    defaultValues: { name: "", message: "", honeypot: "" }
-  });
-
-  const currentMessage = watch("message") || "";
-
-  const onSubmit = async (data) => {
-    if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return;
-
-    await submitWish({ ...data, turnstileToken });
-    triggerConfetti();
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
-  };
-
-  return (
-    <section className="card">
-      <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
-      <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
-      
-      <form key={`wish-form-${formKey}`} className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
-
-        <div style={{ width: '100%' }}>
-          <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-          {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-        </div>
-        
-        <div className="field-with-counter">
-          <Controller name="message" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>} />
-          <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
-          {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
-        </div>
-
-        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-          <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
-        </div>
-        
-        <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
-          {isSubmitting ? "..." : t('form.submitWish')}
-        </button>
-      </form>
-      
-      <div className="wish-list">
-        {wishes.length === 0 ? (
-          <p className="empty-text">{t('ui.noWishes')}</p>
-        ) : (
-          wishes.slice(0, 4).map((wish) => (
-            <div className="wish-item" key={wish.id}>
-              <p>"{wish.message}"</p>
-              <strong>{wish.name}</strong>
-            </div>
-          ))
-        )}
-      </div>
-    </section>
   );
 });
 </file>
@@ -2582,6 +3023,105 @@ export default function LandingPage() {
     </div>
   );
 }
+</file>
+
+<file path="src/store/slices/adminDraftSlice.ts">
+import { StateCreator } from 'zustand';
+import { MainStoreState, AdminDraftSlice } from '../storeTypes';
+import { loadStoredSiteData, normalizeSiteData } from '../../utils/helpers';
+import { saveSettingsToDatabase } from '../../services/database';
+import { useAdminStore } from '../useAdminStore';
+import { SiteData } from '../../types';
+
+export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDraftSlice> = (set, get) => ({
+  adminDraft: loadStoredSiteData() as SiteData,
+  setAdminDraft: (draftOrUpdater) => set((state) => ({
+    adminDraft: typeof draftOrUpdater === 'function' ? draftOrUpdater(state.adminDraft) : draftOrUpdater
+  })),
+  activeAdminTab: "overview",
+  setActiveAdminTab: (tab) => set({ activeAdminTab: tab }),
+  personalLinkName: "",
+  setPersonalLinkName: (name) => set({ personalLinkName: name }),
+  dataImportText: "",
+  setDataImportText: (text) => set({ dataImportText: text }),
+
+  updateDraftObject: (group, key, value) => set((state) => ({
+    adminDraft: {
+      ...state.adminDraft,
+      [group]: {
+        ...(state.adminDraft[group] as Record<string, any>),
+        [key]: value
+      }
+    }
+  })),
+
+  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => {
+    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: arrayTarget.map((item, i) => i === index ? { ...item, [key]: value } : item)
+      }
+    };
+  }),
+
+  addDraftArrayItem: (arrayKey, item) => set((state) => {
+    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: [...arrayTarget, item]
+      }
+    };
+  }),
+
+  removeDraftArrayItem: (arrayKey, index) => set((state) => {
+    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: arrayTarget.filter((_, i) => i !== index)
+      }
+    };
+  }),
+
+  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
+    const newArray = [...((state.adminDraft[arrayKey] || []) as any[])];
+    if (index + direction < 0 || index + direction >= newArray.length) return state;
+    const temp = newArray[index];
+    newArray[index] = newArray[index + direction];
+    newArray[index + direction] = temp;
+    return {
+      adminDraft: {
+        ...state.adminDraft,
+        [arrayKey]: newArray
+      }
+    };
+  }),
+
+  saveSiteContent: async (isEn) => {
+    const { adminDraft, setSiteData, setAdminDraft } = get();
+    const { setAdminSaveMessage } = useAdminStore.getState();
+    const cleanedData = normalizeSiteData({ 
+      ...adminDraft, 
+      invitation: { 
+        ...adminDraft.invitation, 
+        gallery: ((adminDraft.invitation.gallery as string[]) || []).map((img) => String(img || "").trim()).filter(Boolean) 
+      } 
+    }) as SiteData;
+    
+    try {
+      await saveSettingsToDatabase(cleanedData);
+      localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
+      setSiteData(cleanedData); 
+      setAdminDraft(cleanedData);
+      setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
+      setTimeout(() => setAdminSaveMessage(""), 3000);
+    } catch (error) {
+      setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
+    }
+  }
+});
 </file>
 
 <file path="src/store/useStore.ts">
@@ -2996,32 +3536,6 @@ export function AdminLogin({
 }
 </file>
 
-<file path="src/components/admin/tabs/DataTab.jsx">
-import React from "react";
-import { AdminSection, AdminTextarea } from "../../AdminUI";
-
-export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, setDataImportText, importAllDataJson, isEn }) {
-  return (
-    <AdminSection title={isEn ? "Data Backup" : "Veri Yedeği"} onSave={saveSiteContent}>
-      <div className="admin-export-grid">
-        <div className="admin-export-card">
-          <strong>{isEn ? "Backup (Export)" : "Yedek Al (Dışa Aktar)"}</strong>
-          <span>{isEn ? "Downloads the entire system as a JSON file." : "Tüm sistemi JSON formatında bilgisayarınıza indirir."}</span>
-          <button type="button" className="main-button" onClick={exportAllDataJson}>{isEn ? "Download JSON ⬇️" : "JSON İndir ⬇️"}</button>
-        </div>
-        <div className="admin-import-box admin-import-container">
-          <strong className="admin-import-label">{isEn ? "Restore Backup (Import)" : "Yedeği Geri Yükle (İçe Aktar)"}</strong>
-          <AdminTextarea label="" value={dataImportText} onChange={setDataImportText} placeholder={isEn ? "Paste downloaded JSON file content here..." : "JSON içeriğini buraya yapıştırın..."} />
-          <button type="button" className="secondary-button danger-button admin-import-btn" onClick={importAllDataJson}>
-            {isEn ? "Import Backup ⬆️" : "Yedeği İçe Aktar ⬆️"}
-          </button>
-        </div>
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/GiftTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
@@ -3053,27 +3567,121 @@ export function GiftTab({ isEn }) {
 }
 </file>
 
-<file path="src/components/admin/tabs/index.js">
-// src/components/admin/tabs/index.js
-export { GuestsAdminPanel } from './GuestsAdminPanel';
-export { WishesAdminPanel } from './WishesAdminPanel';
-export { PersonalLinkPanel } from './PersonalLinkPanel';
-export { GeneralTab } from './GeneralTab';
-export { ThemeTab } from './ThemeTab';
-export { GalleryTab } from './GalleryTab';
-export { VisibilityTab } from './VisibilityTab';
-export { SecurityTab } from './SecurityTab';
-export { MessagesTab } from './MessagesTab';
-export { CopyTab } from './CopyTab';
-export { FamilyTab } from './FamilyTab';
-export { CeremonyTab } from './CeremonyTab';
-export { ScheduleTab } from './ScheduleTab';
-export { QrTab } from './QrTab';
-export { DataTab } from './DataTab';
-export { GiftTab } from './GiftTab';
-export { StoryTab } from './StoryTab';
-export { TablePlanTab } from './TablePlanTab';
-export { GuestPhotosTab } from './GuestPhotosTab';
+<file path="src/components/admin/tabs/QrTab.jsx">
+import React, { useState } from "react";
+import { AdminSection, AdminField } from "../../AdminUI";
+import { buildPersonalLink, getQrImageUrl } from "../../../utils/helpers";
+
+export function QrTab({ saveSiteContent, qrImageUrl, downloadQrCode, currentShareLink, copyAdminLink, isEn }) {
+  const [tableCount, setTableCount] = useState(15);
+
+  const printTableCards = () => {
+    const printWindow = window.open('', '_blank');
+    let html = `
+      <html>
+        <head>
+          <title>${isEn ? 'Table QR Cards' : 'Masa QR Kartları'}</title>
+          <style>
+            body { font-family: "Playfair Display", serif; text-align: center; background: #fff; margin: 0; padding: 20px; }
+            .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
+            .card { 
+              border: 3px solid #9f4f68; 
+              padding: 30px; 
+              border-radius: 20px; 
+              page-break-inside: avoid;
+              background: #fffafb;
+            }
+            img { width: 220px; height: 220px; margin-bottom: 10px; border-radius: 12px; }
+            h2 { color: #9f4f68; margin: 0 0 10px 0; font-size: 32px; }
+            p { color: #55303b; font-size: 18px; margin: 0; font-family: sans-serif; }
+            @media print {
+              body { padding: 0; }
+              .grid { gap: 20px; }
+              .card { border: 2px solid #9f4f68; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="grid">
+    `;
+
+    for (let i = 1; i <= tableCount; i++) {
+      const tableLink = buildPersonalLink(currentShareLink, "", i);
+      const tableQr = getQrImageUrl(tableLink);
+      html += `
+        <div class="card">
+          <h2>${isEn ? 'Table' : 'Masa'} ${i}</h2>
+          <img src="${tableQr}" alt="QR Code" crossorigin="anonymous" />
+          <p>${isEn ? 'Scan to send photos to the Live Projector!' : 'Canlı ekrana fotoğraf göndermek için okutun!'}</p>
+        </div>
+      `;
+    }
+
+    html += `
+          </div>
+          <script>
+            setTimeout(() => { window.print(); }, 1500);
+          </script>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
+  return (
+    <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"} onSave={saveSiteContent}>
+      <p className="admin-help-text">
+        {isEn 
+          ? "Download your general QR code or generate printable QR cards for each table." 
+          : "Genel QR kodunuzu indirebilir veya masalara koymak için toplu QR kartları yazdırabilirsiniz."}
+      </p>
+      
+      <div className="admin-qr-panel admin-panel-grid" style={{ marginBottom: "32px" }}>
+        <div className="admin-qr-box">
+          <img src={qrImageUrl} alt="QR Code" className="admin-qr-image" />
+          <button type="button" className="main-button admin-qr-btn" onClick={downloadQrCode}>
+            {isEn ? "Download General QR 📥" : "Genel QR İndir 📥"}
+          </button>
+        </div>
+        <div className="admin-link-preview-box">
+          <div>
+            <span className="admin-link-preview-label">{isEn ? "General Invitation Link" : "Genel Davetiye Linki"}</span>
+            <input value={currentShareLink} readOnly className="admin-link-preview-input" />
+          </div>
+          <button type="button" className="secondary-button admin-link-copy-btn" onClick={() => copyAdminLink(currentShareLink, isEn ? "Invitation link copied!" : "Davetiye linki kopyalandı!")}>
+            {isEn ? "Copy Link 🔗" : "Linki Kopyala 🔗"}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ padding: "24px", background: "var(--paper-soft)", borderRadius: "16px", border: "1px solid var(--admin-border-color)" }}>
+        <h4 style={{ color: "var(--rose-deep)", marginTop: 0, marginBottom: "12px", fontSize: "18px" }}>
+          {isEn ? "Print Table QR Cards" : "Masa QR Kartlarını Yazdır"}
+        </h4>
+        <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "20px" }}>
+          {isEn 
+            ? "Generate a beautiful PDF with table-specific QR codes. Guests who scan these will automatically have their table number filled in." 
+            : "Misafirlerinizin masalarındaki QR kodları okutarak doğrudan barkovizyona (canlı ekrana) fotoğraf atabilmesi için masa kartları oluşturun."}
+        </p>
+        <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: "200px" }}>
+            <AdminField 
+              type="number" 
+              label={isEn ? "Number of Tables" : "Toplam Masa Sayısı"} 
+              value={tableCount} 
+              onChange={(v) => setTableCount(Number(v))} 
+            />
+          </div>
+          <button type="button" className="main-button" onClick={printTableCards} style={{ marginBottom: "14px" }}>
+            {isEn ? "🖨️ Generate & Print Cards" : "🖨️ Kartları Oluştur ve Yazdır"}
+          </button>
+        </div>
+      </div>
+    </AdminSection>
+  );
+}
 </file>
 
 <file path="src/components/admin/tabs/SecurityTab.jsx">
@@ -3661,6 +4269,137 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
 });
 </file>
 
+<file path="src/components/invitation/sections/WishesSection.jsx">
+import React, { useState, useMemo, memo } from "react";
+import { useTranslation } from "react-i18next";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Turnstile } from '@marsidev/react-turnstile';
+import { triggerConfetti } from "../../../utils/helpers";
+import { WISH_MAX_LENGTH } from "../../../config/constants";
+import { getWishSchema } from "../../../validations/schemas";
+import { useAudioRecorder } from "../../../hooks/useAudioRecorder";
+
+export const WishesSection = memo(function WishesSection({ copy, submitWish, approvedWishes }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
+  
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [formKey, setFormKey] = useState(0); 
+
+  const { isRecording, recordingTime, startRecording, stopRecording, clearRecording, audioBlob, uploadAudio } = useAudioRecorder();
+
+  const wishSchema = useMemo(() => getWishSchema(t), [t]);
+
+  const { control, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(wishSchema),
+    defaultValues: { name: "", message: "", honeypot: "" }
+  });
+
+  const currentMessage = watch("message") || "";
+
+  const onSubmit = async (data) => {
+    if (data.honeypot) return;
+    if (!turnstileToken && navigator.onLine) return;
+
+    let audioUrl = null;
+    if (audioBlob) {
+      audioUrl = await uploadAudio();
+    }
+
+    await submitWish({ ...data, turnstileToken, audioUrl });
+    triggerConfetti();
+    reset();
+    clearRecording();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1);
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
+  return (
+    <section className="card">
+      <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
+      <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
+      
+      <form key={`wish-form-${formKey}`} className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
+
+        <div style={{ width: '100%' }}>
+          <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
+          {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+        </div>
+        
+        <div className="field-with-counter">
+          <Controller name="message" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>} />
+          <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
+          {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
+        </div>
+
+        {/* SESLİ MESAJ ALANI */}
+        <div style={{ width: '100%', background: 'var(--paper-soft)', padding: '16px', borderRadius: '12px', marginTop: '12px', border: '1px solid rgba(var(--theme-rgb), 0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            {isEn ? "Or leave a voice message! 🎤" : "Veya sesli bir anı bırakın! 🎤"}
+          </span>
+          
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {!isRecording && !audioBlob && (
+              <button type="button" onClick={startRecording} className="secondary-button" style={{ margin: 0, borderRadius: '50px', padding: '8px 24px', borderColor: '#e74c3c', color: '#e74c3c' }}>
+                🎙️ {isEn ? "Record" : "Kaydet"}
+              </button>
+            )}
+            
+            {isRecording && (
+              <button type="button" onClick={stopRecording} className="main-button" style={{ margin: 0, borderRadius: '50px', padding: '8px 24px', background: '#e74c3c', borderColor: '#e74c3c', animation: 'pulse 1.5s infinite' }}>
+                ⏹️ {isEn ? "Stop" : "Durdur"} ({formatTime(recordingTime)})
+              </button>
+            )}
+
+            {audioBlob && !isRecording && (
+              <>
+                <audio src={URL.createObjectURL(audioBlob)} controls style={{ height: '36px', maxWidth: '200px' }} />
+                <button type="button" onClick={clearRecording} className="secondary-button" style={{ margin: 0, padding: '8px', minWidth: 'auto' }}>
+                  🗑️
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+          <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
+        </div>
+        
+        <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
+          {isSubmitting ? "..." : t('form.submitWish')}
+        </button>
+      </form>
+      
+      <div className="wish-list">
+        {wishes.length === 0 ? (
+          <p className="empty-text">{t('ui.noWishes')}</p>
+        ) : (
+          wishes.slice(0, 4).map((wish) => (
+            <div className="wish-item" key={wish.id}>
+              <p>"{wish.message}"</p>
+              {wish.audioUrl && (
+                 <audio src={wish.audioUrl} controls style={{ width: '100%', height: '32px', marginTop: '8px' }} />
+              )}
+              <strong>{wish.name}</strong>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+});
+</file>
+
 <file path="src/components/AdminUI.jsx">
 export * from "./admin/ui/AdminInputs";
 export * from "./admin/ui/AdminMediaFields";
@@ -4076,490 +4815,6 @@ export function useWishesQuery() {
     isAdding: addWishMutation.isPending
   };
 }
-</file>
-
-<file path="src/i18n/locales/en.json">
-{
-  "invitation": {
-    "introLabel": "Wedding Invitation",
-    "introText": "You are invited to the most special day of our love story.",
-    "openButton": "Open Invitation 💌",
-    "heroLabel": "We Are Getting Married",
-    "countdownLabel": "Countdown",
-    "countdownTitle": "Time Left Until Our Wedding",
-    "invitationLabel": "Invitation",
-    "invitationTitle": "Will You Share Our Happiness?",
-    "familyLabel": "Our Families",
-    "familyTitle": "With the Joy of Our Families",
-    "ceremonyLabel": "Ceremony & Celebration",
-    "ceremonyTitle": "Details of the Day",
-    "scheduleLabel": "Wedding Schedule",
-    "locationLabel": "Date & Location",
-    "locationTitle": "Wedding Details",
-    "galleryLabel": "Photos",
-    "galleryTitle": "Outdoor Wedding Atmosphere",
-    "rsvpLabel": "RSVP",
-    "rsvpTitle": "RSVP Form",
-    "rsvpText": "Please let us know if you can attend to help us plan.",
-    "guestsLabel": "Guests",
-    "guestsTitle": "Guest List",
-    "wishesLabel": "Guestbook",
-    "wishesTitle": "Your Best Wishes",
-    "shareLabel": "Share",
-    "shareTitle": "Share the Invitation",
-    "shareDescription": "You can share our invitation with your loved ones.",
-    "thanksText": "Having you with us on this special day is the greatest gift.",
-    "footerSmall": "Made with love",
-    "declineTitle": "We'll Miss You! 😔",
-    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
-    "deadlineTitle": "RSVP Deadline Passed",
-    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
-  },
-  "form": {
-    "namePlaceholder": "Full Name",
-    "phonePlaceholder": "Your Phone Number",
-    "notePlaceholder": "Please Specify The Number Of People",
-    "messagePlaceholder": "Your Message",
-    "submitRsvp": "Send RSVP 🕊️",
-    "submitWish": "Send Message 💌",
-    "whatsappRsvp": "RSVP via WhatsApp 💬",
-    "missingInfo": "Missing Info ⚠️",
-    "missingNameMessage": "Please enter your full name. ✍️",
-    "missingWishMessage": "Please enter your name and message. ✍️"
-  },
-  "ui": {
-    "time": "Time",
-    "scroll": "SCROLL",
-    "days": "Days",
-    "hours": "Hours",
-    "mins": "Mins",
-    "secs": "Secs",
-    "date": "Date",
-    "venue": "Venue",
-    "address": "Address",
-    "goToMap": "Go to Map 📍",
-    "addToCalendar": "Add to Calendar 📅",
-    "closeEsc": "Close (Esc)",
-    "prev": "Previous (←)",
-    "next": "Next (→)",
-    "shareQr": "Share quickly via QR code.",
-    "shareWhatsapp": "Share via WhatsApp 💬",
-    "copyLink": "Copy Link 🔗",
-    "giftTitle": "Gift & Registry",
-    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
-    "copyIban": "Copy IBAN 📋",
-    "copied": "Copied! ✅",
-    "close": "OK 👍",
-    "closeBtn": "Close ❌",
-    "sendGift": "Would you like to send a gift? 🎁",    
-    "totalResponses": "Total Responses",
-    "attending": "Attending",
-    "notAttending": "Not Attending",
-    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
-    "noWishes": "No wishes yet.",
-    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
-    "save": "Save 💾",
-    "cancel": "Cancel 🚫",
-    "yes": "Yes ✔️",
-    "ok": "OK 👍"
-  },
-  "visibility": {
-    "countdown": "Countdown",
-    "family": "Family Info",
-    "ceremony": "Ceremony & Wedding",
-    "schedule": "Wedding Schedule",
-    "location": "Location (Map)",
-    "gallery": "Photo Gallery",
-    "rsvp": "RSVP Form",
-    "wishes": "Guestbook",
-    "iban": "Gift / IBAN Section",
-    "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Information ℹ️",
-    "errorTitle": "Error ❌",
-    "saveTitle": "Saved 🎉",
-    "saveErrorTitle": "Save error 😔",
-    "supabaseMissingTitle": "Supabase connection missing 🔌",
-    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
-    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
-    "wishSaved": "Your wish has been saved. 💖",
-    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
-    "wishError": "Could not save message. Detail: {{message}} ❌",
-    "linkCopied": "Invitation link copied. 🔗",
-    "linkCopyError": "Could not copy link. ⚠️"
-  },
-  "popupIban": "Gift Button for Non-Attending (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Delete all RSVP records?",
-    "clearGuestsTitle": "Clear Guests",
-    "clearWishesConfirm": "Delete all guestbook messages?",
-    "clearWishesTitle": "Clear Guestbook",
-    "deleteGuestConfirm": "Delete this RSVP record?",
-    "deleteGuestTitle": "Delete Record",
-    "editGuestTitle": "Edit RSVP",
-    "fullName": "Full Name",
-    "phone": "Phone",
-    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
-    "personCount": "Person Count",
-    "side": "Side",
-    "hasChild": "Has children? (Evet/Hayır)",
-    "songRequest": "Song Request",
-    "note": "Note",
-    "deleteWishConfirm": "Delete this message?",
-    "deleteWishTitle": "Delete Message",
-    "editWishTitle": "Edit Message",
-    "message": "Message",
-    "couldNotDelete": "Could not delete.",
-    "couldNotUpdate": "Could not update.",
-    "couldNotChangeStatus": "Could not change status."
-  },
-    "navigation": {
-    "chooseApp": "Choose Navigation App",
-    "copyAddress": "Copy Full Address 📋",
-    "addressCopied": "Address Copied! ✅"
-  },
-  "guestPhotos": "Guest POV Photos",
-  "massMessageSuccess": "Mass messages successfully initiated.",
-  "aiGenerating": "AI assistant is preparing your message..."
-}
-</file>
-
-<file path="src/i18n/locales/tr.json">
-{
-  "invitation": {
-    "introLabel": "Düğün Davetiyesi",
-    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
-    "openButton": "Daveti Aç 💌",
-    "heroLabel": "Biz Evleniyoruz",
-    "countdownLabel": "Geri Sayım",
-    "countdownTitle": "Düğünümüze Kalan Süre",
-    "invitationLabel": "Davet",
-    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
-    "familyLabel": "Ailelerimiz",
-    "familyTitle": "Ailelerimizin Katılımıyla",
-    "ceremonyLabel": "Nikah ve Düğün",
-    "ceremonyTitle": "Günün Detayları",
-    "scheduleLabel": "Düğün Takvimi",
-    "locationLabel": "Tarih ve Konum",
-    "locationTitle": "Düğün Bilgileri",
-    "galleryLabel": "Fotoğraflar",
-    "galleryTitle": "Kır Düğünü Atmosferi",
-    "rsvpLabel": "Katılım",
-    "rsvpTitle": "Katılım Bildirimi",
-    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
-    "guestsLabel": "Misafirler",
-    "guestsTitle": "Misafir Listesi",
-    "wishesLabel": "Anı Defteri",
-    "wishesTitle": "Güzel Dilekleriniz",
-    "shareLabel": "Paylaş",
-    "shareTitle": "Davetiyeyi Paylaş",
-    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
-    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
-    "footerSmall": "Made with love",
-    "declineTitle": "Çok Üzüldük! 😔",
-    "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
-    "deadlineTitle": "LCV Bildirim Süresi Doldu",
-    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
-  },
-  "form": {
-    "namePlaceholder": "Ad Soyad",
-    "phonePlaceholder": "Telefon Numaranız",
-    "notePlaceholder": "Kişi Sayısını Belirtiniz",
-    "messagePlaceholder": "Mesajınız",
-    "submitRsvp": "Katılımı Gönder 🕊️",
-    "submitWish": "Mesajı Gönder 💌",
-    "whatsappRsvp": "WhatsApp ile Bildir 💬",
-    "missingInfo": "Eksik Bilgi ⚠️",
-    "missingNameMessage": "Lütfen ad soyad gir. ✍️",
-    "missingWishMessage": "Lütfen isim ve mesaj gir. ✍️"
-  },
-  "ui": {
-    "time": "Saat",
-    "scroll": "KAYDIR",
-    "days": "Gün",
-    "hours": "Saat",
-    "mins": "Dakika",
-    "secs": "Saniye",
-    "date": "Tarih",
-    "venue": "Yer",
-    "address": "Adres",
-    "goToMap": "Konuma Git 📍",
-    "addToCalendar": "Takvime Ekle 📅",
-    "closeEsc": "Kapat (Esc)",
-    "prev": "Önceki (←)",
-    "next": "Sonraki (→)",
-    "shareQr": "QR kod ile hızlıca paylaşabilirsiniz.",
-    "shareWhatsapp": "WhatsApp ile Paylaş 💬",
-    "copyLink": "Linki Kopyala 🔗",
-    "giftTitle": "Hediye & Takı",
-    "giftDescription": "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için:",
-    "copyIban": "IBAN'ı Kopyala 📋",
-    "copied": "Kopyalandı ✅",
-    "close": "Tamam 👍",
-    "closeBtn": "Kapat ❌",
-    "sendGift": "Hediye Göndermek İster misiniz? 🎁",
-    "totalResponses": "Toplam Yanıt",
-    "attending": "Katılacak",
-    "notAttending": "Katılmayacak",
-    "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
-    "noWishes": "Henüz güzel dilek yok.",
-    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
-    "save": "Kaydet 💾",
-    "cancel": "Vazgeç 🚫",
-    "yes": "Evet ✔️",
-    "ok": "Tamam 👍"
-  },
-  "visibility": {
-    "countdown": "Geri Sayım",
-    "family": "Aile Bilgileri",
-    "ceremony": "Nikah ve Düğün",
-    "schedule": "Düğün Takvimi",
-    "location": "Konum (Harita)",
-    "gallery": "Fotoğraf Galerisi",
-    "rsvp": "Lcv (Katılım Formu)",
-    "wishes": "Anı Defteri",
-    "iban": "Hediye / IBAN Bölümü",
-    "guests": "Misafir Listesi",
-    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
-  },
-  "alerts": {
-    "successTitle": "Bilgi ℹ️",
-    "errorTitle": "Hata ❌",
-    "saveTitle": "Bilgileriniz Alındı 🎉",
-    "saveErrorTitle": "Kayıt hatası 😔",
-    "supabaseMissingTitle": "Supabase bağlantısı eksik 🔌",
-    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz! 💌",
-    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}} ❌",
-    "wishSaved": "Güzel dileğin kaydedildi. 💖",
-    "wishSentApproval": "Güzel dileğin admin onayına gönderildi. ⏳",
-    "wishError": "Mesaj kaydedilemedi. Detay: {{message}} ❌",
-    "linkCopied": "Davetiye linki kopyalandı. 🔗",
-    "linkCopyError": "Link kopyalanamadı. ⚠️"
-  },
-  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
-  "admin": {
-    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
-    "clearGuestsTitle": "Katılım kayıtlarını sil",
-    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
-    "clearWishesTitle": "Anı defterini temizle",
-    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
-    "deleteGuestTitle": "Kaydı sil",
-    "editGuestTitle": "Katılım kaydını düzenle",
-    "fullName": "Ad Soyad",
-    "phone": "Telefon",
-    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
-    "personCount": "Kişi sayısı",
-    "side": "Taraf",
-    "hasChild": "Çocuk var mı? (Evet/Hayır)",
-    "songRequest": "Müzik isteği",
-    "note": "Not",
-    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
-    "deleteWishTitle": "Mesajı sil",
-    "editWishTitle": "Mesajı düzenle",
-    "message": "Mesaj",
-    "couldNotDelete": "Silinemedi.",
-    "couldNotUpdate": "Güncellenemedi.",
-    "couldNotChangeStatus": "Durum değiştirilemedi."
-  },
-    "navigation": {
-    "chooseApp": "Yol Tarifi Al",
-    "copyAddress": "Tam Adresi Kopyala 📋",
-    "addressCopied": "Adres Kopyalandı! ✅"
-  },
-
-  "guestPhotos": "Misafir POV Fotoğrafları",
-  "massMessageSuccess": "Toplu mesajlar başarıyla başlatıldı.",
-  "aiGenerating": "Yapay zeka asistanı mesajınızı hazırlıyor..."
-}
-</file>
-
-<file path="src/services/database.ts">
-import { supabase } from "../supabaseClient";
-import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
-import { optimizeImage } from "../utils/imageOptimizer";
-import { SiteData, Guest, Wish } from "../types";
-import { get, set } from 'idb-keyval'; 
-
-export const getSupabaseUrl = (): string => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
-export const getSupabaseKey = (): string => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
-
-export const getSupabaseSetupMessage = (): string => {
-  const url = getSupabaseUrl();
-  const key = getSupabaseKey();
-  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı.";
-  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini kontrol et.";
-};
-
-export const getReadableAuthError = (error: any): string => {
-  if (!error) return "Bilinmeyen bir hata oluştu.";
-  const status = error?.status || error?.code;
-  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
-  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı.";
-  if (status === 429) return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar deneyin.";
-  return error?.message || "İşlem tamamlanamadı. Bağlantınızı kontrol edin.";
-};
-
-export const isSupabaseReady = (): boolean => Boolean(getSupabaseUrl() && getSupabaseKey());
-
-export const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await fetchFn();
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); 
-    }
-  }
-  throw new Error("Tüm denemeler başarısız oldu.");
-};
-
-export const loadSettingsFromDatabase = async (): Promise<SiteData | null> => {
-  if (!isSupabaseReady()) return null;
-  return fetchWithRetry(async () => {
-    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
-    if (error) throw error;
-    return normalizeSiteData(data?.content || null) as SiteData;
-  });
-};
-
-export const saveSettingsToDatabase = async (settings: SiteData): Promise<void> => {
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
-  const { error } = await supabase.from("invitation_settings").upsert({ id: "main", content: settings as any, updated_at: new Date().toISOString() }, { onConflict: "id" });
-  if (error) throw error;
-};
-
-export const loadGuestsFromDatabase = async (): Promise<Guest[]> => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
-  if (error) return [];
-  return (data || []).map(dbGuestToUi);
-};
-
-export const loadAllWishesFromDatabase = async (): Promise<Wish[]> => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
-  if (error) return [];
-  return (data || []).map(dbWishToUi);
-};
-
-export const loadPublishedWishesFromDatabase = async (): Promise<Wish[]> => {
-  if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
-  if (error) return [];
-  return (data || []).map(dbWishToUi);
-};
-
-export const uploadMediaFile = async (rawFile: File, folder = "media"): Promise<string | null> => {
-  if (!rawFile) return null;
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
-  
-  let fileToUpload: File | Blob = rawFile;
-  if (folder === "images" || rawFile.type.startsWith("image/")) {
-    try { fileToUpload = await optimizeImage(rawFile) as File | Blob; } catch (e) { }
-  }
-
-  const fileExt = rawFile.name.split(".").pop() || "file";
-  const safeName = rawFile.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+\vert{}-+$/g, ""); 
-  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
-  
-  const { error } = await supabase.storage.from("wedding-media").upload(fileName, fileToUpload, { cacheControl: "3600", upsert: true, contentType: fileToUpload.type || undefined });
-  if (error) throw error;
-  
-  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
-  return data.publicUrl;
-};
-
-export const uploadAndModerateGuestPhoto = async (rawFile: File): Promise<{ url: string | null, isApproved: boolean }> => {
-  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
-  
-  const url = await uploadMediaFile(rawFile, "guest_photos");
-  if (!url) return { url: null, isApproved: false };
-
-  try {
-    const res = await supabase.functions.invoke('moderate-photo', {
-      body: { imageUrl: url }
-    });
-
-    const isSafe = res?.data?.isSafe;
-    await supabase.from('guest_photos').insert([{ image_url: url, approved: isSafe }]);
-    return { url, isApproved: isSafe };
-  } catch (err) {
-    await supabase.from('guest_photos').insert([{ image_url: url, approved: false }]);
-    return { url, isApproved: false };
-  }
-};
-
-export const deleteMediaFile = async (fileUrl: string): Promise<void> => {
-  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
-  try {
-    const urlObj = new URL(fileUrl);
-    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
-    if (pathSegments.length < 2) return;
-    const filePath = decodeURIComponent(pathSegments[1]);
-    const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
-    if (error) throw error;
-  } catch (error) {
-    const failedDeletes: string[] = (await get('failed_deletes')) || [];
-    if (!failedDeletes.includes(fileUrl)) {
-      failedDeletes.push(fileUrl);
-      await set('failed_deletes', failedDeletes);
-    }
-  }
-};
-
-export const syncFailedDeletes = async (): Promise<void> => {
-  const failedDeletes: string[] = (await get('failed_deletes')) || [];
-  if (failedDeletes.length === 0 || !navigator.onLine) return;
-
-  const remainingFails: string[] = [];
-  
-  for (const fileUrl of failedDeletes) {
-    try {
-      const urlObj = new URL(fileUrl);
-      const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
-      if (pathSegments.length < 2) continue;
-      const filePath = decodeURIComponent(pathSegments[1]);
-      const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
-      if (error) throw error;
-    } catch (err) {
-      remainingFails.push(fileUrl);
-    }
-  }
-  
-  await set('failed_deletes', remainingFails);
-};
-
-// EKLENDİ: Storage Garbage Collection (IndexedDB)
-export const runStorageGarbageCollection = async (): Promise<void> => {
-  try {
-    const failedDeletes: string[] = (await get('failed_deletes')) || [];
-    if (failedDeletes.length > 50) {
-      // IndexedDB şişmemesi için sadece son 50 silinmeyen kaydı tutuyoruz
-      const trimmed = failedDeletes.slice(-50);
-      await set('failed_deletes', trimmed);
-      console.log("[Garbage Collection] 'failed_deletes' temizlendi.");
-    }
-  } catch (error) {
-    console.error("[Garbage Collection] Hatası:", error);
-  }
-};
-
-export const restoreBackupToDatabase = async (parsedData: any): Promise<void> => {
-  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
-  if (parsedData.siteData) await saveSettingsToDatabase(parsedData.siteData);
-  if (parsedData.guests && parsedData.guests.length > 0) {
-     await supabase.from("guests").delete().not("id", "is", null);
-     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }: any) => rest);
-     await supabase.from("guests").insert(guestsToInsert);
-  }
-  if (parsedData.wishes && parsedData.wishes.length > 0) {
-     await supabase.from("wishes").delete().not("id", "is", null);
-     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }: any) => rest);
-     await supabase.from("wishes").insert(wishesToInsert);
-  }
-};
 </file>
 
 <file path="src/styles/variables.css">
@@ -5273,84 +5528,6 @@ serve(async (req) => {
 });
 </file>
 
-<file path="src/supabase/functions/create-payment/index.ts">
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from 'https://esm.sh/stripe@14.14.0';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
-});
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
-
-  try {
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    // YENİ: Veritabanı tabanlı Rate Limiting (Stripe Spam koruması)
-    if(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-        const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
-          client_ip: `create_payment_${ip}`,
-          max_req: 10,
-          window_seconds: 60
-        });
-
-        if (isLimited || rateLimitError) {
-          return new Response(JSON.stringify({ success: false, error: "Çok fazla ödeme isteği oluşturuldu. Lütfen 1 dakika bekleyin." }), { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
-          });
-        }
-    }
-
-    const { amount, guestName, note } = await req.json();
-    const origin = req.headers.get('origin') || 'http://localhost:5173';
-
-    if (!Deno.env.get('STRIPE_SECRET_KEY')) {
-       throw new Error("Stripe Secret Key ortam değişkenlerinde eksik.");
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'try',
-            product_data: {
-              name: 'Düğün Hediyesi',
-              description: `${guestName} tarafından gönderilen hediye. Not: ${note}`,
-            },
-            unit_amount: amount * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: `${origin}/?payment=success`,
-      cancel_url: `${origin}/?payment=cancel`,
-    });
-
-    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
-    });
-
-  } catch (error: any) {
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
-    });
-  }
-});
-</file>
-
 <file path="src/supabase/functions/face-match/index.ts">
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
@@ -5404,162 +5581,6 @@ serve(async (req) => {
     });
   }
 });
-</file>
-
-<file path="src/supabase/supabase-setup.sql">
-create extension if not exists pgcrypto;
-create table if not exists public.invitation_settings (
-  id text primary key,
-  content jsonb not null default '{}'::jsonb,
-  updated_at timestamptz not null default now()
-);
-insert into public.invitation_settings (id, content, updated_at)
-values ('main', '{}'::jsonb, now()) on conflict (id) do nothing;
-create table if not exists public.guests (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  phone text,
-  attendance text not null default 'Katılacağım',
-  person_count text not null default '1',
-  side text not null default 'Gelin Tarafı',
-  has_child text not null default 'Hayır',
-  song_request text,
-  note text,
-  has_arrived boolean not null default false,
-  created_at timestamptz not null default now()
-);
-create table if not exists public.wishes (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  message text not null,
-  approved boolean not null default false,
-  created_at timestamptz not null default now()
-);
--- RATE LIMIT TABLOSU (YENİ EKLENDİ)
-create table if not exists public.rate_limits (
-  id text primary key,
-  count int not null default 1,
-  reset_time timestamptz not null
-);
-alter table public.rate_limits enable row level security;
--- EDGE FUNCTION RATE LIMIT KONTROL RPC'Sİ (YENİ EKLENDİ)
-CREATE OR REPLACE FUNCTION check_rate_limit(client_ip text, max_req int, window_seconds int) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE current_count int;
-current_reset timestamptz;
-BEGIN
-SELECT count,
-  reset_time INTO current_count,
-  current_reset
-FROM public.rate_limits
-WHERE id = client_ip;
--- Eğer kayıt yoksa veya süre dolduysa sıfırla
-IF current_reset IS NULL
-OR now() > current_reset THEN
-INSERT INTO public.rate_limits (id, count, reset_time)
-VALUES (
-    client_ip,
-    1,
-    now() + (window_seconds || ' seconds')::interval
-  ) ON CONFLICT (id) DO
-UPDATE
-SET count = 1,
-  reset_time = now() + (window_seconds || ' seconds')::interval;
-RETURN false;
-END IF;
--- Limit aşıldıysa true dön
-IF current_count >= max_req THEN RETURN true;
-END IF;
--- Aksi takdirde sayacı artır
-UPDATE public.rate_limits
-SET count = count + 1
-WHERE id = client_ip;
-RETURN false;
-END;
-$$;
--- Mevcut Security Policy'ler
-alter table public.invitation_settings enable row level security;
-alter table public.guests enable row level security;
-alter table public.wishes enable row level security;
-drop policy if exists "Public can read settings" on public.invitation_settings;
-drop policy if exists "Authenticated can manage settings" on public.invitation_settings;
-drop policy if exists "Authenticated can manage guests" on public.guests;
-drop policy if exists "Anyone can read approved wishes" on public.wishes;
-drop policy if exists "Authenticated can manage wishes" on public.wishes;
-create policy "Public can read settings" on public.invitation_settings for
-select to anon,
-  authenticated using (id = 'main');
-create policy "Authenticated can manage settings" on public.invitation_settings for all to authenticated using (true) with check (true);
-create policy "Authenticated can manage guests" on public.guests for all to authenticated using (true) with check (true);
-create policy "Anyone can read approved wishes" on public.wishes for
-select to anon using (approved = true);
-create policy "Authenticated can manage wishes" on public.wishes for all to authenticated using (true) with check (true);
--- Güvenli Form Gönderim Fonksiyonları (RPC)
-CREATE OR REPLACE FUNCTION submit_guest_secure(guest_data jsonb, token text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE inserted_row record;
-BEGIN
-INSERT INTO public.guests (
-    name,
-    phone,
-    attendance,
-    person_count,
-    side,
-    has_child,
-    song_request,
-    note
-  )
-VALUES (
-    guest_data->>'name',
-    guest_data->>'phone',
-    guest_data->>'attendance',
-    COALESCE(guest_data->>'person_count', '1'),
-    COALESCE(guest_data->>'side', 'Gelin Tarafı'),
-    COALESCE(guest_data->>'has_child', 'Hayır'),
-    guest_data->>'song_request',
-    guest_data->>'note'
-  )
-RETURNING * INTO inserted_row;
-RETURN row_to_json(inserted_row)::jsonb;
-END;
-$$;
-CREATE OR REPLACE FUNCTION submit_wish_secure(
-    wish_name text,
-    wish_message text,
-    is_approved boolean,
-    token text
-  ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
-DECLARE inserted_row record;
-BEGIN
-INSERT INTO public.wishes (name, message, approved)
-VALUES (wish_name, wish_message, is_approved)
-RETURNING * INTO inserted_row;
-RETURN row_to_json(inserted_row)::jsonb;
-END;
-$$;
--- Storage ve Guest Photos
-insert into storage.buckets (id, name, public)
-values ('wedding-media', 'wedding-media', true) on conflict (id) do
-update
-set public = true;
-create policy "Public can view wedding media" on storage.objects for
-select to anon,
-  authenticated using (bucket_id = 'wedding-media');
-create policy "Authenticated can upload wedding media" on storage.objects for
-insert to authenticated with check (bucket_id = 'wedding-media');
-create policy "Authenticated can update wedding media" on storage.objects for
-update to authenticated using (bucket_id = 'wedding-media') with check (bucket_id = 'wedding-media');
-create policy "Authenticated can delete wedding media" on storage.objects for delete to authenticated using (bucket_id = 'wedding-media');
-create table if not exists public.guest_photos (
-  id uuid primary key default gen_random_uuid(),
-  image_url text not null,
-  approved boolean not null default false,
-  created_at timestamptz not null default now()
-);
-alter table public.guest_photos enable row level security;
-create policy "Anyone can read approved guest photos" on public.guest_photos for
-select to anon using (approved = true);
-create policy "Anon can insert guest photos" on public.guest_photos for
-insert to anon with check (true);
-create policy "Authenticated can manage guest photos" on public.guest_photos for all to authenticated using (true) with check (true);
 </file>
 
 <file path="src/supabaseClient.js">
@@ -5627,6 +5648,88 @@ const createMockSupabase = () => {
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createMockSupabase();
+</file>
+
+<file path="src/components/admin/tabs/DataTab.jsx">
+import React, { useState } from "react";
+import { AdminSection, AdminTextarea } from "../../AdminUI";
+import { syncFailedDeletes } from "../../../services/database";
+
+export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText, setDataImportText, importAllDataJson, isEn }) {
+  const [isCleaning, setIsCleaning] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState(null);
+
+  const handleGarbageCollection = async () => {
+    setIsCleaning(true);
+    setCleanupResult(null);
+    try {
+      const { successCount, failCount } = await syncFailedDeletes();
+      setCleanupResult(
+        isEn 
+          ? `Cleanup complete: ${successCount} files deleted. ${failCount} files still pending.` 
+          : `Temizlik tamamlandı: ${successCount} yetim dosya silindi. ${failCount} dosya beklemede.`
+      );
+    } catch (error) {
+      setCleanupResult(isEn ? "An error occurred during cleanup." : "Temizlik sırasında bir hata oluştu.");
+    } finally {
+      setIsCleaning(false);
+    }
+  };
+
+  return (
+    <AdminSection title={isEn ? "Data & Storage Management" : "Veri ve Depolama Yönetimi"} onSave={saveSiteContent}>
+      <p className="admin-help-text" style={{ marginBottom: "24px" }}>
+        {isEn 
+          ? "Manage your system backups and optimize storage by cleaning up orphaned media files." 
+          : "Sistem yedeklerinizi yönetin ve silinmemiş medya dosyalarını temizleyerek depolama alanınızı optimize edin."}
+      </p>
+
+      <div className="admin-export-grid" style={{ marginBottom: "32px" }}>
+        <div className="admin-export-card">
+          <strong style={{ color: "var(--rose-deep)" }}>{isEn ? "Backup (Export)" : "Yedek Al (Dışa Aktar)"}</strong>
+          <span>{isEn ? "Downloads the entire system as a JSON file." : "Tüm sistemi JSON formatında bilgisayarınıza indirir."}</span>
+          <button type="button" className="main-button" onClick={exportAllDataJson}>{isEn ? "Download JSON ⬇️" : "JSON İndir ⬇️"}</button>
+        </div>
+        <div className="admin-import-box admin-import-container">
+          <strong className="admin-import-label" style={{ color: "var(--rose-deep)" }}>{isEn ? "Restore Backup (Import)" : "Yedeği Geri Yükle (İçe Aktar)"}</strong>
+          <AdminTextarea label="" value={dataImportText} onChange={setDataImportText} placeholder={isEn ? "Paste downloaded JSON file content here..." : "JSON içeriğini buraya yapıştırın..."} />
+          <button type="button" className="secondary-button danger-button admin-import-btn" onClick={importAllDataJson}>
+            {isEn ? "Import Backup ⬆️" : "Yedeği İçe Aktar ⬆️"}
+          </button>
+        </div>
+      </div>
+
+      <div style={{ padding: "20px", background: "var(--paper-soft)", borderRadius: "12px", border: "1px solid var(--admin-border-color)" }}>
+        <h4 style={{ margin: "0 0 8px 0", color: "var(--rose-deep)" }}>
+          {isEn ? "Storage Optimization (Garbage Collection)" : "Depolama Optimizasyonu (Çöp Temizliği)"}
+        </h4>
+        <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "var(--text-muted)" }}>
+          {isEn 
+            ? "Sometimes deleted photos remain on the server due to connection drops. Use this tool to permanently erase them from Supabase and free up space." 
+            : "Bazen bağlantı kopmaları nedeniyle silinen fotoğraflar sunucuda (Supabase) asılı kalabilir. Bu araç, yetim kalan dosyaları kalıcı olarak temizler ve yer açar."}
+        </p>
+        
+        <button 
+          type="button" 
+          className="secondary-button" 
+          onClick={handleGarbageCollection}
+          disabled={isCleaning}
+          style={{ borderColor: "#d35400", color: "#d35400" }}
+        >
+          {isCleaning 
+            ? (isEn ? "Cleaning..." : "Temizleniyor...") 
+            : (isEn ? "Run Storage Cleanup 🧹" : "Depolama Temizliğini Başlat 🧹")}
+        </button>
+
+        {cleanupResult && (
+          <p style={{ margin: "12px 0 0 0", fontSize: "14px", fontWeight: "bold", color: "#27ae60" }}>
+            {cleanupResult}
+          </p>
+        )}
+      </div>
+    </AdminSection>
+  );
+}
 </file>
 
 <file path="src/components/admin/tabs/GalleryTab.jsx">
@@ -5782,6 +5885,32 @@ export function GalleryTab({ isEn }) {
 }
 </file>
 
+<file path="src/components/admin/tabs/index.js">
+// src/components/admin/tabs/index.js
+export { GuestsAdminPanel } from './GuestsAdminPanel';
+export { WishesAdminPanel } from './WishesAdminPanel';
+export { PersonalLinkPanel } from './PersonalLinkPanel';
+export { GeneralTab } from './GeneralTab';
+export { ThemeTab } from './ThemeTab';
+export { GalleryTab } from './GalleryTab';
+export { VisibilityTab } from './VisibilityTab';
+export { SecurityTab } from './SecurityTab';
+export { MessagesTab } from './MessagesTab';
+export { CopyTab } from './CopyTab';
+export { FamilyTab } from './FamilyTab';
+export { CeremonyTab } from './CeremonyTab';
+export { ScheduleTab } from './ScheduleTab';
+export { QrTab } from './QrTab';
+export { DataTab } from './DataTab';
+export { GiftTab } from './GiftTab';
+export { StoryTab } from './StoryTab';
+export { TablePlanTab } from './TablePlanTab';
+export { GuestPhotosTab } from './GuestPhotosTab';
+export { PaymentsTab } from './PaymentsTab';
+export { NotificationsTab } from './NotificationsTab';
+export { OverviewTab } from './OverviewTab';
+</file>
+
 <file path="src/components/admin/tabs/TablePlanTab.jsx">
 import React, { useState, useMemo } from "react";
 import { AdminSection } from "../../AdminUI";
@@ -5914,46 +6043,6 @@ export function TablePlanTab({ guests, assignTable, isEn }) {
       </DndContext>
     </AdminSection>
   );
-}
-</file>
-
-<file path="src/components/admin/AdminPanelComponents.jsx">
-// src/components/admin/AdminPanelComponents.jsx
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { 
-  GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
-  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab 
-} from "./tabs";
-
-export function AdminPanelContent(props) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-  const { activeAdminTab } = props;
-
-  switch (activeAdminTab) {
-    case "general": return <GeneralTab {...props} isEn={isEn} />;
-    case "theme": return <ThemeTab {...props} isEn={isEn} />;
-    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
-    case "guests": return <GuestsAdminPanel {...props} />;
-    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
-    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
-    case "personalLink": return <PersonalLinkPanel {...props} />;
-    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
-    case "security": return <SecurityTab {...props} isEn={isEn} />;
-    case "messages": return <MessagesTab {...props} isEn={isEn} />;
-    case "copy": return <CopyTab {...props} isEn={isEn} />;
-    case "family": return <FamilyTab {...props} isEn={isEn} />;
-    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
-    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
-    case "qr": return <QrTab {...props} isEn={isEn} />;
-    case "data": return <DataTab {...props} isEn={isEn} />;
-    case "gift": return <GiftTab {...props} isEn={isEn} />;
-    case "story": return <StoryTab {...props} isEn={isEn} />; 
-    case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
-    default: return null;
-  }
 }
 </file>
 
@@ -6437,48 +6526,778 @@ export function useAdminSession({ isAdminPage, isEn }) {
 }
 </file>
 
-<file path="src/pages/AdminView.jsx">
-// src/pages/AdminView.jsx
-import React from "react";
-import AdminDashboard from "../components/AdminDashboard";
-import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
-import { useStore } from "../store/useStore";
-
-export default function AdminView(props) {
-  const activeAdminTab = useStore(state => state.activeAdminTab);
-  
-  const adminTabs = [
-    { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
-    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
-    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
-    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
-    { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
-    { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
-    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
-    { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
-    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
-    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
-    // YENİ EKLENEN: Misafir Fotoğrafları Sekmesi
-    { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
-    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
-    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
-    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
-    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
-    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
-    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
-  ];
-
-  const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
-
-  return (
-    <AdminDashboard
-      activeTabInfo={activeTabInfo}
-      adminTabs={adminTabs}
-      {...props}
-      renderAdminActivePanel={() => <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />}
-    />
-  );
+<file path="src/i18n/locales/en.json">
+{
+  "invitation": {
+    "introLabel": "Wedding Invitation",
+    "introText": "You are invited to the most special day of our love story.",
+    "openButton": "Open Invitation 💌",
+    "heroLabel": "We Are Getting Married",
+    "countdownLabel": "Countdown",
+    "countdownTitle": "Time Left Until Our Wedding",
+    "invitationLabel": "Invitation",
+    "invitationTitle": "Will You Share Our Happiness?",
+    "familyLabel": "Our Families",
+    "familyTitle": "With the Joy of Our Families",
+    "ceremonyLabel": "Ceremony & Celebration",
+    "ceremonyTitle": "Details of the Day",
+    "scheduleLabel": "Wedding Schedule",
+    "locationLabel": "Date & Location",
+    "locationTitle": "Wedding Details",
+    "galleryLabel": "Photos",
+    "galleryTitle": "Outdoor Wedding Atmosphere",
+    "rsvpLabel": "RSVP",
+    "rsvpTitle": "RSVP Form",
+    "rsvpText": "Please let us know if you can attend to help us plan.",
+    "guestsLabel": "Guests",
+    "guestsTitle": "Guest List",
+    "wishesLabel": "Guestbook",
+    "wishesTitle": "Your Best Wishes",
+    "shareLabel": "Share",
+    "shareTitle": "Share the Invitation",
+    "shareDescription": "You can share our invitation with your loved ones.",
+    "thanksText": "Having you with us on this special day is the greatest gift.",
+    "footerSmall": "Made with love",
+    "declineTitle": "We'll Miss You! 😔",
+    "declineMessage": "We are sad that you won't be able to make it to our wedding. You can still leave us a sweet note in our Guestbook or contribute via the registry.",
+    "deadlineTitle": "RSVP Deadline Passed",
+    "deadlineText": "The deadline for RSVP submissions has passed. As our seating and catering arrangements have been finalized, the form is now closed. For any urgent changes or inquiries, please contact us directly via WhatsApp."
+  },
+  "form": {
+    "namePlaceholder": "Full Name",
+    "phonePlaceholder": "Your Phone Number",
+    "notePlaceholder": "Please Specify The Number Of People",
+    "messagePlaceholder": "Your Message",
+    "submitRsvp": "Send RSVP 🕊️",
+    "submitWish": "Send Message 💌",
+    "whatsappRsvp": "RSVP via WhatsApp 💬",
+    "missingInfo": "Missing Info ⚠️",
+    "missingNameMessage": "Please enter your full name. ✍️",
+    "missingWishMessage": "Please enter your name and message. ✍️"
+  },
+  "ui": {
+    "time": "Time",
+    "scroll": "SCROLL",
+    "days": "Days",
+    "hours": "Hours",
+    "mins": "Mins",
+    "secs": "Secs",
+    "date": "Date",
+    "venue": "Venue",
+    "address": "Address",
+    "goToMap": "Go to Map 📍",
+    "addToCalendar": "Add to Calendar 📅",
+    "closeEsc": "Close (Esc)",
+    "prev": "Previous (←)",
+    "next": "Next (→)",
+    "shareQr": "Share quickly via QR code.",
+    "shareWhatsapp": "Share via WhatsApp 💬",
+    "copyLink": "Copy Link 🔗",
+    "giftTitle": "Gift & Registry",
+    "giftDescription": "For those who wish to send a gift or contribute to our new life together:",
+    "copyIban": "Copy IBAN 📋",
+    "copied": "Copied! ✅",
+    "close": "OK 👍",
+    "closeBtn": "Close ❌",
+    "sendGift": "Would you like to send a gift? 🎁",    
+    "totalResponses": "Total Responses",
+    "attending": "Attending",
+    "notAttending": "Not Attending",
+    "privateNote": "Guest list and RSVP details are kept private and can only be viewed by the bride and groom.",
+    "noWishes": "No wishes yet.",
+    "prefilled": "✨ Dear {{name}}, this form is pre-filled for you.",
+    "save": "Save 💾",
+    "cancel": "Cancel 🚫",
+    "yes": "Yes ✔️",
+    "ok": "OK 👍"
+  },
+  "visibility": {
+    "countdown": "Countdown",
+    "family": "Family Info",
+    "ceremony": "Ceremony & Wedding",
+    "schedule": "Wedding Schedule",
+    "location": "Location (Map)",
+    "gallery": "Photo Gallery",
+    "rsvp": "RSVP Form",
+    "wishes": "Guestbook",
+    "iban": "Gift / IBAN Section",
+    "guests": "Guest List",
+    "popupIban": "Gift Button for Non-Attending (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Information ℹ️",
+    "errorTitle": "Error ❌",
+    "saveTitle": "Saved 🎉",
+    "saveErrorTitle": "Save error 😔",
+    "supabaseMissingTitle": "Supabase connection missing 🔌",
+    "rsvpSuccess": "Your RSVP has been successfully received. 💌",
+    "rsvpError": "Could not save RSVP. Detail: {{message}} ❌",
+    "wishSaved": "Your wish has been saved. 💖",
+    "wishSentApproval": "Your wish has been sent for admin approval. ⏳",
+    "wishError": "Could not save message. Detail: {{message}} ❌",
+    "linkCopied": "Invitation link copied. 🔗",
+    "linkCopyError": "Could not copy link. ⚠️"
+  },
+  "popupIban": "Gift Button for Non-Attending (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Delete all RSVP records?",
+    "clearGuestsTitle": "Clear Guests",
+    "clearWishesConfirm": "Delete all guestbook messages?",
+    "clearWishesTitle": "Clear Guestbook",
+    "deleteGuestConfirm": "Delete this RSVP record?",
+    "deleteGuestTitle": "Delete Record",
+    "editGuestTitle": "Edit RSVP",
+    "fullName": "Full Name",
+    "phone": "Phone",
+    "attendanceStatus": "Attendance (Katılacağım/Katılamayacağım)",
+    "personCount": "Person Count",
+    "side": "Side",
+    "hasChild": "Has children? (Evet/Hayır)",
+    "songRequest": "Song Request",
+    "note": "Note",
+    "deleteWishConfirm": "Delete this message?",
+    "deleteWishTitle": "Delete Message",
+    "editWishTitle": "Edit Message",
+    "message": "Message",
+    "couldNotDelete": "Could not delete.",
+    "couldNotUpdate": "Could not update.",
+    "couldNotChangeStatus": "Could not change status.",
+    "dashboardOverview": "Dashboard Overview",
+    "payments": "Received Gifts & Payments",
+    "notifications": "Push Notifications",
+    "tableQrCards": "Table QR Cards",
+    "storageCleanup": "Storage Cleanup"
+  },
+    "navigation": {
+    "chooseApp": "Choose Navigation App",
+    "copyAddress": "Copy Full Address 📋",
+    "addressCopied": "Address Copied! ✅"
+  },
+  "guestPhotos": "Guest POV Photos",
+  "massMessageSuccess": "Mass messages successfully initiated.",
+  "aiGenerating": "AI assistant is preparing your message..."
 }
+</file>
+
+<file path="src/i18n/locales/tr.json">
+{
+  "invitation": {
+    "introLabel": "Düğün Davetiyesi",
+    "introText": "Sevgiyle başlayan hikayemizin en özel gününe davetlisiniz.",
+    "openButton": "Daveti Aç 💌",
+    "heroLabel": "Biz Evleniyoruz",
+    "countdownLabel": "Geri Sayım",
+    "countdownTitle": "Düğünümüze Kalan Süre",
+    "invitationLabel": "Davet",
+    "invitationTitle": "Mutluluğumuza Ortak Olur Musunuz?",
+    "familyLabel": "Ailelerimiz",
+    "familyTitle": "Ailelerimizin Katılımıyla",
+    "ceremonyLabel": "Nikah ve Düğün",
+    "ceremonyTitle": "Günün Detayları",
+    "scheduleLabel": "Düğün Takvimi",
+    "locationLabel": "Tarih ve Konum",
+    "locationTitle": "Düğün Bilgileri",
+    "galleryLabel": "Fotoğraflar",
+    "galleryTitle": "Kır Düğünü Atmosferi",
+    "rsvpLabel": "Katılım",
+    "rsvpTitle": "Katılım Bildirimi",
+    "rsvpText": "Katılıp katılamayacağınızı bildirerek planlamamıza yardımcı olabilirsiniz.",
+    "guestsLabel": "Misafirler",
+    "guestsTitle": "Misafir Listesi",
+    "wishesLabel": "Anı Defteri",
+    "wishesTitle": "Güzel Dilekleriniz",
+    "shareLabel": "Paylaş",
+    "shareTitle": "Davetiyeyi Paylaş",
+    "shareDescription": "Davetiyemizi sevdiklerinizle paylaşabilirsiniz.",
+    "thanksText": "Bu özel günümüzde yanımızda olmanız bizim için en güzel hediye.",
+    "footerSmall": "Made with love",
+    "declineTitle": "Çok Üzüldük! 😔",
+    "declineMessage": "Düğünümüzde aramızda olamayacağınız için üzgünüz. Güzel dileklerinizi Anı Defteri üzerinden bizimle paylaşabilir ya da dilerseniz hediye/takı ekranından katkıda bulunabilirsiniz.",
+    "deadlineTitle": "LCV Bildirim Süresi Doldu",
+    "deadlineText": "Katılım bildirimleri için belirlenen son tarih dolmuştur. Masa ve ikram planlamalarımız tamamlandığı için form ziyarete kapatılmıştır. Acil bir değişiklik veya sorunuz için aşağıdaki WhatsApp butonunu kullanabilirsiniz."
+  },
+  "form": {
+    "namePlaceholder": "Ad Soyad",
+    "phonePlaceholder": "Telefon Numaranız",
+    "notePlaceholder": "Kişi Sayısını Belirtiniz",
+    "messagePlaceholder": "Mesajınız",
+    "submitRsvp": "Katılımı Gönder 🕊️",
+    "submitWish": "Mesajı Gönder 💌",
+    "whatsappRsvp": "WhatsApp ile Bildir 💬",
+    "missingInfo": "Eksik Bilgi ⚠️",
+    "missingNameMessage": "Lütfen ad soyad gir. ✍️",
+    "missingWishMessage": "Lütfen isim ve mesaj gir. ✍️"
+  },
+  "ui": {
+    "time": "Saat",
+    "scroll": "KAYDIR",
+    "days": "Gün",
+    "hours": "Saat",
+    "mins": "Dakika",
+    "secs": "Saniye",
+    "date": "Tarih",
+    "venue": "Yer",
+    "address": "Adres",
+    "goToMap": "Konuma Git 📍",
+    "addToCalendar": "Takvime Ekle 📅",
+    "closeEsc": "Kapat (Esc)",
+    "prev": "Önceki (←)",
+    "next": "Sonraki (→)",
+    "shareQr": "QR kod ile hızlıca paylaşabilirsiniz.",
+    "shareWhatsapp": "WhatsApp ile Paylaş 💬",
+    "copyLink": "Linki Kopyala 🔗",
+    "giftTitle": "Hediye & Takı",
+    "giftDescription": "Bu mutlu günümüzde yanımızda olamayan veya uzaktan katkıda bulunmak isteyen misafirlerimiz için:",
+    "copyIban": "IBAN'ı Kopyala 📋",
+    "copied": "Kopyalandı ✅",
+    "close": "Tamam 👍",
+    "closeBtn": "Kapat ❌",
+    "sendGift": "Hediye Göndermek İster misiniz? 🎁",
+    "totalResponses": "Toplam Yanıt",
+    "attending": "Katılacak",
+    "notAttending": "Katılmayacak",
+    "privateNote": "Misafir listesi ve katılım detayları gizlilik amacıyla sadece gelin ve damat tarafından görülmektedir.",
+    "noWishes": "Henüz güzel dilek yok.",
+    "prefilled": "✨ Sevgili {{name}}, form senin için otomatik dolduruldu.",
+    "save": "Kaydet 💾",
+    "cancel": "Vazgeç 🚫",
+    "yes": "Evet ✔️",
+    "ok": "Tamam 👍"
+  },
+  "visibility": {
+    "countdown": "Geri Sayım",
+    "family": "Aile Bilgileri",
+    "ceremony": "Nikah ve Düğün",
+    "schedule": "Düğün Takvimi",
+    "location": "Konum (Harita)",
+    "gallery": "Fotoğraf Galerisi",
+    "rsvp": "Lcv (Katılım Formu)",
+    "wishes": "Anı Defteri",
+    "iban": "Hediye / IBAN Bölümü",
+    "guests": "Misafir Listesi",
+    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
+  },
+  "alerts": {
+    "successTitle": "Bilgi ℹ️",
+    "errorTitle": "Hata ❌",
+    "saveTitle": "Bilgileriniz Alındı 🎉",
+    "saveErrorTitle": "Kayıt hatası 😔",
+    "supabaseMissingTitle": "Supabase bağlantısı eksik 🔌",
+    "rsvpSuccess": "Katılım formunuz başarıyla alınmıştır. Teşekkür ederiz! 💌",
+    "rsvpError": "Katılım bildirimi kaydedilemedi. Detay: {{message}} ❌",
+    "wishSaved": "Güzel dileğin kaydedildi. 💖",
+    "wishSentApproval": "Güzel dileğin admin onayına gönderildi. ⏳",
+    "wishError": "Mesaj kaydedilemedi. Detay: {{message}} ❌",
+    "linkCopied": "Davetiye linki kopyalandı. 🔗",
+    "linkCopyError": "Link kopyalanamadı. ⚠️"
+  },
+  "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
+  "admin": {
+    "clearGuestsConfirm": "Tüm katılım kayıtları silinsin mi?",
+    "clearGuestsTitle": "Katılım kayıtlarını sil",
+    "clearWishesConfirm": "Tüm anı defteri mesajları silinsin mi?",
+    "clearWishesTitle": "Anı defterini temizle",
+    "deleteGuestConfirm": "Bu katılım kaydı silinsin mi?",
+    "deleteGuestTitle": "Kaydı sil",
+    "editGuestTitle": "Katılım kaydını düzenle",
+    "fullName": "Ad Soyad",
+    "phone": "Telefon",
+    "attendanceStatus": "Katılım durumu (Katılacağım/Katılamayacağım)",
+    "personCount": "Kişi sayısı",
+    "side": "Taraf",
+    "hasChild": "Çocuk var mı? (Evet/Hayır)",
+    "songRequest": "Müzik isteği",
+    "note": "Not",
+    "deleteWishConfirm": "Bu anı defteri mesajı silinsin mi?",
+    "deleteWishTitle": "Mesajı sil",
+    "editWishTitle": "Mesajı düzenle",
+    "message": "Mesaj",
+    "couldNotDelete": "Silinemedi.",
+    "couldNotUpdate": "Güncellenemedi.",
+    "couldNotChangeStatus": "Durum değiştirilemedi.",
+    "dashboardOverview": "Sistem Özeti",
+    "payments": "Gelen Hediyeler & Ödemeler",
+    "notifications": "Anlık Bildirimler",
+    "tableQrCards": "Masa QR Kartları",
+    "storageCleanup": "Depolama Temizliği"
+  },
+    "navigation": {
+    "chooseApp": "Yol Tarifi Al",
+    "copyAddress": "Tam Adresi Kopyala 📋",
+    "addressCopied": "Adres Kopyalandı! ✅"
+  },
+
+  "guestPhotos": "Misafir POV Fotoğrafları",
+  "massMessageSuccess": "Toplu mesajlar başarıyla başlatıldı.",
+  "aiGenerating": "Yapay zeka asistanı mesajınızı hazırlıyor..."
+}
+</file>
+
+<file path="src/services/database.ts">
+import { supabase } from "../supabaseClient";
+import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+import { optimizeImage } from "../utils/imageOptimizer";
+import { SiteData, Guest, Wish } from "../types";
+import { get, set } from 'idb-keyval'; 
+
+export const getSupabaseUrl = (): string => String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
+export const getSupabaseKey = (): string => String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
+
+export const getSupabaseSetupMessage = (): string => {
+  const url = getSupabaseUrl();
+  const key = getSupabaseKey();
+  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı.";
+  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini kontrol et.";
+};
+
+export const getReadableAuthError = (error: any): string => {
+  if (!error) return "Bilinmeyen bir hata oluştu.";
+  const status = error?.status || error?.code;
+  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
+  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı.";
+  if (status === 429) return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar deneyin.";
+  return error?.message || "İşlem tamamlanamadı. Bağlantınızı kontrol edin.";
+};
+
+export const isSupabaseReady = (): boolean => Boolean(getSupabaseUrl() && getSupabaseKey());
+
+export const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fetchFn();
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, delay * (i + 1))); 
+    }
+  }
+  throw new Error("Tüm denemeler başarısız oldu.");
+};
+
+export const loadSettingsFromDatabase = async (): Promise<SiteData | null> => {
+  if (!isSupabaseReady()) return null;
+  return fetchWithRetry(async () => {
+    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
+    if (error) throw error;
+    return normalizeSiteData(data?.content || null) as SiteData;
+  });
+};
+
+export const saveSettingsToDatabase = async (settings: SiteData): Promise<void> => {
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+  const { error } = await supabase.from("invitation_settings").upsert({ id: "main", content: settings as any, updated_at: new Date().toISOString() }, { onConflict: "id" });
+  if (error) throw error;
+};
+
+export const loadGuestsFromDatabase = async (): Promise<Guest[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) return [];
+  return (data || []).map(dbGuestToUi);
+};
+
+export const loadAllWishesFromDatabase = async (): Promise<Wish[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) return [];
+  return (data || []).map(dbWishToUi);
+};
+
+export const loadPublishedWishesFromDatabase = async (): Promise<Wish[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
+  if (error) return [];
+  return (data || []).map(dbWishToUi);
+};
+
+export const uploadMediaFile = async (rawFile: File, folder = "media"): Promise<string | null> => {
+  if (!rawFile) return null;
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+  
+  let fileToUpload: File | Blob = rawFile;
+  if (folder === "images" || rawFile.type.startsWith("image/")) {
+    try { fileToUpload = await optimizeImage(rawFile) as File | Blob; } catch (e) { }
+  }
+
+  const fileExt = rawFile.name.split(".").pop() || "file";
+  const safeName = rawFile.name.replace(/\.[^/.]+$/, "").toLocaleLowerCase("tr-TR").replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-").replace(/^-+\vert{}-+$/g, ""); 
+  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
+  
+  const { error } = await supabase.storage.from("wedding-media").upload(fileName, fileToUpload, { cacheControl: "3600", upsert: true, contentType: fileToUpload.type || undefined });
+  if (error) throw error;
+  
+  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
+  return data.publicUrl;
+};
+
+export const uploadAndModerateGuestPhoto = async (rawFile: File): Promise<{ url: string | null, isApproved: boolean }> => {
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+  
+  const url = await uploadMediaFile(rawFile, "guest_photos");
+  if (!url) return { url: null, isApproved: false };
+
+  try {
+    const res = await supabase.functions.invoke('moderate-photo', {
+      body: { imageUrl: url }
+    });
+
+    const isSafe = res?.data?.isSafe;
+    await supabase.from('guest_photos').insert([{ image_url: url, approved: isSafe }]);
+    return { url, isApproved: isSafe };
+  } catch (err) {
+    await supabase.from('guest_photos').insert([{ image_url: url, approved: false }]);
+    return { url, isApproved: false };
+  }
+};
+
+export const deleteMediaFile = async (fileUrl: string): Promise<void> => {
+  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
+  try {
+    const urlObj = new URL(fileUrl);
+    const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
+    if (pathSegments.length < 2) return;
+    const filePath = decodeURIComponent(pathSegments[1]);
+    const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+    if (error) throw error;
+  } catch (error) {
+    const failedDeletes: string[] = (await get('failed_deletes')) || [];
+    if (!failedDeletes.includes(fileUrl)) {
+      failedDeletes.push(fileUrl);
+      await set('failed_deletes', failedDeletes);
+    }
+  }
+};
+
+export const syncFailedDeletes = async (): Promise<{ successCount: number, failCount: number }> => {
+  const failedDeletes: string[] = (await get('failed_deletes')) || [];
+  
+  if (failedDeletes.length === 0 || !navigator.onLine) {
+    return { successCount: 0, failCount: failedDeletes.length };
+  }
+
+  const remainingFails: string[] = [];
+  let successCount = 0;
+  
+  for (const fileUrl of failedDeletes) {
+    try {
+      const urlObj = new URL(fileUrl);
+      const pathSegments = urlObj.pathname.split('/object/public/wedding-media/');
+      if (pathSegments.length < 2) continue;
+      
+      const filePath = decodeURIComponent(pathSegments[1]);
+      const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+      
+      if (error) throw error;
+      successCount++;
+    } catch (err) {
+      remainingFails.push(fileUrl);
+    }
+  }
+  
+  await set('failed_deletes', remainingFails);
+  return { successCount, failCount: remainingFails.length };
+};
+
+export const runStorageGarbageCollection = async (): Promise<void> => {
+  try {
+    const failedDeletes: string[] = (await get('failed_deletes')) || [];
+    if (failedDeletes.length > 50) {
+      // IndexedDB şişmemesi için sadece son 50 silinmeyen kaydı tutuyoruz
+      const trimmed = failedDeletes.slice(-50);
+      await set('failed_deletes', trimmed);
+      console.log("[Garbage Collection] 'failed_deletes' temizlendi.");
+    }
+  } catch (error) {
+    console.error("[Garbage Collection] Hatası:", error);
+  }
+};
+
+export const restoreBackupToDatabase = async (parsedData: any): Promise<void> => {
+  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
+  if (parsedData.siteData) await saveSettingsToDatabase(parsedData.siteData);
+  if (parsedData.guests && parsedData.guests.length > 0) {
+     await supabase.from("guests").delete().not("id", "is", null);
+     const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }: any) => rest);
+     await supabase.from("guests").insert(guestsToInsert);
+  }
+  if (parsedData.wishes && parsedData.wishes.length > 0) {
+     await supabase.from("wishes").delete().not("id", "is", null);
+     const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }: any) => rest);
+     await supabase.from("wishes").insert(wishesToInsert);
+  }
+};
+</file>
+
+<file path="src/styles/modals.css">
+.global-modal-input,
+.global-modal-text,
+.global-modal-title {
+  font-family: "Playfair Display", serif;
+}
+.global-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999999;
+  background-color: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.global-modal-container {
+  background-color: var(--bg, #fff);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  padding: 34px 24px;
+  border: 2px solid var(--rose-dark, #b56c83);
+}
+.prompt-modal {
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.global-modal-title {
+  color: var(--rose-dark, #9f4f68);
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 800;
+}
+.global-modal-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text, #55303b);
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+.global-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.global-modal-btn {
+  margin: 0;
+  min-width: 120px;
+}
+.global-modal-input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1.5px solid var(--rose, #d98ca1);
+  outline: 0;
+  font-size: 16px;
+  background-color: var(--paper, #fff);
+  color: var(--text);
+}
+.global-modal-input.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.global-modal-input:focus {
+  border-color: var(--rose-dark);
+}
+
+/* =================================================================
+   GALLERY LIGHTBOX STYLES (Modern Yuvarlak ve Cam Efektli Butonlar)
+   ================================================================= */
+.gallery-lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 15, 15, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gallery-lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.gallery-lightbox-image {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.gallery-lightbox-caption {
+  color: #ffffff;
+  margin-top: 16px;
+  font-size: 15px;
+  font-family: sans-serif;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+/* Ortak Buton Stili (Glassmorphism) */
+.lightbox-control-btn {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Kapatma Butonu (Sağ Üst) */
+.lightbox-close {
+  top: 24px;
+  right: 24px;
+}
+.lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Önceki Butonu (Sol Orta) */
+.lightbox-prev {
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightbox-prev:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Sonraki Butonu (Sağ Orta) */
+.lightbox-next {
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.lightbox-next:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-50%) scale(1.1);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 768px) {
+  .lightbox-control-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .lightbox-close {
+    top: 16px;
+    right: 16px;
+  }
+  .lightbox-prev {
+    left: 12px;
+  }
+  .lightbox-next {
+    right: 12px;
+  }
+}
+</file>
+
+<file path="src/supabase/functions/create-payment/index.ts">
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import Stripe from 'https://esm.sh/stripe@14.14.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+  apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
+});
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  try {
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
+          client_ip: `create_payment_${ip}`,
+          max_req: 10,
+          window_seconds: 60
+        });
+
+        if (isLimited || rateLimitError) {
+          return new Response(JSON.stringify({ success: false, error: "Çok fazla ödeme isteği oluşturuldu. Lütfen 1 dakika bekleyin." }), { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+          });
+        }
+    }
+
+    const { amount, guestName, note } = await req.json();
+    const origin = req.headers.get('origin') || 'http://localhost:5173';
+
+    if (!Deno.env.get('STRIPE_SECRET_KEY')) {
+       throw new Error("Stripe Secret Key ortam değişkenlerinde eksik.");
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'try',
+            product_data: {
+              name: 'Düğün Hediyesi',
+              description: `${guestName} tarafından gönderilen hediye. Not: ${note}`,
+            },
+            unit_amount: amount * 100,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${origin}/?payment=success`,
+      cancel_url: `${origin}/?payment=cancel`,
+      // YENİ EKLENDİ: Ödeme tamamlandığında veritabanına yazmak için gereken veriler
+      metadata: {
+        guestName: guestName || 'Bilinmeyen Misafir',
+        note: note || ''
+      }
+    });
+
+    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    });
+
+  } catch (error: any) {
+    return new Response(JSON.stringify({ success: false, error: error.message }), { 
+      headers: corsHeaders, status: 400 
+    });
+  }
+});
 </file>
 
 <file path="src/supabase/functions/moderate-photo/index.ts">
@@ -6642,6 +7461,37 @@ serve(async (req) => {
 })
 </file>
 
+<file path="src/supabase/supabase-setup.sql">
+-- Mevcut tablolarınıza tenant_id sütunlarını ekleme
+ALTER TABLE public.guests
+ADD COLUMN IF NOT EXISTS tenant_id uuid;
+ALTER TABLE public.wishes
+ADD COLUMN IF NOT EXISTS tenant_id uuid;
+ALTER TABLE public.guest_photos
+ADD COLUMN IF NOT EXISTS tenant_id uuid;
+ALTER TABLE public.payments
+ADD COLUMN IF NOT EXISTS tenant_id uuid;
+-- Tenant (Kiralama/Çift) tablosunun oluşturulması
+CREATE TABLE IF NOT EXISTS public.tenants (
+  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  slug text UNIQUE NOT NULL,
+  created_at timestamptz DEFAULT now()
+);
+-- Row Level Security (RLS) İzolasyon Politikaları
+-- Misafirler (Anonim) yalnızca doğru slug ile ulaştıkları tenant'ın verilerini görebilir
+CREATE POLICY "Public can view tenant specific guests" ON public.guests FOR
+SELECT TO anon USING (
+    tenant_id IN (
+      SELECT id
+      FROM tenants
+      WHERE slug = current_setting('request.jwt.claims', true)::json->>'custom_tenant_slug'
+    )
+  );
+-- Sistem Yöneticileri (Authenticated - Çiftler) yalnızca KENDİ tenant verilerini okuyup/değiştirebilir
+CREATE POLICY "Tenants can manage own guests" ON public.guests FOR ALL TO authenticated USING (tenant_id = auth.uid()) WITH CHECK (tenant_id = auth.uid());
+CREATE POLICY "Tenants can manage own wishes" ON public.wishes FOR ALL TO authenticated USING (tenant_id = auth.uid()) WITH CHECK (tenant_id = auth.uid());
+</file>
+
 <file path="src/components/admin/tabs/WishesAdminPanel.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -6752,6 +7602,49 @@ export function WishesAdminPanel({
       </div>
     </AdminSection>
   );
+}
+</file>
+
+<file path="src/components/admin/AdminPanelComponents.jsx">
+// src/components/admin/AdminPanelComponents.jsx
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { 
+  OverviewTab, GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
+  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
+  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab, PaymentsTab, NotificationsTab 
+} from "./tabs";
+
+export function AdminPanelContent(props) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+  const { activeAdminTab } = props;
+
+  switch (activeAdminTab) {
+    case "general": return <GeneralTab {...props} isEn={isEn} />;
+    case "theme": return <ThemeTab {...props} isEn={isEn} />;
+    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
+    case "guests": return <GuestsAdminPanel {...props} />;
+    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
+    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
+    case "personalLink": return <PersonalLinkPanel {...props} />;
+    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
+    case "security": return <SecurityTab {...props} isEn={isEn} />;
+    case "messages": return <MessagesTab {...props} isEn={isEn} />;
+    case "copy": return <CopyTab {...props} isEn={isEn} />;
+    case "family": return <FamilyTab {...props} isEn={isEn} />;
+    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
+    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
+    case "qr": return <QrTab {...props} isEn={isEn} />;
+    case "data": return <DataTab {...props} isEn={isEn} />;
+    case "gift": return <GiftTab {...props} isEn={isEn} />;
+    case "story": return <StoryTab {...props} isEn={isEn} />; 
+    case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
+    case "payments": return <PaymentsTab {...props} isEn={isEn} />;
+    case "notifications": return <NotificationsTab {...props} isEn={isEn} />;
+    case "overview": return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
+    default: return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
+  }
 }
 </file>
 
@@ -7021,194 +7914,49 @@ export function useGuestsQuery() {
 }
 </file>
 
-<file path="src/styles/modals.css">
-.global-modal-input,
-.global-modal-text,
-.global-modal-title {
-  font-family: "Playfair Display", serif;
-}
-.global-modal-overlay {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 999999;
-  background-color: rgba(0, 0, 0, 0.65);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-}
-.global-modal-container {
-  background-color: var(--bg, #fff);
-  border-radius: 24px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-  width: 90%;
-  max-width: 400px;
-  text-align: center;
-  padding: 34px 24px;
-  border: 2px solid var(--rose-dark, #b56c83);
-}
-.prompt-modal {
-  max-width: 440px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.global-modal-title {
-  color: var(--rose-dark, #9f4f68);
-  margin: 0 0 12px;
-  font-size: 22px;
-  font-weight: 800;
-}
-.global-modal-text {
-  font-size: 17px;
-  line-height: 1.6;
-  color: var(--text, #55303b);
-  margin-bottom: 24px;
-  font-weight: 600;
-}
-.global-modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.global-modal-btn {
-  margin: 0;
-  min-width: 120px;
-}
-.global-modal-input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: 1.5px solid var(--rose, #d98ca1);
-  outline: 0;
-  font-size: 16px;
-  background-color: var(--paper, #fff);
-  color: var(--text);
-}
-.global-modal-input.textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-.global-modal-input:focus {
-  border-color: var(--rose-dark);
-}
+<file path="src/pages/AdminView.jsx">
+// src/pages/AdminView.jsx
+import React from "react";
+import AdminDashboard from "../components/AdminDashboard";
+import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
+import { useStore } from "../store/useStore";
 
-/* =================================================================
-   GALLERY LIGHTBOX STYLES (Modern Yuvarlak ve Cam Efektli Butonlar)
-   ================================================================= */
-.gallery-lightbox-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 15, 15, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 9999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.gallery-lightbox-content {
-  position: relative;
-  max-width: 90vw;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.gallery-lightbox-image {
-  max-width: 100%;
-  max-height: 80vh;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-.gallery-lightbox-caption {
-  color: #ffffff;
-  margin-top: 16px;
-  font-size: 15px;
-  font-family: sans-serif;
-  letter-spacing: 2px;
-  opacity: 0.8;
-}
+export default function AdminView(props) {
+  const activeAdminTab = useStore(state => state.activeAdminTab);
+  
+  const adminTabs = [
+    { id: "overview", label: "Sistem Özeti", description: "İstatistikler ve bekleyen onaylar" }, 
+    { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
+    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
+    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
+    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
+    { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
+    { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
+    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
+    { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
+    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
+    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    { id: "payments", label: "Gelen Hediyeler & Ödemeler", description: "Stripe üzerinden gelen takı ve hediyeler" },
+    { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
+    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
+    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
+    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
+    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
+    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
+    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
+    { id: "notifications", label: "Anlık Bildirimler", description: "PWA kullanıcılarına Push bildirim yolla" }
+  ];
 
-/* Ortak Buton Stili (Glassmorphism) */
-.lightbox-control-btn {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #ffffff;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
+  const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
 
-/* Kapatma Butonu (Sağ Üst) */
-.lightbox-close {
-  top: 24px;
-  right: 24px;
-}
-.lightbox-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-/* Önceki Butonu (Sol Orta) */
-.lightbox-prev {
-  left: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.lightbox-prev:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-50%) scale(1.1);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-/* Sonraki Butonu (Sağ Orta) */
-.lightbox-next {
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-.lightbox-next:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-50%) scale(1.1);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-@media (max-width: 768px) {
-  .lightbox-control-btn {
-    width: 42px;
-    height: 42px;
-  }
-  .lightbox-close {
-    top: 16px;
-    right: 16px;
-  }
-  .lightbox-prev {
-    left: 12px;
-  }
-  .lightbox-next {
-    right: 12px;
-  }
+  return (
+    <AdminDashboard
+      activeTabInfo={activeTabInfo}
+      adminTabs={adminTabs}
+      {...props}
+      renderAdminActivePanel={() => <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />}
+    />
+  );
 }
 </file>
 
@@ -7656,126 +8404,6 @@ function AdminDashboard(props) {
 export default React.memo(AdminDashboard);
 </file>
 
-<file path="src/pages/LiveProjector.jsx">
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { m, AnimatePresence } from 'framer-motion';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../supabaseClient';
-import { useWishesQuery } from '../hooks/useWishesQuery';
-import { useStore } from '../store/useStore';
-
-export default function LiveProjector() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const siteData = useStore(state => state.siteData);
-  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
-  
-  const { wishes } = useWishesQuery();
-  const queryClient = useQueryClient();
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    let channel;
-    let isMounted = true;
-
-    const setupChannel = () => {
-      channel = supabase
-        .channel('public:wishes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
-            if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
-        })
-        .subscribe();
-    };
-
-    setupChannel();
-    
-    return () => { 
-      isMounted = false;
-      if (channel) {
-        supabase.removeChannel(channel).catch(console.error);
-      }
-    };
-  }, [queryClient]);
-
-  useEffect(() => {
-    if (!wishes || wishes.length === 0) return;
-    const interval = setInterval(() => { setCurrentIndex((prev) => (prev + 1) % wishes.length); }, 8000);
-    return () => clearInterval(interval);
-  }, [wishes]);
-
-  useEffect(() => {
-    const prevTheme = document.documentElement.dataset.theme; 
-    
-    document.documentElement.dataset.theme = "dark";
-    document.body.style.overflow = "hidden";
-    
-    return () => { 
-      document.body.style.overflow = "auto"; 
-      if (prevTheme) {
-        document.documentElement.dataset.theme = prevTheme;
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-      }
-    };
-  }, []);
-
-  const activeWish = wishes[currentIndex];
-
-  return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
-      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
-
-      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
-        {coupleName}
-      </h1>
-      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '60px', zIndex: 10 }}>
-        {isEn ? "Live Guestbook" : "Canlı Anı Defteri"}
-      </p>
-
-      <div style={{ width: '80%', maxWidth: '900px', minHeight: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-        <AnimatePresence mode="wait">
-          {activeWish ? (
-            <m.div
-              key={activeWish.id}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              style={{ textAlign: 'center', width: '100%' }}
-            >
-              <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeWish.message_translated ? '15px' : '30px' }}>
-                "{activeWish.message}"
-              </p>
-              
-              {activeWish.message_translated && (
-                <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
-                  ({activeWish.message_translated})
-                </p>
-              )}
-
-              <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
-                — {activeWish.name}
-              </strong>
-            </m.div>
-          ) : (
-            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
-              {isEn ? "Waiting for the first message..." : "İlk mesaj bekleniyor..."}
-            </m.p>
-          )}
-        </AnimatePresence>
-      </div>
-      
-      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
-        {isEn ? "Scan the QR code on your table to send a message to the screen!" : "Ekrana mesaj göndermek için masanızdaki QR kodu okutun!"}
-      </div>
-    </div>
-  );
-}
-</file>
-
 <file path="src/utils/helpers.js">
 import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
 
@@ -8182,6 +8810,147 @@ export async function optimizeImage(file) {
       quality: IMAGE_QUALITY || 0.8 
     });
   });
+}
+</file>
+
+<file path="src/pages/LiveProjector.jsx">
+import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { m, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../supabaseClient';
+import { useWishesQuery } from '../hooks/useWishesQuery';
+import { useGuestPhotosQuery } from '../hooks/useGuestPhotosQuery';
+import { useStore } from '../store/useStore';
+import { LazyImage } from '../components/common/LazyImage';
+
+export default function LiveProjector() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const siteData = useStore(state => state.siteData);
+  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
+  
+  const { wishes } = useWishesQuery();
+  const { photos } = useGuestPhotosQuery();
+  const queryClient = useQueryClient();
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Dilekleri ve Fotoğrafları tek bir akışta birleştir
+  const displayItems = useMemo(() => {
+    const items = [];
+    wishes?.forEach(w => items.push({ type: 'wish', data: w }));
+    photos?.forEach(p => items.push({ type: 'photo', data: p }));
+    // Listeyi karıştır (Shuffle) veya sırayla göster
+    return items.sort(() => Math.random() - 0.5);
+  }, [wishes, photos]);
+
+  useEffect(() => {
+    let channel;
+    let isMounted = true;
+
+    const setupChannel = () => {
+      channel = supabase
+        .channel('public:wishes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
+            if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
+        })
+        .subscribe();
+    };
+
+    setupChannel();
+    
+    return () => { 
+      isMounted = false;
+      if (channel) supabase.removeChannel(channel).catch(console.error);
+    };
+  }, [queryClient]);
+
+  useEffect(() => {
+    if (!displayItems || displayItems.length === 0) return;
+    const interval = setInterval(() => { 
+        setCurrentIndex((prev) => (prev + 1) % displayItems.length); 
+    }, 8000); // Her 8 saniyede bir değişir
+    return () => clearInterval(interval);
+  }, [displayItems]);
+
+  useEffect(() => {
+    const prevTheme = document.documentElement.dataset.theme; 
+    document.documentElement.dataset.theme = "dark";
+    document.body.style.overflow = "hidden";
+    
+    return () => { 
+      document.body.style.overflow = "auto"; 
+      if (prevTheme) document.documentElement.dataset.theme = prevTheme;
+      else document.documentElement.removeAttribute('data-theme');
+    };
+  }, []);
+
+  const activeItem = displayItems[currentIndex];
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      {/* Arka Plan Efektleri */}
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+
+      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
+        {coupleName}
+      </h1>
+      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '40px', zIndex: 10 }}>
+        {isEn ? "Live Memories" : "Canlı Anı Akışı"}
+      </p>
+
+      <div style={{ width: '80%', maxWidth: '900px', minHeight: '400px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+        <AnimatePresence mode="wait">
+          {activeItem ? (
+            <m.div
+              key={activeItem.type === 'wish' ? activeItem.data.id : activeItem.data.image_url}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{ textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              {activeItem.type === 'wish' ? (
+                <>
+                  <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeItem.data.message_translated ? '15px' : '30px' }}>
+                    "{activeItem.data.message}"
+                  </p>
+                  {activeItem.data.message_translated && (
+                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
+                      ({activeItem.data.message_translated})
+                    </p>
+                  )}
+                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
+                    — {activeItem.data.name}
+                  </strong>
+                </>
+              ) : (
+                <>
+                  <div style={{ width: '100%', maxWidth: '600px', height: '400px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+                    <LazyImage src={activeItem.data.image_url} alt="Misafir POV" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.2rem', marginTop: '20px', letterSpacing: '2px', fontWeight: '400' }}>
+                    {isEn ? "Guest POV 📸" : "Misafir Kamerasından 📸"}
+                  </strong>
+                </>
+              )}
+            </m.div>
+          ) : (
+            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
+              {isEn ? "Waiting for memories..." : "Anılar bekleniyor..."}
+            </m.p>
+          )}
+        </AnimatePresence>
+      </div>
+      
+      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
+        {isEn ? "Scan the QR code to send a message or photo!" : "Ekrana mesaj veya fotoğraf göndermek için davetiyedeki formu kullanın!"}
+      </div>
+    </div>
+  );
 }
 </file>
 
@@ -14284,6 +15053,262 @@ export default function InvitationController() {
 }
 </file>
 
+<file path="src/hooks/useScrollNavigation.js">
+// src/hooks/useScrollNavigation.js
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
+  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
+  const [showScrollDown, setShowScrollDown] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
+  const resizeTimerRef = useRef(null); 
+
+  // Ekran boyutunu izle
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
+
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
+  const scrollToNext = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      setCurrentSlideIndex(prev => {
+        const next = prev + 1;
+        return next < wrappers.length ? next : prev;
+      });
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
+      
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
+        const rect = nextSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const scrollToPrev = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      const currentWrapper = wrappers[currentSlideIndex];
+      
+      if (currentWrapper && currentWrapper.scrollTop > 150) {
+        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const currentSection = sections[activeIdx];
+      
+      if (currentSection) {
+        const currentRect = currentSection.getBoundingClientRect();
+        if (currentRect.top < -150) {
+           const absoluteTop = window.scrollY + currentRect.top;
+           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+           return;
+        }
+      }
+
+      const prevIdx = activeIdx - 1;
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
+        const rect = prevSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile, currentSlideIndex]);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
+    
+    const slideWrapper = e.target.closest('.slide-wrapper');
+    if (slideWrapper) {
+      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+      if (isScrollable) {
+        const atTop = slideWrapper.scrollTop <= 0;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+
+        if (e.deltaY > 0 && !atBottom) return; 
+        if (e.deltaY < 0 && !atTop) return;    
+      }
+    }
+
+    if (e.deltaY > 0) scrollToNext();
+    else scrollToPrev();
+
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 600);
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEndY;
+
+    const slideWrapper = target.closest('.slide-wrapper');
+    if (slideWrapper) {
+       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+       if (isScrollable) {
+           const atTop = slideWrapper.scrollTop <= 0;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+           if (diff > 0 && !atBottom) return;
+           if (diff < 0 && !atTop) return;
+       }
+    }
+
+    if (Math.abs(diff) > 40) { 
+      if (diff > 0) scrollToNext(); 
+      else scrollToPrev(); 
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 500); 
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    let isMounted = true;
+    let activeWrapper = null;
+
+    const handleScroll = () => {
+      if (!isMounted) return;
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         const currentWrapper = wrappers[currentSlideIndex];
+         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
+         
+         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
+         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
+      } else {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        
+        setShowScrollTop(scrollTop > 100);
+        
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
+        
+        if (scrollTop <= 10) {
+          setShowScrollDown(true);
+        } else {
+          setShowScrollDown(!isAtBottom);
+        }
+      }
+    };
+
+    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
+    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
+    const mountDelayTimer = setTimeout(() => {
+      if (!isMounted) return;
+      
+      handleScroll();
+
+      if (!isMobile) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+      
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         activeWrapper = wrappers[currentSlideIndex];
+         if (activeWrapper) {
+            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+         }
+      }
+
+      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
+      const resizeObserver = new ResizeObserver(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(() => {
+          if (isMounted) handleScroll();
+        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
+      });
+      
+      resizeObserver.observe(document.body);
+
+    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
+
+    return () => {
+      isMounted = false;
+      clearTimeout(mountDelayTimer);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+      }
+      if (activeWrapper) {
+        activeWrapper.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
+  
+  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
+}
+</file>
+
 <file path="src/hooks/useDatabaseManager.js">
 import { useCallback, useEffect } from "react";
 import { supabase } from "../supabaseClient";
@@ -14641,330 +15666,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   }, [guests, setGuests, showAppPrompt, setAdminSaveMessage, isEn]);
 
   return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
-}
-</file>
-
-<file path="src/hooks/useScrollNavigation.js">
-// src/hooks/useScrollNavigation.js
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  
-  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
-  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
-  const [showScrollDown, setShowScrollDown] = useState(false); 
-  const [isMobile, setIsMobile] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
-  const resizeTimerRef = useRef(null); 
-
-  // Ekran boyutunu izle
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
-
-  const getActiveDesktopIndex = (sections) => {
-    let activeIdx = 0;
-    sections.forEach((sec, idx) => {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.55) {
-        activeIdx = idx;
-      }
-    });
-    return activeIdx;
-  };
-
-  const scrollToNext = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      setCurrentSlideIndex(prev => {
-        const next = prev + 1;
-        return next < wrappers.length ? next : prev;
-      });
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const nextIdx = activeIdx + 1;
-      
-      if (nextIdx < sections.length) {
-        const nextSection = sections[nextIdx];
-        const rect = nextSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile]);
-
-  const scrollToPrev = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      const currentWrapper = wrappers[currentSlideIndex];
-      
-      if (currentWrapper && currentWrapper.scrollTop > 150) {
-        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      
-      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const currentSection = sections[activeIdx];
-      
-      if (currentSection) {
-        const currentRect = currentSection.getBoundingClientRect();
-        if (currentRect.top < -150) {
-           const absoluteTop = window.scrollY + currentRect.top;
-           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-           return;
-        }
-      }
-
-      const prevIdx = activeIdx - 1;
-      if (prevIdx >= 0) {
-        const prevSection = sections[prevIdx];
-        const rect = prevSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile, currentSlideIndex]);
-
-  const handleWheel = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
-    
-    const slideWrapper = e.target.closest('.slide-wrapper');
-    if (slideWrapper) {
-      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-      if (isScrollable) {
-        const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-
-        if (e.deltaY > 0 && !atBottom) return; 
-        if (e.deltaY < 0 && !atTop) return;    
-      }
-    }
-
-    if (e.deltaY > 0) scrollToNext();
-    else scrollToPrev();
-
-    isScrollingRef.current = true;
-    setTimeout(() => { isScrollingRef.current = false; }, 600);
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartYRef.current - touchEndY;
-
-    const slideWrapper = target.closest('.slide-wrapper');
-    if (slideWrapper) {
-       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-       if (isScrollable) {
-           const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-           if (diff > 0 && !atBottom) return;
-           if (diff < 0 && !atTop) return;
-       }
-    }
-
-    if (Math.abs(diff) > 40) { 
-      if (diff > 0) scrollToNext(); 
-      else scrollToPrev(); 
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 500); 
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    let isMounted = true;
-    let activeWrapper = null;
-
-    const handleScroll = () => {
-      if (!isMounted) return;
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         const currentWrapper = wrappers[currentSlideIndex];
-         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
-         
-         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
-         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
-      } else {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        
-        setShowScrollTop(scrollTop > 100);
-        
-        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
-        
-        if (scrollTop <= 10) {
-          setShowScrollDown(true);
-        } else {
-          setShowScrollDown(!isAtBottom);
-        }
-      }
-    };
-
-    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
-    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
-    const mountDelayTimer = setTimeout(() => {
-      if (!isMounted) return;
-      
-      handleScroll();
-
-      if (!isMobile) {
-        window.addEventListener('scroll', handleScroll, { passive: true });
-      }
-      
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         activeWrapper = wrappers[currentSlideIndex];
-         if (activeWrapper) {
-            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
-         }
-      }
-
-      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
-      const resizeObserver = new ResizeObserver(() => {
-        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-        resizeTimerRef.current = setTimeout(() => {
-          if (isMounted) handleScroll();
-        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
-      });
-      
-      resizeObserver.observe(document.body);
-
-    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
-
-    return () => {
-      isMounted = false;
-      clearTimeout(mountDelayTimer);
-      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-      
-      if (!isMobile) {
-        window.removeEventListener('scroll', handleScroll);
-      }
-      if (activeWrapper) {
-        activeWrapper.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-  
-  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
-}
-</file>
-
-<file path="src/pages/InvitationView.jsx">
-import React from "react";
-import { useStore } from "../store/useStore";
-import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
-import {
-  HeroSection,
-  CountdownSection,
-  InvitationMessageSection,
-  FamilySection,
-  StorySection,
-  CeremonySection,
-  ScheduleSection,
-  LocationSection,
-  GallerySection,
-  ShareSection,
-  GiftSection,
-  RsvpSection,
-  WishesSection,
-  GuestsListSection,
-  GuestCameraSection,
-  SmartAlbumSection,
-  FooterSection
-} from "../components/invitation/sections";
-
-export default function InvitationView(props) {
-  const siteData = useStore((state) => state.siteData);
-  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
-  
-  const v = settings?.visibility || {};
-
-  return (
-    <ResponsiveSlideShow>
-      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
-      
-      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
-      
-      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
-      
-      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
-      
-      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
-      
-      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
-      
-      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-      
-      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.guests && <GuestCameraSection {...props} />}
-      
-      {v.guests && <SmartAlbumSection {...props} />}
-      
-      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.wishes && <WishesSection {...props} copy={copy} />}
-      
-      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
-      
-      <ShareSection {...props} copy={copy} />
-      
-      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
-    </ResponsiveSlideShow>
-  );
 }
 </file>
 
@@ -16281,6 +16982,77 @@ export const FloatingMenu = memo(function FloatingMenu({
     </>
   );
 });
+</file>
+
+<file path="src/pages/InvitationView.jsx">
+import React from "react";
+import { useStore } from "../store/useStore";
+import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
+import { usePaymentFeedback } from '../hooks/usePaymentFeedback';
+import {
+  HeroSection,
+  CountdownSection,
+  InvitationMessageSection,
+  FamilySection,
+  StorySection,
+  CeremonySection,
+  ScheduleSection,
+  LocationSection,
+  GallerySection,
+  ShareSection,
+  GiftSection,
+  RsvpSection,
+  WishesSection,
+  GuestsListSection,
+  GuestCameraSection,
+  SmartAlbumSection,
+  FooterSection
+} from "../components/invitation/sections";
+
+export default function InvitationView(props) {
+  const siteData = useStore((state) => state.siteData);
+  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
+  
+  const v = settings?.visibility || {};
+
+  usePaymentFeedback();
+
+  return (
+    <ResponsiveSlideShow>
+      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
+      
+      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
+      
+      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
+      
+      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
+      
+      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
+      
+      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
+      
+      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
+      
+      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.guests && <GuestCameraSection {...props} />}
+      
+      {v.guests && <SmartAlbumSection {...props} />}
+      
+      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.wishes && <WishesSection {...props} copy={copy} />}
+      
+      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
+      
+      <ShareSection {...props} copy={copy} />
+      
+      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
+    </ResponsiveSlideShow>
+  );
+}
 </file>
 
 <file path="src/styles/invitation.css">

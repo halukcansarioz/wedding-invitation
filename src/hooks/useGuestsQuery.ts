@@ -1,24 +1,29 @@
+// src/hooks/useGuestsQuery.ts
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loadGuestsFromDatabase } from '../services/database';
 import { supabase } from '../supabaseClient';
 import { uiGuestToDb } from '../utils/helpers';
+import { Guest } from '../types';
 
 export function useGuestsQuery() {
   const queryClient = useQueryClient();
 
-  const { data: guests = [], isLoading, isError } = useQuery({
+  const { data: guests = [], isLoading, isError } = useQuery<Guest[]>({
     queryKey: ['guests'],
     queryFn: loadGuestsFromDatabase,
   });
 
   useEffect(() => {
-    let channel;
+    let channel: ReturnType<typeof supabase.channel>;
     let isMounted = true;
+    
+    // React Strict Mode çakışmalarını önlemek için dinamik kanal ismi
+    const channelName = `public:guests-${Date.now()}`;
 
     const setupSubscription = () => {
       channel = supabase
-        .channel('public:guests')
+        .channel(channelName)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
           if (isMounted) queryClient.invalidateQueries({ queryKey: ['guests'] });
         })
@@ -36,7 +41,7 @@ export function useGuestsQuery() {
   }, [queryClient]);
 
   const addGuestMutation = useMutation({
-    mutationFn: async (newGuestData) => {
+    mutationFn: async (newGuestData: any) => {
       const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
       
       const { data, error } = await supabase.functions.invoke('submit-form', {
@@ -48,11 +53,11 @@ export function useGuestsQuery() {
       }
       return data.data;
     },
-    onMutate: async (newGuest) => {
+    onMutate: async (newGuest: any) => {
       await queryClient.cancelQueries({ queryKey: ['guests'] });
-      const previousGuests = queryClient.getQueryData(['guests']);
+      const previousGuests = queryClient.getQueryData<Guest[]>(['guests']);
       
-      queryClient.setQueryData(['guests'], (old = []) => [
+      queryClient.setQueryData<Guest[]>(['guests'], (old = []) => [
         { 
           id: `temp-${Date.now()}`, 
           name: newGuest.name, 
@@ -64,7 +69,7 @@ export function useGuestsQuery() {
           note: newGuest.note || "",
           has_arrived: false,
           createdAt: new Date().toISOString()
-        }, 
+        } as Guest, 
         ...old
       ]);
 

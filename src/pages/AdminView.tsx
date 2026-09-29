@@ -1,10 +1,10 @@
-// src/pages/AdminView.jsx
 import React from "react";
 import AdminDashboard from "../components/AdminDashboard";
 import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
 import { useStore } from "../store/useStore";
+import { ErrorBoundary } from "../components/common/ErrorBoundary";
 
-export default function AdminView(props) {
+export default function AdminView(props: any) {
   const activeAdminTab = useStore(state => state.activeAdminTab);
   
   const adminTabs = [
@@ -37,7 +37,11 @@ export default function AdminView(props) {
       activeTabInfo={activeTabInfo}
       adminTabs={adminTabs}
       {...props}
-      renderAdminActivePanel={() => <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />}
+      renderAdminActivePanel={() => (
+        <ErrorBoundary>
+          <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />
+        </ErrorBoundary>
+      )}
     />
   );
 }
