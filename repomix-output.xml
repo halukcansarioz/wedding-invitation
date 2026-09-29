@@ -80,7 +80,7 @@ src/
         AdminInputs.jsx
         AdminLayout.jsx
         AdminMediaFields.jsx
-      AdminPanelComponents.jsx
+      AdminPanelComponents.tsx
     common/
       ErrorBoundary.jsx
       FloatingMenu.jsx
@@ -128,8 +128,8 @@ src/
     useCountdown.test.js
     useDatabaseManager.js
     useExportData.js
-    useGuestPhotosQuery.js
-    useGuestsQuery.js
+    useGuestPhotosQuery.ts
+    useGuestsQuery.ts
     useLocale.js
     usePaymentFeedback.js
     usePWAInstall.js
@@ -142,11 +142,11 @@ src/
     config.js
   pages/
     AdminController.jsx
-    AdminView.jsx
+    AdminView.tsx
     InvitationController.jsx
     InvitationView.jsx
     LandingPage.jsx
-    LiveProjector.jsx
+    LiveProjector.tsx
   services/
     database.ts
   store/
@@ -815,6 +815,80 @@ export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isE
         <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
       )}
     </div>
+  );
+}
+</file>
+
+<file path="src/components/admin/AdminPanelComponents.tsx">
+import React, { Suspense, lazy } from "react";
+import { useTranslation } from "react-i18next";
+
+// Sekmeleri (Tabs) asenkron olarak (Lazy Load) yüklüyoruz.
+const OverviewTab = lazy(() => import("./tabs").then(m => ({ default: m.OverviewTab })));
+const GeneralTab = lazy(() => import("./tabs").then(m => ({ default: m.GeneralTab })));
+const ThemeTab = lazy(() => import("./tabs").then(m => ({ default: m.ThemeTab })));
+const GalleryTab = lazy(() => import("./tabs").then(m => ({ default: m.GalleryTab })));
+const GuestsAdminPanel = lazy(() => import("./tabs").then(m => ({ default: m.GuestsAdminPanel })));
+const WishesAdminPanel = lazy(() => import("./tabs").then(m => ({ default: m.WishesAdminPanel })));
+const PersonalLinkPanel = lazy(() => import("./tabs").then(m => ({ default: m.PersonalLinkPanel })));
+const VisibilityTab = lazy(() => import("./tabs").then(m => ({ default: m.VisibilityTab })));
+const SecurityTab = lazy(() => import("./tabs").then(m => ({ default: m.SecurityTab })));
+const MessagesTab = lazy(() => import("./tabs").then(m => ({ default: m.MessagesTab })));
+const CopyTab = lazy(() => import("./tabs").then(m => ({ default: m.CopyTab })));
+const FamilyTab = lazy(() => import("./tabs").then(m => ({ default: m.FamilyTab })));
+const CeremonyTab = lazy(() => import("./tabs").then(m => ({ default: m.CeremonyTab })));
+const ScheduleTab = lazy(() => import("./tabs").then(m => ({ default: m.ScheduleTab })));
+const QrTab = lazy(() => import("./tabs").then(m => ({ default: m.QrTab })));
+const DataTab = lazy(() => import("./tabs").then(m => ({ default: m.DataTab })));
+const GiftTab = lazy(() => import("./tabs").then(m => ({ default: m.GiftTab })));
+const StoryTab = lazy(() => import("./tabs").then(m => ({ default: m.StoryTab })));
+const TablePlanTab = lazy(() => import("./tabs").then(m => ({ default: m.TablePlanTab })));
+const GuestPhotosTab = lazy(() => import("./tabs").then(m => ({ default: m.GuestPhotosTab })));
+const PaymentsTab = lazy(() => import("./tabs").then(m => ({ default: m.PaymentsTab })));
+const NotificationsTab = lazy(() => import("./tabs").then(m => ({ default: m.NotificationsTab })));
+
+interface AdminPanelContentProps {
+  activeAdminTab: string;
+  [key: string]: any;
+}
+
+export function AdminPanelContent(props: AdminPanelContentProps) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+  const { activeAdminTab } = props;
+
+  const renderTab = () => {
+    switch (activeAdminTab) {
+      case "general": return <GeneralTab {...props} isEn={isEn} />;
+      case "theme": return <ThemeTab {...props} isEn={isEn} />;
+      case "gallery": return <GalleryTab {...props} isEn={isEn} />;
+      case "guests": return <GuestsAdminPanel {...props} />;
+      case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
+      case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
+      case "personalLink": return <PersonalLinkPanel {...props} />;
+      case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
+      case "security": return <SecurityTab {...props} isEn={isEn} />;
+      case "messages": return <MessagesTab {...props} isEn={isEn} />;
+      case "copy": return <CopyTab {...props} isEn={isEn} />;
+      case "family": return <FamilyTab {...props} isEn={isEn} />;
+      case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
+      case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
+      case "qr": return <QrTab {...props} isEn={isEn} />;
+      case "data": return <DataTab {...props} isEn={isEn} />;
+      case "gift": return <GiftTab {...props} isEn={isEn} />;
+      case "story": return <StoryTab {...props} isEn={isEn} />; 
+      case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
+      case "payments": return <PaymentsTab {...props} isEn={isEn} />;
+      case "notifications": return <NotificationsTab {...props} isEn={isEn} />;
+      case "overview": return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
+      default: return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
+    }
+  };
+
+  return (
+    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center", color: "var(--rose-deep)" }}>{isEn ? "Loading Module..." : "Modül Yükleniyor..."}</div>}>
+      {renderTab()}
+    </Suspense>
   );
 }
 </file>
@@ -1546,15 +1620,17 @@ export function useExportData(isEn) {
 }
 </file>
 
-<file path="src/hooks/useGuestPhotosQuery.js">
+<file path="src/hooks/useGuestPhotosQuery.ts">
+// src/hooks/useGuestPhotosQuery.ts
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export function useGuestPhotosQuery() {
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState<any[]>([]);
 
   useEffect(() => {
     let isMounted = true;
+    const channelName = `public:guest_photos-${Date.now()}`;
 
     const fetchPhotos = async () => {
       const { data } = await supabase
@@ -1567,9 +1643,8 @@ export function useGuestPhotosQuery() {
 
     fetchPhotos();
 
-    // Veritabanında onaylanan yeni fotoğrafları anında dinle
     const channel = supabase
-      .channel('public:guest_photos')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_photos', filter: 'approved=eq.true' }, () => {
           if (isMounted) fetchPhotos();
       })
@@ -1582,6 +1657,97 @@ export function useGuestPhotosQuery() {
   }, []);
 
   return { photos };
+}
+</file>
+
+<file path="src/hooks/useGuestsQuery.ts">
+// src/hooks/useGuestsQuery.ts
+import { useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { loadGuestsFromDatabase } from '../services/database';
+import { supabase } from '../supabaseClient';
+import { uiGuestToDb } from '../utils/helpers';
+import { Guest } from '../types';
+
+export function useGuestsQuery() {
+  const queryClient = useQueryClient();
+
+  const { data: guests = [], isLoading, isError } = useQuery<Guest[]>({
+    queryKey: ['guests'],
+    queryFn: loadGuestsFromDatabase,
+  });
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel>;
+    let isMounted = true;
+    
+    // React Strict Mode çakışmalarını önlemek için dinamik kanal ismi
+    const channelName = `public:guests-${Date.now()}`;
+
+    const setupSubscription = () => {
+      channel = supabase
+        .channel(channelName)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
+          if (isMounted) queryClient.invalidateQueries({ queryKey: ['guests'] });
+        })
+        .subscribe();
+    };
+
+    setupSubscription();
+      
+    return () => { 
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel).catch((err) => console.warn("Kanal temizlenirken hata:", err));
+      }
+    };
+  }, [queryClient]);
+
+  const addGuestMutation = useMutation({
+    mutationFn: async (newGuestData: any) => {
+      const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
+      
+      const { data, error } = await supabase.functions.invoke('submit-form', {
+        body: { type: 'guest', data: uiGuestToDb(newGuestData), turnstileToken: token }
+      });
+
+      if (error || !data.success) {
+        throw new Error(error?.message || data?.error || "Sunucu hatası.");
+      }
+      return data.data;
+    },
+    onMutate: async (newGuest: any) => {
+      await queryClient.cancelQueries({ queryKey: ['guests'] });
+      const previousGuests = queryClient.getQueryData<Guest[]>(['guests']);
+      
+      queryClient.setQueryData<Guest[]>(['guests'], (old = []) => [
+        { 
+          id: `temp-${Date.now()}`, 
+          name: newGuest.name, 
+          attendance: newGuest.attendance,
+          phone: newGuest.phone || "",
+          personCount: String(newGuest.personCount || 1),
+          side: newGuest.side || "Gelin Tarafı",
+          hasChild: newGuest.hasChild || "Hayır",
+          note: newGuest.note || "",
+          has_arrived: false,
+          createdAt: new Date().toISOString()
+        } as Guest, 
+        ...old
+      ]);
+
+      return { previousGuests };
+    },
+    onError: (err, newGuest, context) => {
+      if (context?.previousGuests) queryClient.setQueryData(['guests'], context.previousGuests);
+      console.error("LCV eklenirken hata oluştu:", err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['guests'] });
+    }
+  });
+
+  return { guests, isLoading, isError, addGuest: addGuestMutation.mutateAsync, isAdding: addGuestMutation.isPending };
 }
 </file>
 
@@ -1663,6 +1829,204 @@ i18n
   });
 
 export default i18n;
+</file>
+
+<file path="src/pages/AdminView.tsx">
+import React from "react";
+import AdminDashboard from "../components/AdminDashboard";
+import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
+import { useStore } from "../store/useStore";
+import { ErrorBoundary } from "../components/common/ErrorBoundary";
+
+export default function AdminView(props: any) {
+  const activeAdminTab = useStore(state => state.activeAdminTab);
+  
+  const adminTabs = [
+    { id: "overview", label: "Sistem Özeti", description: "İstatistikler ve bekleyen onaylar" }, 
+    { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
+    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
+    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
+    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
+    { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
+    { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
+    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
+    { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
+    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
+    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    { id: "payments", label: "Gelen Hediyeler & Ödemeler", description: "Stripe üzerinden gelen takı ve hediyeler" },
+    { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
+    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
+    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
+    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
+    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
+    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
+    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
+    { id: "notifications", label: "Anlık Bildirimler", description: "PWA kullanıcılarına Push bildirim yolla" }
+  ];
+
+  const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
+
+  return (
+    <AdminDashboard
+      activeTabInfo={activeTabInfo}
+      adminTabs={adminTabs}
+      {...props}
+      renderAdminActivePanel={() => (
+        <ErrorBoundary>
+          <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />
+        </ErrorBoundary>
+      )}
+    />
+  );
+}
+</file>
+
+<file path="src/pages/LiveProjector.tsx">
+import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { m, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../supabaseClient';
+import { useWishesQuery } from '../hooks/useWishesQuery';
+import { useGuestPhotosQuery } from '../hooks/useGuestPhotosQuery';
+import { useStore } from '../store/useStore';
+import { LazyImage } from '../components/common/LazyImage';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
+
+function LiveProjectorContent() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const siteData = useStore(state => state.siteData);
+  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
+  
+  const { wishes } = useWishesQuery();
+  const { photos } = useGuestPhotosQuery();
+  const queryClient = useQueryClient();
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const displayItems = useMemo(() => {
+    const items: any[] = [];
+    wishes?.forEach(w => items.push({ type: 'wish', data: w }));
+    photos?.forEach(p => items.push({ type: 'photo', data: p }));
+    return items.sort(() => Math.random() - 0.5);
+  }, [wishes, photos]);
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel>;
+    let isMounted = true;
+    const channelName = `public:wishes-${Date.now()}`;
+
+    const setupChannel = () => {
+      channel = supabase
+        .channel(channelName)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
+            if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
+        })
+        .subscribe();
+    };
+
+    setupChannel();
+    
+    return () => { 
+      isMounted = false;
+      if (channel) supabase.removeChannel(channel).catch(console.error);
+    };
+  }, [queryClient]);
+
+  useEffect(() => {
+    if (!displayItems || displayItems.length === 0) return;
+    const interval = setInterval(() => { 
+        setCurrentIndex((prev) => (prev + 1) % displayItems.length); 
+    }, 8000); 
+    return () => clearInterval(interval);
+  }, [displayItems]);
+
+  useEffect(() => {
+    const prevTheme = document.documentElement.dataset.theme; 
+    document.documentElement.dataset.theme = "dark";
+    document.body.style.overflow = "hidden";
+    
+    return () => { 
+      document.body.style.overflow = "auto"; 
+      if (prevTheme) document.documentElement.dataset.theme = prevTheme;
+      else document.documentElement.removeAttribute('data-theme');
+    };
+  }, []);
+
+  const activeItem = displayItems[currentIndex];
+
+  return (
+    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
+
+      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
+        {coupleName}
+      </h1>
+      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '40px', zIndex: 10 }}>
+        {isEn ? "Live Memories" : "Canlı Anı Akışı"}
+      </p>
+
+      <div style={{ width: '80%', maxWidth: '900px', minHeight: '400px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+        <AnimatePresence mode="wait">
+          {activeItem ? (
+            <m.div
+              key={activeItem.type === 'wish' ? activeItem.data.id : activeItem.data.image_url}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{ textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              {activeItem.type === 'wish' ? (
+                <>
+                  <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: 300, marginBottom: activeItem.data.message_translated ? '15px' : '30px' }}>
+                    "{activeItem.data.message}"
+                  </p>
+                  {activeItem.data.message_translated && (
+                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: 300 }}>
+                      ({activeItem.data.message_translated})
+                    </p>
+                  )}
+                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: 600, display: 'inline-block' }}>
+                    — {activeItem.data.name}
+                  </strong>
+                </>
+              ) : (
+                <>
+                  <div style={{ width: '100%', maxWidth: '600px', height: '400px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
+                    <LazyImage src={activeItem.data.image_url} alt="Misafir POV" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.2rem', marginTop: '20px', letterSpacing: '2px', fontWeight: 400 }}>
+                    {isEn ? "Guest POV 📸" : "Misafir Kamerasından 📸"}
+                  </strong>
+                </>
+              )}
+            </m.div>
+          ) : (
+            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
+              {isEn ? "Waiting for memories..." : "Anılar bekleniyor..."}
+            </m.p>
+          )}
+        </AnimatePresence>
+      </div>
+      
+      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
+        {isEn ? "Scan the QR code to send a message or photo!" : "Ekrana mesaj veya fotoğraf göndermek için davetiyedeki formu kullanın!"}
+      </div>
+    </div>
+  );
+}
+
+export default function LiveProjector() {
+  return (
+    <ErrorBoundary>
+      <LiveProjectorContent />
+    </ErrorBoundary>
+  );
+}
 </file>
 
 <file path="src/store/slices/dataSlice.ts">
@@ -7605,49 +7969,6 @@ export function WishesAdminPanel({
 }
 </file>
 
-<file path="src/components/admin/AdminPanelComponents.jsx">
-// src/components/admin/AdminPanelComponents.jsx
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { 
-  OverviewTab, GeneralTab, ThemeTab, GalleryTab, GuestsAdminPanel, WishesAdminPanel, PersonalLinkPanel,
-  VisibilityTab, SecurityTab, MessagesTab, CopyTab, FamilyTab, CeremonyTab, ScheduleTab, 
-  QrTab, DataTab, GiftTab, StoryTab, TablePlanTab, GuestPhotosTab, PaymentsTab, NotificationsTab 
-} from "./tabs";
-
-export function AdminPanelContent(props) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-  const { activeAdminTab } = props;
-
-  switch (activeAdminTab) {
-    case "general": return <GeneralTab {...props} isEn={isEn} />;
-    case "theme": return <ThemeTab {...props} isEn={isEn} />;
-    case "gallery": return <GalleryTab {...props} isEn={isEn} />;
-    case "guests": return <GuestsAdminPanel {...props} />;
-    case "tablePlan": return <TablePlanTab {...props} isEn={isEn} />;
-    case "wishes": return <WishesAdminPanel {...props} isEn={isEn} />;
-    case "personalLink": return <PersonalLinkPanel {...props} />;
-    case "visibility": return <VisibilityTab {...props} isEn={isEn} />;
-    case "security": return <SecurityTab {...props} isEn={isEn} />;
-    case "messages": return <MessagesTab {...props} isEn={isEn} />;
-    case "copy": return <CopyTab {...props} isEn={isEn} />;
-    case "family": return <FamilyTab {...props} isEn={isEn} />;
-    case "ceremony": return <CeremonyTab {...props} isEn={isEn} />;
-    case "schedule": return <ScheduleTab {...props} isEn={isEn} />;
-    case "qr": return <QrTab {...props} isEn={isEn} />;
-    case "data": return <DataTab {...props} isEn={isEn} />;
-    case "gift": return <GiftTab {...props} isEn={isEn} />;
-    case "story": return <StoryTab {...props} isEn={isEn} />; 
-    case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
-    case "payments": return <PaymentsTab {...props} isEn={isEn} />;
-    case "notifications": return <NotificationsTab {...props} isEn={isEn} />;
-    case "overview": return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
-    default: return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
-  }
-}
-</file>
-
 <file path="src/components/common/PwaInstallBanner.jsx">
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7828,135 +8149,76 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
 }
 </file>
 
-<file path="src/hooks/useGuestsQuery.js">
-import { useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { loadGuestsFromDatabase } from '../services/database';
-import { supabase } from '../supabaseClient';
-import { uiGuestToDb } from '../utils/helpers';
+<file path="src/utils/imageOptimizer.js">
+import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
 
-export function useGuestsQuery() {
-  const queryClient = useQueryClient();
-
-  const { data: guests = [], isLoading, isError } = useQuery({
-    queryKey: ['guests'],
-    queryFn: loadGuestsFromDatabase,
-  });
-
-  useEffect(() => {
-    let channel;
-    let isMounted = true;
-
-    const setupSubscription = () => {
-      channel = supabase
-        .channel('public:guests')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, () => {
-          if (isMounted) queryClient.invalidateQueries({ queryKey: ['guests'] });
-        })
-        .subscribe();
-    };
-
-    setupSubscription();
-      
-    return () => { 
-      isMounted = false;
-      if (channel) {
-        supabase.removeChannel(channel).catch((err) => console.warn("Kanal temizlenirken hata:", err));
+function fallbackOptimize(file, resolve) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    let { width, height } = img;
+    const maxDim = MAX_IMAGE_DIMENSION || 1400;
+    
+    if (width > maxDim || height > maxDim) {
+      if (width > height) { 
+        height = Math.round((height * maxDim) / width); 
+        width = maxDim; 
+      } else { 
+        width = Math.round((width * maxDim) / height); 
+        height = maxDim; 
       }
-    };
-  }, [queryClient]);
-
-  const addGuestMutation = useMutation({
-    mutationFn: async (newGuestData) => {
-      const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
-      
-      const { data, error } = await supabase.functions.invoke('submit-form', {
-        body: { type: 'guest', data: uiGuestToDb(newGuestData), turnstileToken: token }
-      });
-
-      if (error || !data.success) {
-        throw new Error(error?.message || data?.error || "Sunucu hatası.");
-      }
-      return data.data;
-    },
-    onMutate: async (newGuest) => {
-      await queryClient.cancelQueries({ queryKey: ['guests'] });
-      const previousGuests = queryClient.getQueryData(['guests']);
-      
-      queryClient.setQueryData(['guests'], (old = []) => [
-        { 
-          id: `temp-${Date.now()}`, 
-          name: newGuest.name, 
-          attendance: newGuest.attendance,
-          phone: newGuest.phone || "",
-          personCount: String(newGuest.personCount || 1),
-          side: newGuest.side || "Gelin Tarafı",
-          hasChild: newGuest.hasChild || "Hayır",
-          note: newGuest.note || "",
-          has_arrived: false,
-          createdAt: new Date().toISOString()
-        }, 
-        ...old
-      ]);
-
-      return { previousGuests };
-    },
-    onError: (err, newGuest, context) => {
-      if (context?.previousGuests) queryClient.setQueryData(['guests'], context.previousGuests);
-      console.error("LCV eklenirken hata oluştu:", err);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['guests'] });
     }
-  });
-
-  return { guests, isLoading, isError, addGuest: addGuestMutation.mutateAsync, isAdding: addGuestMutation.isPending };
+    
+    canvas.width = width; 
+    canvas.height = height;
+    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+    
+    canvas.toBlob((blob) => {
+      resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
+    }, "image/webp", IMAGE_QUALITY || 0.8);
+  };
+  img.onerror = () => resolve(file);
+  img.src = URL.createObjectURL(file);
 }
-</file>
 
-<file path="src/pages/AdminView.jsx">
-// src/pages/AdminView.jsx
-import React from "react";
-import AdminDashboard from "../components/AdminDashboard";
-import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
-import { useStore } from "../store/useStore";
+export async function optimizeImage(file) {
+  if (!file) return file;
 
-export default function AdminView(props) {
-  const activeAdminTab = useStore(state => state.activeAdminTab);
-  
-  const adminTabs = [
-    { id: "overview", label: "Sistem Özeti", description: "İstatistikler ve bekleyen onaylar" }, 
-    { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
-    { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
-    { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
-    { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
-    { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
-    { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
-    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
-    { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
-    { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
-    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
-    { id: "payments", label: "Gelen Hediyeler & Ödemeler", description: "Stripe üzerinden gelen takı ve hediyeler" },
-    { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
-    { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },
-    { id: "tablePlan", label: "Oturma Planı", description: "Misafirleri masalara yerleştir" },
-    { id: "wishes", label: "Anı Defteri Formu", description: "Ad soyad ve dilek mesajları" },
-    { id: "qr", label: "QR Kod", description: "Davetiye QR kodu ve linki" },
-    { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
-    { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
-    { id: "notifications", label: "Anlık Bildirimler", description: "PWA kullanıcılarına Push bildirim yolla" }
-  ];
+  // Geçersiz dosya formatları direkt bypass ediliyor
+  if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) return file;
+  if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
 
-  const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];
+  return new Promise((resolve) => {
+    // Worker modül olarak başlatılıyor ki import fonksiyonlarını tanısın
+    const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
+    
+    worker.onmessage = (e) => {
+      if (e.data.blob) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, "");
+        const optimizedFile = new File([e.data.blob], `${cleanName}.webp`, {
+          type: "image/webp",
+          lastModified: Date.now(),
+        });
+        resolve(optimizedFile);
+      } else if (e.data.error === "OffscreenCanvas not supported") {
+        fallbackOptimize(e.data.file, resolve); 
+      } else {
+        resolve(e.data.file); 
+      }
+      worker.terminate();
+    };
 
-  return (
-    <AdminDashboard
-      activeTabInfo={activeTabInfo}
-      adminTabs={adminTabs}
-      {...props}
-      renderAdminActivePanel={() => <AdminPanelContent {...props} activeAdminTab={activeAdminTab} />}
-    />
-  );
+    worker.onerror = () => {
+      fallbackOptimize(file, resolve);
+      worker.terminate();
+    };
+
+    worker.postMessage({ 
+      file: file, 
+      maxDim: MAX_IMAGE_DIMENSION || 1400, 
+      quality: IMAGE_QUALITY || 0.8 
+    });
+  });
 }
 </file>
 
@@ -8740,220 +9002,6 @@ export const triggerConfetti = () => {
 };
 </file>
 
-<file path="src/utils/imageOptimizer.js">
-import { MAX_IMAGE_DIMENSION, IMAGE_QUALITY } from "../config/constants";
-
-function fallbackOptimize(file, resolve) {
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement("canvas");
-    let { width, height } = img;
-    const maxDim = MAX_IMAGE_DIMENSION || 1400;
-    
-    if (width > maxDim || height > maxDim) {
-      if (width > height) { 
-        height = Math.round((height * maxDim) / width); 
-        width = maxDim; 
-      } else { 
-        width = Math.round((width * maxDim) / height); 
-        height = maxDim; 
-      }
-    }
-    
-    canvas.width = width; 
-    canvas.height = height;
-    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-    
-    canvas.toBlob((blob) => {
-      resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
-    }, "image/webp", IMAGE_QUALITY || 0.8);
-  };
-  img.onerror = () => resolve(file);
-  img.src = URL.createObjectURL(file);
-}
-
-export async function optimizeImage(file) {
-  if (!file) return file;
-
-  // Geçersiz dosya formatları direkt bypass ediliyor
-  if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) return file;
-  if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
-
-  return new Promise((resolve) => {
-    // Worker modül olarak başlatılıyor ki import fonksiyonlarını tanısın
-    const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
-    
-    worker.onmessage = (e) => {
-      if (e.data.blob) {
-        const cleanName = file.name.replace(/\.[^/.]+$/, "");
-        const optimizedFile = new File([e.data.blob], `${cleanName}.webp`, {
-          type: "image/webp",
-          lastModified: Date.now(),
-        });
-        resolve(optimizedFile);
-      } else if (e.data.error === "OffscreenCanvas not supported") {
-        fallbackOptimize(e.data.file, resolve); 
-      } else {
-        resolve(e.data.file); 
-      }
-      worker.terminate();
-    };
-
-    worker.onerror = () => {
-      fallbackOptimize(file, resolve);
-      worker.terminate();
-    };
-
-    worker.postMessage({ 
-      file: file, 
-      maxDim: MAX_IMAGE_DIMENSION || 1400, 
-      quality: IMAGE_QUALITY || 0.8 
-    });
-  });
-}
-</file>
-
-<file path="src/pages/LiveProjector.jsx">
-import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { m, AnimatePresence } from 'framer-motion';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../supabaseClient';
-import { useWishesQuery } from '../hooks/useWishesQuery';
-import { useGuestPhotosQuery } from '../hooks/useGuestPhotosQuery';
-import { useStore } from '../store/useStore';
-import { LazyImage } from '../components/common/LazyImage';
-
-export default function LiveProjector() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const siteData = useStore(state => state.siteData);
-  const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
-  
-  const { wishes } = useWishesQuery();
-  const { photos } = useGuestPhotosQuery();
-  const queryClient = useQueryClient();
-  
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Dilekleri ve Fotoğrafları tek bir akışta birleştir
-  const displayItems = useMemo(() => {
-    const items = [];
-    wishes?.forEach(w => items.push({ type: 'wish', data: w }));
-    photos?.forEach(p => items.push({ type: 'photo', data: p }));
-    // Listeyi karıştır (Shuffle) veya sırayla göster
-    return items.sort(() => Math.random() - 0.5);
-  }, [wishes, photos]);
-
-  useEffect(() => {
-    let channel;
-    let isMounted = true;
-
-    const setupChannel = () => {
-      channel = supabase
-        .channel('public:wishes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes', filter: 'approved=eq.true' }, () => {
-            if (isMounted) queryClient.invalidateQueries({ queryKey: ['wishes'] });
-        })
-        .subscribe();
-    };
-
-    setupChannel();
-    
-    return () => { 
-      isMounted = false;
-      if (channel) supabase.removeChannel(channel).catch(console.error);
-    };
-  }, [queryClient]);
-
-  useEffect(() => {
-    if (!displayItems || displayItems.length === 0) return;
-    const interval = setInterval(() => { 
-        setCurrentIndex((prev) => (prev + 1) % displayItems.length); 
-    }, 8000); // Her 8 saniyede bir değişir
-    return () => clearInterval(interval);
-  }, [displayItems]);
-
-  useEffect(() => {
-    const prevTheme = document.documentElement.dataset.theme; 
-    document.documentElement.dataset.theme = "dark";
-    document.body.style.overflow = "hidden";
-    
-    return () => { 
-      document.body.style.overflow = "auto"; 
-      if (prevTheme) document.documentElement.dataset.theme = prevTheme;
-      else document.documentElement.removeAttribute('data-theme');
-    };
-  }, []);
-
-  const activeItem = displayItems[currentIndex];
-
-  return (
-    <div style={{ width: '100vw', height: '100vh', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-      {/* Arka Plan Efektleri */}
-      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(var(--theme-rgb), 0.15) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
-      <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(200, 150, 80, 0.1) 0%, transparent 70%)', filter: 'blur(60px)' }}></div>
-
-      <h1 style={{ color: '#fff', fontSize: '3rem', fontFamily: '"Playfair Display", serif', marginBottom: '10px', textShadow: '0 4px 20px rgba(0,0,0,0.5)', zIndex: 10 }}>
-        {coupleName}
-      </h1>
-      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.2rem', letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '40px', zIndex: 10 }}>
-        {isEn ? "Live Memories" : "Canlı Anı Akışı"}
-      </p>
-
-      <div style={{ width: '80%', maxWidth: '900px', minHeight: '400px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
-        <AnimatePresence mode="wait">
-          {activeItem ? (
-            <m.div
-              key={activeItem.type === 'wish' ? activeItem.data.id : activeItem.data.image_url}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              style={{ textAlign: 'center', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-            >
-              {activeItem.type === 'wish' ? (
-                <>
-                  <p style={{ color: '#fff', fontSize: '2.5rem', lineHeight: '1.4', fontStyle: 'italic', fontWeight: '300', marginBottom: activeItem.data.message_translated ? '15px' : '30px' }}>
-                    "{activeItem.data.message}"
-                  </p>
-                  {activeItem.data.message_translated && (
-                    <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '1.3rem', lineHeight: '1.4', fontStyle: 'italic', marginBottom: '30px', fontWeight: '300' }}>
-                      ({activeItem.data.message_translated})
-                    </p>
-                  )}
-                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.5rem', letterSpacing: '2px', fontWeight: '600', display: 'inline-block' }}>
-                    — {activeItem.data.name}
-                  </strong>
-                </>
-              ) : (
-                <>
-                  <div style={{ width: '100%', maxWidth: '600px', height: '400px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
-                    <LazyImage src={activeItem.data.image_url} alt="Misafir POV" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                  <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.2rem', marginTop: '20px', letterSpacing: '2px', fontWeight: '400' }}>
-                    {isEn ? "Guest POV 📸" : "Misafir Kamerasından 📸"}
-                  </strong>
-                </>
-              )}
-            </m.div>
-          ) : (
-            <m.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} style={{ color: '#fff', fontSize: '1.5rem' }}>
-              {isEn ? "Waiting for memories..." : "Anılar bekleniyor..."}
-            </m.p>
-          )}
-        </AnimatePresence>
-      </div>
-      
-      <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
-        {isEn ? "Scan the QR code to send a message or photo!" : "Ekrana mesaj veya fotoğraf göndermek için davetiyedeki formu kullanın!"}
-      </div>
-    </div>
-  );
-}
-</file>
-
 <file path="src/components/invitation/sections/HeroSection.jsx">
 import React, { memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -9147,6 +9195,81 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: false, error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 });
   }
 })
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register';
+import * as Sentry from '@sentry/react'; 
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { get, set, del } from 'idb-keyval';
+import { runStorageGarbageCollection } from './services/database'; // EKLENDİ
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN || "",
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 1.0, 
+  replaysSessionSampleRate: 0.1, 
+  replaysOnErrorSampleRate: 1.0, 
+});
+
+registerSW({ immediate: true }); 
+
+// IndexedDB Asenkron Persister
+const indexedDBPersister = createAsyncStoragePersister({
+  storage: {
+    getItem: async (key) => await get(key),
+    setItem: async (key, value) => await set(key, value),
+    removeItem: async (key) => await del(key),
+  },
+});
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 60 * 24, 
+      refetchOnWindowFocus: true, 
+      retry: 2, 
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
+    },
+  },
+});
+
+// EKLENDİ: Storage çöplerini (Gereksiz IndexedDB verilerini) temizle
+runStorageGarbageCollection();
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <PersistQueryClientProvider 
+      client={queryClient}
+      persistOptions={{ persister: indexedDBPersister, maxAge: 1000 * 60 * 60 * 24 }}
+    >
+      <BrowserRouter>
+        <HelmetProvider>
+          <App />
+          <Analytics />
+          <SpeedInsights />
+        </HelmetProvider>
+      </BrowserRouter>
+    </PersistQueryClientProvider>
+  </React.StrictMode>
+);
 </file>
 
 <file path="src/components/invitation/sections/RsvpSection.jsx">
@@ -9428,81 +9551,6 @@ export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invita
     </section>
   );
 });
-</file>
-
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register';
-import * as Sentry from '@sentry/react'; 
-import { QueryClient } from '@tanstack/react-query';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { get, set, del } from 'idb-keyval';
-import { runStorageGarbageCollection } from './services/database'; // EKLENDİ
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN || "",
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  tracesSampleRate: 1.0, 
-  replaysSessionSampleRate: 0.1, 
-  replaysOnErrorSampleRate: 1.0, 
-});
-
-registerSW({ immediate: true }); 
-
-// IndexedDB Asenkron Persister
-const indexedDBPersister = createAsyncStoragePersister({
-  storage: {
-    getItem: async (key) => await get(key),
-    setItem: async (key, value) => await set(key, value),
-    removeItem: async (key) => await del(key),
-  },
-});
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 60 * 24, 
-      refetchOnWindowFocus: true, 
-      retry: 2, 
-    },
-    mutations: {
-      networkMode: 'offlineFirst',
-    },
-  },
-});
-
-// EKLENDİ: Storage çöplerini (Gereksiz IndexedDB verilerini) temizle
-runStorageGarbageCollection();
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <PersistQueryClientProvider 
-      client={queryClient}
-      persistOptions={{ persister: indexedDBPersister, maxAge: 1000 * 60 * 60 * 24 }}
-    >
-      <BrowserRouter>
-        <HelmetProvider>
-          <App />
-          <Analytics />
-          <SpeedInsights />
-        </HelmetProvider>
-      </BrowserRouter>
-    </PersistQueryClientProvider>
-  </React.StrictMode>
-);
 </file>
 
 <file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
@@ -14612,150 +14660,6 @@ html[data-theme]
 }
 </file>
 
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import LiveProjector from "./pages/LiveProjector"; 
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { LazyMotion, domAnimation } from "framer-motion";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const resolvedTheme = prefersDark ? "dark" : activeTheme;
-
-  // YENİ: Otomatik Dil Algılama ve Ayarlama
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && !localStorage.getItem('i18nextLng')) {
-      const userLang = navigator.language || navigator.userLanguage;
-      if (userLang.startsWith('tr')) {
-        i18n.changeLanguage('tr');
-      } else {
-        i18n.changeLanguage('en');
-      }
-    }
-  }, [i18n]);
-
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = resolvedTheme;
-    
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(resolvedTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, resolvedTheme]);
-
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-        
-        syncFailedDeletes();
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      {!isSupabaseReady() && (
-        <div style={{ background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' }}>
-          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı. Mock Modunda çalışıyor.
-        </div>
-      )}
-
-      {/* YENİ: Floating Language Switcher */}
-      {!isAuthRecovery && !location.pathname.includes('/admin') && (
-        <button 
-          onClick={() => i18n.changeLanguage(isEn ? 'tr' : 'en')}
-          style={{
-            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
-            width: '46px', height: '46px', borderRadius: '50%',
-            background: 'var(--theme-surface)', border: '2px solid rgba(var(--theme-rgb), 0.4)',
-            color: 'var(--rose-deep)', fontWeight: 'bold', cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
-          }}
-        >
-          {isEn ? 'TR' : 'EN'}
-        </button>
-      )}
-
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={resolvedTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
-        
-        <Routes>
-          <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-          <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
-
-          <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-          <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
-</file>
-
 <file path="src/pages/AdminController.jsx">
 import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14914,6 +14818,150 @@ export default function AdminController() {
 }
 </file>
 
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { LazyMotion, domAnimation } from "framer-motion";
+import LiveProjector from "./pages/LiveProjector.js";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolvedTheme = prefersDark ? "dark" : activeTheme;
+
+  // YENİ: Otomatik Dil Algılama ve Ayarlama
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && !localStorage.getItem('i18nextLng')) {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.startsWith('tr')) {
+        i18n.changeLanguage('tr');
+      } else {
+        i18n.changeLanguage('en');
+      }
+    }
+  }, [i18n]);
+
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = resolvedTheme;
+    
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(resolvedTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, resolvedTheme]);
+
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+        
+        syncFailedDeletes();
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  return (
+    <LazyMotion features={domAnimation} strict>
+      {!isSupabaseReady() && (
+        <div style={{ background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' }}>
+          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı. Mock Modunda çalışıyor.
+        </div>
+      )}
+
+      {/* YENİ: Floating Language Switcher */}
+      {!isAuthRecovery && !location.pathname.includes('/admin') && (
+        <button 
+          onClick={() => i18n.changeLanguage(isEn ? 'tr' : 'en')}
+          style={{
+            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
+            width: '46px', height: '46px', borderRadius: '50%',
+            background: 'var(--theme-surface)', border: '2px solid rgba(var(--theme-rgb), 0.4)',
+            color: 'var(--rose-deep)', fontWeight: 'bold', cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
+          }}
+        >
+          {isEn ? 'TR' : 'EN'}
+        </button>
+      )}
+
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={resolvedTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
+        
+        <Routes>
+          <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+          <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+
+          <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+          <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
+</file>
+
 <file path="src/pages/InvitationController.jsx">
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -15050,262 +15098,6 @@ export default function InvitationController() {
       </Suspense>
     </div>
   );
-}
-</file>
-
-<file path="src/hooks/useScrollNavigation.js">
-// src/hooks/useScrollNavigation.js
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  
-  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
-  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
-  const [showScrollDown, setShowScrollDown] = useState(false); 
-  const [isMobile, setIsMobile] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
-  const resizeTimerRef = useRef(null); 
-
-  // Ekran boyutunu izle
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
-
-  const getActiveDesktopIndex = (sections) => {
-    let activeIdx = 0;
-    sections.forEach((sec, idx) => {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.55) {
-        activeIdx = idx;
-      }
-    });
-    return activeIdx;
-  };
-
-  const scrollToNext = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      setCurrentSlideIndex(prev => {
-        const next = prev + 1;
-        return next < wrappers.length ? next : prev;
-      });
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const nextIdx = activeIdx + 1;
-      
-      if (nextIdx < sections.length) {
-        const nextSection = sections[nextIdx];
-        const rect = nextSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile]);
-
-  const scrollToPrev = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      const currentWrapper = wrappers[currentSlideIndex];
-      
-      if (currentWrapper && currentWrapper.scrollTop > 150) {
-        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      
-      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const currentSection = sections[activeIdx];
-      
-      if (currentSection) {
-        const currentRect = currentSection.getBoundingClientRect();
-        if (currentRect.top < -150) {
-           const absoluteTop = window.scrollY + currentRect.top;
-           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-           return;
-        }
-      }
-
-      const prevIdx = activeIdx - 1;
-      if (prevIdx >= 0) {
-        const prevSection = sections[prevIdx];
-        const rect = prevSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile, currentSlideIndex]);
-
-  const handleWheel = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
-    
-    const slideWrapper = e.target.closest('.slide-wrapper');
-    if (slideWrapper) {
-      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-      if (isScrollable) {
-        const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-
-        if (e.deltaY > 0 && !atBottom) return; 
-        if (e.deltaY < 0 && !atTop) return;    
-      }
-    }
-
-    if (e.deltaY > 0) scrollToNext();
-    else scrollToPrev();
-
-    isScrollingRef.current = true;
-    setTimeout(() => { isScrollingRef.current = false; }, 600);
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartYRef.current - touchEndY;
-
-    const slideWrapper = target.closest('.slide-wrapper');
-    if (slideWrapper) {
-       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-       if (isScrollable) {
-           const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-           if (diff > 0 && !atBottom) return;
-           if (diff < 0 && !atTop) return;
-       }
-    }
-
-    if (Math.abs(diff) > 40) { 
-      if (diff > 0) scrollToNext(); 
-      else scrollToPrev(); 
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 500); 
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    let isMounted = true;
-    let activeWrapper = null;
-
-    const handleScroll = () => {
-      if (!isMounted) return;
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         const currentWrapper = wrappers[currentSlideIndex];
-         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
-         
-         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
-         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
-      } else {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        
-        setShowScrollTop(scrollTop > 100);
-        
-        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
-        
-        if (scrollTop <= 10) {
-          setShowScrollDown(true);
-        } else {
-          setShowScrollDown(!isAtBottom);
-        }
-      }
-    };
-
-    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
-    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
-    const mountDelayTimer = setTimeout(() => {
-      if (!isMounted) return;
-      
-      handleScroll();
-
-      if (!isMobile) {
-        window.addEventListener('scroll', handleScroll, { passive: true });
-      }
-      
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         activeWrapper = wrappers[currentSlideIndex];
-         if (activeWrapper) {
-            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
-         }
-      }
-
-      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
-      const resizeObserver = new ResizeObserver(() => {
-        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-        resizeTimerRef.current = setTimeout(() => {
-          if (isMounted) handleScroll();
-        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
-      });
-      
-      resizeObserver.observe(document.body);
-
-    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
-
-    return () => {
-      isMounted = false;
-      clearTimeout(mountDelayTimer);
-      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-      
-      if (!isMobile) {
-        window.removeEventListener('scroll', handleScroll);
-      }
-      if (activeWrapper) {
-        activeWrapper.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-  
-  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }
 </file>
 
@@ -15666,6 +15458,532 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   }, [guests, setGuests, showAppPrompt, setAdminSaveMessage, isEn]);
 
   return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
+}
+</file>
+
+<file path="src/hooks/useScrollNavigation.js">
+// src/hooks/useScrollNavigation.js
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
+  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
+  const [showScrollDown, setShowScrollDown] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
+  const resizeTimerRef = useRef(null); 
+
+  // Ekran boyutunu izle
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
+
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
+  const scrollToNext = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      setCurrentSlideIndex(prev => {
+        const next = prev + 1;
+        return next < wrappers.length ? next : prev;
+      });
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
+      
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
+        const rect = nextSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const scrollToPrev = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      const currentWrapper = wrappers[currentSlideIndex];
+      
+      if (currentWrapper && currentWrapper.scrollTop > 150) {
+        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const currentSection = sections[activeIdx];
+      
+      if (currentSection) {
+        const currentRect = currentSection.getBoundingClientRect();
+        if (currentRect.top < -150) {
+           const absoluteTop = window.scrollY + currentRect.top;
+           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+           return;
+        }
+      }
+
+      const prevIdx = activeIdx - 1;
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
+        const rect = prevSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile, currentSlideIndex]);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
+    
+    const slideWrapper = e.target.closest('.slide-wrapper');
+    if (slideWrapper) {
+      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+      if (isScrollable) {
+        const atTop = slideWrapper.scrollTop <= 0;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+
+        if (e.deltaY > 0 && !atBottom) return; 
+        if (e.deltaY < 0 && !atTop) return;    
+      }
+    }
+
+    if (e.deltaY > 0) scrollToNext();
+    else scrollToPrev();
+
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 600);
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEndY;
+
+    const slideWrapper = target.closest('.slide-wrapper');
+    if (slideWrapper) {
+       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+       if (isScrollable) {
+           const atTop = slideWrapper.scrollTop <= 0;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+           if (diff > 0 && !atBottom) return;
+           if (diff < 0 && !atTop) return;
+       }
+    }
+
+    if (Math.abs(diff) > 40) { 
+      if (diff > 0) scrollToNext(); 
+      else scrollToPrev(); 
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 500); 
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    let isMounted = true;
+    let activeWrapper = null;
+
+    const handleScroll = () => {
+      if (!isMounted) return;
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         const currentWrapper = wrappers[currentSlideIndex];
+         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
+         
+         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
+         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
+      } else {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        
+        setShowScrollTop(scrollTop > 100);
+        
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
+        
+        if (scrollTop <= 10) {
+          setShowScrollDown(true);
+        } else {
+          setShowScrollDown(!isAtBottom);
+        }
+      }
+    };
+
+    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
+    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
+    const mountDelayTimer = setTimeout(() => {
+      if (!isMounted) return;
+      
+      handleScroll();
+
+      if (!isMobile) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+      
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         activeWrapper = wrappers[currentSlideIndex];
+         if (activeWrapper) {
+            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+         }
+      }
+
+      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
+      const resizeObserver = new ResizeObserver(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(() => {
+          if (isMounted) handleScroll();
+        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
+      });
+      
+      resizeObserver.observe(document.body);
+
+    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
+
+    return () => {
+      isMounted = false;
+      clearTimeout(mountDelayTimer);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+      }
+      if (activeWrapper) {
+        activeWrapper.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
+  
+  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
+}
+</file>
+
+<file path="src/components/common/FloatingMenu.jsx">
+import React, { memo } from "react";
+
+export const FloatingMenu = memo(function FloatingMenu({ 
+  isEn, 
+  toggleLanguage, 
+  shareText, 
+  toggleMusic, 
+  isMusicPlaying, 
+  showScrollDown, 
+  scrollToNext, 
+  showScrollTop, 
+  scrollToPrev 
+}) {
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{__html: `
+        /* ZIPLAMA ANİMASYONLARI */
+        @keyframes syncContainerBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        @keyframes syncDesktopBounce {
+          0%, 100% { transform: translateY(-50%); }
+          50% { transform: translateY(calc(-50% - 8px)); }
+        }
+
+        /* ANA MENÜ ÇERÇEVESİ */
+        #main-dock {
+          position: fixed !important;
+          z-index: 999999 !important;
+          pointer-events: auto !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 8px !important;
+          
+          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
+          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
+          
+          flex-direction: row !important;
+          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+          top: auto !important;
+          left: 0 !important;
+          right: 0 !important;
+          margin: 0 auto !important;
+          width: fit-content !important;
+          height: auto !important;
+        }
+
+        #main-dock:hover {
+          animation-play-state: paused !important;
+        }
+
+        /* TEKİL BUTONLAR VE ANİMASYONLARI */
+        #main-dock .dock-btn {
+          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
+          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
+          
+          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
+          margin: 0 6px !important; 
+          
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          
+          background: var(--theme-surface, #ffffff) !important;
+          color: var(--amp-color, #9f4f68) !important;
+          border: 1.5px solid var(--amp-color, #9f4f68) !important;
+          
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+          cursor: pointer !important;
+          overflow: hidden !important; 
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: scale(1) !important;
+        }
+
+        #main-dock .dock-btn:hover,
+        #main-dock .dock-btn:active {
+          transform: scale(1.08) !important;
+          background: var(--amp-color, #9f4f68) !important;
+          color: var(--theme-surface, #ffffff) !important;
+        }
+
+        #main-dock .dock-btn svg {
+          width: 22px !important;
+          height: 22px !important;
+          flex-shrink: 0 !important;
+          transition: all 0.5s ease !important;
+        }
+
+        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
+        #main-dock .hidden-btn {
+          opacity: 0 !important;
+          visibility: hidden !important;
+          width: 0 !important;
+          min-width: 0 !important;
+          height: 0 !important;
+          padding: 0 !important;
+          border-width: 0 !important;
+          
+          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
+          margin: 0 0 !important; 
+          
+          transform: scale(0) !important; 
+        }
+
+        #main-dock .hidden-btn svg {
+          width: 0 !important;
+          height: 0 !important;
+        }
+
+        /* MASAÜSTÜ GÖRÜNÜM */
+        @media (min-width: 651px) {
+          #main-dock {
+            flex-direction: column !important;
+            right: 32px !important;          
+            left: auto !important;
+            top: 50% !important;             
+            bottom: auto !important;         
+            margin: 0 !important; 
+            height: fit-content !important;
+            width: auto !important;
+            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
+          }
+          
+          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
+          #main-dock .dock-btn {
+            margin: 6px 0 !important;
+          }
+
+          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
+          #main-dock .hidden-btn {
+             margin: 0 0 !important;
+          }
+        }
+      `}} />
+
+      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 8v4" />
+            <path d="M12 16h.01" />
+          </svg>
+        </a>
+      </div>
+
+      <div id="main-dock">
+        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
+          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
+        </button>
+
+        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMusicPlaying ? (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+                <line x1="3" y1="3" x2="21" y2="21" />
+              </>
+            )}
+          </svg>
+        </button>
+
+        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
+        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+        </button>
+        
+        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </button>
+      </div>
+    </>
+  );
+});
+</file>
+
+<file path="src/pages/InvitationView.jsx">
+import React from "react";
+import { useStore } from "../store/useStore";
+import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
+import { usePaymentFeedback } from '../hooks/usePaymentFeedback';
+import {
+  HeroSection,
+  CountdownSection,
+  InvitationMessageSection,
+  FamilySection,
+  StorySection,
+  CeremonySection,
+  ScheduleSection,
+  LocationSection,
+  GallerySection,
+  ShareSection,
+  GiftSection,
+  RsvpSection,
+  WishesSection,
+  GuestsListSection,
+  GuestCameraSection,
+  SmartAlbumSection,
+  FooterSection
+} from "../components/invitation/sections";
+
+export default function InvitationView(props) {
+  const siteData = useStore((state) => state.siteData);
+  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
+  
+  const v = settings?.visibility || {};
+
+  usePaymentFeedback();
+
+  return (
+    <ResponsiveSlideShow>
+      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
+      
+      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
+      
+      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
+      
+      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
+      
+      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
+      
+      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
+      
+      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
+      
+      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.guests && <GuestCameraSection {...props} />}
+      
+      {v.guests && <SmartAlbumSection {...props} />}
+      
+      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.wishes && <WishesSection {...props} copy={copy} />}
+      
+      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
+      
+      <ShareSection {...props} copy={copy} />
+      
+      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
+    </ResponsiveSlideShow>
+  );
 }
 </file>
 
@@ -16782,276 +17100,6 @@ button {
 .floating-actions > *:not(.main-button):hover {
   animation: none !important;
   transform: translateY(0) !important;
-}
-</file>
-
-<file path="src/components/common/FloatingMenu.jsx">
-import React, { memo } from "react";
-
-export const FloatingMenu = memo(function FloatingMenu({ 
-  isEn, 
-  toggleLanguage, 
-  shareText, 
-  toggleMusic, 
-  isMusicPlaying, 
-  showScrollDown, 
-  scrollToNext, 
-  showScrollTop, 
-  scrollToPrev 
-}) {
-  return (
-    <>
-      <style dangerouslySetInnerHTML={{__html: `
-        /* ZIPLAMA ANİMASYONLARI */
-        @keyframes syncContainerBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-
-        @keyframes syncDesktopBounce {
-          0%, 100% { transform: translateY(-50%); }
-          50% { transform: translateY(calc(-50% - 8px)); }
-        }
-
-        /* ANA MENÜ ÇERÇEVESİ */
-        #main-dock {
-          position: fixed !important;
-          z-index: 999999 !important;
-          pointer-events: auto !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 8px !important;
-          
-          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
-          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
-          
-          flex-direction: row !important;
-          bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-          top: auto !important;
-          left: 0 !important;
-          right: 0 !important;
-          margin: 0 auto !important;
-          width: fit-content !important;
-          height: auto !important;
-        }
-
-        #main-dock:hover {
-          animation-play-state: paused !important;
-        }
-
-        /* TEKİL BUTONLAR VE ANİMASYONLARI */
-        #main-dock .dock-btn {
-          /* Ortaya çıkma ve kaybolma hızını yarım saniyeye yayarak pürüzsüzleştirir */
-          transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important; 
-          
-          /* Her butonun sağında ve solunda 6px boşluk (Toplamda butonlar arası 12px) */
-          margin: 0 6px !important; 
-          
-          width: 48px !important;
-          height: 48px !important;
-          min-width: 48px !important;
-          border-radius: 50% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          
-          background: var(--theme-surface, #ffffff) !important;
-          color: var(--amp-color, #9f4f68) !important;
-          border: 1.5px solid var(--amp-color, #9f4f68) !important;
-          
-          box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
-          cursor: pointer !important;
-          overflow: hidden !important; 
-          opacity: 1 !important;
-          visibility: visible !important;
-          transform: scale(1) !important;
-        }
-
-        #main-dock .dock-btn:hover,
-        #main-dock .dock-btn:active {
-          transform: scale(1.08) !important;
-          background: var(--amp-color, #9f4f68) !important;
-          color: var(--theme-surface, #ffffff) !important;
-        }
-
-        #main-dock .dock-btn svg {
-          width: 22px !important;
-          height: 22px !important;
-          flex-shrink: 0 !important;
-          transition: all 0.5s ease !important;
-        }
-
-        /* YAVAŞÇA KAYBOLMA SINIFI (Hayalet boşluk bırakmaz) */
-        #main-dock .hidden-btn {
-          opacity: 0 !important;
-          visibility: hidden !important;
-          width: 0 !important;
-          min-width: 0 !important;
-          height: 0 !important;
-          padding: 0 !important;
-          border-width: 0 !important;
-          
-          /* En kritik nokta: Margin de 0'a düşerek aradaki boşluğu yavaşça eritir */
-          margin: 0 0 !important; 
-          
-          transform: scale(0) !important; 
-        }
-
-        #main-dock .hidden-btn svg {
-          width: 0 !important;
-          height: 0 !important;
-        }
-
-        /* MASAÜSTÜ GÖRÜNÜM */
-        @media (min-width: 651px) {
-          #main-dock {
-            flex-direction: column !important;
-            right: 32px !important;          
-            left: auto !important;
-            top: 50% !important;             
-            bottom: auto !important;         
-            margin: 0 !important; 
-            height: fit-content !important;
-            width: auto !important;
-            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
-          }
-          
-          /* Masaüstü için dikey boşluk (Alt-Üst 6px) */
-          #main-dock .dock-btn {
-            margin: 6px 0 !important;
-          }
-
-          /* Masaüstünde gizlenen buton boşluğunu da sıfırlar */
-          #main-dock .hidden-btn {
-             margin: 0 0 !important;
-          }
-        }
-      `}} />
-
-      <div className="admin-panel-trigger" style={{ display: "block", position: "fixed", top: "20px", left: "20px", zIndex: 999999 }}>
-        <a href="/admin" target="_blank" rel="noopener noreferrer" className="admin-btn-clean" title={isEn ? "Admin Panel" : "Yönetici Paneli"}>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            <path d="M12 8v4" />
-            <path d="M12 16h.01" />
-          </svg>
-        </a>
-      </div>
-
-      <div id="main-dock">
-        <button type="button" className="dock-btn lang-btn" onClick={toggleLanguage} title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}>
-          <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
-        </button>
-
-        <button type="button" className="dock-btn ctrl-play-btn" onClick={toggleMusic} aria-pressed={isMusicPlaying} title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : (isEn ? "Play" : "Sesi Aç")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {isMusicPlaying ? (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </>
-            ) : (
-              <>
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-                <line x1="3" y1="3" x2="21" y2="21" />
-              </>
-            )}
-          </svg>
-        </button>
-
-        {/* Butonlar her zaman HTML'de var olur. Sadece .hidden-btn sınıfını alarak CSS ile yavaşça küçülüp kaybolurlar */}
-        <button type="button" className={`dock-btn scroll-up-btn ${!showScrollTop ? 'hidden-btn' : ''}`} onClick={scrollToPrev}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="19" x2="12" y2="5"></line>
-            <polyline points="5 12 12 5 19 12"></polyline>
-          </svg>
-        </button>
-        
-        <button type="button" className={`dock-btn scroll-down-btn ${!showScrollDown ? 'hidden-btn' : ''}`} onClick={scrollToNext}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <polyline points="19 12 12 19 5 12"></polyline>
-          </svg>
-        </button>
-      </div>
-    </>
-  );
-});
-</file>
-
-<file path="src/pages/InvitationView.jsx">
-import React from "react";
-import { useStore } from "../store/useStore";
-import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
-import { usePaymentFeedback } from '../hooks/usePaymentFeedback';
-import {
-  HeroSection,
-  CountdownSection,
-  InvitationMessageSection,
-  FamilySection,
-  StorySection,
-  CeremonySection,
-  ScheduleSection,
-  LocationSection,
-  GallerySection,
-  ShareSection,
-  GiftSection,
-  RsvpSection,
-  WishesSection,
-  GuestsListSection,
-  GuestCameraSection,
-  SmartAlbumSection,
-  FooterSection
-} from "../components/invitation/sections";
-
-export default function InvitationView(props) {
-  const siteData = useStore((state) => state.siteData);
-  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
-  
-  const v = settings?.visibility || {};
-
-  usePaymentFeedback();
-
-  return (
-    <ResponsiveSlideShow>
-      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
-      
-      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
-      
-      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
-      
-      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
-      
-      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
-      
-      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
-      
-      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-      
-      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.guests && <GuestCameraSection {...props} />}
-      
-      {v.guests && <SmartAlbumSection {...props} />}
-      
-      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.wishes && <WishesSection {...props} copy={copy} />}
-      
-      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
-      
-      <ShareSection {...props} copy={copy} />
-      
-      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
-    </ResponsiveSlideShow>
-  );
 }
 </file>
 
