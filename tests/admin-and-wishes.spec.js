@@ -7,7 +7,9 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
     await page.goto('/');
 
     const envelopeSeal = page.locator('.envelope-seal');
-    await expect(envelopeSeal).not.toHaveText(/Yükleniyor\.\.\.|Loading\.\.\./i, { timeout: 15000 });
+    
+    // YENİ EKLENEN: Görselin yüklenmesini ve butonun aktifleşmesini bekle
+    await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
     await envelopeSeal.click({ force: true });
     
     await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
@@ -34,7 +36,9 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
 
     await emailInput.fill('testadmin@example.com');
     await passwordInput.fill('yanlis_sifre_123');
-    await loginButton.click();
+    
+    // YENİ EKLENEN: Supabase uyarı katmanını (overlay) delerek tıklamak için force: true parametresi eklendi
+    await loginButton.click({ force: true });
 
     // Hata mesajının çıkmasını bekle (Supabase auth mocklandığı için hata verecektir)
     const errorMessage = page.locator('.admin-login-message.error');

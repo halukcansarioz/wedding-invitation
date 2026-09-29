@@ -4,7 +4,8 @@
     "style": "xml"
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*"
   ],
   "ignore": [
     "node_modules/**",

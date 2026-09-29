@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/**/*
+- Only files matching these patterns are included: src/**/*, tests/**/*
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -204,6 +204,9 @@ src/
   main.jsx
   main.tsx
   supabaseClient.js
+tests/
+  admin-and-wishes.spec.js
+  rsvp.spec.js
 </directory_structure>
 
 <files>
@@ -1431,6 +1434,67 @@ describe('GuestsListSection Bileşeni', () => {
 });
 </file>
 
+<file path="src/hooks/useAudio.js">
+import { useRef, useState, useEffect, useCallback } from "react";
+
+export function useAudio(musicFile) {
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
+  }, [musicFile]);
+
+  const stopMusic = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsMusicPlaying(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("wedding-music-muted", "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      stopMusic();
+    };
+  }, [stopMusic]);
+
+  const startMusic = useCallback(async (forcePlay = false) => {
+    if (forcePlay !== true && typeof window !== "undefined") {
+      if (localStorage.getItem("wedding-music-muted") === "true") {
+        return;
+      }
+    }
+
+    try {
+      if (musicFile && audioRef.current) {
+        audioRef.current.volume = 0.15;
+        await audioRef.current.play();
+        setIsMusicPlaying(true);
+        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
+      }
+    } catch (error) {
+      console.error("Müzik başlatılamadı:", error);
+      setIsMusicPlaying(false);
+    }
+  }, [musicFile]);
+
+  const toggleMusic = useCallback(async () => {
+    if (isMusicPlaying) {
+      stopMusic();
+    } else {
+      await startMusic(true);
+    }
+  }, [isMusicPlaying, stopMusic, startMusic]);
+
+  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
+}
+</file>
+
 <file path="src/hooks/useAudioRecorder.js">
 import { useState, useRef } from 'react';
 import { uploadMediaFile } from '../services/database';
@@ -2577,6 +2641,52 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 </file>
 
+<file path="tests/admin-and-wishes.spec.js">
+import { test, expect } from '@playwright/test';
+
+test.describe('Anı Defteri ve Admin Süreçleri', () => {
+  
+  test('Misafir anı defterine mesaj bırakabilmeli', async ({ page }) => {
+    await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
+    await page.goto('/');
+
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).not.toHaveText(/Yükleniyor\.\.\.|Loading\.\.\./i, { timeout: 15000 });
+    await envelopeSeal.click({ force: true });
+    
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+    
+    const wishesSection = page.locator('.wish-form');
+    await wishesSection.waitFor({ state: 'attached' });
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await wishesSection.scrollIntoViewIfNeeded();
+
+    await page.fill('input[name="name"]', 'Playwright Bot');
+    await page.fill('textarea[name="message"]', 'Harika bir düğün test mesajı!');
+    
+    // Not: Turnstile bot koruması aktifse, E2E testlerinde submit butonu disable kalabilir.
+    // CI ortamlarında test için Turnstile'i bypass eden bir mock eklemek gerekebilir.
+  });
+
+  test('Kullanıcı admin paneline hatalı şifreyle girememeli', async ({ page }) => {
+    // Admin URL parametresi veya doğrudan rota ile git
+    await page.goto('/admin');
+
+    const emailInput = page.locator('input[type="email"]');
+    const passwordInput = page.locator('input[type="password"]');
+    const loginButton = page.locator('button[type="submit"]');
+
+    await emailInput.fill('testadmin@example.com');
+    await passwordInput.fill('yanlis_sifre_123');
+    await loginButton.click();
+
+    // Hata mesajının çıkmasını bekle (Supabase auth mocklandığı için hata verecektir)
+    const errorMessage = page.locator('.admin-login-message.error');
+    await expect(errorMessage).toBeVisible();
+  });
+});
+</file>
+
 <file path="src/components/admin/tabs/CeremonyTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
@@ -3254,67 +3364,6 @@ export function useAssetPreloader(mediaUrl) {
   }, [mediaUrl]);
 
   return isLoaded;
-}
-</file>
-
-<file path="src/hooks/useAudio.js">
-import { useRef, useState, useEffect, useCallback } from "react";
-
-export function useAudio(musicFile) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
-    }
-  }, [musicFile]);
-
-  const stopMusic = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setIsMusicPlaying(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("wedding-music-muted", "true");
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      stopMusic();
-    };
-  }, [stopMusic]);
-
-  const startMusic = useCallback(async (forcePlay = false) => {
-    if (forcePlay !== true && typeof window !== "undefined") {
-      if (localStorage.getItem("wedding-music-muted") === "true") {
-        return;
-      }
-    }
-
-    try {
-      if (musicFile && audioRef.current) {
-        audioRef.current.volume = 0.15;
-        await audioRef.current.play();
-        setIsMusicPlaying(true);
-        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
-      }
-    } catch (error) {
-      console.error("Müzik başlatılamadı:", error);
-      setIsMusicPlaying(false);
-    }
-  }, [musicFile]);
-
-  const toggleMusic = useCallback(async () => {
-    if (isMusicPlaying) {
-      stopMusic();
-    } else {
-      await startMusic(true);
-    }
-  }, [isMusicPlaying, stopMusic, startMusic]);
-
-  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
 }
 </file>
 
@@ -6012,6 +6061,57 @@ const createMockSupabase = () => {
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createMockSupabase();
+</file>
+
+<file path="tests/rsvp.spec.js">
+import { test, expect } from '@playwright/test';
+
+test.describe('Düğün Davetiyesi Temel Süreçleri', () => {
+  test('Misafir LCV formunu başarıyla doldurabilmeli', async ({ page }) => {
+    
+    // 1. Dış medya dosyalarının yüklenmesini engelleyerek test hızını artır
+    await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
+
+    // Davetiye adresine git
+    await page.goto('/');
+
+    const envelopeSeal = page.locator('.envelope-seal');
+    
+    // 2. Butonun "Yükleniyor..." durumundan çıkmasını bekle
+    await expect(envelopeSeal).not.toHaveText(/Yükleniyor\.\.\.|Loading\.\.\./i, { timeout: 15000 });
+
+    // 3. Zarfı açmak için tıkla
+    await envelopeSeal.click({ force: true });
+
+    // 4. Zarf animasyonunun bitmesini bekle.
+    // DİKKAT: Uygulamadaki 4000ms'lik (4 saniye) bekleme ve React.lazy() yüklemesi yüzünden 
+    // Playwright'ın varsayılan 5 saniyelik limiti yetmez. Bu sebeple 15 saniye (15000ms) tanımlıyoruz.
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+
+    // 5. Asıl davetiye içeriğinin yüklendiğini teyit et (Buna da özel süre tanıyoruz)
+    await expect(page.locator('.hero-section')).toBeAttached({ timeout: 15000 });
+
+    // 6. LCV formunu bul (10 saniye tolerans)
+    const rsvpSection = page.locator('.rsvp-card');
+    await rsvpSection.waitFor({ state: 'attached', timeout: 10000 });
+
+    // 7. Framer Motion animasyonlarını tetiklemek için sayfayı önce en alta kaydır
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    
+    // 8. Elementin tam görünür olduğu konuma odaklan
+    await rsvpSection.scrollIntoViewIfNeeded();
+
+    // 9. Elementin animasyonlardan çıkıp gerçekten görünür hale geldiğini onayla
+    await expect(rsvpSection).toBeVisible({ timeout: 10000 });
+
+    // 10. Formu doldur
+    await page.fill('input[name="name"]', 'Test Misafir');
+    
+    // Not: Formun geri kalan test adımlarınızı (dropdown seçimi, buton tıklaması vb.) buradan itibaren yazabilirsiniz.
+    // await page.fill('textarea[name="note"]', 'Playwright test notu');
+    // await page.click('button[type="submit"]');
+  });
+});
 </file>
 
 <file path="src/components/admin/tabs/DataTab.jsx">
@@ -14660,6 +14760,150 @@ html[data-theme]
 }
 </file>
 
+<file path="src/App.jsx">
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useStore } from "./store/useStore"; 
+import { GlobalModals } from "./components/common/GlobalModals";
+import InvitationController from "./pages/InvitationController";
+import AdminController from "./pages/AdminController";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
+import { SITE_DATA_KEY } from "./config/constants";
+import "./styles/index.css";
+import { LazyMotion, domAnimation } from "framer-motion";
+import LiveProjector from "./pages/LiveProjector.js";
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const customAlert = useStore((state) => state.customAlert);
+  const setCustomAlert = useStore((state) => state.setCustomAlert);
+  const customConfirm = useStore((state) => state.customConfirm);
+  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
+  const customPrompt = useStore((state) => state.customPrompt);
+  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
+  
+  const siteData = useStore((state) => state.siteData);
+  const setSiteData = useStore((state) => state.setSiteData);
+  const setWishes = useStore((state) => state.setWishes);
+  const setGuests = useStore((state) => state.setGuests);
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
+
+  const location = useLocation();
+  const activeTheme = siteData.settings?.theme || "lavanta";
+  const invitation = siteData.invitation;
+  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const resolvedTheme = prefersDark ? "dark" : activeTheme;
+
+  // YENİ: Otomatik Dil Algılama ve Ayarlama
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && !localStorage.getItem('i18nextLng')) {
+      const userLang = navigator.language || navigator.userLanguage;
+      if (userLang.startsWith('tr')) {
+        i18n.changeLanguage('tr');
+      } else {
+        i18n.changeLanguage('en');
+      }
+    }
+  }, [i18n]);
+
+  useEffect(() => {
+    document.documentElement.lang = isEn ? "en" : "tr";
+    document.documentElement.dataset.theme = resolvedTheme;
+    
+    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon"; 
+    favicon.type = "image/svg+xml"; 
+    favicon.href = getFaviconUrl(resolvedTheme);
+    if (!favicon.parentNode) document.head.appendChild(favicon);
+  }, [isEn, resolvedTheme]);
+
+  useEffect(() => {
+    async function initDatabaseData() {
+      if (!isSupabaseReady()) return;
+      try {
+        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+          loadSettingsFromDatabase(),
+          loadPublishedWishesFromDatabase(),
+          loadGuestsFromDatabase()
+        ]);
+
+        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        
+        setSiteData(normalizedSettings);
+        setAdminDraft(normalizedSettings);
+        setWishes(dbWishes || []);
+        setGuests(dbGuests || []);
+        
+        syncFailedDeletes();
+      } catch (error) {
+        console.error("Veritabanından veriler okunamadı:", error);
+      }
+    }
+    initDatabaseData();
+  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+
+  return (
+    <LazyMotion features={domAnimation} strict>
+      {!isSupabaseReady() && (
+        <div style={{ background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' }}>
+          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı. Mock Modunda çalışıyor.
+        </div>
+      )}
+
+      {/* YENİ: Floating Language Switcher */}
+      {!isAuthRecovery && !location.pathname.includes('/admin') && (
+        <button 
+          onClick={() => i18n.changeLanguage(isEn ? 'tr' : 'en')}
+          style={{
+            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
+            width: '46px', height: '46px', borderRadius: '50%',
+            background: 'var(--theme-surface)', border: '2px solid rgba(var(--theme-rgb), 0.4)',
+            color: 'var(--rose-deep)', fontWeight: 'bold', cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
+          }}
+        >
+          {isEn ? 'TR' : 'EN'}
+        </button>
+      )}
+
+      <div 
+        className="app" 
+        lang={isEn ? "en" : "tr"} 
+        data-theme={resolvedTheme}
+        style={{
+          "--intro-image": `url(${invitation.introImage})`,
+          "--hero-image": `url(${invitation.heroImage})`,
+          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
+        }}
+      >
+        <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
+        
+        <Routes>
+          <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+          <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+
+          <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+          <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+        </Routes>
+      </div>
+    </LazyMotion>
+  );
+}
+
+export default App;
+</file>
+
 <file path="src/pages/AdminController.jsx">
 import React, { useState, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14818,150 +15062,6 @@ export default function AdminController() {
 }
 </file>
 
-<file path="src/App.jsx">
-import { useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
-import { GlobalModals } from "./components/common/GlobalModals";
-import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
-import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
-import { SITE_DATA_KEY } from "./config/constants";
-import "./styles/index.css";
-import { LazyMotion, domAnimation } from "framer-motion";
-import LiveProjector from "./pages/LiveProjector.js";
-
-function App() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const customAlert = useStore((state) => state.customAlert);
-  const setCustomAlert = useStore((state) => state.setCustomAlert);
-  const customConfirm = useStore((state) => state.customConfirm);
-  const setCustomConfirm = useStore((state) => state.setCustomConfirm);
-  const customPrompt = useStore((state) => state.customPrompt);
-  const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  
-  const siteData = useStore((state) => state.siteData);
-  const setSiteData = useStore((state) => state.setSiteData);
-  const setWishes = useStore((state) => state.setWishes);
-  const setGuests = useStore((state) => state.setGuests);
-  const setAdminDraft = useStore((state) => state.setAdminDraft);
-
-  const location = useLocation();
-  const activeTheme = siteData.settings?.theme || "lavanta";
-  const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
-
-  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const resolvedTheme = prefersDark ? "dark" : activeTheme;
-
-  // YENİ: Otomatik Dil Algılama ve Ayarlama
-  useEffect(() => {
-    if (typeof navigator !== 'undefined' && !localStorage.getItem('i18nextLng')) {
-      const userLang = navigator.language || navigator.userLanguage;
-      if (userLang.startsWith('tr')) {
-        i18n.changeLanguage('tr');
-      } else {
-        i18n.changeLanguage('en');
-      }
-    }
-  }, [i18n]);
-
-  useEffect(() => {
-    document.documentElement.lang = isEn ? "en" : "tr";
-    document.documentElement.dataset.theme = resolvedTheme;
-    
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
-    favicon.href = getFaviconUrl(resolvedTheme);
-    if (!favicon.parentNode) document.head.appendChild(favicon);
-  }, [isEn, resolvedTheme]);
-
-  useEffect(() => {
-    async function initDatabaseData() {
-      if (!isSupabaseReady()) return;
-      try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
-        ]);
-
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
-        setSiteData(normalizedSettings);
-        setAdminDraft(normalizedSettings);
-        setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-        
-        syncFailedDeletes();
-      } catch (error) {
-        console.error("Veritabanından veriler okunamadı:", error);
-      }
-    }
-    initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      {!isSupabaseReady() && (
-        <div style={{ background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' }}>
-          ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı. Mock Modunda çalışıyor.
-        </div>
-      )}
-
-      {/* YENİ: Floating Language Switcher */}
-      {!isAuthRecovery && !location.pathname.includes('/admin') && (
-        <button 
-          onClick={() => i18n.changeLanguage(isEn ? 'tr' : 'en')}
-          style={{
-            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
-            width: '46px', height: '46px', borderRadius: '50%',
-            background: 'var(--theme-surface)', border: '2px solid rgba(var(--theme-rgb), 0.4)',
-            color: 'var(--rose-deep)', fontWeight: 'bold', cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
-          }}
-        >
-          {isEn ? 'TR' : 'EN'}
-        </button>
-      )}
-
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
-        data-theme={resolvedTheme}
-        style={{
-          "--intro-image": `url(${invitation.introImage})`,
-          "--hero-image": `url(${invitation.heroImage})`,
-          "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
-        }}
-      >
-        <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
-        
-        <Routes>
-          <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-          <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
-
-          <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-          <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
-        </Routes>
-      </div>
-    </LazyMotion>
-  );
-}
-
-export default App;
-</file>
-
 <file path="src/pages/InvitationController.jsx">
 import React, { Suspense, lazy, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -15098,6 +15198,262 @@ export default function InvitationController() {
       </Suspense>
     </div>
   );
+}
+</file>
+
+<file path="src/hooks/useScrollNavigation.js">
+// src/hooks/useScrollNavigation.js
+import { useState, useRef, useCallback, useEffect } from "react";
+
+export function useScrollNavigation(isAdminPage, opened) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  
+  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
+  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
+  const [showScrollDown, setShowScrollDown] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
+
+  const isScrollingRef = useRef(false);
+  const touchStartYRef = useRef(0);
+  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
+  const resizeTimerRef = useRef(null); 
+
+  // Ekran boyutunu izle
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
+
+  const getActiveDesktopIndex = (sections) => {
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      const rect = sec.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.55) {
+        activeIdx = idx;
+      }
+    });
+    return activeIdx;
+  };
+
+  const scrollToNext = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      setCurrentSlideIndex(prev => {
+        const next = prev + 1;
+        return next < wrappers.length ? next : prev;
+      });
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const nextIdx = activeIdx + 1;
+      
+      if (nextIdx < sections.length) {
+        const nextSection = sections[nextIdx];
+        const rect = nextSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile]);
+
+  const scrollToPrev = useCallback(() => {
+    if (isMobile) {
+      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
+      if (wrappers.length === 0) return;
+      
+      const currentWrapper = wrappers[currentSlideIndex];
+      
+      if (currentWrapper && currentWrapper.scrollTop > 150) {
+        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      
+      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
+    } else {
+      const sections = getDesktopSections();
+      if (sections.length === 0) return;
+      
+      const activeIdx = getActiveDesktopIndex(sections);
+      const currentSection = sections[activeIdx];
+      
+      if (currentSection) {
+        const currentRect = currentSection.getBoundingClientRect();
+        if (currentRect.top < -150) {
+           const absoluteTop = window.scrollY + currentRect.top;
+           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+           return;
+        }
+      }
+
+      const prevIdx = activeIdx - 1;
+      if (prevIdx >= 0) {
+        const prevSection = sections[prevIdx];
+        const rect = prevSection.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top;
+
+        if (rect.height <= window.innerHeight) {
+          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }, [isMobile, currentSlideIndex]);
+
+  const handleWheel = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
+    
+    const slideWrapper = e.target.closest('.slide-wrapper');
+    if (slideWrapper) {
+      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+      if (isScrollable) {
+        const atTop = slideWrapper.scrollTop <= 0;
+        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+
+        if (e.deltaY > 0 && !atBottom) return; 
+        if (e.deltaY < 0 && !atTop) return;    
+      }
+    }
+
+    if (e.deltaY > 0) scrollToNext();
+    else scrollToPrev();
+
+    isScrollingRef.current = true;
+    setTimeout(() => { isScrollingRef.current = false; }, 600);
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches && e.touches.length > 0) {
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
+
+    const target = e.target instanceof Element ? e.target : e.target.parentElement;
+    if (!target) return;
+
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchStartYRef.current - touchEndY;
+
+    const slideWrapper = target.closest('.slide-wrapper');
+    if (slideWrapper) {
+       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
+       if (isScrollable) {
+           const atTop = slideWrapper.scrollTop <= 0;
+           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
+           if (diff > 0 && !atBottom) return;
+           if (diff < 0 && !atTop) return;
+       }
+    }
+
+    if (Math.abs(diff) > 40) { 
+      if (diff > 0) scrollToNext(); 
+      else scrollToPrev(); 
+
+      isScrollingRef.current = true;
+      setTimeout(() => { isScrollingRef.current = false; }, 500); 
+    }
+  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
+
+  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
+  useEffect(() => {
+    if (isAdminPage || !opened) return;
+
+    let isMounted = true;
+    let activeWrapper = null;
+
+    const handleScroll = () => {
+      if (!isMounted) return;
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         const currentWrapper = wrappers[currentSlideIndex];
+         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
+         
+         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
+         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
+      } else {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        
+        setShowScrollTop(scrollTop > 100);
+        
+        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
+        
+        if (scrollTop <= 10) {
+          setShowScrollDown(true);
+        } else {
+          setShowScrollDown(!isAtBottom);
+        }
+      }
+    };
+
+    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
+    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
+    const mountDelayTimer = setTimeout(() => {
+      if (!isMounted) return;
+      
+      handleScroll();
+
+      if (!isMobile) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      }
+      
+      if (isMobile) {
+         const wrappers = document.querySelectorAll('.slide-wrapper');
+         activeWrapper = wrappers[currentSlideIndex];
+         if (activeWrapper) {
+            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
+         }
+      }
+
+      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
+      const resizeObserver = new ResizeObserver(() => {
+        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+        resizeTimerRef.current = setTimeout(() => {
+          if (isMounted) handleScroll();
+        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
+      });
+      
+      resizeObserver.observe(document.body);
+
+    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
+
+    return () => {
+      isMounted = false;
+      clearTimeout(mountDelayTimer);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      
+      if (!isMobile) {
+        window.removeEventListener('scroll', handleScroll);
+      }
+      if (activeWrapper) {
+        activeWrapper.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
+  
+  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }
 </file>
 
@@ -15458,262 +15814,6 @@ export function useDatabaseManager({ guests, setGuests, wishes, setWishes, setti
   }, [guests, setGuests, showAppPrompt, setAdminSaveMessage, isEn]);
 
   return { submitGuest, submitWish, clearGuests, clearWishes, deleteGuest, editGuest, deleteWish, editWish, toggleWishApproval, toggleCheckIn, assignTable };
-}
-</file>
-
-<file path="src/hooks/useScrollNavigation.js">
-// src/hooks/useScrollNavigation.js
-import { useState, useRef, useCallback, useEffect } from "react";
-
-export function useScrollNavigation(isAdminPage, opened) {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  
-  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
-  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
-  const [showScrollDown, setShowScrollDown] = useState(false); 
-  const [isMobile, setIsMobile] = useState(false);
-
-  const isScrollingRef = useRef(false);
-  const touchStartYRef = useRef(0);
-  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
-  const resizeTimerRef = useRef(null); 
-
-  // Ekran boyutunu izle
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const getDesktopSections = () => Array.from(document.querySelectorAll('.hero-section, .countdown-section, .card, .footer'));
-
-  const getActiveDesktopIndex = (sections) => {
-    let activeIdx = 0;
-    sections.forEach((sec, idx) => {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.55) {
-        activeIdx = idx;
-      }
-    });
-    return activeIdx;
-  };
-
-  const scrollToNext = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      setCurrentSlideIndex(prev => {
-        const next = prev + 1;
-        return next < wrappers.length ? next : prev;
-      });
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const nextIdx = activeIdx + 1;
-      
-      if (nextIdx < sections.length) {
-        const nextSection = sections[nextIdx];
-        const rect = nextSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile]);
-
-  const scrollToPrev = useCallback(() => {
-    if (isMobile) {
-      const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
-      if (wrappers.length === 0) return;
-      
-      const currentWrapper = wrappers[currentSlideIndex];
-      
-      if (currentWrapper && currentWrapper.scrollTop > 150) {
-        currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      
-      setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
-    } else {
-      const sections = getDesktopSections();
-      if (sections.length === 0) return;
-      
-      const activeIdx = getActiveDesktopIndex(sections);
-      const currentSection = sections[activeIdx];
-      
-      if (currentSection) {
-        const currentRect = currentSection.getBoundingClientRect();
-        if (currentRect.top < -150) {
-           const absoluteTop = window.scrollY + currentRect.top;
-           window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-           return;
-        }
-      }
-
-      const prevIdx = activeIdx - 1;
-      if (prevIdx >= 0) {
-        const prevSection = sections[prevIdx];
-        const rect = prevSection.getBoundingClientRect();
-        const absoluteTop = window.scrollY + rect.top;
-
-        if (rect.height <= window.innerHeight) {
-          window.scrollTo({ top: absoluteTop - (window.innerHeight - rect.height) / 2, behavior: 'smooth' });
-        } else {
-          window.scrollTo({ top: absoluteTop - 40, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-  }, [isMobile, currentSlideIndex]);
-
-  const handleWheel = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
-    
-    const slideWrapper = e.target.closest('.slide-wrapper');
-    if (slideWrapper) {
-      const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-      if (isScrollable) {
-        const atTop = slideWrapper.scrollTop <= 0;
-        const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-
-        if (e.deltaY > 0 && !atBottom) return; 
-        if (e.deltaY < 0 && !atTop) return;    
-      }
-    }
-
-    if (e.deltaY > 0) scrollToNext();
-    else scrollToPrev();
-
-    isScrollingRef.current = true;
-    setTimeout(() => { isScrollingRef.current = false; }, 600);
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches && e.touches.length > 0) {
-      touchStartYRef.current = e.touches[0].clientY;
-    }
-  }, []);
-
-  const handleTouchEnd = useCallback((e) => {
-    if (isAdminPage || !opened || isScrollingRef.current || !e.changedTouches || e.changedTouches.length === 0 || !isMobile) return;
-
-    const target = e.target instanceof Element ? e.target : e.target.parentElement;
-    if (!target) return;
-
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const diff = touchStartYRef.current - touchEndY;
-
-    const slideWrapper = target.closest('.slide-wrapper');
-    if (slideWrapper) {
-       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
-       if (isScrollable) {
-           const atTop = slideWrapper.scrollTop <= 0;
-           const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
-           if (diff > 0 && !atBottom) return;
-           if (diff < 0 && !atTop) return;
-       }
-    }
-
-    if (Math.abs(diff) > 40) { 
-      if (diff > 0) scrollToNext(); 
-      else scrollToPrev(); 
-
-      isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 500); 
-    }
-  }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
-  useEffect(() => {
-    if (isAdminPage || !opened) return;
-
-    let isMounted = true;
-    let activeWrapper = null;
-
-    const handleScroll = () => {
-      if (!isMounted) return;
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         const currentWrapper = wrappers[currentSlideIndex];
-         const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
-         
-         setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
-         setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
-      } else {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        
-        setShowScrollTop(scrollTop > 100);
-        
-        const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
-        
-        if (scrollTop <= 10) {
-          setShowScrollDown(true);
-        } else {
-          setShowScrollDown(!isAtBottom);
-        }
-      }
-    };
-
-    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
-    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
-    const mountDelayTimer = setTimeout(() => {
-      if (!isMounted) return;
-      
-      handleScroll();
-
-      if (!isMobile) {
-        window.addEventListener('scroll', handleScroll, { passive: true });
-      }
-      
-      if (isMobile) {
-         const wrappers = document.querySelectorAll('.slide-wrapper');
-         activeWrapper = wrappers[currentSlideIndex];
-         if (activeWrapper) {
-            activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
-         }
-      }
-
-      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
-      const resizeObserver = new ResizeObserver(() => {
-        if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-        resizeTimerRef.current = setTimeout(() => {
-          if (isMounted) handleScroll();
-        }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
-      });
-      
-      resizeObserver.observe(document.body);
-
-    }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
-
-    return () => {
-      isMounted = false;
-      clearTimeout(mountDelayTimer);
-      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-      
-      if (!isMobile) {
-        window.removeEventListener('scroll', handleScroll);
-      }
-      if (activeWrapper) {
-        activeWrapper.removeEventListener('scroll', handleScroll);
-      }
-    };
-  }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-  
-  return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }
 </file>
 
