@@ -2,6 +2,11 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { useGuestPhotosQuery } from './useGuestPhotosQuery';
 
+// Supabase Realtime Channel ve Query taklidi
+const { mockRemoveChannel } = vi.hoisted(() => ({
+  mockRemoveChannel: vi.fn().mockResolvedValue(undefined)
+}));
+
 vi.mock('../supabaseClient', () => ({
   supabase: {
     from: vi.fn(() => ({
@@ -19,7 +24,7 @@ vi.mock('../supabaseClient', () => ({
       on: vi.fn().mockReturnThis(),
       subscribe: vi.fn()
     })),
-    removeChannel: vi.fn().mockResolvedValue(undefined)
+    removeChannel: mockRemoveChannel
   }
 }));
 
@@ -27,6 +32,7 @@ describe('useGuestPhotosQuery Hook Testleri', () => {
   it('Bileşen yüklendiğinde onaylı fotoğrafları çekmeli ve realtime kanalı açmalı', async () => {
     const { result } = renderHook(() => useGuestPhotosQuery());
 
+    // Promise'in çözülmesini ve verinin state'e yazılmasını bekle
     await waitFor(() => {
       expect(result.current.photos).toHaveLength(1);
     });
@@ -42,7 +48,6 @@ describe('useGuestPhotosQuery Hook Testleri', () => {
     const { unmount } = renderHook(() => useGuestPhotosQuery());
     unmount();
     
-    const { supabase } = require('../supabaseClient');
-    expect(supabase.removeChannel).toHaveBeenCalled();
+    expect(mockRemoveChannel).toHaveBeenCalled();
   });
 });

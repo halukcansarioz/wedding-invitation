@@ -4,12 +4,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RsvpSection } from './RsvpSection';
 
 vi.mock('framer-motion', () => ({ m: { section: ({ children, className }) => <section className={className}>{children}</section> } }));
-// HTML varsayılan <button> (type="submit") davranışını engellemek için mock'a type="button" eklendi
 vi.mock('@marsidev/react-turnstile', () => ({ Turnstile: ({ onSuccess }) => <button type="button" onClick={() => onSuccess('fake-token')}>Ben Robot Değilim</button> }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } }) }));
 
+// EKLENDİ: Canvas çökmesini engellemek için triggerConfetti fonksiyonunu mockluyoruz
+vi.mock('../../../utils/helpers', async (importOriginal) => {
+  const actual = await importOriginal();
+  return { ...actual, triggerConfetti: vi.fn() };
+});
+
 describe('RsvpSection Bileşen Testleri', () => {
-  const mockSubmitRsvp = vi.fn();
+  const mockSubmitGuest = vi.fn().mockResolvedValue({ success: true });
   
   beforeEach(() => { 
     vi.clearAllMocks(); 
@@ -20,20 +25,20 @@ describe('RsvpSection Bileşen Testleri', () => {
   });
 
   it('Varsayılan olarak Katılacağım seçili gelmeli', () => {
-    render(<RsvpSection submitRsvp={mockSubmitRsvp} />);
+    render(<RsvpSection submitGuest={mockSubmitGuest} />);
     const attendButton = screen.getByRole('button', { name: 'Katılacağım' });
     expect(attendButton).toHaveClass('active');
   });
 
   it('Katılamayacağım seçildiğinde detay alanları DOM\'dan gizlenmeli', () => {
-    render(<RsvpSection submitRsvp={mockSubmitRsvp} />);
+    render(<RsvpSection submitGuest={mockSubmitGuest} />);
     const notAttendButton = screen.getByRole('button', { name: 'Katılamayacağım' });
     fireEvent.click(notAttendButton);
     expect(screen.queryByText('1 Kişi')).not.toBeInTheDocument();
   });
 
   it('Zorunlu alanlar doldurulmadan gönderilirse Zod hatası çıkmalı', async () => {
-    render(<RsvpSection submitRsvp={mockSubmitRsvp} />);
+    render(<RsvpSection submitGuest={mockSubmitGuest} />);
     
     const turnstileBtn = screen.getByRole('button', { name: 'Ben Robot Değilim' });
     fireEvent.click(turnstileBtn);
@@ -50,7 +55,7 @@ describe('RsvpSection Bileşen Testleri', () => {
   });
 
   it('Form başarıyla doldurulup gönderildiğinde submit fonksiyonu çağrılmalı', async () => {
-    render(<RsvpSection submitRsvp={mockSubmitRsvp} />);
+    render(<RsvpSection submitGuest={mockSubmitGuest} />);
     
     fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Ali Veli' } });
 
@@ -62,7 +67,7 @@ describe('RsvpSection Bileşen Testleri', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(mockSubmitRsvp).toHaveBeenCalled();
+      expect(mockSubmitGuest).toHaveBeenCalled();
     });
   });
 });

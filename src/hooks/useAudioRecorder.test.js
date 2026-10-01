@@ -1,30 +1,45 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useAudioRecorder } from './useAudioRecorder';
 
 // Tarayıcı MediaRecorder API'sini taklit ediyoruz
 class MockMediaRecorder {
-  constructor() {
-    this.start = vi.fn(() => { this.state = 'recording'; });
-    this.stop = vi.fn(() => {
-      this.state = 'inactive';
-      if (this.onstop) this.onstop();
-    });
+  constructor(stream, options) {
+    this.stream = stream;
+    this.options = options;
     this.state = 'inactive';
+    this.chunks = [];
+  }
+  start() {
+    this.state = 'recording';
+    // Kayıt başladığında bir data parçası simüle ediyoruz
+    if (this.ondataavailable) {
+      this.ondataavailable({ data: new Blob(['chunk-data'], { type: 'audio/webm' }) });
+    }
+  }
+  stop() {
+    this.state = 'inactive';
+    if (this.ondataavailable) {
+      this.ondataavailable({ data: new Blob(['chunk-data'], { type: 'audio/webm' }) });
+    }
+    if (this.onstop) {
+      this.onstop();
+    }
   }
 }
 
 describe('useAudioRecorder Hook Testleri', () => {
   beforeEach(() => {
-    vi.useFakeTimers(); // setInterval için zamanı büküyoruz
+    vi.useFakeTimers();
     
     global.MediaRecorder = MockMediaRecorder;
+    // isTypeSupported desteğini ekliyoruz
+    global.MediaRecorder.isTypeSupported = vi.fn(() => true);
     
-    // Mikrofon erişimini taklit ediyoruz (getUserMedia)
     Object.defineProperty(global.navigator, 'mediaDevices', {
       value: {
         getUserMedia: vi.fn().mockResolvedValue({
-          getTracks: () => [{ stop: vi.fn() }] // track.stop() mock
+          getTracks: () => [{ stop: vi.fn() }]
         })
       },
       writable: true
@@ -46,7 +61,6 @@ describe('useAudioRecorder Hook Testleri', () => {
     expect(result.current.isRecording).toBe(true);
     expect(result.current.recordingTime).toBe(0);
 
-    // 3 saniye ileri sar
     act(() => {
       vi.advanceTimersByTime(3000);
     });
@@ -57,26 +71,28 @@ describe('useAudioRecorder Hook Testleri', () => {
   it('stopRecording çağrıldığında kaydı durdurmalı ve audioBlob oluşturmalı', async () => {
     const { result } = renderHook(() => useAudioRecorder());
 
-    // Önce başlat
     await act(async () => {
       await result.current.startRecording();
     });
 
-    // Sonra durdur
     act(() => {
       result.current.stopRecording();
     });
 
     expect(result.current.isRecording).toBe(false);
-    // MediaRecorder onstop tetiklendiği için bir blob oluşturulmuş olmalı
     expect(result.current.audioBlob).toBeInstanceOf(Blob);
   });
 
   it('clearRecording çağrıldığında durumu sıfırlamalı', async () => {
     const { result } = renderHook(() => useAudioRecorder());
 
-    await act(async () => { await result.current.startRecording(); });
-    act(() => { result.current.stopRecording(); });
+    await act(async () => { 
+      await result.current.startRecording(); 
+    });
+    
+    act(() => { 
+      result.current.stopRecording(); 
+    });
     
     expect(result.current.audioBlob).not.toBeNull();
 

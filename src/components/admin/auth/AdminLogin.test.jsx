@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AdminLogin } from './AdminLogin';
 import { useAdminStore } from '../../../store/useAdminStore';
 
@@ -27,6 +27,11 @@ describe('AdminLogin Bileşen Testleri', () => {
     useAdminStore.mockReturnValue(mockStore);
   });
 
+  afterEach(() => {
+    cleanup(); // Testler arası DOM temizliği
+    vi.clearAllMocks();
+  });
+
   it('Varsayılan durumda standart giriş (Login) formunu göstermeli', () => {
     render(<AdminLogin isEn={false} submitAdminPassword={vi.fn()} />);
     
@@ -41,18 +46,15 @@ describe('AdminLogin Bileşen Testleri', () => {
     const forgotBtn = screen.getByRole('button', { name: /Şifremi unuttum/i });
     fireEvent.click(forgotBtn);
 
-    // İlgili Zustand fonksiyonları tetiklenmeli
     expect(mockStore.setShowForgotPassword).toHaveBeenCalledWith(true);
     expect(mockStore.setAdminError).toHaveBeenCalledWith('');
   });
 
   it('showForgotPassword true olduğunda Kurtarma E-postası formunu göstermeli', () => {
-    // Store'un durumunu değiştiriyoruz
     useAdminStore.mockReturnValue({ ...mockStore, showForgotPassword: true });
     
     render(<AdminLogin isEn={false} sendPasswordResetEmail={vi.fn()} />);
     
-    // Şifre inputu olmamalı, sadece email ve Sıfırlama butonu olmalı
     expect(screen.queryByPlaceholderText('Admin şifresi')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sıfırlama Linki Gönder/i })).toBeInTheDocument();
   });

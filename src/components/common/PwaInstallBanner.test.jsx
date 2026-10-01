@@ -4,10 +4,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { PwaInstallBanner } from './PwaInstallBanner';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
-// usePWAInstall hook'unu taklit ediyoruz
 vi.mock('../../hooks/usePWAInstall');
 
-// i18next Mock
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
 }));
@@ -19,10 +17,10 @@ describe('PwaInstallBanner Bileşeni', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('uygulama kurulabilirse ama cihaz iOS ise bannerı GİZLEMELİ (Apple desteklemediği için)', () => {
+  it('uygulama kurulabilirse ama cihaz iOS ise iOS kullanıcılarına özel yönlendirme bannerını göstermeli', () => {
     usePWAInstall.mockReturnValue({ isInstallable: true, isIos: true, promptInstall: vi.fn() });
-    const { container } = render(<PwaInstallBanner />);
-    expect(container.firstChild).toBeNull();
+    render(<PwaInstallBanner />);
+    expect(screen.getByText(/Ana Ekrana Ekle/i)).toBeInTheDocument();
   });
 
   it('uygulama kurulabilirse ve Android/PC ise bannerı göstermeli', () => {

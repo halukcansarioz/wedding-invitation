@@ -1,10 +1,14 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { OptionGroup, Dropdown } from './UIComponents';
 
 describe('UIComponents Bileşen Testleri', () => {
-  
+  afterEach(() => {
+    cleanup(); // Testler arası DOM temizliği
+    vi.clearAllMocks();
+  });
+
   describe('OptionGroup Bileşeni', () => {
     const options = [
       { label: 'Evet', value: 'yes' },
@@ -21,11 +25,9 @@ describe('UIComponents Bileşen Testleri', () => {
       expect(yesButton).toBeInTheDocument();
       expect(noButton).toBeInTheDocument();
       
-      // "no" seçili geldiği için active class'ına sahip olmalı
       expect(noButton).toHaveClass('active');
       expect(yesButton).not.toHaveClass('active');
 
-      // Evet'e tıklandığında onChange tetiklenmeli
       fireEvent.click(yesButton);
       expect(mockOnChange).toHaveBeenCalledWith('yes');
     });
@@ -37,7 +39,6 @@ describe('UIComponents Bileşen Testleri', () => {
       const yesButton = screen.getByText('Evet');
       fireEvent.click(yesButton);
       
-      // Disabled olduğu için fonksiyon çağrılmamalı
       expect(mockOnChange).not.toHaveBeenCalled();
     });
   });
@@ -52,11 +53,9 @@ describe('UIComponents Bileşen Testleri', () => {
       const mockOnChange = vi.fn();
       render(<Dropdown value="1" options={options} onChange={mockOnChange} placeholder="Seçiniz" />);
       
-      // Menüyü aç
       const dropdownButton = screen.getByText('Seçenek 1');
       fireEvent.click(dropdownButton);
       
-      // Menü açıldığında Seçenek 2'yi bul ve tıkla
       const option2 = screen.getByText('Seçenek 2');
       expect(option2).toBeVisible();
       fireEvent.click(option2);

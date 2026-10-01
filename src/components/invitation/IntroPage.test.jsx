@@ -1,9 +1,8 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import IntroPage from './IntroPage';
 
-// Confetti fonksiyonunu ve i18n'i mockluyoruz
 vi.mock('../../utils/helpers', () => ({
   triggerConfetti: vi.fn()
 }));
@@ -22,6 +21,14 @@ describe('IntroPage Bileşen Testleri', () => {
     personalTableNumber: ""
   };
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup(); // Testler arası DOM temizliği
+  });
+
   it('Gelin ve damat ismini ekranda doğru şekilde göstermeli', () => {
     render(<IntroPage {...mockProps} />);
     expect(screen.getByText('Hande')).toBeInTheDocument();
@@ -35,7 +42,6 @@ describe('IntroPage Bileşen Testleri', () => {
     expect(button).toHaveTextContent(/Yükleniyor/i);
     
     fireEvent.click(button);
-    // Yüklenmediği için openInvitation tetiklenMEMELİ
     expect(mockProps.openInvitation).not.toHaveBeenCalled();
   });
 
