@@ -6,22 +6,22 @@
 
 # Test info
 
-- Name: audio-and-interactions.spec.js >> Sesli Mesaj ve Etkileşim Testleri >> Anı defterinde ses kaydetme (Record/Stop) butonları doğru çalışmalı
-- Location: tests\audio-and-interactions.spec.js:18:3
+- Name: payments-and-gifts.spec.js >> Hediye ve Ödeme İşlemleri Uçtan Uca (E2E) >> Misafir IBAN panosunu kopyalayabilmeli
+- Location: tests\payments-and-gifts.spec.js:16:3
 
 # Error details
 
 ```
 Error: expect(locator).toBeVisible() failed
 
-Locator: locator('.wish-form').locator('button').filter({ hasText: /Durdur|Stop/i })
+Locator: locator('button').filter({ hasText: /IBAN'ı Kopyala/i })
 Expected: visible
 Timeout: 5000ms
 Error: element(s) not found
 
 Call log:
   - Expect "toBeVisible" with timeout 5000ms
-  - waiting for locator('.wish-form').locator('button').filter({ hasText: /Durdur|Stop/i })
+  - waiting for locator('button').filter({ hasText: /IBAN'ı Kopyala/i })
 
 ```
 
@@ -53,7 +53,7 @@ Call log:
 - text: Hours
 - strong: "25"
 - text: Mins
-- strong: "20"
+- strong: "16"
 - text: Secs
 - paragraph: Invitation
 - heading "Will You Share Our Happiness?" [level=2]
@@ -178,48 +178,68 @@ Call log:
 ```ts
   1  | import { test, expect } from '@playwright/test';
   2  | 
-  3  | test.describe('Sesli Mesaj ve Etkileşim Testleri', () => {
+  3  | test.describe('Hediye ve Ödeme İşlemleri Uçtan Uca (E2E)', () => {
   4  | 
-  5  |   test.beforeEach(async ({ page, context }) => {
-  6  |     // Mikrofon erişim iznini test ortamında otomatik olarak veriyoruz
-  7  |     await context.grantPermissions(['microphone']);
-  8  |     
-  9  |     await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
-  10 |     await page.goto('/');
-  11 | 
-  12 |     const envelopeSeal = page.locator('.envelope-seal');
-  13 |     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-  14 |     await envelopeSeal.click({ force: true });
-  15 |     await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
-  16 |   });
-  17 | 
-  18 |   test('Anı defterinde ses kaydetme (Record/Stop) butonları doğru çalışmalı', async ({ page }) => {
-  19 |     const wishesSection = page.locator('.wish-form');
+  5  |   test.beforeEach(async ({ page }) => {
+  6  |     // Hız için medya dosyalarını engelle
+  7  |     await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
+  8  |     await page.goto('/');
+  9  | 
+  10 |     const envelopeSeal = page.locator('.envelope-seal');
+  11 |     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
+  12 |     await envelopeSeal.click({ force: true });
+  13 |     await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+  14 |   });
+  15 | 
+  16 |   test('Misafir IBAN panosunu kopyalayabilmeli', async ({ page, context }) => {
+  17 |     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  18 | 
+  19 |     const giftSection = page.locator('.gift-card');
   20 |     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  21 |     await wishesSection.scrollIntoViewIfNeeded();
+  21 |     await giftSection.scrollIntoViewIfNeeded();
   22 | 
-  23 |     // "Kaydet" veya "Record" butonunu bul
-  24 |     const recordButton = wishesSection.locator('button', { hasText: /Kaydet|Record/i }).first();
-  25 |     await expect(recordButton).toBeVisible({ timeout: 10000 });
-  26 | 
-  27 |     // Kaydı başlat
-  28 |     await recordButton.click({ force: true });
-  29 | 
-  30 |     // Butonun kaydı durdurma "Durdur" veya "Stop" formuna dönüştüğünü doğrula
-  31 |     const stopButton = wishesSection.locator('button', { hasText: /Durdur|Stop/i });
-> 32 |     await expect(stopButton).toBeVisible({ timeout: 5000 });
-     |                              ^ Error: expect(locator).toBeVisible() failed
-  33 | 
-  34 |     // Kaydı durdur
-  35 |     await stopButton.click({ force: true });
+  23 |     const copyIbanButton = page.locator('button', { hasText: /IBAN'ı Kopyala/i });
+> 24 |     await expect(copyIbanButton).toBeVisible();
+     |                                  ^ Error: expect(locator).toBeVisible() failed
+  25 | 
+  26 |     // Panonun başlangıçta boş veya farklı olduğunu varsayıyoruz
+  27 |     await copyIbanButton.click({ force: true });
+  28 | 
+  29 |     // Buton metninin değiştiğini onayla
+  30 |     await expect(copyIbanButton).toContainText(/Kopyalandı/i);
+  31 | 
+  32 |     // Panoya gerçekten bir şey kopyalanıp kopyalanmadığını kontrol et
+  33 |     const clipboardText = await page.evaluate("navigator.clipboard.readText()");
+  34 |     expect(clipboardText).toContain("TR"); // IBAN numaraları TR ile başlar
+  35 |   });
   36 | 
-  37 |     // Kayıt bittikten sonra silme butonunun (Çöp Kutusu Emojisi 🗑️) geldiğini doğrula
-  38 |     const deleteAudioButton = wishesSection.locator('button', { hasText: '🗑️' });
-  39 |     await expect(deleteAudioButton).toBeVisible();
-  40 | 
-  41 |     // Sesi silip başa döndüğünü doğrula
-  42 |     await deleteAudioButton.click({ force: true });
-  43 |     await expect(recordButton).toBeVisible();
-  44 |   });
-  45 | });
+  37 |   test('Kredi kartı modülü açıksa Supabase ödeme Edge Functionuna istek atılmalı', async ({ page }) => {
+  38 |     // Tarayıcıdaki prompt fonksiyonunu mockluyoruz (Kullanıcı 500 TL girdiği varsayılır)
+  39 |     await page.addInitScript(() => {
+  40 |       window.prompt = () => "500"; 
+  41 |     });
+  42 | 
+  43 |     // Supabase Edge Function isteğini mockla (Gerçek Stripe API'ye gitmesini engelle)
+  44 |     await page.route('**/functions/v1/create-payment', async route => {
+  45 |       await route.fulfill({
+  46 |         status: 200,
+  47 |         contentType: 'application/json',
+  48 |         body: JSON.stringify({ success: true, paymentUrl: 'https://checkout.stripe.com/test-url' })
+  49 |       });
+  50 |     });
+  51 | 
+  52 |     // Hediye bölümünü bul
+  53 |     const giftSection = page.locator('.gift-card');
+  54 |     await giftSection.scrollIntoViewIfNeeded();
+  55 | 
+  56 |     // Kredi kartı butonu görünürse (Ayarlarda açıksa test edilecek)
+  57 |     const creditCardButton = page.locator('button', { hasText: /Kredi Kartı ile Gönder/i });
+  58 |     
+  59 |     // Eğer buton varsa (ayar açıksa), tıkla ve fonksiyonun çalışmasını bekle
+  60 |     if (await creditCardButton.isVisible()) {
+  61 |       await creditCardButton.click();
+  62 |       // Yönlendirme mantığının devreye girmesi beklenir, ancak Edge function mocklandığı için network sekmesinde 200 dönecektir.
+  63 |     }
+  64 |   });
+  65 | });
 ```

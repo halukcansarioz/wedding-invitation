@@ -6,12 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const WHATSAPP_API_KEY = Deno.env.get('WHATSAPP_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-// Array'i belirli boyutlardaki küçük paketlere bölen yardımcı fonksiyon
 function chunkArray<T>(array: T[], size: number): T[][] {
   const chunked: T[][] = [];
   for (let i = 0; i < array.length; i += size) {
@@ -20,17 +18,31 @@ function chunkArray<T>(array: T[], size: number): T[][] {
   return chunked;
 }
 
+async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
+  try {
+    await supabaseAdmin.from('error_logs').insert([{
+      function_name: functionName,
+      error_message: errorMsg,
+      additional_data: additionalData,
+      created_at: new Date().toISOString()
+    }]);
+  } catch (logErr) {
+    console.error("Hata loglanamadı:", logErr);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
+  let supabaseAdmin: any;
+
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     
-    // DB tabanlı Rate Limiting
     const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
       client_ip: `broadcast_whatsapp_${ip}`,
-      max_req: 3, // Toplu mesaj atma işlemi nadir yapılır, limiti sıkı tutuyoruz
+      max_req: 3, 
       window_seconds: 60
     });
 
@@ -55,36 +67,43 @@ serve(async (req) => {
       throw new Error("Geçerli bir misafir listesi bulunamadı.");
     }
 
-    // YENİ: Toplu istekleri 50'şerli paketlere böler (Batch Processing)
-    // Bu sayede Deno bellek şişmesi ve Timeout problemleri engellenir.
     const chunks = chunkArray(guests, 50);
     const allResults = [];
+    const failedGuests = [];
 
     for (const chunk of chunks) {
       const sendPromises = chunk.map(async (guest: any) => {
-        const personalizedMessage = `Merhaba ${guest.name},\n\n${message}`;
-        
-        // Simüle edilmiş API isteği (Gerçekte WhatsApp Cloud API'ye gider)
-        // await fetch('https://graph.facebook.com/...');
-        
-        return Promise.resolve({ success: true, phone: guest.phone });
+        try {
+           const personalizedMessage = `Merhaba ${guest.name},\n\n${message}`;
+           // Simüle edilmiş API isteği (Gerçekte WhatsApp Cloud API'ye gider)
+           return { success: true, phone: guest.phone };
+        } catch (err) {
+           failedGuests.push({ guestId: guest.id, name: guest.name, phone: guest.phone, error: err.message });
+           throw err;
+        }
       });
 
-      // Paketteki 50 işlemi bekle
       const chunkResults = await Promise.allSettled(sendPromises);
       allResults.push(...chunkResults);
       
-      // Diğer pakete geçmeden önce Deno Event Loop'u rahatlatmak için küçük bir bekleme
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     const successfulCount = allResults.filter(r => r.status === 'fulfilled').length;
+
+    // Eğer başarısız gönderimler varsa logla
+    if (failedGuests.length > 0) {
+       await logErrorToDatabase(supabaseAdmin, 'broadcast-whatsapp', 'Bazı kullanıcılara mesaj gönderilemedi.', { failedGuests });
+    }
 
     return new Response(JSON.stringify({ success: true, processed: successfulCount, total: guests.length }), { 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
     });
 
   } catch (error: any) {
+    if (supabaseAdmin) {
+       await logErrorToDatabase(supabaseAdmin, 'broadcast-whatsapp', error.message, { stack: error.stack });
+    }
     return new Response(JSON.stringify({ success: false, error: error.message }), { 
       headers: corsHeaders, status: 400 
     });

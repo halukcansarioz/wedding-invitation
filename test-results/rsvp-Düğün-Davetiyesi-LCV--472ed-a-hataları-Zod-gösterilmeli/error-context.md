@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: rsvp.spec.js >> Düğün Davetiyesi LCV (RSVP) Süreçleri >> Misafir LCV formunu başarıyla doldurabilmeli
-- Location: tests\rsvp.spec.js:18:3
+- Name: rsvp.spec.js >> Düğün Davetiyesi LCV (RSVP) Süreçleri >> LCV formu boş gönderilmek istendiğinde doğrulama hataları (Zod) gösterilmeli
+- Location: tests\rsvp.spec.js:48:3
 
 # Error details
 

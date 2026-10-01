@@ -12,14 +12,23 @@
 # Error details
 
 ```
-Test timeout of 30000ms exceeded.
+Error: expect(received).toBeTruthy()
+
+Received: false
 ```
 
-```
-Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
-Call log:
-  - navigating to "http://localhost:5173/live", waiting until "load"
+# Page snapshot
 
+```yaml
+- generic [ref=e2]:
+  - button "TR" [ref=e3] [cursor=pointer]
+  - generic [ref=e5]:
+    - heading "Handenur & Haluk Can" [level=1] [ref=e8]
+    - paragraph [ref=e9]: Live Memories
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: "\"ggfd\""
+      - strong [ref=e13]: — HalukCan Sarıöz
+    - generic [ref=e14]: Scan the QR code to send a message or photo!
 ```
 
 # Test source
@@ -34,8 +43,7 @@ Call log:
   7  |     await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
   8  |     
   9  |     // Doğrudan Live sayfasına git
-> 10 |     await page.goto('/live');
-     |                ^ Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+  10 |     await page.goto('/live');
   11 | 
   12 |     // Live Projector'a özel "Canlı Anı Akışı" veya "Live Memories" yazısı var mı?
   13 |     const liveSubtitle = page.locator('text=/Canlı Anı Akışı|Live Memories/i');
@@ -47,7 +55,8 @@ Call log:
   19 | 
   20 |     // Barkovizyon sayfasında body'nin dark theme'e geçirildiğini kontrol et (useEffect içindeki mantık)
   21 |     const isDarkTheme = await page.evaluate(() => document.documentElement.dataset.theme === 'dark');
-  22 |     expect(isDarkTheme).toBeTruthy();
+> 22 |     expect(isDarkTheme).toBeTruthy();
+     |                         ^ Error: expect(received).toBeTruthy()
   23 | 
   24 |     // QR kod yönlendirme mesajı alt kısımda görünüyor mu?
   25 |     const footerText = page.locator('text=/Ekrana mesaj veya fotoğraf göndermek|Scan the QR code to send a message/i');

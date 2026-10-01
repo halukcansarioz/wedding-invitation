@@ -11,14 +11,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
+  try {
+    await supabaseAdmin.from('error_logs').insert([{
+      function_name: functionName,
+      error_message: errorMsg,
+      additional_data: additionalData,
+      created_at: new Date().toISOString()
+    }]);
+  } catch (logErr) {
+    console.error("Hata loglanamadı:", logErr);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
+  let supabaseAdmin: any;
+
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     
-    // DB tabanlı rate limiting check
     const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
       client_ip: `moderate_photo_${ip}`,
       max_req: 10,
@@ -26,6 +40,7 @@ serve(async (req) => {
     });
 
     if (isLimited || rateLimitError) {
+      await logErrorToDatabase(supabaseAdmin, 'moderate-photo', rateLimitError?.message || "Rate limit", { ip });
       return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
       });
@@ -64,6 +79,10 @@ serve(async (req) => {
       })
     });
 
+    if (!openAiResponse.ok) {
+       throw new Error(`OpenAI API Hatası: ${await openAiResponse.text()}`);
+    }
+
     const aiData = await openAiResponse.json();
     const judgment = aiData.choices[0].message.content.trim().toUpperCase();
     const isSafe = judgment === 'SAFE';
@@ -73,6 +92,9 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
+    if (supabaseAdmin) {
+       await logErrorToDatabase(supabaseAdmin, 'moderate-photo', error.message, { stack: error.stack });
+    }
     return new Response(JSON.stringify({ success: false, error: error.message }), { 
       headers: corsHeaders, status: 400 
     });

@@ -11,14 +11,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// YENİ: Veritabanına Hata Loglama Fonksiyonu
+async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
+  try {
+    await supabaseAdmin.from('error_logs').insert([{
+      function_name: functionName,
+      error_message: errorMsg,
+      additional_data: additionalData,
+      created_at: new Date().toISOString()
+    }]);
+  } catch (logErr) {
+    console.error("Hata loglanamadı:", logErr);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
+  let supabaseAdmin: any;
+
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
-    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     
-    // DB tabanlı rate limiting check
     const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
       client_ip: `ai_thank_you_${ip}`,
       max_req: 5,
@@ -26,6 +41,9 @@ serve(async (req) => {
     });
 
     if (isLimited || rateLimitError) {
+      const errMsg = rateLimitError ? rateLimitError.message : "Rate limit aşıldı.";
+      await logErrorToDatabase(supabaseAdmin, 'ai-thank-you', errMsg, { ip });
+      
       return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
       });
@@ -62,6 +80,11 @@ serve(async (req) => {
       })
     });
 
+    if (!openAiResponse.ok) {
+        const errText = await openAiResponse.text();
+        throw new Error(`OpenAI API Hatası: ${errText}`);
+    }
+
     const aiData = await openAiResponse.json();
     const text = aiData.choices[0].message.content.trim();
 
@@ -70,6 +93,10 @@ serve(async (req) => {
     });
 
   } catch (error: any) {
+    if (supabaseAdmin) {
+       await logErrorToDatabase(supabaseAdmin, 'ai-thank-you', error.message, { stack: error.stack });
+    }
+    
     return new Response(JSON.stringify({ success: false, error: error.message }), { 
       headers: corsHeaders, status: 400 
     });
