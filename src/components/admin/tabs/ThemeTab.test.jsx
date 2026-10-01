@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ThemeTab } from './ThemeTab';
 import { useStore } from '../../../store/useStore';
 
@@ -21,6 +21,11 @@ describe('ThemeTab Admin Bileşen Testleri', () => {
     }));
   });
 
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
   it('Tema kartına tıklandığında hem Store hem de DOM güncellenmeli', () => {
     render(<ThemeTab isEn={false} />);
     const darkThemeButton = screen.getByText('Koyu Tema').closest('button');
@@ -30,7 +35,6 @@ describe('ThemeTab Admin Bileşen Testleri', () => {
 
   it('Checkbox değişikliği requireWishApproval değerini güncellemeli', () => {
     render(<ThemeTab isEn={false} />);
-    // Checkbox Label ismini test-id gibi tam eşleşme yapıyoruz
     const approvalCheckbox = screen.getByLabelText(/Anı defteri mesajları admin onayından sonra yayınlansın/i);
     fireEvent.click(approvalCheckbox);
     expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'requireWishApproval', false);

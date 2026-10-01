@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CeremonyTab } from './CeremonyTab';
 import { useStore } from '../../../store/useStore';
 
@@ -9,12 +9,13 @@ vi.mock('../../../store/useStore');
 describe('CeremonyTab Admin Bileşen Testleri', () => {
   let mockUpdateDraftArrayItem;
   let mockAddDraftArrayItem;
+  let mockRemoveDraftArrayItem;
 
   beforeEach(() => {
     mockUpdateDraftArrayItem = vi.fn();
     mockAddDraftArrayItem = vi.fn();
+    mockRemoveDraftArrayItem = vi.fn();
 
-    // Store'un içindeki veriyi taklit et
     useStore.mockImplementation((selector) => selector({
       adminDraft: {
         settings: { visibility: { ceremony: true } },
@@ -24,11 +25,16 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
       },
       updateDraftArrayItem: mockUpdateDraftArrayItem,
       addDraftArrayItem: mockAddDraftArrayItem,
-      removeDraftArrayItem: vi.fn(),
+      removeDraftArrayItem: mockRemoveDraftArrayItem,
       moveDraftArrayItem: vi.fn(),
       saveSiteContent: vi.fn(),
       updateDraftObject: vi.fn()
     }));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
   it('Store verisine göre kayıtlı etkinlikleri ekranda göstermeli', () => {
@@ -46,7 +52,6 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
     const timeInput = screen.getByDisplayValue('18:00');
     fireEvent.change(timeInput, { target: { value: '19:30' } });
 
-    // arrayKey: 'eventDetails', index: 0, key: 'time', value: '19:30'
     expect(mockUpdateDraftArrayItem).toHaveBeenCalledWith('eventDetails', 0, 'time', '19:30');
   });
 
@@ -62,5 +67,14 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
       location: "",
       description: ""
     });
+  });
+
+  it('Etkinlik sil butonuna basıldığında listeyi güncellemeli', () => {
+    render(<CeremonyTab isEn={false} />);
+    
+    const deleteBtn = screen.getByRole('button', { name: /Sil 🗑️/i });
+    fireEvent.click(deleteBtn);
+
+    expect(mockRemoveDraftArrayItem).toHaveBeenCalledWith('eventDetails', 0);
   });
 });

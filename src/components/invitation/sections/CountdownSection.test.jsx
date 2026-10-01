@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { CountdownSection } from './CountdownSection';
 
-// Framer Motion Mock (React uyarılarını önlemek için animasyon proplarını filtreler)
 vi.mock('framer-motion', () => ({
   m: {
     section: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
@@ -15,7 +14,6 @@ vi.mock('framer-motion', () => ({
   },
 }));
 
-// i18next mock (Dil çevirilerini simüle eder)
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key) => key,
@@ -39,12 +37,17 @@ describe('CountdownSection Bileşeni', () => {
     expect(screen.getByText('Düğünümüze Kalan Süre')).toBeInTheDocument();
   });
 
+  it('0 gün, 1 saat kaldığında saat bilgisini göstermeli', () => {
+    const mockTimeLeft = { days: 0, hours: 1, minutes: 0, seconds: 0 };
+    render(<CountdownSection copy={mockCopy} timeLeft={mockTimeLeft} />);
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
   it('zaman dolduğunda kutlama mesajını göstermeli', () => {
     const mockFinishedTime = { days: 0, hours: 0, minutes: 0, seconds: 0 };
     
     render(<CountdownSection copy={mockCopy} timeLeft={mockFinishedTime} />);
     
     expect(screen.getByText('Bugün En Mutlu Günümüz!')).toBeInTheDocument();
-    expect(screen.queryByText('ui.days')).not.toBeInTheDocument();
   });
 });

@@ -1,12 +1,12 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GeneralTab } from './GeneralTab';
 import { useStore } from '../../../store/useStore';
 
 vi.mock('../../../store/useStore');
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ i18n: { language: 'tr' } })
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
 }));
 
 describe('GeneralTab Admin Bileşen Testleri', () => {
@@ -20,11 +20,16 @@ describe('GeneralTab Admin Bileşen Testleri', () => {
     useStore.mockImplementation((selector) => selector({
       adminDraft: {
         settings: { visibility: { countdown: true, location: true } },
-        invitation: { bride: 'Zeynep', groom: 'Kerem', venue: 'Otel' }
+        invitation: { bride: 'Zeynep', groom: 'Kerem', venue: 'Otel', address: 'İstanbul' }
       },
       updateDraftObject: mockUpdateDraftObject,
       saveSiteContent: mockSaveSiteContent
     }));
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
   it('Gelin veya Damat ismi değiştirildiğinde store updateDraftObject fonksiyonunu çağırmalı', () => {
@@ -36,12 +41,21 @@ describe('GeneralTab Admin Bileşen Testleri', () => {
     expect(mockUpdateDraftObject).toHaveBeenCalledWith('invitation', 'bride', 'Zeynep Yılmaz');
   });
 
-  it('Görünürlük (Visibility) checkboxlarına tıklandığında ayarları güncellemelis', () => {
+  it('Adres alanı değiştirildiğinde store güncellenmeli', () => {
     render(<GeneralTab isEn={false} />);
     
-    // Geri sayım checkbox'ını bul
-    const countdownCheckbox = screen.getByLabelText(/Geri Sayım bölümünü göster/i);
-    expect(countdownCheckbox).toBeChecked(); // Store mockunda true vermiştik
+    const addressInput = screen.getByDisplayValue('İstanbul');
+    fireEvent.change(addressInput, { target: { value: 'Ankara' } });
+    
+    expect(mockUpdateDraftObject).toHaveBeenCalledWith('invitation', 'address', 'Ankara');
+  });
+
+  it('Görünürlük (Visibility) checkboxlarına tıklandığında ayarları güncellemeli', () => {
+    render(<GeneralTab isEn={false} />);
+    
+    // t() mock fonksiyonu (k) => k döndürdüğü için çeviri anahtarıyla arama yapıyoruz
+    const countdownCheckbox = screen.getByLabelText('admin.general.showCountdown');
+    expect(countdownCheckbox).toBeChecked();
     
     fireEvent.click(countdownCheckbox);
     
@@ -57,7 +71,6 @@ describe('GeneralTab Admin Bileşen Testleri', () => {
     const saveButton = screen.getByRole('button', { name: /Kaydet/i });
     fireEvent.click(saveButton);
     
-    // isEn parametresi false olarak iletilmiş mi?
     expect(mockSaveSiteContent).toHaveBeenCalledWith(false);
   });
 });
