@@ -14,7 +14,8 @@ export function useGuestPhotosQuery() {
         .from('guest_photos')
         .select('*')
         .eq('approved', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // EKLENDİ: Ağ yükünü ve DOM şişmesini engeller
       if (data && isMounted) setPhotos(data);
     };
 

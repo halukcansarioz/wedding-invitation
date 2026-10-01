@@ -1,12 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const WHATSAPP_VERIFY_TOKEN = Deno.env.get('WHATSAPP_VERIFY_TOKEN');
 const WHATSAPP_ACCESS_TOKEN = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
 const PHONE_NUMBER_ID = Deno.env.get('PHONE_NUMBER_ID');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 
 serve(async (req) => {
-  // 1. Meta Webhook Kurulumu Doğrulaması (GET isteği için)
   if (req.method === 'GET') {
     const url = new URL(req.url);
     if (url.searchParams.get("hub.verify_token") === WHATSAPP_VERIFY_TOKEN) {
@@ -15,7 +17,6 @@ serve(async (req) => {
     return new Response("Forbidden", { status: 403 });
   }
 
-  // 2. Gelen Mesajı İşleme (POST)
   try {
     const body = await req.json();
     const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
@@ -24,7 +25,26 @@ serve(async (req) => {
       const userPhone = message.from;
       const userText = message.text.body;
 
-      // OpenAI'ye düğün detaylarıyla prompt gönderme
+      // 1. Dinamik Verileri Çek
+      const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const { data: settingsData } = await supabaseAdmin.from('settings').select('data').single();
+      
+      let systemPrompt = "Sen bir düğün asistanısın. Davetlilerin sorularına nazik, kısa ve samimi bir dille emoji kullanarak cevap ver.";
+      
+      if (settingsData && settingsData.data) {
+        const siteData = settingsData.data;
+        const bride = siteData?.invitation?.bride || "Gelin";
+        const groom = siteData?.invitation?.groom || "Damat";
+        const date = siteData?.invitation?.dateText || "Bilinmeyen Tarih";
+        const time = siteData?.invitation?.timeText || "Bilinmeyen Saat";
+        const venue = siteData?.invitation?.venue || "";
+        const address = siteData?.invitation?.address || "";
+        const iban = siteData?.giftRegistry?.iban || "";
+        
+        systemPrompt = `Sen ${bride} ve ${groom}'un düğün asistanısın. Düğün tarihi ${date} saat ${time}'da. Adres: ${venue}, ${address}. Çocuk getirmek yasaktır, sadece yetişkinler. Takı/hediye için IBAN: ${iban}. Davetlilerin sorularına nazik, kısa ve samimi bir dille emoji kullanarak cevap ver.`;
+      }
+
+      // 2. OpenAI İsteğini At
       const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: { 
@@ -34,10 +54,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: [
-            { 
-              role: "system", 
-              content: "Sen Handenur ve Haluk Can'ın düğün asistanısın. Düğün tarihi 07 Ağustos 2027 saat 19:00'da. Adres: Fenerbahçe Orduevi Plaj Düğün Salonu, Kadıköy/İstanbul. Çocuk getirmek yasaktır, sadece yetişkinler. Takı/hediye için IBAN: TR53 0011 1000 0000 0145 4005 17. Davetlilerin sorularına nazik, kısa ve samimi bir dille emoji kullanarak cevap ver." 
-            },
+            { role: "system", content: systemPrompt },
             { role: "user", content: userText }
           ],
           max_tokens: 150,
@@ -48,7 +65,7 @@ serve(async (req) => {
       const aiData = await openAiRes.json();
       const replyText = aiData.choices[0].message.content.trim();
 
-      // Meta API ile yanıtı WhatsApp'tan kullanıcıya iletme
+      // 3. Kullanıcıya Whatsapp Üzerinden Yanıtla
       const fbRes = await fetch(`https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`, {
         method: 'POST',
         headers: { 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { AdminSection } from "../../AdminUI";
 import { DndContext, useDraggable, useDroppable, DragEndEvent } from "@dnd-kit/core";
 import { Guest } from "../../../types";
@@ -35,7 +35,11 @@ interface DroppableTableProps {
 
 function DroppableTable({ tableNum, guests, isEn, assignTable }: DroppableTableProps) {
   const { isOver, setNodeRef } = useDroppable({ id: `table-${tableNum}` });
-  const tableTotal = guests.reduce((acc, g) => acc + Number(g.personCount || 1), 0);
+  
+  // React Performans Optimizasyonu: Her renderda masadaki kişi sayısını tekrardan saymayı engelliyoruz
+  const tableTotal = useMemo(() => {
+    return guests.reduce((acc, g) => acc + Number(g.personCount || 1), 0);
+  }, [guests]);
   
   const style = {
     background: isOver ? "color-mix(in srgb, var(--amp-color) 15%, transparent)" : "var(--paper-soft)",
@@ -83,6 +87,11 @@ export function TablePlanTab({ guests, assignTable, isEn }: TablePlanTabProps) {
     }
   };
 
+  // Performans: Drag&Drop tetiklendiğinde gereksiz filtreleri çalıştırmamak için useMemo sarmalı
+  const getTableGuests = useMemo(() => (num: number) => {
+    return attendingGuests.filter(g => String(g.tableNumber) === String(num));
+  }, [attendingGuests]);
+
   return (
     <AdminSection title={isEn ? "Visual Seating Chart" : "Görsel Oturma Planı"}>
       <p className="admin-help-text" style={{ marginBottom: "20px" }}>
@@ -105,7 +114,7 @@ export function TablePlanTab({ guests, assignTable, isEn }: TablePlanTabProps) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px", maxHeight: "700px", overflowY: "auto", paddingRight: "8px" }}>
             {tables.map(num => (
-              <DroppableTable key={num} tableNum={num} guests={attendingGuests.filter(g => String(g.tableNumber) === String(num))} isEn={isEn} assignTable={assignTable} />
+              <DroppableTable key={num} tableNum={num} guests={getTableGuests(num)} isEn={isEn} assignTable={assignTable} />
             ))}
           </div>
         </div>

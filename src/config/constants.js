@@ -35,7 +35,7 @@ export const DEFAULT_SITE_DATA = {
       "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.webp",
       "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.webp",
     ],
-    message: "Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz. Bu güzel başlangıçta sizleri de aramızda görmekten onur duyarız.",
+    message: "Aşkla çıktığımız bu eşsiz yolculukta, hayatlarımızı sonsuza dek birleştirdiğimiz bu en anlamlı günümüzde... Mutluluğumuzu paylaşmak üzere siz kıymetli dostlarımızı ve ailemizi yanımızda görmekten onur duyarız."
   },
   familyInfo: {
     brideFamilyTitle: "Gelin Ailesi",

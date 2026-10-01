@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 export const GuestsListSection = memo(function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }) {
@@ -6,14 +6,23 @@ export const GuestsListSection = memo(function GuestsListSection({ copy, guests,
   const isEn = i18n.language.startsWith('en');
   const guestList = Array.isArray(guests) ? guests : [];
   
-  const totalResponses = guestList.length;
-  const attending = totalPersonCount !== undefined ? totalPersonCount : guestList.filter(g => g.attendance === "Katılacağım").length;
-  const notAttending = notAttendingCount !== undefined ? notAttendingCount : guestList.filter(g => g.attendance === "Katılamayacağım").length;
+  // React Performans Optimizasyonu: Her render'da listeyi tekrar saymasını engelliyoruz
+  const { totalResponses, attending, notAttending } = useMemo(() => {
+    const total = guestList.length;
+    const att = totalPersonCount !== undefined 
+        ? totalPersonCount 
+        : guestList.filter(g => g.attendance === "Katılacağım").length;
+    const notAtt = notAttendingCount !== undefined 
+        ? notAttendingCount 
+        : guestList.filter(g => g.attendance === "Katılamayacağım").length;
+        
+    return { totalResponses: total, attending: att, notAttending: notAtt };
+  }, [guestList, totalPersonCount, notAttendingCount]);
 
   return (
     <section className="card">
-      <p className="section-label">{isEn ? t('invitation.guestsLabel') : copy?.guestsLabel}</p>
-      <h2>{isEn ? t('invitation.guestsTitle') : copy?.guestsTitle}</h2>
+      <p className="section-label">{isEn ? t('invitation.guestsLabel', 'Misafirler') : copy?.guestsLabel}</p>
+      <h2>{isEn ? t('invitation.guestsTitle', 'Misafir Listesi') : copy?.guestsTitle}</h2>
       
       <div className="guest-stats" style={{ 
         display: 'flex', 
@@ -25,15 +34,15 @@ export const GuestsListSection = memo(function GuestsListSection({ copy, guests,
       }}>
         <div style={{ flex: '1 1 0', minWidth: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 8px', background: 'var(--paper)', border: '1px solid rgba(var(--theme-rgb), 0.15)', borderRadius: '12px' }}>
           <strong style={{ fontSize: '28px', color: 'var(--rose-dark)', marginBottom: '6px' }}>{totalResponses}</strong>
-          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.totalResponses')}</span>
+          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.totalResponses', 'Toplam Form')}</span>
         </div>
         <div style={{ flex: '1 1 0', minWidth: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 8px', background: 'var(--paper)', border: '1px solid rgba(var(--theme-rgb), 0.15)', borderRadius: '12px' }}>
           <strong style={{ fontSize: '28px', color: 'var(--rose-dark)', marginBottom: '6px' }}>{attending}</strong>
-          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.attending')}</span>
+          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.attending', 'Katılacaklar')}</span>
         </div>
         <div style={{ flex: '1 1 0', minWidth: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 8px', background: 'var(--paper)', border: '1px solid rgba(var(--theme-rgb), 0.15)', borderRadius: '12px' }}>
           <strong style={{ fontSize: '28px', color: 'var(--rose-dark)', marginBottom: '6px' }}>{notAttending}</strong>
-          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.notAttending')}</span>
+          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-muted)', textAlign: 'center' }}>{t('ui.notAttending', 'Katılamayacaklar')}</span>
         </div>
       </div>
       
@@ -50,7 +59,7 @@ export const GuestsListSection = memo(function GuestsListSection({ copy, guests,
           maxWidth: '90%' 
         }}>
           <span style={{ marginRight: '8px', fontSize: '18px', marginTop: '0px', flexShrink: 0 }}>🔒</span>
-          <span style={{ textAlign: 'center' }}>{t('ui.privateNote')}</span>
+          <span style={{ textAlign: 'center' }}>{t('ui.privateNote', 'Güvenlik notu ve içerik.')}</span>
         </p>
       </div>
     </section>

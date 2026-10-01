@@ -24,12 +24,16 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
 
     setIsScanning(true);
     setSearched(true);
+    let uploadedPath = null;
     
     try {
       const fileName = `temp_selfies/${Date.now()}_selfie.jpg`;
-      const { data: uploadData } = await supabase.storage.from("wedding-media").upload(fileName, file);
+      const { data: uploadData, error: uploadError } = await supabase.storage.from("wedding-media").upload(fileName, file);
       
-      const { data: publicUrlData } = supabase.storage.from("wedding-media").getPublicUrl(uploadData.path);
+      if (uploadError) throw uploadError;
+      uploadedPath = uploadData.path;
+      
+      const { data: publicUrlData } = supabase.storage.from("wedding-media").getPublicUrl(uploadedPath);
 
       const res = await supabase.functions.invoke('face-match', {
         body: { sourceImageUrl: publicUrlData.publicUrl }
@@ -39,12 +43,14 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
         setMatchedPhotos(res.data.matches);
       }
       
-      await supabase.storage.from("wedding-media").remove([uploadData.path]);
-      
     } catch (error) {
       console.error("Yüz tanıma hatası:", error);
       alert(isEn ? "Could not scan photos. Please try again." : "Fotoğraflar taranamadı. Lütfen tekrar deneyin.");
     } finally {
+      // GC: Hata alınsa da alınmasa da yüklenen geçici dosyayı temizle
+      if (uploadedPath) {
+        await supabase.storage.from("wedding-media").remove([uploadedPath]).catch(err => console.error("Çöp toplama hatası:", err));
+      }
       setIsScanning(false);
     }
   };

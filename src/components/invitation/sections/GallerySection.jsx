@@ -2,7 +2,6 @@ import React, { useState, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
 import { LazyImage } from "../../common/LazyImage";
-// Yeni ortak bileşeni import ediyoruz
 import { LightboxModal } from "../../common/LightboxModal"; 
 
 const fadeUp = {
@@ -52,14 +51,16 @@ export const GallerySection = memo(function GallerySection({ copy, invitation })
         ))}
       </div>
 
-      {/* Tekrar eden uzun portal kodu yerine sadece bu satır */}
-      <LightboxModal 
-        gallery={gallery} 
-        lightboxIndex={lightboxIndex} 
-        closeLightbox={closeLightbox} 
-        prevImage={prevImage} 
-        nextImage={nextImage} 
-      />
+      {/* OPTİMİZASYON: lightboxIndex null değilse (yani bir resme tıklandıysa) bileşeni çiz */}
+      {lightboxIndex !== null && (
+        <LightboxModal 
+          gallery={gallery} 
+          lightboxIndex={lightboxIndex} 
+          closeLightbox={closeLightbox} 
+          prevImage={prevImage} 
+          nextImage={nextImage} 
+        />
+      )}
     </m.section>
   );
 });

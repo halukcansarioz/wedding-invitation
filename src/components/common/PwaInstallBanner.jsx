@@ -1,70 +1,71 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
-import { supabase } from '../../supabaseClient';
 
-// VAPID anahtarınızı ortam değişkenlerinden alıyoruz
-const PUBLIC_VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
-// URL Base64 string'i Uint8Array'e çeviren yardımcı fonksiyon
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
+// RsvpSection.jsx'in beklediği (eksik olan) Push Bildirim Abonelik fonksiyonu
 export const subscribeToPushNotifications = async () => {
-  if ('serviceWorker' in navigator && 'PushManager' in window && PUBLIC_VAPID_KEY) {
-    try {
-      const registration = await navigator.serviceWorker.ready;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return null;
+  }
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    let subscription = await registration.pushManager.getSubscription();
+    
+    // Eğer mevcut bir abonelik yoksa yeni oluştur
+    if (!subscription) {
+      const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      if (!publicVapidKey) return null;
       
-      const subscription = await registration.pushManager.subscribe({
+      subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(PUBLIC_VAPID_KEY)
+        applicationServerKey: publicVapidKey
       });
-
-      // Abonelik bilgilerini Supabase veritabanına kaydedin
-      await supabase.from('push_subscriptions').insert([
-        { sub_data: subscription, created_at: new Date() }
-      ]);
-      
-      console.log("Push bildirimlerine başarıyla abone olundu!");
-    } catch (error) {
-      console.error("Bildirim izni alınamadı:", error);
     }
+    return subscription;
+  } catch (error) {
+    console.warn('Push bildirimlerine abone olunamadı:', error);
+    return null;
   }
 };
 
-export function PwaInstallBanner() {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const { isInstallable, isIos, promptInstall, setIsInstallable } = usePWAInstall();
+export const PwaInstallBanner = () => {
+  const { isInstallable, isIos, promptInstall } = usePWAInstall();
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
 
-  // YENİ: Hem kurulabilir değilse hem de iOS ise BİLEŞENİ GİZLE (Arkada görünmesini engeller)
-  if (!isInstallable || isIos) {
-    return null; 
+  if (!isInstallable) return null;
+
+  if (isIos) {
+    // iOS için banner'ı gizlemek yerine Apple'ın Paylaş / Ekle navigasyonunu anlatan tooltip
+    return (
+      <div className="pwa-install-banner ios-banner" style={{
+        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
+        background: 'var(--paper)', padding: '12px 24px', borderRadius: '12px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 9999, textAlign: 'center',
+        border: '1px solid var(--admin-border-color)'
+      }}>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-main)', fontWeight: 'bold' }}>
+          {isEn 
+            ? "📱 Tap 'Share' then 'Add to Home Screen' for the best experience!" 
+            : "📱 Kolay Erişim İçin: 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin!"}
+        </p>
+      </div>
+    );
   }
 
-  const handleInstallClick = async () => {
-    await promptInstall();
-    // Kullanıcı uygulamayı yükleme adımlarını tamamladıktan sonra bildirim izni iste
-    subscribeToPushNotifications();
-  };
-
   return (
-    <div className="pwa-banner-wrapper">
-      <span className="pwa-banner-text">
+    <div className="pwa-install-banner" style={{
+        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
+        background: 'var(--paper)', padding: '12px 24px', borderRadius: '12px', display: 'flex',
+        alignItems: 'center', gap: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 9999,
+        border: '1px solid var(--admin-border-color)'
+    }}>
+      <span style={{ fontSize: '14px', color: 'var(--text-main)', fontWeight: 'bold' }}>
         {isEn ? "📱 Install App for Easy Access" : "📱 Kolay Erişim İçin Yükle"}
       </span>
-      {/* Kurulum butonuna basıldığında hem PWA kurulur hem Push izni istenir */}
-      <button onClick={handleInstallClick} className="main-button pwa-banner-btn">
+      <button type="button" onClick={promptInstall} className="main-button" style={{ padding: '8px 16px', margin: 0 }}>
         {isEn ? "Install" : "Yükle"}
       </button>
     </div>
   );
-}
+};
