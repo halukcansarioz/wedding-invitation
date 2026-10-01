@@ -9,18 +9,23 @@ export default defineConfig({
       registerType: 'autoUpdate',
       devOptions: {
         enabled: true,
-        suppressWarnings: true // EKLENEN SATIR: Geliştirme uyarılarını gizler
+        environment: 'jsdom', 
+        setupFiles: './tests/setupTests.js',
+        suppressWarnings: true
       }
     })
   ],
-  test: {
-    environment: 'jsdom',
+test: {
     globals: true,
-    setupFiles: './vitest.setup.js',
-    exclude: [
-      '**/node_modules/**', 
-      '**/dist/**', 
-      '**/tests/**' 
-    ],
-  }
+    environment: 'jsdom',
+    setupFiles: './tests/setupTests.js',
+    css: true,
+    poolOptions: {
+      threads: {
+        isolate: false, 
+      }
+    },
+    include: ['src/**/*.test.{js,jsx,ts,tsx}'], 
+    exclude: ['tests/**/*.spec.{js,jsx,ts,tsx}', 'node_modules/**/*'], 
+  },
 });
