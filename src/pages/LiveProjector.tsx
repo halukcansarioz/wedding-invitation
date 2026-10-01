@@ -60,14 +60,11 @@ function LiveProjectorContent() {
   }, [displayItems]);
 
   useEffect(() => {
-    const prevTheme = document.documentElement.dataset.theme; 
-    document.documentElement.dataset.theme = "dark";
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     
     return () => { 
-      document.body.style.overflow = "auto"; 
-      if (prevTheme) document.documentElement.dataset.theme = prevTheme;
-      else document.documentElement.removeAttribute('data-theme');
+      document.body.style.overflow = previousOverflow;
     };
   }, []);
 

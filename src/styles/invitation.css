@@ -443,7 +443,6 @@ body .app .invitation-page .hero-section::after {
   mix-blend-mode: normal !important;
 }
 .envelope-container .envelope-seal::before {
-  content: "";
   display: block;
   position: absolute;
   top: clamp(4px, 1.5vw, 6px);
@@ -463,7 +462,6 @@ body .app .invitation-page .hero-section::after {
   -webkit-transform: translate(-50%, -50%) scale(1.3) translateZ(20px) !important;
   transform: translate(-50%, -50%) scale(1.3) translateZ(20px) !important;
   opacity: 0;
-  pointer-events: none;
 }
 .couple-title em,
 .intro-card .couple-title em,

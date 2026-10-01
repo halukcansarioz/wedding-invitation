@@ -10,7 +10,12 @@ export function ResponsiveSlideShow({ children }) {
 
   // Ekran genişliğini dinleyerek Mobil/Web ayrımını yapıyoruz
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    const checkMobile = () => {
+      const compactLandscapePhone = window.matchMedia(
+        "(max-width: 1024px) and (max-height: 600px) and (orientation: landscape) and (pointer: coarse)",
+      ).matches;
+      setIsMobile(window.innerWidth <= 768 || compactLandscapePhone);
+    };
     checkMobile(); // İlk açılışta kontrol et
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);

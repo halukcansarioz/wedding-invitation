@@ -569,10 +569,6 @@ html body .app .floating-actions .hidden-btn {
     border-radius: 0 0 36px 36px !important;
   }
   
-  /* Mobilde küçülen Admin butonunu standart boyuta getir */
-  html body .app .admin-panel-trigger {
-    transform: scale(1) !important;
-  }
 }
 
 /* =================================================================
@@ -654,17 +650,17 @@ body #root .app .intro-page .envelope-seal span {
 
 /* 1. Tüm ana kapsayıcıları serbest bırak ve dikey kaydırmaya izin ver */
 html, body, #root {
-  height: auto !important;
-  min-height: 100vh !important;
-  overflow-x: hidden !important; /* Sadece yatay kaymayı engelle */
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden; /* Sadece yatay kaymayı engelle */
   overflow-y: auto !important;   /* Dikey kaydırmayı (scroll) ZORUNLU KIL */
   background-color: var(--paper, #fdfbf7); /* Olası boşlukların rengini temaya uydur */
 }
 
 /* 2. React ana bileşeninin (InvitationController) tam boy kısıtlamasını ez */
 #root > div {
-  height: auto !important;
-  min-height: 100vh !important;
+  height: auto;
+  min-height: 100vh;
 }
 
 /* 3. Açılış ekranını (Hero) iOS Safari adres çubuğuna tam uyumlu yap - SADECE INTRO SAYFASINDA */
@@ -699,19 +695,19 @@ html, body, #root {
 
 /* Ana uygulama sarmalayıcısını serbest bırak */
 .app {
-  min-height: 100vh !important;
-  height: auto !important; /* Sabit 100vh veya 100% değerini ezer */
-  display: flex !important;
-  flex-direction: column !important;
-  overflow-x: hidden !important; 
-  overflow-y: auto !important; /* Dikey kaydırmaya izin ver */
+  min-height: 100vh;
+  height: auto; /* Sabit 100vh veya 100% değerini ezer */
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto; /* Dikey kaydırmaya izin ver */
 }
 
 /* Sayfa seviyesindeki tüm kapsayıcıların esnemesini sağla */
 .app > div,
 #root > div {
-  min-height: 100vh !important;
-  height: auto !important; 
+  min-height: 100vh;
+  height: auto;
   flex: 1;
 }
 
@@ -1533,9 +1529,6 @@ input[type="search"] {
   }
 
   .invitation-page {
-    position: relative !important;
-    width: 100% !important;
-    height: auto !important;
     min-height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -1550,14 +1543,10 @@ input[type="search"] {
     max-width: 100vw !important;
     margin-left: calc(50% - 50vw) !important;
     margin-right: 0 !important;
-    height: auto !important;
-    min-height: 100dvh !important;
     max-height: none !important;
     margin: 0 !important;
-    overflow: visible !important;
     opacity: 1 !important;
     transform: none !important;
-    scroll-snap-align: start !important;
   }
 
   .invitation-page > .hero-section {
@@ -1890,39 +1879,4 @@ body[data-uc-browser] {
     display: flex;
     flex-wrap: wrap;
   }
-}
-
-.hero-section-class {
-  height: 100dvh; 
-  position: relative;
-}
-
-.floating-buttons-class {
-  position: absolute;
-  bottom: 30px; 
-}
-
-.main-wrapper {
-  padding-bottom: 100px; 
-}
-
-.decoration-element {
-  position: absolute;
-  /* top, left, right, bottom değerlerin... */
-  z-index: 0; /* Yazıların arkasında kalması için */
-  pointer-events: none; /* Tıklamaları engellememesi için */
-}
-
-/* Davet yazılarının (Mutluluğumuza Ortak Olur Musunuz?) olduğu div */
-.content-wrapper {
-  position: relative;
-  z-index: 1; /* Dekorların üstünde görünmesi için */
-}
-
-.floating-navigation {
-  position: fixed;
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
 }

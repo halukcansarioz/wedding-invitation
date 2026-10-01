@@ -22,8 +22,6 @@ body {
   box-sizing: border-box;
 }
 :root {
-  --paper: #fffafb;
-  --paper-soft: #fff7f9;
   --rose-light: #f8d7df;
   --rose: #d98ca1;
   --rose-dark: #9f4f68;
@@ -31,7 +29,6 @@ body {
   --gold: #c69b5c;
   --dark-gold: #8a6735;
   --text: #55303b;
-  --text-soft: #6f4451;
   --shadow: 0 20px 48px rgba(165, 112, 133, 0.12);
 }
 #root,
@@ -67,8 +64,8 @@ button {
   cursor: pointer;
 }
 #root {
-  max-width: none !important;
-  text-align: initial !important;
+  max-width: none;
+  text-align: initial;
 }
 .intro-page {
   position: relative;

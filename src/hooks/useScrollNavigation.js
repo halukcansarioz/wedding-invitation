@@ -17,7 +17,12 @@ export function useScrollNavigation(isAdminPage, opened) {
 
   // Ekran boyutunu izle
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    const checkMobile = () => {
+      const compactLandscapePhone = window.matchMedia(
+        "(max-width: 1024px) and (max-height: 600px) and (orientation: landscape) and (pointer: coarse)",
+      ).matches;
+      setIsMobile(window.innerWidth <= 768 || compactLandscapePhone);
+    };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);

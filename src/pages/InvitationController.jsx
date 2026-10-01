@@ -87,7 +87,7 @@ export default function InvitationController() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
         {renderSEO()}
-        <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
+        <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="none" />
         <IntroPage 
           isOpening={isOpening} 
           copy={siteData.copy} 
@@ -115,7 +115,7 @@ export default function InvitationController() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
       {renderSEO()}
-      <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="auto" />
+      <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="none" />
       <PwaInstallBanner />
       <FloatingMenu 
         isEn={isEn} 

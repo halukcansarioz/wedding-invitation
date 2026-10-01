@@ -20,7 +20,6 @@ test.describe('Canlı Barkovizyon (Live Projector) Testleri', () => {
     const titleElement = page.locator('h1');
     await expect(titleElement).toBeVisible();
     
-    const isDarkTheme = await page.evaluate(() => document.documentElement.dataset.theme === 'dark');
-    expect(isDarkTheme).toBeTruthy();
+    await expect.poll(() => page.evaluate(() => document.documentElement.dataset.theme)).toBe('dark');
   });
 });

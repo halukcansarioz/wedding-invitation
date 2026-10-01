@@ -23,12 +23,40 @@
     <!-- Safe area & notch support -->
     <meta name="supported-color-schemes" content="light dark">
 
+    <script>
+      (() => {
+        if (/(?:^|\/)(?:admin|live)(?:\/|$)/.test(location.pathname) || location.hash.includes("type=recovery")) return;
+
+        let heroImage = "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp";
+        try {
+          const savedSiteData = JSON.parse(localStorage.getItem("wedding-site-data") || "null");
+          const savedHeroImage = savedSiteData?.invitation?.heroImage;
+          if (typeof savedHeroImage === "string" && savedHeroImage.trim()) heroImage = savedHeroImage;
+        } catch {}
+
+        if (heroImage === "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg") {
+          heroImage = "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp";
+        }
+
+        try {
+          const imageUrl = new URL(heroImage, location.origin);
+          if (imageUrl.origin !== location.origin) return;
+
+          const preload = document.createElement("link");
+          preload.rel = "preload";
+          preload.as = "image";
+          preload.href = imageUrl.href;
+          preload.fetchPriority = "high";
+          document.head.appendChild(preload);
+        } catch {}
+      })();
+    </script>
+
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
 
-    <!-- Font ve Görsel Preload (LCP Optimizasyonu) -->
+    <!-- Font preload hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="image" href="/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg">
 
     <!-- Başlık ve Temel Açıklama -->
     <title>Handenur & Haluk Can | Düğün Davetiyesi</title>

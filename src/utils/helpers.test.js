@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPersonalLink, normalizeText, formatMessageTemplate, getQrImageUrl } from './helpers';
+import { buildPersonalLink, normalizeSiteData, normalizeText, formatMessageTemplate, getQrImageUrl } from './helpers';
 
 describe('Helpers Utilities Test Suite', () => {
   
@@ -30,6 +30,26 @@ describe('Helpers Utilities Test Suite', () => {
     const link = "https://example.com";
     expect(getQrImageUrl(link)).toContain("quickchart.io");
     expect(getQrImageUrl(link)).toContain(encodeURIComponent(link));
+  });
+
+  it('upgrades saved default theme images without rewriting user uploads', () => {
+    const normalized = normalizeSiteData({
+      invitation: {
+        introImage: "/images/themes/lavanta/8.jpg",
+        heroImage: "https://example.com/custom-wedding.jpg",
+        gallery: [
+          "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg",
+          "https://storage.example.com/user-upload.jpg",
+        ],
+      },
+    });
+
+    expect(normalized.invitation.introImage).toBe("/images/themes/lavanta/8.webp");
+    expect(normalized.invitation.heroImage).toBe("https://example.com/custom-wedding.jpg");
+    expect(normalized.invitation.gallery).toEqual([
+      "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.webp",
+      "https://storage.example.com/user-upload.jpg",
+    ]);
   });
 
 });

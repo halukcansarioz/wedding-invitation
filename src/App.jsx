@@ -1,17 +1,17 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useStore } from "./store/useStore"; 
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
-import AdminController from "./pages/AdminController";
+const AdminController = lazy(() => import("./pages/AdminController"));
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
 import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
-import LiveProjector from "./pages/LiveProjector.js";
+const LiveProjector = lazy(() => import("./pages/LiveProjector.js"));
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -34,9 +34,10 @@ function App() {
   const activeTheme = siteData.settings?.theme || "lavanta";
   const invitation = siteData.invitation;
   const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+  const isLiveProjector = location.pathname.endsWith("/live");
 
   const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const resolvedTheme = prefersDark ? "dark" : activeTheme;
+  const resolvedTheme = isLiveProjector || prefersDark ? "dark" : activeTheme;
 
   // YENİ: Otomatik Dil Algılama ve Ayarlama
   useEffect(() => {
@@ -95,23 +96,6 @@ function App() {
         </div>
       )}
 
-      {/* YENİ: Floating Language Switcher */}
-      {!isAuthRecovery && !location.pathname.includes('/admin') && (
-        <button 
-          onClick={() => i18n.changeLanguage(isEn ? 'tr' : 'en')}
-          style={{
-            position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
-            width: '46px', height: '46px', borderRadius: '50%',
-            background: 'var(--theme-surface)', border: '2px solid rgba(var(--theme-rgb), 0.4)',
-            color: 'var(--rose-deep)', fontWeight: 'bold', cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)', backdropFilter: 'blur(8px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
-          }}
-        >
-          {isEn ? 'TR' : 'EN'}
-        </button>
-      )}
-
       <div 
         className="app" 
         lang={isEn ? "en" : "tr"} 
@@ -124,15 +108,17 @@ function App() {
       >
         <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
         
-        <Routes>
-          <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-          <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+        <Suspense fallback={<div className="app-loading">{isEn ? "Loading..." : "Yükleniyor..."}</div>}>
+          <Routes>
+            <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+            <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+            <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
 
-          <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-          <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-          <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
-        </Routes>
+            <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
+            <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
+            <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+          </Routes>
+        </Suspense>
       </div>
     </LazyMotion>
   );

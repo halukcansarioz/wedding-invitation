@@ -1,46 +1,200 @@
-import { describe, it, expect, vi } from 'vitest';
-import { getReadableAuthError, fetchWithRetry } from './database';
+import { supabase } from "../supabaseClient";
+import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+import { optimizeImage } from "../utils/imageOptimizer";
+import { SiteData, Guest, Wish } from "../types";
+import { get, set } from "idb-keyval";
 
-describe('Database Servis Fonksiyonları Testleri', () => {
-  
-  describe('getReadableAuthError', () => {
-    it('400 hatası için geçersiz giriş (invalid login) mesajını doğru çevirmeli', () => {
-      const error = { status: 400, message: "invalid login credentials" };
-      expect(getReadableAuthError(error)).toBe("E-posta veya şifre hatalı.");
-    });
+export const getSupabaseUrl = (): string =>
+  String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 
-    it('429 hatası için çok fazla istek (rate limit) mesajını dönmeli', () => {
-      const error = { status: 429, message: "rate limit exceeded" };
-      expect(getReadableAuthError(error)).toBe("Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar deneyin.");
-    });
+export const getSupabaseKey = (): string =>
+  String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
 
-    it('Bilinmeyen hatalar için varsayılan bir mesaj dönmeli', () => {
-      const error = { message: "Internal server error" };
-      expect(getReadableAuthError(error)).toBe("Internal server error");
-      expect(getReadableAuthError(null)).toBe("Bilinmeyen bir hata oluştu.");
-    });
+export const getSupabaseSetupMessage = (): string => {
+  const url = getSupabaseUrl();
+  const key = getSupabaseKey();
+  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı.";
+  return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini kontrol et.";
+};
+
+export const getReadableAuthError = (error: any): string => {
+  if (!error) return "Bilinmeyen bir hata oluştu.";
+  const status = error?.status || error?.code;
+  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
+  if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı.";
+  if (status === 429) return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar deneyin.";
+  return error?.message || "İşlem tamamlanamadı. Bağlantınızı kontrol edin.";
+};
+
+export const isSupabaseReady = (): boolean => Boolean(getSupabaseUrl() && getSupabaseKey());
+
+export const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      return await fetchFn();
+    } catch (error) {
+      if (attempt === retries - 1) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delay * (attempt + 1)));
+    }
+  }
+  throw new Error("Tüm denemeler başarısız oldu.");
+};
+
+export const loadSettingsFromDatabase = async (): Promise<SiteData | null> => {
+  if (!isSupabaseReady()) return null;
+  return fetchWithRetry(async () => {
+    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
+    if (error) throw error;
+    return normalizeSiteData(data?.content || null) as SiteData;
   });
+};
 
-  describe('fetchWithRetry', () => {
-    it('başarılı olan bir işlemi ilk denemede çözmeli (resolve)', async () => {
-      const mockFetch = vi.fn().mockResolvedValue("Başarılı");
-      const result = await fetchWithRetry(mockFetch, 3, 10);
-      
-      expect(result).toBe("Başarılı");
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-    });
+export const saveSettingsToDatabase = async (settings: SiteData): Promise<void> => {
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+  const { error } = await supabase.from("invitation_settings").upsert(
+    { id: "main", content: settings as any, updated_at: new Date().toISOString() },
+    { onConflict: "id" },
+  );
+  if (error) throw error;
+};
 
-    it('hata durumunda belirtilen sayı kadar tekrar denemeli (retry) ve sonra hata fırlatmalı', async () => {
-      // Sürekli hata fırlatan bir mock fonksiyon
-      const mockFetch = vi.fn().mockRejectedValue(new Error("Ağ hatası"));
-      
-      try {
-        await fetchWithRetry(mockFetch, 3, 10);
-      } catch (e) {
-        // Fonksiyonun tam olarak 3 kez çağrıldığını onayla
-        expect(mockFetch).toHaveBeenCalledTimes(3);
-        expect((e as Error).message).toBe("Ağ hatası");
-      }
-    });
+export const loadGuestsFromDatabase = async (): Promise<Guest[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) return [];
+  return (data || []).map(dbGuestToUi);
+};
+
+export const loadAllWishesFromDatabase = async (): Promise<Wish[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
+  if (error) return [];
+  return (data || []).map(dbWishToUi);
+};
+
+export const loadPublishedWishesFromDatabase = async (): Promise<Wish[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
+  if (error) return [];
+  return (data || []).map(dbWishToUi);
+};
+
+export const uploadMediaFile = async (rawFile: File, folder = "media"): Promise<string | null> => {
+  if (!rawFile) return null;
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+
+  let fileToUpload: File | Blob = rawFile;
+  if (folder === "images" || rawFile.type.startsWith("image/")) {
+    try {
+      fileToUpload = (await optimizeImage(rawFile)) as File | Blob;
+    } catch {
+      // Keep the original file when image optimization is unavailable.
+    }
+  }
+
+  const fileExt = rawFile.name.split(".").pop() || "file";
+  const safeName = rawFile.name
+    .replace(/\.[^/.]+$/, "")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-")
+    .replace(/^-+|-+$/g, "");
+  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
+
+  const { error } = await supabase.storage.from("wedding-media").upload(fileName, fileToUpload, {
+    cacheControl: "3600",
+    upsert: true,
+    contentType: fileToUpload.type || undefined,
   });
-});
+  if (error) throw error;
+
+  const { data } = supabase.storage.from("wedding-media").getPublicUrl(fileName);
+  return data.publicUrl;
+};
+
+export const uploadAndModerateGuestPhoto = async (rawFile: File): Promise<{ url: string | null; isApproved: boolean }> => {
+  if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+
+  const url = await uploadMediaFile(rawFile, "guest_photos");
+  if (!url) return { url: null, isApproved: false };
+
+  try {
+    const res = await supabase.functions.invoke("moderate-photo", { body: { imageUrl: url } });
+    const isSafe = res?.data?.isSafe;
+    await supabase.from("guest_photos").insert([{ image_url: url, approved: isSafe }]);
+    return { url, isApproved: isSafe };
+  } catch {
+    await supabase.from("guest_photos").insert([{ image_url: url, approved: false }]);
+    return { url, isApproved: false };
+  }
+};
+
+export const deleteMediaFile = async (fileUrl: string): Promise<void> => {
+  if (!fileUrl || !isSupabaseReady() || !fileUrl.includes(".supabase.co")) return;
+  try {
+    const urlObj = new URL(fileUrl);
+    const pathSegments = urlObj.pathname.split("/object/public/wedding-media/");
+    if (pathSegments.length < 2) return;
+    const filePath = decodeURIComponent(pathSegments[1]);
+    const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+    if (error) throw error;
+  } catch {
+    const failedDeletes: string[] = (await get("failed_deletes")) || [];
+    if (!failedDeletes.includes(fileUrl)) {
+      failedDeletes.push(fileUrl);
+      await set("failed_deletes", failedDeletes);
+    }
+  }
+};
+
+export const syncFailedDeletes = async (): Promise<{ successCount: number; failCount: number }> => {
+  const failedDeletes: string[] = (await get("failed_deletes")) || [];
+  if (failedDeletes.length === 0 || !navigator.onLine) {
+    return { successCount: 0, failCount: failedDeletes.length };
+  }
+
+  const remainingFails: string[] = [];
+  let successCount = 0;
+  for (const fileUrl of failedDeletes) {
+    try {
+      const urlObj = new URL(fileUrl);
+      const pathSegments = urlObj.pathname.split("/object/public/wedding-media/");
+      if (pathSegments.length < 2) continue;
+      const filePath = decodeURIComponent(pathSegments[1]);
+      const { error } = await supabase.storage.from("wedding-media").remove([filePath]);
+      if (error) throw error;
+      successCount++;
+    } catch {
+      remainingFails.push(fileUrl);
+    }
+  }
+
+  await set("failed_deletes", remainingFails);
+  return { successCount, failCount: remainingFails.length };
+};
+
+export const runStorageGarbageCollection = async (): Promise<void> => {
+  try {
+    const failedDeletes: string[] = (await get("failed_deletes")) || [];
+    if (failedDeletes.length > 50) {
+      await set("failed_deletes", failedDeletes.slice(-50));
+      console.log("[Garbage Collection] 'failed_deletes' temizlendi.");
+    }
+  } catch (error) {
+    console.error("[Garbage Collection] Hatası:", error);
+  }
+};
+
+export const restoreBackupToDatabase = async (parsedData: any): Promise<void> => {
+  if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
+  if (parsedData.siteData) await saveSettingsToDatabase(parsedData.siteData);
+  if (parsedData.guests && parsedData.guests.length > 0) {
+    await supabase.from("guests").delete().not("id", "is", null);
+    const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }: any) => rest);
+    await supabase.from("guests").insert(guestsToInsert);
+  }
+  if (parsedData.wishes && parsedData.wishes.length > 0) {
+    await supabase.from("wishes").delete().not("id", "is", null);
+    const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }: any) => rest);
+    await supabase.from("wishes").insert(wishesToInsert);
+  }
+};

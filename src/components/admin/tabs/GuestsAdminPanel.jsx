@@ -105,7 +105,7 @@ export function GuestsAdminPanel({
       const { data, error } = await supabase.functions.invoke('ai-thank-you', {
         body: {
           guestName: guestName,
-          coupleName: `${adminDraft.invitation.bride} & ${adminDraft.invitation.groom}`,
+          coupleName: `${adminDraft?.invitation?.bride || "Gelin"} & ${adminDraft?.invitation?.groom || "Damat"}`,
         }
       });
 
@@ -137,9 +137,9 @@ export function GuestsAdminPanel({
     { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
   ];
 
-  const bride = adminDraft.invitation.bride || "Gelin";
-  const groom = adminDraft.invitation.groom || "Damat";
-  const mapLink = adminDraft.invitation.mapLink || "";
+  const bride = adminDraft?.invitation?.bride || "Gelin";
+  const groom = adminDraft?.invitation?.groom || "Damat";
+  const mapLink = adminDraft?.invitation?.mapLink || "";
 
   return (
     <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>

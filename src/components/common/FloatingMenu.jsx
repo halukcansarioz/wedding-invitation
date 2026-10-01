@@ -15,14 +15,9 @@ export const FloatingMenu = memo(function FloatingMenu({
     <>
       <style dangerouslySetInnerHTML={{__html: `
         /* ZIPLAMA ANİMASYONLARI */
-        @keyframes syncContainerBounce {
+        @keyframes dockButtonBounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-8px); }
-        }
-
-        @keyframes syncDesktopBounce {
-          0%, 100% { transform: translateY(-50%); }
-          50% { transform: translateY(calc(-50% - 8px)); }
         }
 
         /* ANA MENÜ ÇERÇEVESİ */
@@ -35,9 +30,6 @@ export const FloatingMenu = memo(function FloatingMenu({
           justify-content: center !important;
           padding: 8px !important;
           
-          /* gap komutu silindi. Boşluklar butonların margin'i ile sağlanıp, animasyonla yavaşça eritilecek. */
-          animation: syncContainerBounce 2.5s infinite ease-in-out !important;
-          
           flex-direction: row !important;
           bottom: calc(24px + env(safe-area-inset-bottom)) !important;
           top: auto !important;
@@ -46,10 +38,6 @@ export const FloatingMenu = memo(function FloatingMenu({
           margin: 0 auto !important;
           width: fit-content !important;
           height: auto !important;
-        }
-
-        #main-dock:hover {
-          animation-play-state: paused !important;
         }
 
         /* TEKİL BUTONLAR VE ANİMASYONLARI */
@@ -78,11 +66,17 @@ export const FloatingMenu = memo(function FloatingMenu({
           overflow: hidden !important; 
           opacity: 1 !important;
           visibility: visible !important;
-          transform: scale(1) !important;
+          animation: dockButtonBounce 2.5s infinite ease-in-out;
         }
+
+        #main-dock .dock-btn:nth-child(1) { animation-delay: 0s; }
+        #main-dock .dock-btn:nth-child(2) { animation-delay: 0.15s; }
+        #main-dock .dock-btn:nth-child(3) { animation-delay: 0.3s; }
+        #main-dock .dock-btn:nth-child(4) { animation-delay: 0.45s; }
 
         #main-dock .dock-btn:hover,
         #main-dock .dock-btn:active {
+          animation-play-state: paused;
           transform: scale(1.08) !important;
           background: var(--amp-color, #9f4f68) !important;
           color: var(--theme-surface, #ffffff) !important;
@@ -124,10 +118,10 @@ export const FloatingMenu = memo(function FloatingMenu({
             left: auto !important;
             top: 50% !important;             
             bottom: auto !important;         
+            transform: translateY(-50%) !important;
             margin: 0 !important; 
             height: fit-content !important;
             width: auto !important;
-            animation: syncDesktopBounce 2.5s infinite ease-in-out !important;
           }
           
           /* Masaüstü için dikey boşluk (Alt-Üst 6px) */

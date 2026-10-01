@@ -5,6 +5,9 @@ import { GuestsAdminPanel } from './GuestsAdminPanel';
 import { useStore } from '../../../store/useStore';
 
 vi.mock('../../../store/useStore');
+vi.mock('react-virtuoso', () => ({
+  Virtuoso: ({ data, itemContent }) => <div>{data.map((item, index) => <React.Fragment key={item.id}>{itemContent(index, item)}</React.Fragment>)}</div>,
+}));
 vi.mock('../../common/UIComponents', () => ({
   Dropdown: ({ value, onChange, options }) => (
     <select data-testid="status-filter" value={value} onChange={(e) => onChange(e.target.value)}>
@@ -22,7 +25,10 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
 
   beforeEach(() => {
     useStore.mockImplementation((selector) => selector({
-      adminDraft: { settings: { visibility: { guests: true } } },
+      adminDraft: {
+        settings: { visibility: { guests: true } },
+        invitation: { bride: "Gelin", groom: "Damat", mapLink: "" },
+      },
       updateDraftObject: vi.fn(),
       showAppConfirm: vi.fn().mockResolvedValue(true)
     }));
@@ -33,19 +39,31 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
     expect(screen.getByText('3', { selector: 'strong' })).toBeInTheDocument(); 
   });
 
+  it('Davetiye taslağında davetli bilgisi yoksa paneli açabilmeli', () => {
+    useStore.mockImplementation((selector) => selector({
+      adminDraft: { settings: { visibility: { guests: true } } },
+      updateDraftObject: vi.fn(),
+      showAppAlert: vi.fn(),
+    }));
+
+    render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} />);
+
+    expect(screen.getByText('Katılım Yanıtları & Kapı Kontrolü')).toBeInTheDocument();
+  });
+
   it('Arama kutusuna yazıldığında setAdminGuestSearch fonksiyonunu tetiklemeli', () => {
     const mockSetSearch = vi.fn();
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} adminGuestSearch="" setAdminGuestSearch={mockSetSearch} isEn={false} />);
     
     // Doğru placeholder metni
-    const searchInput = screen.getByPlaceholderText(/Misafir ara/i);
+    const searchInput = screen.getByPlaceholderText(/İsim veya tel ara/i);
     fireEvent.change(searchInput, { target: { value: 'Zeynep' } });
     expect(mockSetSearch).toHaveBeenCalledWith('Zeynep');
   });
 
   it('Filtre değiştirildiğinde setAdminGuestStatusFilter tetiklenmeli', () => {
     const mockSetFilter = vi.fn();
-    render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} adminGuestStatusFilter="all" setAdminGuestStatusFilter={mockSetFilter} isEn={false} />);
+    render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} adminGuestAttendanceFilter="all" setAdminGuestAttendanceFilter={mockSetFilter} isEn={false} />);
     
     const filterSelect = screen.getByTestId('status-filter');
     fireEvent.change(filterSelect, { target: { value: 'Katılacağım' } });

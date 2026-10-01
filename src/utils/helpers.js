@@ -1,5 +1,31 @@
 import { DEFAULT_SITE_DATA, SITE_DATA_KEY, THEME_FAVICON_COLORS } from "../config/constants";
 
+const optimizedDefaultImagePaths = {
+  "/images/themes/lavanta/8.jpg": "/images/themes/lavanta/8.webp",
+  "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg": "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp",
+  "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.jpg": "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.webp",
+  "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.jpg": "/images/themes/lavanta/christina-w0dZXqq5cPI-unsplash.webp",
+  "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.jpg": "/images/themes/lavanta/dimitri-iakymuk-mCR10j_B6sM-unsplash.webp",
+  "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.jpg": "/images/themes/lavanta/joyce-toh-3PdHzNqMYbA-unsplash.webp",
+};
+
+const optimizeStoredDefaultImage = (imageUrl) => {
+  if (typeof imageUrl !== "string") return imageUrl;
+
+  const localOrigin = typeof window === "undefined" ? null : window.location.origin;
+  const isRootRelative = imageUrl.startsWith("/");
+  if (!isRootRelative && (!localOrigin || !imageUrl.startsWith(`${localOrigin}/`))) return imageUrl;
+
+  try {
+    const parsedUrl = new URL(imageUrl, localOrigin || "https://local.invalid");
+    const optimizedPath = optimizedDefaultImagePaths[parsedUrl.pathname];
+    if (!optimizedPath) return imageUrl;
+    return `${isRootRelative ? "" : parsedUrl.origin}${optimizedPath}${parsedUrl.search}${parsedUrl.hash}`;
+  } catch {
+    return imageUrl;
+  }
+};
+
 export const getFaviconUrl = (theme = "lavanta") => {
   const colors = THEME_FAVICON_COLORS[theme] || THEME_FAVICON_COLORS.lavanta;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
@@ -16,10 +42,16 @@ export const getFaviconUrl = (theme = "lavanta") => {
 
 export const normalizeSiteData = (raw) => {
   if (!raw) return DEFAULT_SITE_DATA;
+  const invitation = { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) };
   return {
     ...DEFAULT_SITE_DATA,
     ...raw,
-    invitation: { ...DEFAULT_SITE_DATA.invitation, ...(raw.invitation || {}) },
+    invitation: {
+      ...invitation,
+      introImage: optimizeStoredDefaultImage(invitation.introImage),
+      heroImage: optimizeStoredDefaultImage(invitation.heroImage),
+      gallery: Array.isArray(invitation.gallery) ? invitation.gallery.map(optimizeStoredDefaultImage) : invitation.gallery,
+    },
     familyInfo: { ...DEFAULT_SITE_DATA.familyInfo, ...(raw.familyInfo || {}) },
     giftRegistry: { ...DEFAULT_SITE_DATA.giftRegistry, ...(raw.giftRegistry || {}) },
     copy: { ...DEFAULT_SITE_DATA.copy, ...(raw.copy || {}) },
