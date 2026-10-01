@@ -1,7 +1,7 @@
-/* =================================================================
-   GENEL AYARLAR VE TEMA RENKLERİ
-   ================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
 :root {
+  
   --amp-color: var(--rose-dark);
   --amp-glow: color-mix(in srgb, var(--rose-dark) 36%, transparent);
   --sakura-flower: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -625,4 +625,57 @@ html[data-theme="dark"] body .app .gallery-grid img {
       radial-gradient(circle at center, var(--theme-hero-center) 0%, var(--theme-hero-mid) 54%, var(--theme-hero-edge) 100%),
       var(--hero-image) center/cover no-repeat;
   }
+}
+
+html[data-theme] body .app .count-box span {
+  font-family: var(--font-heading); /* Playfair Display ile daha asil bir görünüm */
+  font-style: italic; /* İtalik yaparak biraz hareket katıyoruz */
+  font-size: 1.1rem;
+  letter-spacing: 1.5px;
+  margin-top: 8px;
+  color: var(--rose-dark);
+}
+
+/* 2. Nikah ve Eğlence Kartlarının İçindeki "NİKAH TÖRENİ", "DÜĞÜN & EĞLENCE" Başlıkları */
+html[data-theme] body .app .ceremony-item span {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+/* 3. Düğün Akışı / Program Kartlarındaki Etkinlik İsimleri ("Misafir Karşılama", "Nikah Töreni" vs.) */
+html[data-theme] body .app .schedule-item span {
+  font-family: var(--font-script); /* Buraya Great Vibes ekleyerek çok daha zarif ve el yazısı efekti veriyoruz */
+  font-size: 2.2rem; /* El yazısı olduğu için boyutunu büyütüyoruz */
+  line-height: 1.2;
+  color: var(--rose-dark);
+  margin-bottom: 4px;
+}
+
+/* Düğün Akışı / Program Kartlarındaki Saatler */
+html[data-theme] body .app .schedule-item > strong {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  margin-bottom: 5px;
+}
+
+/* 4. Zarif Karşılama Ekranı (Intro/Hero) Ayarlamaları */
+/* "Düğün Davetiyesi" veya üstte yazan ufak "Biz Evleniyoruz" etiketi */
+html[data-theme] body .app .intro-small,
+html[data-theme] body .app .hero-section .small-title {
+  font-family: var(--font-script);
+  font-size: 2.5rem;
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+
+/* Karşılama ekranındaki "Sevgiyle başlayan hikayemizin..." gibi uzun mesajlar */
+html[data-theme] body .app .intro-text {
+  font-family: var(--font-heading);
+  font-style: italic; /* Şiirsel bir hava katar */
+  font-size: 1.2rem;
+  line-height: 1.6;
+  letter-spacing: 0.5px;
 }

@@ -13,7 +13,8 @@ export function useAdminQr(currentShareLink: string, isEn: boolean) {
         <head>
           <title>${isEn ? 'Table QR Cards' : 'Masa QR Kartları'}</title>
           <style>
-            body { font-family: "Playfair Display", serif; text-align: center; background: #fff; margin: 0; padding: 20px; }
+            body { font-family: 'Montserrat', sans-serif; text-align: center; background: #fff; margin: 0; padding: 20px; }
+            h2 { color: #9f4f68; margin: 0 0 10px 0; font-size: 36px; font-family: 'Playfair Display', serif; }
             .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
             .card { 
               border: 3px solid #9f4f68; 

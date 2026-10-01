@@ -1108,3 +1108,16 @@ button {
   animation: none !important;
   transform: translateY(0) !important;
 }
+
+html[data-theme] body .app .family-grid strong {
+  font-family: var(--font-script); 
+  font-size: 2.2rem; 
+  font-weight: normal; 
+  letter-spacing: 1px; 
+}
+
+html[data-theme] body .app .family-grid span {
+  font-family: var(--font-heading);
+  letter-spacing: 2px;
+  font-weight: 600;
+}

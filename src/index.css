@@ -1,4 +1,5 @@
 @charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* ===== GLOBAL MOBILE SCROLL FIX ===== */
 /* Mobilde normal kaydırmayı zorla */
@@ -118,6 +119,10 @@ button, input, select, textarea, .option-button, a {
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
+
+  --font-script: 'Great Vibes', cursive;
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Montserrat', sans-serif;
 
   font: 1rem/145% var(--sans);
   letter-spacing: 0.01rem;
@@ -1325,7 +1330,6 @@ img {
   }
 }
 
-/* Accessibility - Focus visible */
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -1341,7 +1345,6 @@ select:focus-visible {
   outline-offset: 2px;
 }
 
-/* Prevent zoom on double-tap for buttons (iOS) */
 button,
 a,
 input[type="button"],
@@ -1352,7 +1355,6 @@ label {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Optimize for keyboard */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -1365,7 +1367,6 @@ input[type="number"] {
   appearance: textfield;
 }
 
-/* iOS specific input styles */
 input[type="date"],
 input[type="time"],
 input[type="datetime-local"],
@@ -1379,14 +1380,12 @@ input[type="search"] {
   padding: 12px;
 }
 
-/* Smooth scroll for supported browsers */
 @supports (scroll-behavior: smooth) {
   html {
     scroll-behavior: smooth;
   }
 }
 
-/* Performance: GPU acceleration */
 .glass-dock,
 .floating-actions,
 .app-modal-card,
@@ -1399,7 +1398,18 @@ input[type="search"] {
   backface-visibility: hidden;
 }
 
-/* Print styles for mobile */
+body, .app {
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6, .section-label {
+  font-family: var(--font-heading);
+}
+
+.couple-title, .hero-guest-greeting, .intro-small {
+  font-family: var(--font-script);
+}
+
 @media print {
   html, body, .app {
     height: auto;
@@ -1414,11 +1424,6 @@ input[type="search"] {
   }
 }
 
-/* =================================================================
-   DEVICE-SPECIFIC FINAL OPTIMIZATIONS
-   ================================================================= */
-
-/* Fallback for browsers without env() support */
 @supports not (top: max(0px, env(safe-area-inset-top))) {
   .glass-dock,
   .floating-actions {
@@ -1434,7 +1439,6 @@ input[type="search"] {
   }
 }
 
-/* Fix for iOS 13-14 viewport issues */
 @supports (-webkit-touch-callout: none) {
   @media (orientation: portrait) {
     html, body {
@@ -1449,7 +1453,6 @@ input[type="search"] {
   }
 }
 
-/* Samsung Galaxy Fold & Foldable devices */
 @media (max-height: 512px) and (max-width: 512px) {
   html body .app .couple-title {
     font-size: clamp(28px, 10vw, 40px) !important;
@@ -1476,7 +1479,6 @@ input[type="search"] {
   }
 }
 
-/* Extremely tall phones (aspect ratio > 2.5) */
 @media (max-aspect-ratio: 2/5) {
   html body .app .hero-section {
     min-height: 80vh !important;
@@ -1487,7 +1489,6 @@ input[type="search"] {
   }
 }
 
-/* Very wide devices (landscape tablets, foldables) */
 @media (min-aspect-ratio: 3/1) {
   html body .app .card,
   html body .app .countdown-section {
@@ -1515,7 +1516,6 @@ input[type="search"] {
   }
 }
 
-/* Mobilde tüm davetiye bölümlerini normal sayfa akışında göster. */
 @media (max-width: 650px) {
   html,
   body {
@@ -1685,7 +1685,6 @@ input[type="search"] {
   }
 }
 
-/* One-hand usage optimization - Large phones */
 @media (min-width: 480px) and (max-width: 600px) and (min-height: 800px) {
   html body .app .glass-dock .dock-btn,
   html body .app .floating-actions .dock-btn {
@@ -1699,7 +1698,6 @@ input[type="search"] {
   }
 }
 
-/* Performans ve Erişilebilirlik (Reduced Motion) Optimizasyonu */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -1708,21 +1706,18 @@ input[type="search"] {
     scroll-behavior: auto !important;
   }
   
-  /* Lavanta temasındaki CPU/GPU yoran kelebek animasyonlarını tamamen kapat */
   [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
   [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
     display: none !important;
     animation: none !important;
   }
 
-  /* LazyLoad iskelet animasyonunu durdur, sadece sabit arka plan rengi göster */
   .image-skeleton {
     animation: none !important;
     background: var(--paper-soft) !important;
   }
 }
 
-/* Network aware - Slow 2G/3G */
 @media (max-width: 384px) {
   .glass-dock .dock-btn,
   .floating-actions .dock-btn {
@@ -1730,9 +1725,7 @@ input[type="search"] {
   }
 }
 
-/* Cursor/pointer detection */
 @media (pointer: fine) {
-  /* Desktop/stylus - show hover states */
   button:hover,
   .dock-btn:hover,
   a:hover {
@@ -1741,7 +1734,6 @@ input[type="search"] {
 }
 
 @media (pointer: coarse) {
-  /* Touch devices - large targets */
   button,
   .dock-btn,
   a,
@@ -1753,7 +1745,6 @@ input[type="search"] {
   }
 }
 
-/* No hover capability (mobile) */
 @media (hover: none) {
   button:hover,
   a:hover,
@@ -1766,23 +1757,17 @@ input[type="search"] {
   }
 }
 
-/* Smooth scrolling support - DISABLED for mobile normal scroll */
-/* Keeping snap for desktop only if needed in future */
 @supports (scroll-snap-type: y mandatory) {
   @media (min-width: 651px) {
-    /* Desktop scroll snap */
-    /* Disabled for now - users prefer free scrolling */
   }
 }
 
-/* Support for :has() selector for modern browsers */
 @supports selector(:has(> div)) {
   .app:has(.hero-section) {
     scroll-behavior: auto;
   }
 }
 
-/* Accessibility - High contrast mode */
 @media (prefers-contrast: more) {
   body {
     border-width: 2px;
@@ -1796,9 +1781,7 @@ input[type="search"] {
   }
 }
 
-/* Browser-specific fixes */
 
-/* Chrome Android */
 @media (-webkit-min-device-pixel-ratio: 1) {
   input,
   button,
@@ -1808,7 +1791,6 @@ input[type="search"] {
   }
 }
 
-/* Mobile form sizing fallback */
 input[type="text"],
 input[type="email"],
 input[type="tel"],
@@ -1824,7 +1806,6 @@ body {
   line-height: 1.5;
 }
 
-/* Edge on mobile */
 @supports (-ms-ime-align: auto) {
   input,
   textarea,
@@ -1833,19 +1814,16 @@ body {
   }
 }
 
-/* Opera Mini fallback */
 @-o-keyframes float {
   0%, 100% { bottom: 0; }
   50% { bottom: 8px; }
 }
 
-/* UC Browser fix */
 body[data-uc-browser] {
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* WeChat browser optimization */
 @media (max-width: 375px) and (max-height: 667px) {
   .glass-dock,
   .floating-actions {
@@ -1853,7 +1831,6 @@ body[data-uc-browser] {
   }
 }
 
-/* Ensure buttons are always clickable on iOS */
 @supports (-webkit-touch-callout: none) {
   .glass-dock .dock-btn,
   .floating-actions .dock-btn,
@@ -1867,7 +1844,6 @@ body[data-uc-browser] {
   
 }
 
-/* Progressive enhancement for old browsers */
 @supports (display: grid) {
   .admin-stats-inside {
     display: grid;
@@ -1879,4 +1855,68 @@ body[data-uc-browser] {
     display: flex;
     flex-wrap: wrap;
   }
+}
+
+html[data-theme] body .app .ceremony-item span {
+  font-family: 'Montserrat', sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+}
+
+html[data-theme] body .app .ceremony-item strong {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 3.2rem;
+  font-weight: 500;
+  color: var(--rose-dark);
+  display: block;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+html[data-theme] body .app .ceremony-item p {
+  font-family: 'Playfair Display', serif !important;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text-main);
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+html[data-theme] body .app .ceremony-item em {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--gold);
+  font-style: normal;
+  display: block;
+}
+
+html[data-theme] body .app .schedule-item > strong {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 1.8rem;
+  color: var(--rose-dark);
+  font-weight: 600;
+}
+
+html[data-theme] body .app .schedule-item span {
+  font-family: 'Playfair Display', serif !important;
+  font-size: 1.6rem;
+  color: var(--rose-deep);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 6px;
+}
+
+html[data-theme] body .app .schedule-item p {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  line-height: 1.5;
+  margin: 0;
 }

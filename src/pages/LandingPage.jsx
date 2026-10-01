@@ -6,9 +6,8 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--paper)', color: 'var(--text-main)', fontFamily: '"Playfair Display", serif' }}>
-      
-      {/* SABİT ÇİZGİ RENGİ YERİNE TEMA DEĞİŞKENİ KULLANILDI */}
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--paper)', color: 'var(--text-main)', fontFamily: 'var(--font-body)' }}>
+
       <header style={{ padding: '24px 48px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(var(--theme-rgb, 159, 79, 104), 0.15)' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '900', color: 'var(--rose-deep)', margin: 0 }}>Davetiyem.AI</h1>
         <nav style={{ display: 'flex', gap: '24px' }}>
