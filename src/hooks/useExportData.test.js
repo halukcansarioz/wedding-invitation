@@ -1,44 +1,48 @@
 import { renderHook } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useExportData } from './useExportData';
 import * as helpers from '../utils/helpers';
 
-// Helper fonksiyonlarını mockluyoruz
 vi.mock('../utils/helpers', () => ({
-  createExcelTable: vi.fn().mockReturnValue('<table>mock</table>'),
-  createCsv: vi.fn().mockReturnValue('isim,durum\nAli,Katılacak'),
+  createExcelTable: vi.fn().mockReturnValue('<table>mock-excel</table>'),
+  createCsv: vi.fn().mockReturnValue('mock,csv,data'),
   downloadTextFile: vi.fn()
 }));
 
-describe('useExportData Hook Testleri', () => {
+describe('useExportData Hook Kapsamlı Testleri', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('exportJson çağrıldığında doğru formattaki veriyi downloadTextFile fonksiyonuna iletmeli', () => {
+  it('exportExcel çağrıldığında HTML tablosu üretip doğru MIME tipiyle indirmeli', () => {
     const { result } = renderHook(() => useExportData(false));
-    const mockData = [{ id: 1, name: "Test" }];
+    const mockData = [{ name: "Ahmet" }];
     
-    result.current.exportJson(mockData, "test.json");
+    result.current.exportExcel(mockData, 'guests', 'misafirler.xls');
 
-    expect(helpers.downloadTextFile).toHaveBeenCalledTimes(1);
+    // Excel HTML oluşturucu çağrılmalı
+    expect(helpers.createExcelTable).toHaveBeenCalledWith(mockData, 'guests', false);
+    
+    // İndirme tetikleyici çağrılmalı (MIME: application/vnd.ms-excel)
     expect(helpers.downloadTextFile).toHaveBeenCalledWith(
-      "test.json",
-      JSON.stringify(mockData),
-      "application/json"
+      'misafirler.xls',
+      '<table>mock-excel</table>',
+      'application/vnd.ms-excel'
     );
   });
 
-  it('exportCsv çağrıldığında createCsv ve downloadTextFile tetiklenmeli', () => {
-    const { result } = renderHook(() => useExportData(true));
+  it('exportCsv çağrıldığında virgülle ayrılmış veriyi utf-8 kodlamasıyla indirmeli', () => {
+    const { result } = renderHook(() => useExportData(true)); // isEn = true
+    const mockData = [{ name: "John" }];
     
-    result.current.exportCsv([], "wishes", "wishes.csv");
+    result.current.exportCsv(mockData, 'wishes', 'wishes.csv');
 
-    expect(helpers.createCsv).toHaveBeenCalled();
+    expect(helpers.createCsv).toHaveBeenCalledWith(mockData, 'wishes', true);
+    
     expect(helpers.downloadTextFile).toHaveBeenCalledWith(
-      "wishes.csv",
-      'isim,durum\nAli,Katılacak',
-      "text/csv;charset=utf-8;"
+      'wishes.csv',
+      'mock,csv,data',
+      'text/csv;charset=utf-8;'
     );
   });
 });

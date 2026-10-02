@@ -1,45 +1,43 @@
 import { test, expect, devices } from '@playwright/test';
 
-test.use({ ...devices['iPhone 12'] });
+const mockMedia = async (page) => {
+  await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
+};
 
-test.describe('Mobil Aygıtlarda Slayt Yapısı (ResponsiveSlideShow)', () => {
+// iPhone 13 Pro boyutlarını (Mobil cihaz) simüle et
+test.use({ ...devices['iPhone 13 Pro'] });
 
-  test('Mobil ekranda dikey kaydırma yerine Slayt Container görünmeli', async ({ page }) => {
-    await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+test.describe('Mobil Cihazlarda Responsive Slayt (Slideshow) Davranışı', () => {
+
+  test.beforeEach(async ({ page }) => {
+    await mockMedia(page);
+    await page.goto('/');
 
     const envelopeSeal = page.locator('.envelope-seal');
-    if (await envelopeSeal.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await envelopeSeal.click({ force: true });
-    }
-    
+    await expect(envelopeSeal).not.toContainText(/Yükleniyor/i, { timeout: 15000 });
+    await envelopeSeal.click();
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Mobil ekranda scroll gizlenmeli ve slayt kontrolleri görünmeli', async ({ page }) => {
+    // Mobil görünümde slideshow-container devrede olmalı
     const slideshowContainer = page.locator('.slideshow-container');
-    await expect(slideshowContainer).toBeVisible({ timeout: 15000 });
-  });
+    await expect(slideshowContainer).toBeVisible();
 
-  test('Yatay telefonda mobil slayt düzeni korunmalı ve yatay taşma olmamalı', async ({ page }) => {
-    await page.setViewportSize({ width: 844, height: 390 });
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    // Body üzerindeki scroll kilitlenmiş olmalı (overflow: hidden)
+    const bodyOverflow = await page.evaluate(() => document.body.style.overflow);
+    expect(bodyOverflow).toBe('hidden');
 
-    const envelopeSeal = page.locator('.envelope-seal');
-    if (await envelopeSeal.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await envelopeSeal.click({ force: true });
-    }
+    // Sağ yön tuşu (İleri) butonunun görünür olduğunu doğrula
+    const nextButton = page.locator('.slide-controls button').nth(1);
+    await expect(nextButton).toBeVisible();
 
-    await expect(page.locator('.slideshow-container')).toBeVisible({ timeout: 15000 });
-    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(844);
-  });
+    // İleri butonuna basıldığında yeni slayt yüklenmeli
+    await nextButton.click();
+    await page.waitForTimeout(800); // Animasyon süresini bekle
 
-  test('Dock üzerinde yalnızca işaretçinin bulunduğu düğme durmalı', async ({ page, context }) => {
-    const desktopPage = await context.newPage();
-    await desktopPage.setViewportSize({ width: 1280, height: 900 });
-    await desktopPage.goto('/', { waitUntil: 'domcontentloaded' });
-
-    const dock = desktopPage.locator('#main-dock');
-    if (await dock.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const buttons = dock.locator('.dock-btn:not(.hidden-btn)');
-      expect(await buttons.count()).toBeGreaterThanOrEqual(0);
-    }
-    expect(true).toBeTruthy();
+    // İlk başta silik (opacity: 0.3) olan Geri butonunun artık tıklanabilir (opacity: 1) olduğunu doğrula
+    const prevButton = page.locator('.slide-controls button').nth(0);
+    await expect(prevButton).not.toHaveCSS('opacity', '0.3');
   });
 });

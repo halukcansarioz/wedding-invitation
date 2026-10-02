@@ -1,7 +1,35 @@
 import React, { memo } from "react";
 import "../../styles/modals.css"; 
 
-export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomAlert, customConfirm, setCustomConfirm, customPrompt, setCustomPrompt, t }) {
+export interface ModalData {
+  title: string;
+  message?: string;
+  label?: string;
+  value?: string;
+  multiline?: boolean;
+  resolve: (value: any) => void;
+}
+
+interface GlobalModalsProps {
+  customAlert: ModalData | null;
+  setCustomAlert: (val: ModalData | null) => void;
+  customConfirm: ModalData | null;
+  setCustomConfirm: (val: ModalData | null) => void;
+  customPrompt: ModalData | null;
+  setCustomPrompt: (val: ModalData | null) => void;
+  t: (key: string) => string;
+}
+
+export const GlobalModals = memo(function GlobalModals({ 
+  customAlert, 
+  setCustomAlert, 
+  customConfirm, 
+  setCustomConfirm, 
+  customPrompt, 
+  setCustomPrompt, 
+  t 
+}: GlobalModalsProps) {
+  
   if (!customAlert && !customConfirm && !customPrompt) return null;
 
   return (
@@ -41,9 +69,9 @@ export const GlobalModals = memo(function GlobalModals({ customAlert, setCustomA
             <h3 className="global-modal-title">{customPrompt.title}</h3>
             <p className="global-modal-text">{customPrompt.label}</p>
             {customPrompt.multiline ? (
-              <textarea autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
+              <textarea autoFocus value={customPrompt.value || ""} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
             ) : (
-              <input autoFocus value={customPrompt.value} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
+              <input autoFocus value={customPrompt.value || ""} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
             )}
             <div className="global-modal-actions">
               <button type="submit" className="main-button global-modal-btn">{t('ui.save')}</button>

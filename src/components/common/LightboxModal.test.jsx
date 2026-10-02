@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { LightboxModal } from './LightboxModal';
 
 // FocusTrap kütüphanesi JSDOM (test ortamı) ile bazen çakışabilir, bu yüzden mockluyoruz
@@ -15,6 +15,13 @@ vi.mock('react-i18next', () => ({
 
 describe('LightboxModal Bileşen Testleri', () => {
   const mockGallery = ['resim1.jpg', 'resim2.jpg', 'resim3.jpg'];
+
+  // ÇÖZÜM: Her testten sonra DOM'u ve body portalını temizle
+  afterEach(() => {
+    cleanup();
+    document.body.innerHTML = ''; 
+    vi.clearAllMocks();
+  });
 
   it('lightboxIndex null ise hiçbir şey render etmemeli', () => {
     const { container } = render(

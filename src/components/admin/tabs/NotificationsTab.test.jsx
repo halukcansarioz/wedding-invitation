@@ -1,33 +1,59 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NotificationsTab } from './NotificationsTab';
 
-// Hoisted kullanılarak mock sırası hatası düzeltildi
-const { mockInvoke } = vi.hoisted(() => ({ mockInvoke: vi.fn() }));
+const mockInvoke = vi.fn();
 vi.mock('../../../supabaseClient', () => ({
   supabase: { functions: { invoke: mockInvoke } }
 }));
 
-describe('NotificationsTab Admin Bileşen Testleri', () => {
+describe('NotificationsTab Kapsamlı Bileşen Testleri', () => {
+  let alertMock;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(window, 'alert').mockImplementation(() => {});
+    alertMock = vi.spyOn(window, 'alert').mockImplementation(() => {});
   });
 
-  it('Form doluysa API isteği atmalı ve başarılı sonucunu ekranda göstermeli', async () => {
-    mockInvoke.mockResolvedValue({ data: { count: 5 }, error: null });
-    render(<NotificationsTab isEn={false} />);
+  afterEach(() => {
+    cleanup();
+    alertMock.mockRestore();
+  });
 
-    fireEvent.change(screen.getByPlaceholderText(/Örn: Nikah Töreni Başlıyor!/i), { target: { value: 'Test Başlık' } });
-    fireEvent.change(screen.getByPlaceholderText(/Örn: Lütfen yerlerinizi alın/i), { target: { value: 'Test Mesaj' } });
+  it('Başlık veya mesaj boş bırakıldığında uyarı (alert) vermeli ve API çağrısı YAPMAMALI', async () => {
+    render(<NotificationsTab isEn={false} />);
 
     const sendBtn = screen.getByRole('button', { name: /Anlık Bildirimi Gönder/i });
     fireEvent.click(sendBtn);
 
-    expect(mockInvoke).toHaveBeenCalledWith('send-push', expect.any(Object));
+    // Boş gönderildiği için alert çağrılmış olmalı
+    expect(alertMock).toHaveBeenCalledWith('Lütfen bildirim başlığı ve mesajını doldurun.');
+    
+    // Supabase invoke KESİNLİKLE çalışmamalı
+    expect(mockInvoke).not.toHaveBeenCalled();
+  });
+
+  it('Bildirim gönderilirken buton metni "İletiliyor..." olarak değişmeli ve disable olmalı', async () => {
+    // API'nin hemen dönmemesi için Promise'i biraz bekletiyoruz
+    mockInvoke.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({ data: { count: 10 }, error: null }), 500)));
+    
+    render(<NotificationsTab isEn={false} />);
+
+    fireEvent.change(screen.getByPlaceholderText(/Örn: Nikah Töreni Başlıyor!/i), { target: { value: 'Test' } });
+    fireEvent.change(screen.getByPlaceholderText(/Örn: Lütfen yerlerinizi alın/i), { target: { value: 'Test' } });
+
+    const sendBtn = screen.getByRole('button', { name: /Anlık Bildirimi Gönder/i });
+    fireEvent.click(sendBtn);
+
+    // Tıklandıktan hemen sonra yükleniyor (loading) state'ine geçmeli
+    expect(screen.getByRole('button')).toHaveTextContent(/İletiliyor/i);
+    expect(screen.getByRole('button')).toBeDisabled();
+
+    // İşlem bitince başarılı mesajı gelmeli
     await waitFor(() => {
-      expect(screen.getByText('✅ Bildirim 5 aboneye başarıyla iletildi.')).toBeInTheDocument();
+      expect(screen.getByText('✅ Bildirim 10 aboneye başarıyla iletildi.')).toBeInTheDocument();
+      expect(screen.getByRole('button')).toHaveTextContent(/Anlık Bildirimi Gönder/i);
     });
   });
 });

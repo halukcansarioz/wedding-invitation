@@ -1,9 +1,19 @@
-import React from "react";
+import React, { FormEvent } from "react";
 import { useAdminStore } from "../../../store/useAdminStore";
 
+interface AdminLoginProps {
+  isEn: boolean;
+  submitAdminPassword: (e: FormEvent<HTMLFormElement>) => Promise<void> | void;
+  completePasswordRecovery?: (e: FormEvent<HTMLFormElement>) => Promise<void> | void;
+  sendPasswordResetEmail?: (e: FormEvent<HTMLFormElement>) => Promise<void> | void;
+}
+
 export function AdminLogin({
-  isEn, submitAdminPassword, completePasswordRecovery, sendPasswordResetEmail
-}) {
+  isEn, 
+  submitAdminPassword, 
+  completePasswordRecovery, 
+  sendPasswordResetEmail
+}: AdminLoginProps) {
   const {
     isPasswordRecovery, showForgotPassword, adminEmail, adminPassword,
     recoveryPassword, recoveryPasswordAgain, recoveryLoading, recoveryMessage,

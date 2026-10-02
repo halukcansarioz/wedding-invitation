@@ -1,21 +1,19 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GuestCameraSection } from './GuestCameraSection';
 import { useStore } from '../../../store/useStore';
 import * as dbServices from '../../../services/database';
 
 vi.mock('../../../store/useStore');
-// loadStoredSiteData modülünün eksik olmasını önlüyoruz
-vi.mock('../../../utils/helpers', async (importOriginal) => {
-  const actual = await importOriginal();
-  return { ...actual, triggerConfetti: vi.fn(), loadStoredSiteData: vi.fn().mockReturnValue({}) };
-});
-vi.mock('../../../services/database', () => ({ uploadAndModerateGuestPhoto: vi.fn() }));
+vi.mock('../../../services/database', () => ({ 
+  // Bilinçli olarak hata fırlatıyoruz
+  uploadAndModerateGuestPhoto: vi.fn().mockRejectedValue(new Error('Yükleme hatası')) 
+}));
 vi.mock('framer-motion', () => ({ m: { section: ({ children }) => <section>{children}</section> } }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } }) }));
 
-describe('GuestCameraSection Bileşen Testleri', () => {
+describe('GuestCameraSection Hata Yönetimi Testi', () => {
   let mockShowAppAlert;
 
   beforeEach(() => {
@@ -23,7 +21,7 @@ describe('GuestCameraSection Bileşen Testleri', () => {
     mockShowAppAlert = vi.fn();
     useStore.mockImplementation((selector) => selector({
       showAppAlert: mockShowAppAlert,
-      siteData: { invitation: { bride: "Test", groom: "Çift", dateText: "1 Ocak" } }
+      siteData: { invitation: { bride: "Test", groom: "Çift" } }
     }));
 
     global.Image = class { constructor() { setTimeout(() => { if (this.onload) this.onload(); }, 10); } };
@@ -32,15 +30,26 @@ describe('GuestCameraSection Bileşen Testleri', () => {
     window.URL.createObjectURL = vi.fn();
   });
 
-  it('Fotoğraf yüklendiğinde başarılı ise konfeti patlatmalı', async () => {
-    dbServices.uploadAndModerateGuestPhoto.mockResolvedValue({ url: 'test.jpg', isApproved: true });
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('Fotoğraf yüklenirken bir hata oluşursa error uyarısı göstermeli ve butonu serbest bırakmalı', async () => {
     render(<GuestCameraSection />);
     
     const fileInput = document.querySelector('input[type="file"]');
     fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'photo.jpg', { type: 'image/jpeg' })] } });
 
     await waitFor(() => {
-      expect(mockShowAppAlert).toHaveBeenCalledWith(expect.stringContaining('Harika!'), expect.objectContaining({ tone: 'success' }));
+      // Store üzerinden çağrılan "Hata" tonundaki alerti kontrol et
+      expect(mockShowAppAlert).toHaveBeenCalledWith(
+        expect.stringContaining('Fotoğraf işlenemedi'), 
+        expect.objectContaining({ tone: 'error', title: 'Hata' })
+      );
     });
+
+    // Buton tekrar tıklanabilir (disabled = false) olmalı
+    const cameraButton = screen.getByRole('button', { name: /Kamera \/ Galeri Aç/i });
+    expect(cameraButton).not.toBeDisabled();
   });
 });

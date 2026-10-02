@@ -15,6 +15,10 @@ export function useGuestsQuery() {
   });
 
   useEffect(() => {
+    // Sadece admin sayfasındaysak realtime bağlantısı kur
+    const isAdminView = typeof window !== 'undefined' && window.location.pathname.includes('/admin');
+    if (!isAdminView) return;
+
     let channel: ReturnType<typeof supabase.channel>;
     let isMounted = true;
     

@@ -21,16 +21,24 @@ export function useGuestPhotosQuery() {
 
     fetchPhotos();
 
-    const channel = supabase
-      .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_photos', filter: 'approved=eq.true' }, () => {
-          if (isMounted) fetchPhotos();
-      })
-      .subscribe();
+    // Sadece Canlı ekran (Barkovizyon) veya Admin paneli ise Socket aç
+    const isPrivilegedView = typeof window !== 'undefined' && 
+      (window.location.pathname.includes('/live') || window.location.pathname.includes('/admin'));
+      
+    let channel: ReturnType<typeof supabase.channel>;
+
+    if (isPrivilegedView) {
+      channel = supabase
+        .channel(channelName)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'guest_photos', filter: 'approved=eq.true' }, () => {
+            if (isMounted) fetchPhotos();
+        })
+        .subscribe();
+    }
 
     return () => { 
       isMounted = false;
-      supabase.removeChannel(channel).catch(console.error); 
+      if (channel) supabase.removeChannel(channel).catch(console.error); 
     };
   }, []);
 

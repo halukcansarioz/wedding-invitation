@@ -8,9 +8,11 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
 
     const envelopeSeal = page.locator('.envelope-seal');
     
-    // YENİ EKLENEN: Görselin yüklenmesini ve butonun aktifleşmesini bekle
+    // Görselin yüklenmesini bekle
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-    await envelopeSeal.click({ force: true });
+    // Animasyon veya UI kaymalarının bitmesini bekleyerek force: true kullanımını kaldırıyoruz
+    await page.waitForTimeout(1000); 
+    await envelopeSeal.click();
     
     await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
     
@@ -21,13 +23,9 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
 
     await page.fill('input[name="name"]', 'Playwright Bot');
     await page.fill('textarea[name="message"]', 'Harika bir düğün test mesajı!');
-    
-    // Not: Turnstile bot koruması aktifse, E2E testlerinde submit butonu disable kalabilir.
-    // CI ortamlarında test için Turnstile'i bypass eden bir mock eklemek gerekebilir.
   });
 
   test('Kullanıcı admin paneline hatalı şifreyle girememeli', async ({ page }) => {
-    // Admin URL parametresi veya doğrudan rota ile git
     await page.goto('/admin');
 
     const emailInput = page.locator('input[type="email"]');
@@ -37,10 +35,12 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
     await emailInput.fill('testadmin@example.com');
     await passwordInput.fill('yanlis_sifre_123');
     
-    // YENİ EKLENEN: Supabase uyarı katmanını (overlay) delerek tıklamak için force: true parametresi eklendi
-    await loginButton.click({ force: true });
+    // Supabase uyarı katmanının vb. engel olmaması için elementi odağa alıyoruz, force: true kaldırıldı
+    await loginButton.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500); 
+    await loginButton.click();
 
-    // Hata mesajının çıkmasını bekle (Supabase auth mocklandığı için hata verecektir)
+    // Hata mesajının çıkmasını bekle
     const errorMessage = page.locator('.admin-login-message.error');
     await expect(errorMessage).toBeVisible();
   });

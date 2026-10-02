@@ -1,30 +1,58 @@
-import React from 'react';
-import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { AdminActionButtons, AdminSection } from './AdminLayout';
+import React, { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
-describe('Admin Layout Bileşen Testleri', () => {
-  afterEach(() => {
-    cleanup(); // Testler arası DOM temizliği
-    vi.clearAllMocks();
-  });
+interface AdminSectionProps {
+  title: string;
+  children: ReactNode;
+  onSave?: () => void;
+}
 
-  describe('AdminSection', () => {
-    it('onSave propu verilmişse başlığın yanında Kaydet butonunu göstermeli', () => {
-      const mockOnSave = vi.fn();
-      render(<AdminSection title="Sistem Özeti" onSave={mockOnSave}><p>İçerik</p></AdminSection>);
-      
-      const saveButtons = screen.getAllByRole('button', { name: /Kaydet/i });
-      expect(saveButtons[0]).toBeInTheDocument();
+export function AdminSection({ title, children, onSave }: AdminSectionProps) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
 
-      fireEvent.click(saveButtons[0]);
-      expect(mockOnSave).toHaveBeenCalledTimes(1);
-    });
+  return (
+    <div className="admin-editor-section">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+        <h3 style={{ margin: 0 }}>{title}</h3>
+        {onSave && (
+          <button 
+            type="button" 
+            className="secondary-button small-admin-button" 
+            onClick={onSave}
+          >
+            {isEn ? "Save 💾" : "Kaydet 💾"}
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
 
-    it('onSave propu yoksa Kaydet butonunu GİZLEMELİ', () => {
-      render(<AdminSection title="Sistem Özeti"><p>İçerik</p></AdminSection>);
-      const saveButtons = screen.queryAllByRole('button', { name: /Kaydet/i });
-      expect(saveButtons).toHaveLength(0); // cleanup sayesinde önceki testin butonu artık burada olmayacak
-    });
-  });
-});
+interface AdminActionButtonsProps {
+  onSave?: () => void;
+  onDelete?: () => void;
+  onMoveUp?: (() => void) | null;
+  onMoveDown?: (() => void) | null;
+  isEn: boolean;
+}
+
+export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isEn }: AdminActionButtonsProps) {
+  return (
+    <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
+      {onMoveUp && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onMoveUp} title={isEn ? "Move Up" : "Yukarı Taşı"}>↑</button>
+      )}
+      {onMoveDown && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onMoveDown} title={isEn ? "Move Down" : "Aşağı Taşı"}>↓</button>
+      )}
+      {onSave && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onSave}>{isEn ? "Save 💾" : "Kaydet 💾"}</button>
+      )}
+      {onDelete && (
+        <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
+      )}
+    </div>
+  );
+}

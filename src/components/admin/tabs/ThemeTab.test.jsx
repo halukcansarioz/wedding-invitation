@@ -5,17 +5,23 @@ import { ThemeTab } from './ThemeTab';
 import { useStore } from '../../../store/useStore';
 
 vi.mock('../../../store/useStore');
+// Gerçek Dropdown yerine kolay tetiklenebilir bir mock
 vi.mock('../../common/UIComponents', () => ({
-  Dropdown: () => <select data-testid="mock-dropdown"></select>
+  Dropdown: ({ value, onChange }) => (
+    <select data-testid="mock-dropdown" value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="lavanta">Lavanta</option>
+      <option value="dark">Koyu Tema</option>
+    </select>
+  )
 }));
 
-describe('ThemeTab Admin Bileşen Testleri', () => {
+describe('ThemeTab İleri Seviye Admin Bileşen Testleri', () => {
   let mockUpdateDraftObject;
 
   beforeEach(() => {
     mockUpdateDraftObject = vi.fn();
     useStore.mockImplementation((selector) => selector({
-      adminDraft: { settings: { theme: 'lavanta', requireWishApproval: true } },
+      adminDraft: { settings: { theme: 'lavanta', defaultTheme: 'lavanta', isPostWedding: false } },
       updateDraftObject: mockUpdateDraftObject,
       saveSiteContent: vi.fn()
     }));
@@ -26,17 +32,27 @@ describe('ThemeTab Admin Bileşen Testleri', () => {
     vi.clearAllMocks();
   });
 
-  it('Tema kartına tıklandığında hem Store hem de DOM güncellenmeli', () => {
+  it('Tema kartına tıklandığında document HTML etiketine "data-theme" eklenmeli', () => {
     render(<ThemeTab isEn={false} />);
+    
+    // Mocklanmış temanın butonunu bul (Dark)
     const darkThemeButton = screen.getByText('Koyu Tema').closest('button');
     fireEvent.click(darkThemeButton);
+    
+    // Store güncellenmeli
     expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'theme', 'dark');
+    
+    // HTML'in kendisine data-theme attribute'u eklenmeli (Canlı önizleme için)
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
-  it('Checkbox değişikliği requireWishApproval değerini güncellemeli', () => {
+  it('Düğün Bitti (isPostWedding) checkboxı tıklanabilir olmalı ve state güncellenmeli', () => {
     render(<ThemeTab isEn={false} />);
-    const approvalCheckbox = screen.getByLabelText(/Anı defteri mesajları admin onayından sonra yayınlansın/i);
-    fireEvent.click(approvalCheckbox);
-    expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'requireWishApproval', false);
+    
+    const postWeddingCheckbox = screen.getByLabelText(/Düğün Bitti Modu/i);
+    expect(postWeddingCheckbox).not.toBeChecked();
+
+    fireEvent.click(postWeddingCheckbox);
+    expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'isPostWedding', true);
   });
 });

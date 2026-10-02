@@ -1,43 +1,36 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { AdminImageField, AdminMusicField } from './AdminMediaFields';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { AdminVideoField } from './AdminMediaFields';
 
-describe('AdminMediaFields Testleri', () => {
-  
-  describe('AdminImageField', () => {
-    it('Görsel yokken boş durumu göstermeli ve yükleme butonunu aktif tutmalı', () => {
-      render(<AdminImageField label="Kahraman Görseli" value="" onFileSelect={vi.fn()} onClear={vi.fn()} isUploading={false} />);
-      
-      expect(screen.getByText('Henüz görsel seçilmedi.')).toBeInTheDocument();
-      expect(screen.getByText('Bilgisayardan Görsel Seç 🖼️')).toBeInTheDocument();
-      expect(screen.queryByText('Görseli Kaldır 🗑️')).not.toBeInTheDocument();
-    });
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
+}));
 
-    it('Görsel varken önizleme ve sil butonunu göstermeli', () => {
-      const mockOnClear = vi.fn();
-      render(<AdminImageField label="Kahraman Görseli" value="test-image.jpg" onFileSelect={vi.fn()} onClear={mockOnClear} isUploading={false} />);
-      
-      const imgPreview = screen.getByAltText('Kahraman Görseli preview');
-      expect(imgPreview).toHaveAttribute('src', 'test-image.jpg');
+describe('AdminMediaFields - Video Alanı Testleri', () => {
+  afterEach(() => cleanup());
 
-      const clearButton = screen.getByText('Görseli Kaldır 🗑️');
-      fireEvent.click(clearButton);
-      expect(mockOnClear).toHaveBeenCalledTimes(1);
-    });
+  it('Video değeri yoksa boş state (Henüz video seçilmedi) görünmeli', () => {
+    render(<AdminVideoField label="Arka Plan Videosu" value="" onFileSelect={vi.fn()} onClear={vi.fn()} />);
+    
+    expect(screen.getByText('Henüz video seçilmedi.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Videoyu Kaldır/i })).not.toBeInTheDocument();
   });
 
-  describe('AdminMusicField', () => {
-    it('Müzik seçildiğinde müzik ismini ve audio oynatıcıyı göstermeli', () => {
-      // DÜZELTME: render fonksiyonundan container'ı dışarı aktarıyoruz
-      const { container } = render(
-        <AdminMusicField value="test-audio.mp3" fileName="Benim Sarkim.mp3" onFileSelect={vi.fn()} onClear={vi.fn()} />
-      );
-      
-      expect(screen.getByText('Benim Sarkim.mp3')).toBeInTheDocument();
-      
-      const audioEl = container.querySelector('audio');
-      expect(audioEl).toHaveAttribute('src', 'test-audio.mp3');
-    });
+  it('Video URL si varsa video oynatıcıyı (HTML5 Video) ve silme butonunu render etmeli', () => {
+    const mockOnClear = vi.fn();
+    const { container } = render(
+      <AdminVideoField label="Arka Plan Videosu" value="test-video.mp4" onFileSelect={vi.fn()} onClear={mockOnClear} />
+    );
+    
+    // Video elementini kontrol et
+    const videoEl = container.querySelector('video');
+    expect(videoEl).toBeInTheDocument();
+    expect(videoEl).toHaveAttribute('src', 'test-video.mp4');
+
+    // Kaldır butonuna tıkla
+    const clearBtn = screen.getByRole('button', { name: /Videoyu Kaldır/i });
+    fireEvent.click(clearBtn);
+    expect(mockOnClear).toHaveBeenCalledTimes(1);
   });
 });

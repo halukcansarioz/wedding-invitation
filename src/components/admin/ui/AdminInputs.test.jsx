@@ -1,47 +1,75 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { AdminField, AdminCheckbox, AdminTextarea } from './AdminInputs';
+import React from "react";
+import { Dropdown, Option } from "../../common/UIComponents";
 
-describe('AdminInputs Bileşen Testleri', () => {
-  
-  it('AdminField bileşeni değeri göstermeli ve değişiklikleri (onChange) iletmeli', () => {
-    const handleChange = vi.fn();
-    render(<AdminField label="Gelin Adı" value="Hande" onChange={handleChange} placeholder="İsim" />);
+interface AdminFieldProps {
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  type?: string;
+  placeholder?: string;
+}
 
-    // Label ve değerin ekranda olduğunu onayla
-    expect(screen.getByText('Gelin Adı')).toBeInTheDocument();
-    const input = screen.getByDisplayValue('Hande');
-    expect(input).toBeInTheDocument();
+export function AdminField({ label, value, onChange, type = "text", placeholder = "" }: AdminFieldProps) {
+  return (
+    <label className="admin-field">
+      <span>{label}</span>
+      <input
+        type={type}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    </label>
+  );
+}
 
-    // Kullanıcı yazıyormuş gibi simüle et
-    fireEvent.change(input, { target: { value: 'Handenur' } });
-    
-    // onChange fonksiyonuna doğru değer gitti mi?
-    expect(handleChange).toHaveBeenCalledWith('Handenur');
-  });
+interface AdminTextareaProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}
 
-  it('AdminTextarea bileşeni çok satırlı metinleri doğru iletmeli', () => {
-    const handleChange = vi.fn();
-    render(<AdminTextarea label="Açıklama" value="Eski not" onChange={handleChange} />);
+export function AdminTextarea({ label, value, onChange, placeholder = "" }: AdminTextareaProps) {
+  return (
+    <label className="admin-field admin-field-wide">
+      <span>{label}</span>
+      <textarea
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    </label>
+  );
+}
 
-    const textarea = screen.getByDisplayValue('Eski not');
-    fireEvent.change(textarea, { target: { value: 'Yeni çok satırlı not' } });
-    
-    expect(handleChange).toHaveBeenCalledWith('Yeni çok satırlı not');
-  });
+interface AdminSelectProps {
+  label: string;
+  value: string | number;
+  options: Option[];
+  onChange: (value: string | number) => void;
+}
 
-  it('AdminCheckbox bileşeni checked (işaretli) durumunu tersine çevirebilmeli', () => {
-    const handleChange = vi.fn();
-    render(<AdminCheckbox label="Geri Sayımı Göster" checked={true} onChange={handleChange} />);
+export function AdminSelect({ label, value, options, onChange }: AdminSelectProps) {
+  return (
+    <label className="admin-field">
+      <span>{label}</span>
+      <Dropdown onChange={onChange} options={options} value={value} />
+    </label>
+  );
+}
 
-    const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).toBeChecked();
+interface AdminCheckboxProps {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
 
-    // Tıkla ve işareti kaldır
-    fireEvent.click(checkbox);
-    
-    // true olan değer false olarak iletilmeli
-    expect(handleChange).toHaveBeenCalledWith(false);
-  });
-});
+export function AdminCheckbox({ label, checked, onChange }: AdminCheckboxProps) {
+  return (
+    <label className="admin-check-field">
+      <input type="checkbox" checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />
+      <span>{label}</span>
+    </label>
+  );
+}

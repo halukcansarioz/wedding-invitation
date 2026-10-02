@@ -8,22 +8,25 @@ test.describe('Kullanıcı Arayüzü ve Bileşen Etkileşimleri', () => {
 
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-    await envelopeSeal.click({ force: true });
+    // Sayfanın ve event listener'ların tam oturmasını bekliyoruz
+    await page.waitForTimeout(1000); 
+    await envelopeSeal.click();
     await expect(page.locator('.intro-page')).not.toBeVisible({ timeout: 15000 });
   });
 
   test('Galeri resmine tıklandığında Lightbox (Büyük Ekran) açılmalı ve kapanmalı', async ({ page }) => {
     const firstGalleryImage = page.locator('.gallery-image').first();
     await firstGalleryImage.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(800); // DOM elementinin yerine oturmasını bekle
     
-    await firstGalleryImage.click({ force: true });
+    // force: true kaldırıldı
+    await firstGalleryImage.click();
 
     const lightboxOverlay = page.locator('.gallery-lightbox-overlay');
     await expect(lightboxOverlay).toBeVisible({ timeout: 10000 });
 
     const closeButton = page.locator('.lightbox-close');
-    await closeButton.click({ force: true });
+    await closeButton.click(); 
     await expect(lightboxOverlay).toBeHidden();
   });
 
@@ -32,13 +35,13 @@ test.describe('Kullanıcı Arayüzü ve Bileşen Etkileşimleri', () => {
     await goToMapButton.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
     
-    await goToMapButton.click({ force: true });
+    await goToMapButton.click();
 
     const locationModal = page.locator('.location-nav-modal');
     await expect(locationModal).toBeVisible({ timeout: 10000 });
 
     const closeBtn = locationModal.locator('.location-nav-close');
-    await closeBtn.click({ force: true });
+    await closeBtn.click();
     await expect(locationModal).toBeHidden();
   });
 
@@ -49,7 +52,7 @@ test.describe('Kullanıcı Arayüzü ve Bileşen Etkileşimleri', () => {
     await copyIbanButton.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
     
-    await copyIbanButton.click({ force: true });
+    await copyIbanButton.click();
     await page.waitForTimeout(500);
 
     const clipboardText = await page.evaluate("navigator.clipboard.readText()");

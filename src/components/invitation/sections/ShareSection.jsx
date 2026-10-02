@@ -19,8 +19,9 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
     if (navigator.share) {
       try {
         await navigator.share({
-          title: isEn ? copy?.shareTitle : 'Düğün Davetiyemiz',
-          text: isEn ? copy?.shareDescription : 'Bu mutlu günümüzde sizi de aramızda görmek isteriz.',
+          // ÇÖZÜM: Hardcoded metinler yerine i18n t() ve admin copy verileri entegre edildi
+          title: isEn ? t('invitation.shareTitle') : (copy?.shareTitle || 'Düğün Davetiyemiz'),
+          text: isEn ? t('invitation.shareDescription') : (copy?.shareDescription || 'Bu mutlu günümüzde sizi de aramızda görmek isteriz.'),
           url: window.location.href,
         });
       } catch (err) {
@@ -37,7 +38,6 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
       <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
       <p style={{ marginBottom: "20px" }}>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
       
-      {/* İyileştirilmiş QR Kod Kartı */}
       <div style={{ 
         margin: '0 auto 32px', 
         padding: '20px', 
@@ -53,10 +53,8 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
         </span>
       </div>
       
-      {/* Sınırlandırılmış ve İkonlu Yeni Buton Grubu */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '380px', margin: '0 auto' }}>
         
-        {/* Ana Paylaş Butonu */}
         <button className="main-button" onClick={handleNativeShare} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px', width: '100%', margin: 0, borderRadius: '14px', fontSize: '16px' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="18" cy="5" r="3"></circle>
@@ -68,7 +66,6 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
           <span>{isEn ? "Share Invitation" : "Davetiyeyi Paylaş"}</span>
         </button>
 
-        {/* Yan Yana İkincil Butonlar */}
         <div style={{ display: 'flex', gap: '14px' }}>
           <a className="secondary-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, padding: '14px 12px', margin: 0, borderRadius: '14px', textDecoration: 'none', fontSize: '15px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

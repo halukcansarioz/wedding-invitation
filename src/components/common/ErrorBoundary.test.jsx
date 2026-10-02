@@ -3,62 +3,58 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ErrorBoundary } from './ErrorBoundary';
 
-// Hata fırlatan sahte bir bileşen
+// Hata fırlatan sahte (Bomb) bileşen
 const Bomb = ({ shouldThrow }) => {
-  if (shouldThrow) throw new Error("Güm! Sahte Hata!");
-  return <div>Her şey yolunda</div>;
+  if (shouldThrow) throw new Error("Güm! Component patladı!");
+  return <div>Her şey güvenli</div>;
 };
 
-describe('ErrorBoundary Bileşen Testleri', () => {
+describe('ErrorBoundary Kapsamlı Testleri', () => {
   let consoleErrorMock;
+  let reloadMock;
 
   beforeEach(() => {
-    // Test terminalini "React Error Boundary Yakaladı" loglarıyla kirletmemek için console.error'u gizliyoruz
+    // React'ın hata anında terminali kırmızıya boyamasını önlüyoruz
     consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // Sayfa yenileme fonksiyonunu mockla
+    reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true
+    });
   });
 
   afterEach(() => {
     consoleErrorMock.mockRestore();
+    vi.restoreAllMocks();
   });
 
-  it('hata yoksa çocuk bileşenleri normal şekilde render etmeli', () => {
+  it('Hata olmadığında çocuk (child) bileşeni normal render etmeli', () => {
     render(
       <ErrorBoundary>
         <Bomb shouldThrow={false} />
       </ErrorBoundary>
     );
-    expect(screen.getByText('Her şey yolunda')).toBeInTheDocument();
+    expect(screen.getByText('Her şey güvenli')).toBeInTheDocument();
   });
 
-  it('çocuk bileşende hata çıkarsa fallback UI (hata ekranı) göstermeli', () => {
+  it('Derinlerde bir bileşen çöktüğünde güvenli (Fallback) UI arayüzüne geçiş yapmalı', () => {
     render(
       <ErrorBoundary>
         <Bomb shouldThrow={true} />
       </ErrorBoundary>
     );
 
-    // Uygulama çökmemeli, bunun yerine kullanıcı dostu hata mesajı çıkmalı
+    // Kendi kendine çöken bileşen yerine hata yönetimi UI'ı görünmeli
     expect(screen.getByText(/Opps! Beklenmeyen bir hata oluştu/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Sayfayı Yenile/i })).toBeInTheDocument();
-  });
-
-  it('Yenile butonuna tıklandığında sayfayı yeniden yüklemeli (reload)', () => {
-    // window.location.reload fonksiyonunu mockluyoruz
-    const reloadMock = vi.fn();
-    Object.defineProperty(window, 'location', {
-      value: { reload: reloadMock },
-      writable: true
-    });
-
-    render(
-      <ErrorBoundary>
-        <Bomb shouldThrow={true} />
-      </ErrorBoundary>
-    );
-
+    
+    // Geri Dön / Sayfayı Yenile butonu görünür olmalı
     const reloadButton = screen.getByRole('button', { name: /Sayfayı Yenile/i });
-    fireEvent.click(reloadButton);
+    expect(reloadButton).toBeInTheDocument();
 
+    // Butona tıklandığında sayfayı yeniden yüklemeli
+    fireEvent.click(reloadButton);
     expect(reloadMock).toHaveBeenCalledTimes(1);
   });
 });
