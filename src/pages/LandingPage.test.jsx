@@ -4,10 +4,14 @@ import { describe, it, expect, vi } from 'vitest';
 import LandingPage from './LandingPage';
 import { useNavigate } from 'react-router-dom';
 
-// React Router ve Framer Motion Mock
-vi.mock('react-router-dom', () => ({
-  useNavigate: vi.fn(),
-}));
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useNavigate: vi.fn(),
+    BrowserRouter: ({ children }) => <div>{children}</div>,
+  };
+});
 
 vi.mock('framer-motion', () => ({
   m: {
@@ -37,7 +41,6 @@ describe('LandingPage Bileşen Testleri', () => {
   it('Demo İncele butonlarına tıklandığında yönlendirme (navigate) yapmalı', () => {
     render(<LandingPage />);
     
-    // Hem Header'daki hem de Hero içindeki "Demo İncele / Hemen Dene" butonları
     const demoButtons = screen.getAllByRole('button', { name: /Demo İncele|Hemen Ücretsiz Dene/i });
     
     fireEvent.click(demoButtons[0]);

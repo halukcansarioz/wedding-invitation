@@ -18,22 +18,18 @@ test.describe('Navigasyon ve Harita (Location) Modal Akışı', () => {
   });
 
   test('Konuma Git butonuna tıklandığında harita seçeneklerini göstermeli ve kapatılabilmeli', async ({ page }) => {
-    // Location kartına kaydır
-    const locationSection = page.locator('.location-nav-btn').locator('..').locator('..'); // Veya text içeren section
     const goToMapBtn = page.locator('button', { hasText: /Konuma Git|Go to Map/i }).first();
     
     await goToMapBtn.scrollIntoViewIfNeeded();
     await goToMapBtn.click();
 
-    // Modalın açıldığını doğrula
     const modal = page.locator('.location-nav-modal');
     await expect(modal).toBeVisible();
 
-    // İçerisinde Google Maps ve Apple Maps linklerinin olduğunu doğrula
-    await expect(modal.locator('a', { hasText: /Google Maps/i })).toHaveAttribute('href', /google.com\/maps/);
-    await expect(modal.locator('a', { hasText: /Apple Maps/i })).toHaveAttribute('href', /maps.apple.com/);
+    // Google Maps kısa/uzun link formatlarını destekleyecek esnek regex
+    await expect(modal.locator('a', { hasText: /Google Maps/i })).toHaveAttribute('href', /google\.com\/maps|goo\.gl|app\.goo\.gl/);
+    await expect(modal.locator('a', { hasText: /Apple Maps/i })).toHaveAttribute('href', /maps\.apple\.com/);
 
-    // Kapat butonuna basarak modaldan çık
     const closeBtn = modal.locator('button', { hasText: /Kapat|Close/i });
     await closeBtn.click();
 

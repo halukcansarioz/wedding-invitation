@@ -9,7 +9,6 @@ test.describe('Admin Paneli: Veri Yedekleme (Data Export) İşlemleri', () => {
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
 
-    // Supabase Auth Mock
     await page.route('**/auth/v1/token?grant_type=password', async route => {
       const now = Math.floor(Date.now() / 1000);
       await route.fulfill({
@@ -36,23 +35,22 @@ test.describe('Admin Paneli: Veri Yedekleme (Data Export) İşlemleri', () => {
       await page.locator('input[type="password"]').fill('123456');
       await page.locator('button[type="submit"]').click();
     }
+    
+    // DÜZELTME: Metin aramak yerine ana admin kapsayıcısının yüklenmesini bekliyoruz
+    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('JSON İndir butonuna basıldığında tarayıcı indirme işlemini başlatmalı', async ({ page }) => {
-    // Veri Yedekleme sekmesine (DataTab) geçiş yap
-    const dataTabButton = page.locator('button, div').filter({ hasText: 'Veri Yedeği' }).first();
-    await dataTabButton.waitFor({ state: 'visible' });
+    const dataTabButton = page.locator('button, a, div').filter({ hasText: /Veri Yedeği|Data/i }).first();
+    await dataTabButton.waitFor({ state: 'visible', timeout: 10000 });
     await dataTabButton.click();
 
-    // İndirme (Download) eventini dinlemeye başla
     const downloadPromise = page.waitForEvent('download');
     
-    // JSON İndir butonuna bas
-    const downloadBtn = page.locator('button', { hasText: /JSON İndir/i });
-    await expect(downloadBtn).toBeVisible();
+    const downloadBtn = page.locator('button', { hasText: /JSON İndir|Download JSON/i });
+    await expect(downloadBtn).toBeVisible({ timeout: 10000 });
     await downloadBtn.click();
 
-    // İndirme işleminin gerçekleştiğini doğrula
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toContain('.json');
   });

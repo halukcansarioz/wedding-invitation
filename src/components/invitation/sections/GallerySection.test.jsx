@@ -3,7 +3,6 @@ import { render, screen, fireEvent } from '../../../../tests/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { GallerySection } from './GallerySection';
 
-// Framer-motion ve intersection observer bağımlılıklarını çözer
 vi.mock('framer-motion', () => ({
   m: { section: ({ children }) => <section>{children}</section> }
 }));
@@ -27,8 +26,8 @@ describe('GallerySection Bileşen Testleri', () => {
     // İlk resme tıkla
     fireEvent.click(images[0]);
 
-    // Lightbox modalının DOM'a eklendiğini doğrula
-    const lightboxModal = document.querySelector('.gallery-lightbox-overlay');
+    // Global querySelector yerine dialog rolünü kullanarak temiz arama yapıyoruz
+    const lightboxModal = screen.getByRole('dialog', { hidden: true });
     expect(lightboxModal).toBeInTheDocument();
 
     // 1 / 3 fotoğraf textinin yazdığını doğrula
@@ -37,7 +36,6 @@ describe('GallerySection Bileşen Testleri', () => {
 
   it('Galeri boş ise hatasız şekilde boş bölüm render etmeli', () => {
     render(<GallerySection invitation={{ gallery: [] }} />);
-    // Çökmüyorsa başarılıdır. Resim arandığında 0 dönmelidir.
     expect(screen.queryAllByRole('img')).toHaveLength(0);
   });
 });

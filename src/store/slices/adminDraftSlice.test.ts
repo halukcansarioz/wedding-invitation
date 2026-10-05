@@ -1,8 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useStore } from '../useStore';
 
 describe('Zustand adminDraftSlice Testleri', () => {
+  let initialState: any;
+
   beforeEach(() => {
+    // Mevcut (saf) durumu yedekle
+    initialState = useStore.getState();
+
     // Her testten önce admin taslağını (draft) varsayılan verilerle sıfırla
     useStore.setState({
       adminDraft: {
@@ -13,6 +18,11 @@ describe('Zustand adminDraftSlice Testleri', () => {
         ]
       } as any
     });
+  });
+
+  afterEach(() => {
+    // Sızıntıyı önlemek için store'u varsayılan duruma (Deep Reset) geri çevir
+    useStore.setState(initialState, true);
   });
 
   it('updateDraftObject ile iç içe objeler doğru güncellenmeli', () => {

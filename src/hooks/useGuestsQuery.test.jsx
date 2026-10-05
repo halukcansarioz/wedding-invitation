@@ -20,14 +20,24 @@ vi.mock('../services/database', () => ({
 describe('useGuestsQuery Çevrimdışı (Offline) Testleri', () => {
   const createTestQueryClient = () => new QueryClient({ defaultOptions: { queries: { retry: false } } });
   let originalOnLine;
+  let originalLocation;
 
   beforeEach(() => {
     originalOnLine = navigator.onLine;
+    originalLocation = window.location;
+    
+    // window.location güvenli mocklaması
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/' },
+      writable: true
+    });
+    
     vi.clearAllMocks();
   });
 
   afterEach(() => {
     Object.defineProperty(navigator, 'onLine', { value: originalOnLine, configurable: true });
+    Object.defineProperty(window, 'location', { value: originalLocation, configurable: true });
   });
 
   it('Cihaz çevrimdışıysa (offline) Turnstile tokeni yerine OFFLINE_SYNC gönderilmeli', async () => {

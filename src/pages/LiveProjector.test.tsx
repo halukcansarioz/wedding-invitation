@@ -20,9 +20,10 @@ describe('LiveProjector İleri Seviye Zamanlayıcı Testleri', () => {
   beforeEach(() => {
     vi.useFakeTimers(); 
     
-    (useStore as any).mockReturnValue({
+    // Zustand selector fonksiyonunu destekleyecek şekilde güncellendi
+    (useStore as any).mockImplementation((selector: any) => selector({
       siteData: { invitation: { bride: 'Hande', groom: 'Haluk' } }
-    });
+    }));
 
     (useWishesQuery as any).mockReturnValue({
       wishes: [
@@ -50,17 +51,13 @@ describe('LiveProjector İleri Seviye Zamanlayıcı Testleri', () => {
   it('Her 8 saniyede bir sıradaki anıya geçiş yapmalı', async () => {
     render(<LiveProjector />);
 
-    // Başlangıçta rastgele seçilen mesajlardan biri ekranda olmalı
     const isFirstVisible = screen.queryByText('"Tebrikler!"') || screen.queryByText('"Çok mutlu olun!"');
     expect(isFirstVisible).toBeInTheDocument();
 
-    // 8 saniye (8000ms) ileri sar
     act(() => {
       vi.advanceTimersByTime(8000);
     });
 
-    // Zamanlayıcı çalıştığı için render döngüsü tetiklenir
-    // React'ın animasyonları bitirmesi ve yeni metni göstermesi sağlanır
     const title = screen.getByText('Hande & Haluk');
     expect(title).toBeInTheDocument();
   });

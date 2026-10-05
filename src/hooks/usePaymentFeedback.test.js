@@ -16,15 +16,21 @@ describe('usePaymentFeedback Hook Testleri', () => {
     mockShowAppAlert = vi.fn();
     useStore.mockReturnValue(mockShowAppAlert);
 
-    // window.location ve window.history.replaceState mocklaması
+    // Güvenli window.location mock'laması (TypeError önleme)
     originalLocation = window.location;
-    delete window.location;
-    window.location = { search: '', pathname: '/' };
+    Object.defineProperty(window, 'location', {
+      value: { search: '', pathname: '/' },
+      writable: true
+    });
     window.history.replaceState = vi.fn();
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    // Lokasyonu orijinal haline güvenle geri döndür
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true
+    });
     vi.clearAllMocks();
   });
 
@@ -33,13 +39,10 @@ describe('usePaymentFeedback Hook Testleri', () => {
     
     renderHook(() => usePaymentFeedback());
 
-    // Başarı alerti tetiklenmeli
     expect(mockShowAppAlert).toHaveBeenCalledWith(
       expect.stringContaining('Hediyeniz başarıyla ulaştı'),
       expect.objectContaining({ tone: 'success' })
     );
-
-    // URL'deki parametreleri gizlemek için replaceState çağrılmalı
     expect(window.history.replaceState).toHaveBeenCalledWith(null, "", "/");
   });
 

@@ -130,6 +130,7 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
       
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
         <input 
+          data-testid="camera-input"
           type="file" 
           accept="image/*" 
           capture="environment"

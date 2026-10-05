@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'; // Doğrudan RTL render kullanıyoruz
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CopyTab } from './CopyTab';
 import { useStore } from '../../../store/useStore';
@@ -49,7 +49,11 @@ describe('CopyTab Admin Bileşen Testleri', () => {
   });
 
   it('Taslakta copy objesi yoksa bileşen çökmek yerine null dönmeli', () => {
-    useStore.mockImplementation((selector) => selector({ adminDraft: {} }));
+    useStore.mockImplementation((selector) => selector({ 
+      adminDraft: {},
+      updateDraftObject: vi.fn(),
+      saveSiteContent: vi.fn()
+    }));
     const { container } = render(<CopyTab isEn={false} />);
     expect(container.firstChild).toBeNull();
   });

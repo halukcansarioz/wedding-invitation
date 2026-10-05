@@ -3,7 +3,10 @@ import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/t
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NotificationsTab } from './NotificationsTab';
 
-const mockInvoke = vi.fn();
+const { mockInvoke } = vi.hoisted(() => ({
+  mockInvoke: vi.fn()
+}));
+
 vi.mock('../../../supabaseClient', () => ({
   supabase: { functions: { invoke: mockInvoke } }
 }));
@@ -27,15 +30,11 @@ describe('NotificationsTab Kapsamlı Bileşen Testleri', () => {
     const sendBtn = screen.getByRole('button', { name: /Anlık Bildirimi Gönder/i });
     fireEvent.click(sendBtn);
 
-    // Boş gönderildiği için alert çağrılmış olmalı
     expect(alertMock).toHaveBeenCalledWith('Lütfen bildirim başlığı ve mesajını doldurun.');
-    
-    // Supabase invoke KESİNLİKLE çalışmamalı
     expect(mockInvoke).not.toHaveBeenCalled();
   });
 
   it('Bildirim gönderilirken buton metni "İletiliyor..." olarak değişmeli ve disable olmalı', async () => {
-    // API'nin hemen dönmemesi için Promise'i biraz bekletiyoruz
     mockInvoke.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({ data: { count: 10 }, error: null }), 500)));
     
     render(<NotificationsTab isEn={false} />);
@@ -46,11 +45,9 @@ describe('NotificationsTab Kapsamlı Bileşen Testleri', () => {
     const sendBtn = screen.getByRole('button', { name: /Anlık Bildirimi Gönder/i });
     fireEvent.click(sendBtn);
 
-    // Tıklandıktan hemen sonra yükleniyor (loading) state'ine geçmeli
     expect(screen.getByRole('button')).toHaveTextContent(/İletiliyor/i);
     expect(screen.getByRole('button')).toBeDisabled();
 
-    // İşlem bitince başarılı mesajı gelmeli
     await waitFor(() => {
       expect(screen.getByText('✅ Bildirim 10 aboneye başarıyla iletildi.')).toBeInTheDocument();
       expect(screen.getByRole('button')).toHaveTextContent(/Anlık Bildirimi Gönder/i);

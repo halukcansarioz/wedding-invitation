@@ -1,75 +1,28 @@
-import React from "react";
-import { Dropdown, Option } from "../../common/UIComponents";
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { AdminField, AdminTextarea, AdminCheckbox } from './AdminInputs';
 
-interface AdminFieldProps {
-  label: string;
-  value: string | number;
-  onChange: (value: string) => void;
-  type?: string;
-  placeholder?: string;
-}
+describe('AdminInputs Bileşen Testleri', () => {
+  it('AdminField değere göre inputu doldurmalı ve değişimde onChange tetiklemeli', () => {
+    const mockOnChange = vi.fn();
+    render(<AdminField label="Test Label" value="Test Değer" onChange={mockOnChange} />);
+    
+    const input = screen.getByDisplayValue('Test Değer');
+    expect(input).toBeInTheDocument();
 
-export function AdminField({ label, value, onChange, type = "text", placeholder = "" }: AdminFieldProps) {
-  return (
-    <label className="admin-field">
-      <span>{label}</span>
-      <input
-        type={type}
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
-    </label>
-  );
-}
+    fireEvent.change(input, { target: { value: 'Yeni Değer' } });
+    expect(mockOnChange).toHaveBeenCalledWith('Yeni Değer');
+  });
 
-interface AdminTextareaProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}
+  it('AdminCheckbox işaretlendiğinde doğru değeri iletmeli', () => {
+    const mockOnChange = vi.fn();
+    render(<AdminCheckbox label="Onay Kutusu" checked={false} onChange={mockOnChange} />);
+    
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
 
-export function AdminTextarea({ label, value, onChange, placeholder = "" }: AdminTextareaProps) {
-  return (
-    <label className="admin-field admin-field-wide">
-      <span>{label}</span>
-      <textarea
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-      />
-    </label>
-  );
-}
-
-interface AdminSelectProps {
-  label: string;
-  value: string | number;
-  options: Option[];
-  onChange: (value: string | number) => void;
-}
-
-export function AdminSelect({ label, value, options, onChange }: AdminSelectProps) {
-  return (
-    <label className="admin-field">
-      <span>{label}</span>
-      <Dropdown onChange={onChange} options={options} value={value} />
-    </label>
-  );
-}
-
-interface AdminCheckboxProps {
-  label: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}
-
-export function AdminCheckbox({ label, checked, onChange }: AdminCheckboxProps) {
-  return (
-    <label className="admin-check-field">
-      <input type="checkbox" checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />
-      <span>{label}</span>
-    </label>
-  );
-}
+    fireEvent.click(checkbox);
+    expect(mockOnChange).toHaveBeenCalledWith(true);
+  });
+});

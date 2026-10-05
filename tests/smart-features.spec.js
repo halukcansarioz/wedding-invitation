@@ -17,6 +17,7 @@ test.describe('Kamera ve Yapay Zeka Modülleri', () => {
 
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
+    await envelopeSeal.waitFor({ state: 'visible' });
     await envelopeSeal.click();
     await expect(page.locator('.intro-page')).not.toBeVisible({ timeout: 15000 });
   });
@@ -24,10 +25,11 @@ test.describe('Kamera ve Yapay Zeka Modülleri', () => {
   test('Dijital Fotoğraf Kabini (AR Photobooth) arayüzü eksiksiz yüklenmeli', async ({ page }) => {
     const cameraSection = page.locator('text=/Dijital Fotoğraf Kabini|AR Photobooth/i').locator('..');
     await cameraSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
 
     const cameraButton = cameraSection.locator('button', { hasText: /Kamera \/ Galeri Aç|Open Camera/i });
-    await expect(cameraButton).toBeVisible({ timeout: 10000 });
+    // waitForTimeout yerine stabil state beklentisi
+    await cameraButton.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(cameraButton).toBeVisible();
 
     const fileInput = cameraSection.locator('input[type="file"]');
     await expect(fileInput).toBeAttached();
@@ -36,9 +38,9 @@ test.describe('Kamera ve Yapay Zeka Modülleri', () => {
   test('Kendi Fotoğraflarını Bul (Smart Album) bileşeni kullanıcıdan selfie almaya hazır olmalı', async ({ page }) => {
     const smartAlbumSection = page.locator('.smart-album-card');
     await smartAlbumSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
 
     const selfieButton = smartAlbumSection.locator('button', { hasText: /Selfie Çek|Take a Selfie/i });
-    await expect(selfieButton).toBeVisible({ timeout: 10000 });
+    await selfieButton.waitFor({ state: 'visible', timeout: 10000 });
+    await expect(selfieButton).toBeVisible();
   });
 });

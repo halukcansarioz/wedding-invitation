@@ -76,3 +76,7 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
   BrowserRouter: ({ children }) => React.createElement('div', null, children),
 }));
+
+vi.mock('focus-trap-react', () => ({
+  default: ({ children }) => React.createElement('div', null, children)
+}));

@@ -1,58 +1,40 @@
-import React, { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import { render, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { AdminSection, AdminActionButtons } from './AdminLayout';
 
-interface AdminSectionProps {
-  title: string;
-  children: ReactNode;
-  onSave?: () => void;
-}
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ i18n: { language: 'tr' } })
+}));
 
-export function AdminSection({ title, children, onSave }: AdminSectionProps) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith("en");
+describe('AdminLayout Bileşen Testleri', () => {
+  afterEach(() => {
+    cleanup();
+  });
 
-  return (
-    <div className="admin-editor-section">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-        <h3 style={{ margin: 0 }}>{title}</h3>
-        {onSave && (
-          <button 
-            type="button" 
-            className="secondary-button small-admin-button" 
-            onClick={onSave}
-          >
-            {isEn ? "Save 💾" : "Kaydet 💾"}
-          </button>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
+  it('AdminSection başlığı ve kaydet butonunu doğru render etmeli', () => {
+    const mockSave = vi.fn();
+    
+    // DOM sızıntılarını önlemek için screen yerine lokal izolasyonlu getByText ve getByRole kullanıyoruz
+    const { getByText, getByRole } = render(
+      <AdminSection title="Test Bölümü" onSave={mockSave}>İçerik</AdminSection>
+    );
+    
+    expect(getByText('Test Bölümü')).toBeInTheDocument();
+    expect(getByText('İçerik')).toBeInTheDocument();
 
-interface AdminActionButtonsProps {
-  onSave?: () => void;
-  onDelete?: () => void;
-  onMoveUp?: (() => void) | null;
-  onMoveDown?: (() => void) | null;
-  isEn: boolean;
-}
+    const saveBtn = getByRole('button', { name: /Kaydet/i });
+    fireEvent.click(saveBtn);
+    expect(mockSave).toHaveBeenCalledTimes(1);
+  });
 
-export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isEn }: AdminActionButtonsProps) {
-  return (
-    <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
-      {onMoveUp && (
-        <button type="button" className="secondary-button small-admin-button" onClick={onMoveUp} title={isEn ? "Move Up" : "Yukarı Taşı"}>↑</button>
-      )}
-      {onMoveDown && (
-        <button type="button" className="secondary-button small-admin-button" onClick={onMoveDown} title={isEn ? "Move Down" : "Aşağı Taşı"}>↓</button>
-      )}
-      {onSave && (
-        <button type="button" className="secondary-button small-admin-button" onClick={onSave}>{isEn ? "Save 💾" : "Kaydet 💾"}</button>
-      )}
-      {onDelete && (
-        <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
-      )}
-    </div>
-  );
-}
+  it('AdminActionButtons aksiyon butonlarını tetiklemeli', () => {
+    const mockDelete = vi.fn();
+    
+    const { getByRole } = render(<AdminActionButtons onDelete={mockDelete} isEn={false} />);
+    
+    const deleteBtn = getByRole('button', { name: /Sil/i });
+    fireEvent.click(deleteBtn);
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+  });
+});

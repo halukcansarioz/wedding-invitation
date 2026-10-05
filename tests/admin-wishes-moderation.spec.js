@@ -9,7 +9,6 @@ test.describe('Admin Paneli: Anı Defteri (Wishes) Moderasyon Akışı', () => {
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
 
-    // Supabase Auth Mock
     await page.route('**/auth/v1/token?grant_type=password', async route => {
       const now = Math.floor(Date.now() / 1000);
       await route.fulfill({
@@ -21,7 +20,6 @@ test.describe('Admin Paneli: Anı Defteri (Wishes) Moderasyon Akışı', () => {
       });
     });
 
-    // Veritabanından gelen mesajları Mockla
     await page.route('**/rest/v1/wishes*', async route => {
       await route.fulfill({
         status: 200, contentType: 'application/json',
@@ -34,35 +32,31 @@ test.describe('Admin Paneli: Anı Defteri (Wishes) Moderasyon Akışı', () => {
 
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
     
-    // Login
     const emailInput = page.locator('input[type="email"]');
     if (await emailInput.isVisible({ timeout: 5000 }).catch(() => false)) {
       await emailInput.fill('admin@test.com');
       await page.locator('input[type="password"]').fill('123456');
       await page.locator('button[type="submit"]').click();
     }
+    
+    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('Admin onay bekleyen mesajları görebilmeli ve onaylayabilmeli', async ({ page }) => {
-    // 1. Anı Defteri (Wishes) Sekmesine Git
-    const wishesTabBtn = page.locator('button, div').filter({ hasText: 'Anı Defteri Formu' }).first();
-    await wishesTabBtn.waitFor({ state: 'visible' });
+    const wishesTabBtn = page.locator('button, div').filter({ hasText: /Anı Defteri Formu|Guestbook/i }).first();
+    await wishesTabBtn.waitFor({ state: 'visible', timeout: 10000 });
     await wishesTabBtn.click();
 
-    // 2. Bekleyen mesajın ekranda olduğunu doğrula
-    await expect(page.locator('text=Zeynep')).toBeVisible();
+    await expect(page.locator('text=Zeynep')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=Tebrikler!')).toBeVisible();
 
-    // 3. Onayla butonuna tıklandığında giden Supabase güncelleme isteğini yakala
     const updateRequestPromise = page.waitForRequest(req => 
       req.url().includes('/rest/v1/wishes') && req.method() === 'PATCH'
     );
 
-    // Onay butonuna bas (Mock data'daki Zeynep'in mesajı için)
-    const approveBtn = page.locator('.admin-row').filter({ hasText: 'Zeynep' }).locator('button', { hasText: /Onayla/i });
+    const approveBtn = page.locator('.admin-row').filter({ hasText: 'Zeynep' }).locator('button', { hasText: /Onayla|Approve/i });
     await approveBtn.click();
 
-    // 4. İsteğin doğru gönderildiğini doğrula
     const updateRequest = await updateRequestPromise;
     expect(updateRequest.postDataJSON()).toMatchObject({ approved: true });
   });

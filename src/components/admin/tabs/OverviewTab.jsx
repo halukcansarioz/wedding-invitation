@@ -3,7 +3,7 @@ import { AdminSection } from "../../AdminUI";
 import { useStore } from "../../../store/useStore";
 import { supabase } from "../../../supabaseClient";
 
-export function OverviewTab({ guests, wishes, isEn, setActiveAdminTab }) {
+export function OverviewTab({ guests = [], wishes = [], isEn, setActiveAdminTab }) {
   const adminDraft = useStore((state) => state.adminDraft);
   const [pendingPhotos, setPendingPhotos] = useState(0);
   const [totalPayments, setTotalPayments] = useState(0);

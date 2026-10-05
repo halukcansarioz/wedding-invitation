@@ -1,17 +1,26 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useStore } from '../useStore';
 
 describe('Zustand uiSlice - Özel Modal Yönetimi', () => {
-  
+  let initialState: any;
+
   beforeEach(() => {
-    // Test öncesi mağazayı temizle
+    // Mevcut (saf) durumu yedekle
+    initialState = useStore.getState();
+    
+    // Test öncesi modal state'lerini temizle (true parametresi OLMADAN sadece güncelleme yapıyoruz)
     useStore.setState({ customConfirm: null, customAlert: null, customPrompt: null });
+  });
+
+  afterEach(() => {
+    // Sızıntıyı önlemek için store'u varsayılan duruma (Deep Reset) geri çevir
+    useStore.setState(initialState, true);
   });
 
   it('showAppConfirm çağrıldığında customConfirm durumunu güncellemeli ve resolve fonksiyonunu tutmalı', async () => {
     const { showAppConfirm } = useStore.getState();
     
-    // Modal'ı çağırıp dönen Promise'i değişkene alıyoruz (henüz await yapmıyoruz)
+    // Modal'ı çağırıp dönen Promise'i değişkene alıyoruz
     const confirmPromise = showAppConfirm("Bu işlemi onaylıyor musunuz?", { title: "Onay" });
     
     // State güncellendi mi kontrol et

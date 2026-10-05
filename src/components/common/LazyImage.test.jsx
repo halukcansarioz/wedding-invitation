@@ -1,10 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { LazyImage } from './LazyImage';
 
 describe('LazyImage Bileşeni', () => {
-  it('görsel yüklenmeden önce skeleton göstermeli, yüklenince skeleton kaybolmalı', () => {
+  it('görsel yüklenmeden önce skeleton göstermeli, yüklenince skeleton kaybolmalı', async () => {
     const { container } = render(<LazyImage src="test.jpg" alt="Test Görseli" />);
     
     // Yüklenmeden önce skeleton class'ına sahip element DOM'da olmalı
@@ -17,10 +17,10 @@ describe('LazyImage Bileşeni', () => {
     // load eventini manuel tetikle
     fireEvent.load(img);
 
-    // Yüklendikten sonra skeleton DOM'dan kaldırılmalı
-    expect(container.querySelector('.image-skeleton')).not.toBeInTheDocument();
-    
-    // Resim görünür hale gelmeli
-    expect(img).toHaveStyle('opacity: 1');
+    // Yüklendikten sonra skeleton DOM'dan kaldırılmalı (asenkron durum için waitFor kullanıldı)
+    await waitFor(() => {
+      expect(container.querySelector('.image-skeleton')).not.toBeInTheDocument();
+      expect(img).toHaveStyle('opacity: 1');
+    });
   });
 });

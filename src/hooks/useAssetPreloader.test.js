@@ -4,10 +4,22 @@ import { useAssetPreloader } from './useAssetPreloader';
 
 describe('useAssetPreloader Hook Testleri', () => {
   beforeEach(() => {
-    vi.useFakeTimers(); // Asenkron hataları önlemek için sahte zaman kullanıyoruz
+    vi.useFakeTimers(); 
+    
+    // Daha stabil Image mock yapısı (src atanmadan onload tetiklenmemesi için)
     global.Image = class {
-      constructor() { setTimeout(() => { if (this.onload) this.onload(); }, 10); }
+      constructor() {
+        this._src = '';
+      }
+      set src(value) {
+        this._src = value;
+        setTimeout(() => { if (this.onload) this.onload(); }, 10);
+      }
+      get src() {
+        return this._src;
+      }
     };
+
     const mockCreateElement = document.createElement.bind(document);
     vi.spyOn(document, 'createElement').mockImplementation((tagName) => {
       if (tagName === 'video') {

@@ -5,7 +5,6 @@ import { ThemeTab } from './ThemeTab';
 import { useStore } from '../../../store/useStore';
 
 vi.mock('../../../store/useStore');
-// Gerçek Dropdown yerine kolay tetiklenebilir bir mock
 vi.mock('../../common/UIComponents', () => ({
   Dropdown: ({ value, onChange }) => (
     <select data-testid="mock-dropdown" value={value} onChange={(e) => onChange(e.target.value)}>
@@ -33,16 +32,13 @@ describe('ThemeTab İleri Seviye Admin Bileşen Testleri', () => {
   });
 
   it('Tema kartına tıklandığında document HTML etiketine "data-theme" eklenmeli', () => {
-    render(<ThemeTab isEn={false} />);
+    const { container } = render(<ThemeTab isEn={false} />);
     
-    // Mocklanmış temanın butonunu bul (Dark)
-    const darkThemeButton = screen.getByText('Koyu Tema').closest('button');
+    // Metin yerine data niteliği ile hatasız DOM seçimi
+    const darkThemeButton = container.querySelector('[data-theme-preview="dark"]');
     fireEvent.click(darkThemeButton);
     
-    // Store güncellenmeli
     expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'theme', 'dark');
-    
-    // HTML'in kendisine data-theme attribute'u eklenmeli (Canlı önizleme için)
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 

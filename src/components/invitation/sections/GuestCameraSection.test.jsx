@@ -24,10 +24,24 @@ describe('GuestCameraSection Hata Yönetimi Testi', () => {
       siteData: { invitation: { bride: "Test", groom: "Çift" } }
     }));
 
-    global.Image = class { constructor() { setTimeout(() => { if (this.onload) this.onload(); }, 10); } };
+    // İyileştirilmiş Image mock
+    global.Image = class {
+      constructor() {
+        this._src = '';
+      }
+      set src(value) {
+        this._src = value;
+        // src atandığında küçük bir gecikme ile onload'u tetikle
+        setTimeout(() => { if (this.onload) this.onload(); }, 10);
+      }
+      get src() {
+        return this._src;
+      }
+    };
+
     HTMLCanvasElement.prototype.getContext = vi.fn(() => ({ drawImage: vi.fn(), createLinearGradient: vi.fn(() => ({ addColorStop: vi.fn() })), fillRect: vi.fn(), fillText: vi.fn() }));
     HTMLCanvasElement.prototype.toBlob = vi.fn((cb) => cb(new Blob()));
-    window.URL.createObjectURL = vi.fn();
+    window.URL.createObjectURL = vi.fn().mockReturnValue('blob:http://localhost/test-image');
   });
 
   afterEach(() => {
@@ -37,7 +51,8 @@ describe('GuestCameraSection Hata Yönetimi Testi', () => {
   it('Fotoğraf yüklenirken bir hata oluşursa error uyarısı göstermeli ve butonu serbest bırakmalı', async () => {
     render(<GuestCameraSection />);
     
-    const fileInput = document.querySelector('input[type="file"]');
+    // DÜZELTME: Kırılgan querySelector yerine doğrudan Test ID ile stabil hedefleme
+    const fileInput = screen.getByTestId('camera-input');
     fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'photo.jpg', { type: 'image/jpeg' })] } });
 
     await waitFor(() => {

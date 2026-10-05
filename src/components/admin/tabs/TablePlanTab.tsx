@@ -76,7 +76,8 @@ interface TablePlanTabProps {
   isEn: boolean;
 }
 
-export function TablePlanTab({ guests, assignTable, isEn }: TablePlanTabProps) {
+// guests prop'u artık varsayılan olarak boş dizi ataması ile güvende tutuluyor.
+export function TablePlanTab({ guests = [], assignTable, isEn }: TablePlanTabProps) {
   const { search, setSearch, attendingGuests, unassigned, tables, exportTablePlanPDF } = useAdminTablePlan(guests, isEn);
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -87,7 +88,6 @@ export function TablePlanTab({ guests, assignTable, isEn }: TablePlanTabProps) {
     }
   };
 
-  // Performans: Drag&Drop tetiklendiğinde gereksiz filtreleri çalıştırmamak için useMemo sarmalı
   const getTableGuests = useMemo(() => (num: number) => {
     return attendingGuests.filter(g => String(g.tableNumber) === String(num));
   }, [attendingGuests]);
