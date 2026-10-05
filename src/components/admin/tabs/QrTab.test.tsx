@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '../../../../tests/test-utils';
+import { render, fireEvent } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QrTab } from './QrTab';
 
@@ -22,7 +22,7 @@ describe('QrTab Admin Bileşen Testleri', () => {
   });
 
   it('Genel davetiye linki kopyalama butonunu tetiklemeli', () => {
-    render(
+    const { container } = render(
       <QrTab 
         isEn={false} 
         saveSiteContent={vi.fn()} 
@@ -33,8 +33,11 @@ describe('QrTab Admin Bileşen Testleri', () => {
       />
     );
 
-    const copyBtns = screen.getAllByRole('button', { name: /Linki Kopyala/i });
-    fireEvent.click(copyBtns[0]);
+    // Doğru butonu CSS sınıfı (admin-link-copy-btn) üzerinden seçiyoruz
+    const copyBtn = container.querySelector('.admin-link-copy-btn');
+    expect(copyBtn).toBeInTheDocument();
+    
+    fireEvent.click(copyBtn!);
 
     expect(mockCopyAdminLink).toHaveBeenCalledWith('https://test.com', 'Davetiye linki kopyalandı!');
   });

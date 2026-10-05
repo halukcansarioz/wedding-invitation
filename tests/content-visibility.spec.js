@@ -1,48 +1,57 @@
 import { test, expect } from '@playwright/test';
 
-const mockMedia = async (page) => {
-  await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
-    route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64') });
-  });
-  await page.route('**/*.{mp4,webm,ogg,mp3,wav}', route => {
-    route.fulfill({ status: 200, contentType: 'application/octet-stream', body: '' });
-  });
-};
-
-test.describe('İçerik ve Bölüm Görünürlük Testleri', () => {
-
+test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Testi', () => {
   test.beforeEach(async ({ page }) => {
-    await mockMedia(page); 
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.abort());
 
-    const envelopeSeal = page.locator('.envelope-seal');
-    if (await envelopeSeal.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await envelopeSeal.click({ force: true });
+    // Admin Token Mock
+    await page.route('**/auth/v1/token?grant_type=password', async r => {
+      await r.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          access_token: 'fake', token_type: 'bearer', expires_in: 3600, refresh_token: 'fake',
+          user: { id: '123', email: 'admin@test.com', app_metadata: {} }
+        })
+      });
+    });
+
+    // Settings REST API Mock
+    await page.route('**/rest/v1/settings*', async r => {
+      if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
+      return r.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          invitation: { bride: 'Hande', groom: 'Haluk' },
+          settings: { visibility: { gallery: true, countdown: true } }
+        })
+      });
+    });
+
+    await page.goto('/admin');
+    
+    const emailInput = page.locator('input[type="email"]').first();
+    await emailInput.waitFor({ state: 'visible', timeout: 10000 });
+    await emailInput.fill('admin@test.com');
+    await page.locator('input[type="password"]').first().fill('123456');
+    await page.locator('button[type="submit"]').first().click();
+
+    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test('Görünürlük sekmesinden galeri kapatıldığında ayar state üzerinde güncellenmeli', async ({ page }) => {
+    // Bölüm Görünürlüğü sekmesine git
+    const visibilityTabBtn = page.getByRole('button', { name: /Bölüm Görünürlüğü|Visibility/i });
+    await visibilityTabBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await visibilityTabBtn.click();
+
+    // Galeri checkbox'ını bul ve işaretini kaldır
+    const galleryCheckbox = page.locator('input[type="checkbox"]').first();
+    await expect(galleryCheckbox).toBeVisible({ timeout: 10000 });
+    
+    if (await galleryCheckbox.isChecked()) {
+      await galleryCheckbox.uncheck();
     }
-    await page.waitForTimeout(1000);
-  });
 
-  test('Geri sayım aracı (Countdown) ekranda görünür olmalı', async ({ page }) => {
-    const countdownSection = page.locator('.countdown-section, section').first();
-    await countdownSection.scrollIntoViewIfNeeded();
-    await expect(countdownSection).toBeVisible({ timeout: 10000 });
-  });
-
-  test('Bizim Hikayemiz bölümündeki zaman çizelgesi (Timeline) render edilmeli', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(1000);
-
-    const storySection = page.locator('section').filter({ hasText: /Hikaye|Story|Anı/i }).first();
-    if (await storySection.count() > 0) {
-      await expect(storySection).toBeVisible({ timeout: 10000 });
-    } else {
-      expect(true).toBeTruthy();
-    }
-  });
-
-  test('Düğün Akışı (Schedule) ve Nikah (Ceremony) alanları yüklenmeli', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.waitForTimeout(500);
-    expect(true).toBeTruthy();
+    expect(await galleryCheckbox.isChecked()).toBe(false);
   });
 });

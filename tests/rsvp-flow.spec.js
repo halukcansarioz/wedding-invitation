@@ -12,6 +12,18 @@ test.describe('LCV (RSVP) Formu Uçtan Uca Etkileşimi', () => {
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
     
+    // RSVP formunun butonunu aktif etmek için Turnstile mock'u
+    await page.addInitScript(() => {
+      window.turnstile = {
+        render: (container, options) => {
+          if (options && options.callback) options.callback('mock-turnstile-token');
+          return 'mock-id';
+        },
+        reset: () => {}
+      };
+    });
+    await page.route('**/turnstile/v0/api.js*', route => route.fulfill({ status: 200, body: '' }));
+    
     await page.route('**/functions/v1/submit-form', async route => {
       if (route.request().method() === 'OPTIONS') {
         await route.fulfill({
@@ -75,7 +87,6 @@ test.describe('LCV (RSVP) Formu Uçtan Uca Etkileşimi', () => {
     await expect(submitButton).toBeEnabled({ timeout: 15000 });
     await submitButton.click();
 
-    // Formun işlendiğini ve ağ isteğinin tamamlandığını doğrula
     await page.waitForTimeout(2000);
   });
 });

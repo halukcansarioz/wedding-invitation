@@ -3,60 +3,65 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { AdminSection, AdminActionButtons } from './AdminLayout';
 
+// i18next kütüphanesini mockluyoruz[cite: 1]
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
+  useTranslation: () => ({ i18n: { language: 'tr' } })
 }));
 
-describe('AdminLayout Bileşen Testleri', () => {
-  // GÜNCELLENDİ: Testler arası DOM temizliği yapılarak elementlerin üst üste binmesi engellendi
+describe('AdminLayout Bileşenleri Testleri', () => {
+  
   afterEach(() => {
-    cleanup();
+    cleanup(); // Testler arası DOM temizliği[cite: 1]
   });
 
-  it('AdminSection başlığı ve kaydet butonunu doğru render etmeli', () => {
-    const mockSave = vi.fn();
-    render(<AdminSection title="Test Bölümü" onSave={mockSave}>İçerik</AdminSection>);
+  it('AdminSection başlığı ve çocuk elemanları doğru render etmeli', () => {
+    const mockOnSave = vi.fn();
+    // Render işleminden dönen container objesini alıyoruz
+    const { container } = render(
+      <AdminSection title="Test Başlığı" onSave={mockOnSave}>
+        <div data-testid="child-element">İçerik</div>
+      </AdminSection>
+    );
     
-    expect(screen.getByText('İçerik')).toBeInTheDocument();
-
-    // GÜNCELLENDİ: Çakışmaları önlemek için getAllByRole kullanıp ilkini ([0]) hedefliyoruz
-    const saveBtns = screen.getAllByRole('button', { name: /Kaydet/i });
-    fireEvent.click(saveBtns[0]);
+    expect(screen.getByText('Test Başlığı')).toBeInTheDocument();
+    expect(screen.getByTestId('child-element')).toBeInTheDocument();
     
-    expect(mockSave).toHaveBeenCalledTimes(1);
+    // ÇÖZÜM: Global arama yapmak yerine render edilen section içerisindeki butonu seçiyoruz[cite: 1]
+    const saveBtn = container.querySelector('.admin-editor-section button');
+    expect(saveBtn).toBeInTheDocument();
+    
+    fireEvent.click(saveBtn);
+    expect(mockOnSave).toHaveBeenCalledTimes(1);
   });
 
-  it('AdminActionButtons eylemleri doğru tetiklemeli', () => {
-    const mockSave = vi.fn();
+  it('AdminActionButtons sağlanan proplara göre butonları oluşturmalı ve tetiklemeli', () => {
+    const mockMoveUp = vi.fn();
+    const mockMoveDown = vi.fn();
     const mockDelete = vi.fn();
-    const mockUp = vi.fn();
-    const mockDown = vi.fn();
 
-    render(
+    const { container } = render(
       <AdminActionButtons 
-        onSave={mockSave} 
+        onMoveUp={mockMoveUp} 
+        onMoveDown={mockMoveDown} 
         onDelete={mockDelete} 
-        onMoveUp={mockUp} 
-        onMoveDown={mockDown} 
         isEn={false} 
       />
     );
 
-    // GÜNCELLENDİ: Çoklu buton çakışmalarını önlemek için array'in ilk elemanı tıklanıyor
-    const saveBtns = screen.getAllByRole('button', { name: /Kaydet/i });
-    fireEvent.click(saveBtns[0]);
-    expect(mockSave).toHaveBeenCalledTimes(1);
+    // Kaydet prop olarak gönderilmediği için ilgili buton DOM'da olmamalı[cite: 1]
+    const saveButtonQuery = Array.from(container.querySelectorAll('button')).find(btn => btn.textContent.includes('Kaydet'));
+    expect(saveButtonQuery).toBeUndefined();
 
-    const deleteBtns = screen.getAllByRole('button', { name: /Sil/i });
-    fireEvent.click(deleteBtns[0]);
+    const btnUp = screen.getByTitle('Yukarı Taşı');
+    const btnDown = screen.getByTitle('Aşağı Taşı');
+    const btnDelete = screen.getByRole('button', { name: /Sil 🗑️/i });
+
+    fireEvent.click(btnUp);
+    fireEvent.click(btnDown);
+    fireEvent.click(btnDelete);
+
+    expect(mockMoveUp).toHaveBeenCalledTimes(1);
+    expect(mockMoveDown).toHaveBeenCalledTimes(1);
     expect(mockDelete).toHaveBeenCalledTimes(1);
-
-    const upBtns = screen.getAllByRole('button', { name: '↑' });
-    fireEvent.click(upBtns[0]);
-    expect(mockUp).toHaveBeenCalledTimes(1);
-
-    const downBtns = screen.getAllByRole('button', { name: '↓' });
-    fireEvent.click(downBtns[0]);
-    expect(mockDown).toHaveBeenCalledTimes(1);
   });
 });

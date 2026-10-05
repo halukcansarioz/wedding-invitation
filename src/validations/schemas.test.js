@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getRsvpSchema } from './schemas';
-import { NOTE_MAX_LENGTH } from '../config/constants';
+import { getRsvpSchema, getWishSchema } from './schemas';
+import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH } from '../config/constants';
 
 const mockT = (key) => key;
 
@@ -29,7 +29,29 @@ describe('RSVP Zod Şeması İleri Seviye Sınır (Boundary) Testleri', () => {
     const honeypotData = { name: "Bot", attendance: "Katılacağım", honeypot: "spam-data" };
     const result = rsvpSchema.safeParse(honeypotData);
     
-    // Zod şeması honeypot'u optional olarak tanımladığı için success true döner, asıl filtreleme form onSubmit'te yapılır.
     expect(result.success).toBe(true);
+  });
+});
+
+describe('WishSchema Ek Sınır ve Validasyon Testleri', () => {
+  const wishSchema = getWishSchema(mockT);
+
+  it('Anı defteri mesajı 2 karakterden kısa ise (minimum sınır ihlali) reddetmeli', () => {
+    const invalidData = { name: "Ahmet", message: "A" };
+    const result = wishSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
+  });
+
+  it('Anı defteri mesajı izin verilen maksimum uzunluğu (WISH_MAX_LENGTH) aşarsa reddetmeli', () => {
+    const longMessage = "a".repeat(WISH_MAX_LENGTH + 1);
+    const invalidData = { name: "Ahmet", message: longMessage };
+    const result = wishSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
+  });
+
+  it('İsim alanı 2 karakterden kısa olduğunda hata vermeli', () => {
+    const invalidData = { name: "A", message: "Tebrikler, çok mutlu olun!" };
+    const result = wishSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
   });
 });
