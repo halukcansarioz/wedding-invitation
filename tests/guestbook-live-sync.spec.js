@@ -16,22 +16,22 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     });
     
     await pageLive.goto('/live', { waitUntil: 'domcontentloaded' });
-    
-    // DÜZELTME: i18n için "Waiting for memories" eklendi.
     await expect(pageLive.locator('text=/Anılar bekleniyor|Waiting for memories/i')).toBeVisible({ timeout: 15000 });
 
     const contextForm = await browser.newContext();
     const pageForm = await contextForm.newPage();
     await mockMedia(pageForm);
     
-    await pageForm.route('**/functions/v1/submit-form', async route => {
-      await pageLive.route('**/rest/v1/wishes*', async updateRoute => {
-        await updateRoute.fulfill({ 
-          status: 200, 
-          contentType: 'application/json', 
-          body: JSON.stringify([{ id: 'msg1', name: 'Canlı Test', message: 'Ekranda belirecek mesaj', approved: true }]) 
-        });
+    // DÜZELTME: Route'lar asenkron context sorununu engellemek için birbirinden bağımsız hale getirildi.
+    await pageLive.route('**/rest/v1/wishes*', async updateRoute => {
+      await updateRoute.fulfill({ 
+        status: 200, 
+        contentType: 'application/json', 
+        body: JSON.stringify([{ id: 'msg1', name: 'Canlı Test', message: 'Ekranda belirecek mesaj', approved: true }]) 
       });
+    });
+
+    await pageForm.route('**/functions/v1/submit-form', async route => {
       await route.fulfill({ status: 200, body: JSON.stringify({ success: true, data: { id: 'msg1' } }) });
     });
 
@@ -47,7 +47,6 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     await wishesSection.locator('input[name="name"]').fill('Canlı Test');
     await wishesSection.locator('textarea[name="message"]').fill('Ekranda belirecek mesaj');
     
-    // DÜZELTME: Turnstile Bypass - Offline modu simüle ederek Cloudflare captcha'sını devre dışı bırakıyoruz.
     await pageForm.evaluate(() => {
       Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
     });

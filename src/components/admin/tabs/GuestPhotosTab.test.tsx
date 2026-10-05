@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GuestPhotosTab } from './GuestPhotosTab';
 import { useAdminGuestPhotos } from '../../../hooks/useAdminGuestPhotos';
 
@@ -24,7 +24,9 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
     });
 
     render(<GuestPhotosTab isEn={false} />);
-    expect(screen.getByText('Yükleniyor...')).toBeInTheDocument();
+    
+    // GÜNCELLENDİ: Yeni Spinner ve metin tasarımına uygun regex araması
+    expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeInTheDocument();
   });
 
   it('Bekleyen ve Onaylanan fotoğrafları listelemeli ve buton aksiyonlarını tetiklemeli', () => {
@@ -38,16 +40,13 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
 
     render(<GuestPhotosTab isEn={false} />);
     
-    // Bekleyen ve onaylanan başlıklarının sayıları doğru mu?
     expect(screen.getByText('Onay Bekleyenler (1)')).toBeInTheDocument();
     expect(screen.getByText('Yayında Olanlar (1)')).toBeInTheDocument();
 
-    // Onayla butonuna tıklama testi
-    const approveBtn = screen.getByRole('button', { name: /Onayla ✅/i });
+    const approveBtn = screen.getByRole('button', { name: /Onayla/i });
     fireEvent.click(approveBtn);
     expect(mockApprovePhoto).toHaveBeenCalledWith('1');
 
-    // Kaldır butonuna tıklama testi (Onaylı fotoğrafı silme)
     const removeBtn = screen.getByRole('button', { name: /Kaldır/i });
     fireEvent.click(removeBtn);
     expect(mockRejectPhoto).toHaveBeenCalledWith('2', 'onayli.jpg');

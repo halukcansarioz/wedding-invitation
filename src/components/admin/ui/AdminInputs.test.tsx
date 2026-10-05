@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { AdminField, AdminTextarea, AdminCheckbox } from './AdminInputs';
+import { AdminField, AdminCheckbox } from './AdminInputs';
 
 describe('AdminInputs Bileşen Testleri', () => {
   it('AdminField değere göre inputu doldurmalı ve değişimde onChange tetiklemeli', () => {

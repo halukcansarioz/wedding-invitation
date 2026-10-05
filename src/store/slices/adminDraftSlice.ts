@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand';
+import { produce } from 'immer';
 import { MainStoreState, AdminDraftSlice } from '../storeTypes';
 import { loadStoredSiteData, normalizeSiteData } from '../../utils/helpers';
 import { saveSettingsToDatabase } from '../../services/database';
@@ -17,59 +18,44 @@ export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDr
   dataImportText: "",
   setDataImportText: (text) => set({ dataImportText: text }),
 
-  updateDraftObject: (group, key, value) => set((state) => ({
-    adminDraft: {
-      ...state.adminDraft,
-      [group]: {
-        ...(state.adminDraft[group] as Record<string, any>),
-        [key]: value
-      }
+  updateDraftObject: (group, key, value) => set(produce((state: MainStoreState) => {
+    if (state.adminDraft[group]) {
+      (state.adminDraft[group] as any)[key] = value;
     }
   })),
 
-  updateDraftArrayItem: (arrayKey, index, key, value) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: arrayTarget.map((item, i) => i === index ? { ...item, [key]: value } : item)
-      }
-    };
-  }),
+  updateDraftArrayItem: (arrayKey, index, key, value) => set(produce((state: MainStoreState) => {
+    const arrayTarget = state.adminDraft[arrayKey] as any[];
+    if (arrayTarget && arrayTarget[index]) {
+      arrayTarget[index][key] = value;
+    }
+  })),
 
-  addDraftArrayItem: (arrayKey, item) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: [...arrayTarget, item]
-      }
-    };
-  }),
+  addDraftArrayItem: (arrayKey, item) => set(produce((state: MainStoreState) => {
+    if (!state.adminDraft[arrayKey]) {
+      (state.adminDraft[arrayKey] as any) = [];
+    }
+    (state.adminDraft[arrayKey] as any[]).push(item);
+  })),
 
-  removeDraftArrayItem: (arrayKey, index) => set((state) => {
-    const arrayTarget = (state.adminDraft[arrayKey] || []) as any[];
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: arrayTarget.filter((_, i) => i !== index)
-      }
-    };
-  }),
+  removeDraftArrayItem: (arrayKey, index) => set(produce((state: MainStoreState) => {
+    const arrayTarget = state.adminDraft[arrayKey] as any[];
+    if (arrayTarget) {
+      arrayTarget.splice(index, 1);
+    }
+  })),
 
-  moveDraftArrayItem: (arrayKey, index, direction) => set((state) => {
-    const newArray = [...((state.adminDraft[arrayKey] || []) as any[])];
-    if (index + direction < 0 || index + direction >= newArray.length) return state;
-    const temp = newArray[index];
-    newArray[index] = newArray[index + direction];
-    newArray[index + direction] = temp;
-    return {
-      adminDraft: {
-        ...state.adminDraft,
-        [arrayKey]: newArray
-      }
-    };
-  }),
+  moveDraftArrayItem: (arrayKey, index, direction) => set(produce((state: MainStoreState) => {
+    const arrayTarget = state.adminDraft[arrayKey] as any[];
+    if (!arrayTarget) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= arrayTarget.length) return;
+    
+    // Immer ile yer değiştirme işlemi
+    const temp = arrayTarget[index];
+    arrayTarget[index] = arrayTarget[newIndex];
+    arrayTarget[newIndex] = temp;
+  })),
 
   saveSiteContent: async (isEn) => {
     const { adminDraft, setSiteData, setAdminDraft } = get();

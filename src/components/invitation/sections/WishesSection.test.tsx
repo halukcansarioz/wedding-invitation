@@ -5,13 +5,21 @@ import { WishesSection } from './WishesSection';
 import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
 
 vi.mock('../../../hooks/useAudioRecorder');
-vi.mock('@marsidev/react-turnstile', () => ({ Turnstile: ({ onSuccess }) => <button onClick={() => onSuccess('fake-token')}>Token Al</button> }));
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } }) }));
+vi.mock('@marsidev/react-turnstile', () => ({ 
+  Turnstile: ({ onSuccess }: any) => <button onClick={() => onSuccess('fake-token')}>Token Al</button> 
+}));
+vi.mock('react-i18next', () => ({ 
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
+}));
 
 describe('WishesSection Bileşen Testleri', () => {
   it('Ses kaydı devam ediyorken Durdur (Stop) butonunu göstermeli', () => {
-    useAudioRecorder.mockReturnValue({
-      isRecording: true, recordingTime: 15, startRecording: vi.fn(), stopRecording: vi.fn(), clearRecording: vi.fn()
+    (useAudioRecorder as any).mockReturnValue({
+      isRecording: true, 
+      recordingTime: 15, 
+      startRecording: vi.fn(), 
+      stopRecording: vi.fn(), 
+      clearRecording: vi.fn()
     });
 
     render(<WishesSection submitWish={vi.fn()} approvedWishes={[]} />);

@@ -26,7 +26,7 @@ describe('IntroPage Bileşen Testleri', () => {
   });
 
   afterEach(() => {
-    cleanup(); // Testler arası DOM temizliği
+    cleanup();
   });
 
   it('Gelin ve damat ismini ekranda doğru şekilde göstermeli', () => {
@@ -39,6 +39,7 @@ describe('IntroPage Bileşen Testleri', () => {
     render(<IntroPage {...mockProps} isHeroLoaded={false} />);
     const button = screen.getByRole('button');
     
+    // GÜNCELLENDİ: Spinner SVG'si eklendiği için regex ile metin içeriği doğrulandı
     expect(button).toHaveTextContent(/Yükleniyor/i);
     
     fireEvent.click(button);

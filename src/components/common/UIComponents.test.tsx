@@ -12,8 +12,9 @@ describe('UIComponents Bileşen Testleri', () => {
     ];
 
     render(<OptionGroup value="1" options={options} onChange={mockOnChange} />);
-    
-    const btn2 = screen.getByRole('button', { name: 'Seçenek 2' });
+
+    // GÜNCELLENDİ: A11y iyileştirmemiz ile rol 'radio' olarak değiştirildi
+    const btn2 = screen.getByRole('radio', { name: 'Seçenek 2' });
     fireEvent.click(btn2);
 
     expect(mockOnChange).toHaveBeenCalledWith('2');
@@ -22,19 +23,19 @@ describe('UIComponents Bileşen Testleri', () => {
   it('Dropdown tıklandığında menüyü açıp seçenekleri göstermeli', () => {
     const mockOnChange = vi.fn();
     const options = [
-      { label: 'Elma', value: 'apple' },
-      { label: 'Armut', value: 'pear' }
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' }
     ];
 
-    const { container } = render(<Dropdown value="apple" options={options} onChange={mockOnChange} />);
-    
-    // Global document araması yerine izolasyonlu container kullanılıyor
-    const dropdownBtn = container.querySelector('.admin-custom-select-button');
+    render(<Dropdown value="a" options={options} onChange={mockOnChange} />);
+
+    const dropdownBtn = screen.getByText('A');
     fireEvent.click(dropdownBtn);
 
-    expect(screen.getByText('Armut')).toBeInTheDocument();
+    const optionB = screen.getByRole('option', { name: 'B' });
+    expect(optionB).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('Armut'));
-    expect(mockOnChange).toHaveBeenCalledWith('pear');
+    fireEvent.click(optionB);
+    expect(mockOnChange).toHaveBeenCalledWith('b');
   });
 });

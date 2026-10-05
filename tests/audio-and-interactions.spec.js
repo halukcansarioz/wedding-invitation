@@ -28,11 +28,17 @@ test.describe('Sesli Mesaj ve Etkileşim Testleri', () => {
     
     if (await recordButton.isVisible({ timeout: 5000 }).catch(() => false)) {
       await recordButton.click();
-      const stopButton = page.locator('button', { hasText: /Durdur|Stop|⏹️/i });
-      if (await stopButton.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await stopButton.click();
-      }
+      
+      // Kaydın başlamasını bekle ve Durdur butonunu bul
+      const stopButton = page.locator('button', { hasText: /Durdur|Stop|⏹/i }).first();
+      await expect(stopButton).toBeVisible({ timeout: 10000 });
+      
+      // Kaydı durdur
+      await stopButton.click();
+      
+      // Çöp kutusu (Sil) elemanının DOM'a eklenmesini bekle
+      const deleteButton = page.locator('button', { hasText: '🗑️' }).first();
+      await expect(deleteButton).toBeVisible({ timeout: 10000 });
     }
-    expect(true).toBeTruthy(); // Test ortamı kısıtlamalarını esneten güvenli bitiş
   });
 });

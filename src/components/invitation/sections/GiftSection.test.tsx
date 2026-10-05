@@ -5,11 +5,11 @@ import { GiftSection } from './GiftSection';
 import { useStore } from '../../../store/useStore';
 
 vi.mock('framer-motion', () => ({
-  m: { section: ({ children, className }) => <section className={className}>{children}</section> }
+  m: { section: ({ children, className }: any) => <section className={className}>{children}</section> }
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key, i18n: { language: 'tr' } })
+  useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'tr' } })
 }));
 
 vi.mock('../../../supabaseClient', () => ({
@@ -32,19 +32,21 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    useStore.mockReturnValue({ visibility: { creditCard: true } });
+    (useStore as any).mockReturnValue({ visibility: { creditCard: true } });
     
-    delete window.location;
-    window.location = { href: '' };
+    Object.defineProperty(window, 'location', {
+      value: { href: '' },
+      writable: true
+    });
   });
 
   afterEach(() => {
     cleanup();
   });
 
-  it('IBAN kopyalama butonu çalıştığında metin "Kopyalandı" olmalı', () => {
+  it('IBAN kopyalama butonu çalıştığında metin "Kopyalandı" olmalı', async () => {
     Object.assign(navigator, {
-      clipboard: { writeText: vi.fn().mockResolvedValue() },
+      clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     });
 
     render(<GiftSection giftData={mockGiftData} />);
@@ -52,7 +54,9 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
     const copyBtn = screen.getByRole('button', { name: 'ui.copyIban' });
     fireEvent.click(copyBtn);
     
-    expect(screen.getByRole('button', { name: 'ui.copied' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'ui.copied' })).toBeInTheDocument();
+    });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith('TR000');
   });
 
@@ -62,25 +66,23 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
     render(<GiftSection giftData={mockGiftData} />);
     
     const creditCardBtn = screen.getByRole('button', { name: /Kredi Kartı ile Gönder/i });
-    expect(creditCardBtn).toBeInTheDocument();
-
     fireEvent.click(creditCardBtn);
 
     expect(window.prompt).toHaveBeenCalledTimes(1);
 
     const { supabase } = await import('../../../supabaseClient');
 
+    // GÜNCELLENDİ: Supabase API çağrısının DOM'u asenkron etkileme ihtimaline karşı waitFor içinde topladık.
     await waitFor(() => {
       expect(supabase.functions.invoke).toHaveBeenCalledWith('create-payment', expect.objectContaining({
         body: expect.objectContaining({ amount: 500 })
       }));
+      expect(window.location.href).toBe('https://stripe.test');
     });
-
-    expect(window.location.href).toBe('https://stripe.test');
   });
 
   it('Store görünürlük ayarında kredi kartı kapalıysa butonu gizlemeli', () => {
-    useStore.mockReturnValue({ visibility: { creditCard: false } });
+    (useStore as any).mockReturnValue({ visibility: { creditCard: false } });
     render(<GiftSection giftData={mockGiftData} />);
     
     expect(screen.queryByRole('button', { name: /Kredi Kartı ile Gönder/i })).not.toBeInTheDocument();

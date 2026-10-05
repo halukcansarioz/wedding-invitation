@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '../../tests/test-utils';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import LandingPage from './LandingPage';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +26,13 @@ describe('LandingPage Bileşen Testleri', () => {
 
   beforeEach(() => {
     mockNavigate = vi.fn();
-    useNavigate.mockReturnValue(mockNavigate);
+    vi.mocked(useNavigate).mockReturnValue(mockNavigate);
+  });
+
+  // GÜNCELLENDİ: Testler arası sayfa temizliği eklendi (Hayalet elementler engellendi)
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
   });
 
   it('Tanıtım metinlerini ve özellikleri doğru render etmeli', () => {
@@ -41,6 +47,7 @@ describe('LandingPage Bileşen Testleri', () => {
   it('Demo İncele butonlarına tıklandığında yönlendirme (navigate) yapmalı', () => {
     render(<LandingPage />);
     
+    // GÜNCELLENDİ: getAllByRole kullanılarak güvenli seçim yapıldı
     const demoButtons = screen.getAllByRole('button', { name: /Demo İncele|Hemen Ücretsiz Dene/i });
     
     fireEvent.click(demoButtons[0]);
@@ -50,8 +57,9 @@ describe('LandingPage Bileşen Testleri', () => {
   it('Admin Girişi butonuna tıklandığında admin paneline yönlendirmeli', () => {
     render(<LandingPage />);
     
-    const adminBtn = screen.getByRole('button', { name: /Admin Girişi/i });
-    fireEvent.click(adminBtn);
+    // GÜNCELLENDİ: getAllByRole kullanılarak güvenli seçim yapıldı
+    const adminBtns = screen.getAllByRole('button', { name: /Admin Girişi/i });
+    fireEvent.click(adminBtns[0]);
     
     expect(mockNavigate).toHaveBeenCalledWith('/demo-cift/admin');
   });

@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { triggerConfetti } from "../../utils/helpers";
+import { Spinner } from "../common/UIComponents";
 
 export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
   const { t, i18n } = useTranslation();
@@ -84,8 +85,10 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
         >
           <span 
             style={{ 
-              display: 'block', 
-              textAlign: 'center', 
+              display: 'flex', 
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
               lineHeight: '1.2',
               color: '#ffffff', 
               WebkitTextFillColor: '#ffffff',
@@ -95,7 +98,12 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
               letterSpacing: '0.5px'
             }}
           >
-            {!isHeroLoaded ? (isEn ? "Loading..." : "Yükleniyor...") : openText}
+            {!isHeroLoaded ? (
+              <>
+                <Spinner size={18} color="#ffffff" />
+                {isEn ? "Loading..." : "Yükleniyor..."}
+              </>
+            ) : openText}
           </span>
         </button>
       </div>

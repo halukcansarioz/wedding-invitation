@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
+import { Spinner } from "../common/UIComponents";
 
 // Sekmeleri (Tabs) asenkron olarak (Lazy Load) yüklüyoruz.
 const OverviewTab = lazy(() => import("./tabs").then(m => ({ default: m.OverviewTab })));
@@ -64,7 +65,12 @@ export function AdminPanelContent(props: AdminPanelContentProps) {
   };
 
   return (
-    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center", color: "var(--rose-deep)" }}>{isEn ? "Loading Module..." : "Modül Yükleniyor..."}</div>}>
+    <Suspense fallback={
+      <div style={{ padding: "60px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", color: "var(--rose-deep)" }}>
+        <Spinner size={40} />
+        <span style={{ fontWeight: 500, fontSize: "16px" }}>{isEn ? "Loading Module..." : "Modül Yükleniyor..."}</span>
+      </div>
+    }>
       {renderTab()}
     </Suspense>
   );

@@ -7,8 +7,15 @@ import { triggerConfetti } from "../../../utils/helpers";
 import { WISH_MAX_LENGTH } from "../../../config/constants";
 import { getWishSchema } from "../../../validations/schemas";
 import { useAudioRecorder } from "../../../hooks/useAudioRecorder";
+import { Wish } from "../../../types";
 
-export const WishesSection = memo(function WishesSection({ copy, submitWish, approvedWishes }) {
+interface WishesSectionProps {
+  copy?: Record<string, string>;
+  submitWish: (data: any) => Promise<void>;
+  approvedWishes: Wish[];
+}
+
+export const WishesSection = memo(function WishesSection({ copy, submitWish, approvedWishes }: WishesSectionProps) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
@@ -26,8 +33,9 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
   });
 
   const currentMessage = watch("message") || "";
+  const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     if (data.honeypot) return;
     if (!turnstileToken && navigator.onLine) return;
 
@@ -44,7 +52,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
     setFormKey(prev => prev + 1);
   };
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
@@ -60,13 +68,13 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
 
         <div style={{ width: '100%' }}>
           <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-          {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+          {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name?.message as string}</span>}
         </div>
         
         <div className="field-with-counter">
           <Controller name="message" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>} />
           <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
-          {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message.message}</span>}
+          {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message?.message as string}</span>}
         </div>
 
         {/* SESLİ MESAJ ALANI */}
@@ -84,7 +92,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
             
             {isRecording && (
               <button type="button" onClick={stopRecording} className="main-button" style={{ margin: 0, borderRadius: '50px', padding: '8px 24px', background: '#e74c3c', borderColor: '#e74c3c', animation: 'pulse 1.5s infinite' }}>
-                ⏹️ {isEn ? "Stop" : "Durdur"} ({formatTime(recordingTime)})
+                ⏹️️ {isEn ? "Stop" : "Durdur"} ({formatTime(recordingTime)})
               </button>
             )}
 
@@ -100,7 +108,12 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
         </div>
 
         <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-          <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
+          <Turnstile 
+            siteKey={TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
+            onSuccess={(token) => setTurnstileToken(token)} 
+            onExpire={() => setTurnstileToken("")} 
+            options={{ appearance: "interaction-only" }} // <-- GÜNCELLENDİ: Çirkin Yükleniyor UIsini gizler
+          />
         </div>
         
         <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
@@ -112,7 +125,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
         {wishes.length === 0 ? (
           <p className="empty-text">{t('ui.noWishes')}</p>
         ) : (
-          wishes.slice(0, 4).map((wish) => (
+          wishes.slice(0, 4).map((wish: any) => (
             <div className="wish-item" key={wish.id}>
               <p>"{wish.message}"</p>
               {wish.audioUrl && (

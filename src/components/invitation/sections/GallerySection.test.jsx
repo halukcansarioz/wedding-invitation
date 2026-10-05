@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '../../../../tests/test-utils';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { GallerySection } from './GallerySection';
 
 vi.mock('framer-motion', () => ({
@@ -15,6 +15,11 @@ describe('GallerySection Bileşen Testleri', () => {
   const mockInvitation = {
     gallery: ['img1.jpg', 'img2.jpg', 'img3.jpg']
   };
+
+  // GÜNCELLENDİ: Testler arası DOM temizliği eklenerek hayalet görsellerin kalması engellendi
+  afterEach(() => {
+    cleanup();
+  });
 
   it('Galerideki fotoğrafları render etmeli ve tıklanınca Lightbox açılmalı', () => {
     render(<GallerySection invitation={mockInvitation} copy={{ galleryTitle: "Galerimiz" }} />);

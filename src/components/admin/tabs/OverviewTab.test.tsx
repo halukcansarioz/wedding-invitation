@@ -13,14 +13,14 @@ vi.mock('../../../supabaseClient', () => ({
       if (table === 'guest_photos') {
         return {
           select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({ count: 5, data: [] }) // 5 bekleyen fotoğraf
+          eq: vi.fn().mockResolvedValue({ count: 5, data: [] })
         };
       }
       if (table === 'payments') {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockResolvedValue({ 
-            data: [{ amount: '500' }, { amount: '1500' }] // Toplam 2000 TL
+            data: [{ amount: '500' }, { amount: '1500' }] 
           })
         };
       }
@@ -30,14 +30,14 @@ vi.mock('../../../supabaseClient', () => ({
 }));
 
 describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
-  let mockSetActiveTab;
+  let mockSetActiveTab: any;
 
   beforeEach(() => {
     mockSetActiveTab = vi.fn();
-    useStore.mockImplementation((selector) => selector({
+    (useStore as any).mockImplementation((selector: any) => selector({
       adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } }
     }));
-    vi.spyOn(window, 'open').mockImplementation(() => {});
+    vi.spyOn(window, 'open').mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -49,21 +49,22 @@ describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
     render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
     
     await waitFor(() => {
-      // 5 bekleyen fotoğraf (1. satırdaki mock)
       expect(screen.getByText('5')).toBeInTheDocument();
-      
-      // Toplam ödeme hesaplaması: 500 + 1500 = 2000 (Formatlanmış hali 2.000)
       const formattedTotal = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(2000);
       expect(screen.getByText(formattedTotal)).toBeInTheDocument();
     });
   });
 
-  it('Barkovizyonu Başlat butonuna tıklandığında yeni sekmede /live rotasını açmalı', () => {
-    // Window lokasyonunu simüle et
+  it('Barkovizyonu Başlat butonuna tıklandığında yeni sekmede /live rotasını açmalı', async () => {
     Object.defineProperty(window, 'location', { value: { pathname: '/demo' }, writable: true });
     
     render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
     
+    // GÜNCELLENDİ: Act uyarısını kesmek için tıklamadan önce asenkron işlemlerin oturmasını bekliyoruz.
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
     const liveBtn = screen.getByRole('button', { name: /Barkovizyonu Başlat/i });
     fireEvent.click(liveBtn);
 
