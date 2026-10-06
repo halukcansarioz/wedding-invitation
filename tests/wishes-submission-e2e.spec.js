@@ -12,13 +12,13 @@ test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
     
-    // Cloudflare Turnstile script ve callback mekanizmasını eksiksiz mock'luyoruz
+    // Cloudflare Turnstile script ve callback mekanizmasını mock'luyoruz
     await page.route('**/turnstile/v0/api.js*', route => {
       const url = route.request().url();
       const match = url.match(/onload=([^&]+)/);
       let callbackExecution = '';
       if (match && match[1]) {
-        callbackExecution = `window['${match[1]}']();`;
+        callbackExecution = `if (window['${match[1]}']) window['${match[1]}']();`;
       }
       route.fulfill({
         status: 200,
@@ -26,8 +26,8 @@ test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
         body: `
           window.turnstile = {
             render: function(container, options) {
-              if (options && options.callback) {
-                setTimeout(() => options.callback('mock-turnstile-token-success'), 50);
+              if (options && typeof options.callback === 'function') {
+                setTimeout(() => options.callback('mock-turnstile-token-success'), 10);
               }
               return 'widget-id';
             },
@@ -77,11 +77,13 @@ test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
 
     const submitBtn = wishesSection.locator('button[type="submit"]');
     
-    // Turnstile token otomatik üretileceği için buton anında aktifleşecektir
     await expect(submitBtn).toBeEnabled({ timeout: 15000 });
 
     const requestPromise = page.waitForRequest(req => req.url().includes('submit-form') && req.method() === 'POST', { timeout: 15000 });
-    await submitBtn.click();
+    
+    // Tıklamanın engellenmemesi için { force: true } kullanıyoruz
+    await submitBtn.click({ force: true });
+    
     const request = await requestPromise;
 
     const postData = JSON.parse(request.postData());

@@ -41,7 +41,7 @@ TimeoutError: page.waitForRequest: Timeout 15000ms exceeded while waiting for ev
       - heading "Time Left Until Our Wedding" [level=2] [ref=e40]
       - generic [ref=e41]:
         - generic [ref=e42]:
-          - strong [ref=e43]: "275"
+          - strong [ref=e43]: "274"
           - generic [ref=e44]: Days
         - generic [ref=e45]:
           - strong [ref=e46]: "2"
@@ -50,7 +50,7 @@ TimeoutError: page.waitForRequest: Timeout 15000ms exceeded while waiting for ev
           - strong [ref=e49]: "36"
           - generic [ref=e50]: Mins
         - generic [ref=e51]:
-          - strong [ref=e52]: "50"
+          - strong [ref=e52]: "44"
           - generic [ref=e53]: Secs
     - generic [ref=e54]:
       - paragraph [ref=e55]: Invitation
@@ -238,13 +238,13 @@ TimeoutError: page.waitForRequest: Timeout 15000ms exceeded while waiting for ev
   12 |   test.beforeEach(async ({ page }) => {
   13 |     await mockMedia(page);
   14 |     
-  15 |     // Cloudflare Turnstile script ve callback mekanizmasını eksiksiz mock'luyoruz
+  15 |     // Cloudflare Turnstile script ve callback mekanizmasını mock'luyoruz
   16 |     await page.route('**/turnstile/v0/api.js*', route => {
   17 |       const url = route.request().url();
   18 |       const match = url.match(/onload=([^&]+)/);
   19 |       let callbackExecution = '';
   20 |       if (match && match[1]) {
-  21 |         callbackExecution = `window['${match[1]}']();`;
+  21 |         callbackExecution = `if (window['${match[1]}']) window['${match[1]}']();`;
   22 |       }
   23 |       route.fulfill({
   24 |         status: 200,
@@ -252,8 +252,8 @@ TimeoutError: page.waitForRequest: Timeout 15000ms exceeded while waiting for ev
   26 |         body: `
   27 |           window.turnstile = {
   28 |             render: function(container, options) {
-  29 |               if (options && options.callback) {
-  30 |                 setTimeout(() => options.callback('mock-turnstile-token-success'), 50);
+  29 |               if (options && typeof options.callback === 'function') {
+  30 |                 setTimeout(() => options.callback('mock-turnstile-token-success'), 10);
   31 |               }
   32 |               return 'widget-id';
   33 |             },
@@ -303,21 +303,23 @@ TimeoutError: page.waitForRequest: Timeout 15000ms exceeded while waiting for ev
   77 | 
   78 |     const submitBtn = wishesSection.locator('button[type="submit"]');
   79 |     
-  80 |     // Turnstile token otomatik üretileceği için buton anında aktifleşecektir
-  81 |     await expect(submitBtn).toBeEnabled({ timeout: 15000 });
-  82 | 
-> 83 |     const requestPromise = page.waitForRequest(req => req.url().includes('submit-form') && req.method() === 'POST', { timeout: 15000 });
+  80 |     await expect(submitBtn).toBeEnabled({ timeout: 15000 });
+  81 | 
+> 82 |     const requestPromise = page.waitForRequest(req => req.url().includes('submit-form') && req.method() === 'POST', { timeout: 15000 });
      |                                 ^ TimeoutError: page.waitForRequest: Timeout 15000ms exceeded while waiting for event "request"
-  84 |     await submitBtn.click();
-  85 |     const request = await requestPromise;
-  86 | 
-  87 |     const postData = JSON.parse(request.postData());
-  88 |     expect(postData.type).toBe('wish');
-  89 |     expect(postData.data.name).toBe('E2E Test Kullanıcısı');
-  90 |     expect(postData.data.message).toBe('Playwright üzerinden gönderilen otomatik test mesajı.');
-  91 | 
-  92 |     await expect(wishesSection.locator('input[name="name"]')).toHaveValue('', { timeout: 10000 });
-  93 |     await expect(wishesSection.locator('textarea[name="message"]')).toHaveValue('', { timeout: 10000 });
-  94 |   });
-  95 | });
+  83 |     
+  84 |     // Tıklamanın engellenmemesi için { force: true } kullanıyoruz
+  85 |     await submitBtn.click({ force: true });
+  86 |     
+  87 |     const request = await requestPromise;
+  88 | 
+  89 |     const postData = JSON.parse(request.postData());
+  90 |     expect(postData.type).toBe('wish');
+  91 |     expect(postData.data.name).toBe('E2E Test Kullanıcısı');
+  92 |     expect(postData.data.message).toBe('Playwright üzerinden gönderilen otomatik test mesajı.');
+  93 | 
+  94 |     await expect(wishesSection.locator('input[name="name"]')).toHaveValue('', { timeout: 10000 });
+  95 |     await expect(wishesSection.locator('textarea[name="message"]')).toHaveValue('', { timeout: 10000 });
+  96 |   });
+  97 | });
 ```

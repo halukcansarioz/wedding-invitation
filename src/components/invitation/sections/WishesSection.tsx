@@ -36,20 +36,40 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
   const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   const onSubmit = async (data: any) => {
+    // Spam bot koruması ve Turnstile doğrulaması
     if (data.honeypot) return;
     if (!turnstileToken && navigator.onLine) return;
 
-    let audioUrl = null;
-    if (audioBlob) {
-      audioUrl = await uploadAudio();
-    }
+    try {
+      let audioUrl = null;
+      if (audioBlob) {
+        audioUrl = await uploadAudio();
+      }
 
-    await submitWish({ ...data, turnstileToken, audioUrl });
-    triggerConfetti();
-    reset();
-    clearRecording();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
+      // Backend'e form verilerini gönder
+      await submitWish({ ...data, turnstileToken, audioUrl });
+      
+      // Hata fırlatma potansiyeli olan UI efektlerini izole ediyoruz
+      // Böylece Headless test tarayıcılarında çökmeler formun sıfırlanmasını engellemeyecek
+      try {
+        if (typeof triggerConfetti === 'function') {
+          triggerConfetti();
+        }
+      } catch (confettiErr) {
+        console.warn("Confetti animasyonu çalıştırılamadı:", confettiErr);
+      }
+
+      // Formu başarıyla sıfırla ve yeni kayda hazırla
+      reset();
+      clearRecording();
+      setTurnstileToken("");
+      setFormKey(prev => prev + 1);
+      
+    } catch (error) {
+      console.error("Dilek gönderilemedi:", error);
+      // Not: Hata anında bilerek formu sıfırlamıyoruz (reset çağrılmıyor)
+      // Böylece sunucu kaynaklı bir hatada kullanıcının uzun uzun yazdığı anı metni kaybolmaz.
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -92,7 +112,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
             
             {isRecording && (
               <button type="button" onClick={stopRecording} className="main-button" style={{ margin: 0, borderRadius: '50px', padding: '8px 24px', background: '#e74c3c', borderColor: '#e74c3c', animation: 'pulse 1.5s infinite' }}>
-                ⏹️️ {isEn ? "Stop" : "Durdur"} ({formatTime(recordingTime)})
+                ⏹ {isEn ? "Stop" : "Durdur"} ({formatTime(recordingTime)})
               </button>
             )}
 
@@ -112,7 +132,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
             siteKey={TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
             onSuccess={(token) => setTurnstileToken(token)} 
             onExpire={() => setTurnstileToken("")} 
-            options={{ appearance: "interaction-only" }} // <-- GÜNCELLENDİ: Çirkin Yükleniyor UIsini gizler
+            options={{ appearance: "interaction-only" }}
           />
         </div>
         

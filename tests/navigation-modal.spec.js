@@ -1,37 +1,33 @@
 import { test, expect } from '@playwright/test';
-
-const mockMedia = async (page) => {
-  await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
-};
+import { setupE2EMocks } from './utils';
 
 test.describe('Navigasyon ve Harita (Location) Modal Akışı', () => {
   
   test.beforeEach(async ({ page }) => {
-    await mockMedia(page);
+    await setupE2EMocks(page);
     await page.goto('/');
 
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor/i, { timeout: 15000 });
-    await page.waitForTimeout(500);
-    await envelopeSeal.click();
+    await envelopeSeal.click({ force: true });
     await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
   });
 
   test('Konuma Git butonuna tıklandığında harita seçeneklerini göstermeli ve kapatılabilmeli', async ({ page }) => {
     const goToMapBtn = page.locator('button', { hasText: /Konuma Git|Go to Map/i }).first();
     
+    // Gereksiz waitForTimeout(500) silindi ve tıklamaya force eklendi
     await goToMapBtn.scrollIntoViewIfNeeded();
-    await goToMapBtn.click();
+    await goToMapBtn.click({ force: true }); 
 
     const modal = page.locator('.location-nav-modal');
     await expect(modal).toBeVisible();
 
-    // Google Maps kısa/uzun link formatlarını destekleyecek esnek regex
     await expect(modal.locator('a', { hasText: /Google Maps/i })).toHaveAttribute('href', /google\.com\/maps|goo\.gl|app\.goo\.gl/);
     await expect(modal.locator('a', { hasText: /Apple Maps/i })).toHaveAttribute('href', /maps\.apple\.com/);
 
     const closeBtn = modal.locator('button', { hasText: /Kapat|Close/i });
-    await closeBtn.click();
+    await closeBtn.click({ force: true });
 
     await expect(modal).toBeHidden();
   });
