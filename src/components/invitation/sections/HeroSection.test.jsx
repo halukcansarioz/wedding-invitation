@@ -1,16 +1,7 @@
 import React from 'react';
 import { render, screen } from '../../../../tests/test-utils';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { HeroSection } from './HeroSection';
-
-vi.mock('framer-motion', () => ({
-  m: {
-    section: ({ children, className }) => <section className={className}>{children}</section>,
-    h1: ({ children }) => <h1>{children}</h1>, // Hata (11<h1>) giderildi
-    p: ({ children }) => <p>{children}</p>,
-    div: ({ children, className }) => <div className={className}>{children}</div>
-  }
-}));
 
 describe('HeroSection Bileşen Testleri', () => {
   const mockProps = {

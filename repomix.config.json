@@ -1,17 +1,51 @@
 {
   "output": {
     "filePath": "repomix-output.xml",
-    "style": "xml"
+    "style": "xml",
+    "removeComments": false,
+    "showLineNumbers": false,
+    "topFilesLength": 20
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "supabase/**/*",
+    "*.json",
+    "*.js",
+    "*.ts",
+    "*.jsx",
+    "*.tsx",
+    "*.html",
+    "*.css"
   ],
-  "ignore": [
-    "node_modules/**",
-    "playwright-report/**",
-    "test-results/**",
-    "public/**",
-    "dist/**"
-  ]
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "public/assets/**",
+      "**/*.lock",
+      "package-lock.json",
+      "yarn.lock",
+      "pnpm-lock.yaml",
+      "**/*.png",
+      "**/*.jpg",
+      "**/*.jpeg",
+      "**/*.gif",
+      "**/*.svg",
+      "**/*.ico",
+      "**/*.mp3",
+      "**/*.mp4",
+      "**/*.wav",
+      "**/*.ogg",
+      "**/*.webm",
+      "**/*.pdf",
+      "**/*.zip",
+      ".env",
+      ".env.*"
+    ]
+  }
 }

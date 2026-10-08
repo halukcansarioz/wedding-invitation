@@ -3,10 +3,6 @@ import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/t
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { RsvpSection } from './RsvpSection';
 
-vi.mock('framer-motion', () => ({
-  m: { section: ({ children, className }: any) => <section className={className}>{children}</section> }
-}));
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } })
 }));
@@ -18,7 +14,6 @@ vi.mock('@marsidev/react-turnstile', () => ({
 }));
 
 describe('RsvpSection Koşullu Render (Conditional UI) Testleri', () => {
-  // GÜNCELLENDİ: Testler arası DOM'u temizliyoruz ki butonlar üst üste binmesin.
   afterEach(() => {
     cleanup();
   });
@@ -26,12 +21,10 @@ describe('RsvpSection Koşullu Render (Conditional UI) Testleri', () => {
   it('Katılacağım seçeneği aktif olduğunda form alanları görünür olmalı', async () => {
     render(<RsvpSection submitRsvp={vi.fn()} />);
 
-    // GÜNCELLENDİ: Olası DOM çakışmalarına karşı getAllByRole kullanıp her zaman ilkini ([0]) hedefliyoruz.
     const attendBtn = screen.getAllByRole('radio', { name: /Katılacağım/i })[0];
     fireEvent.click(attendBtn);
 
     await waitFor(() => {
-      // getByPlaceholderText genelde tektir ama çakışma varsa getAllBy... yapılabilir.
       const noteInput = screen.getAllByPlaceholderText('form.notePlaceholder')[0];
       expect(noteInput).toBeInTheDocument();
     });

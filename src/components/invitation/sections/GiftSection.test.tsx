@@ -4,10 +4,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GiftSection } from './GiftSection';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('framer-motion', () => ({
-  m: { section: ({ children, className }: any) => <section className={className}>{children}</section> }
-}));
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'tr' } })
 }));
@@ -63,8 +59,6 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
     render(<GiftSection giftData={mockGiftData} />);
     
     const creditCardBtn = screen.getByRole('button', { name: /Kredi Kartı ile Gönder/i });
-    
-    // Act hatasını engellemek için aksiyonu waitFor veya promise resolve akışında tutuyoruz
     fireEvent.click(creditCardBtn);
 
     const { supabase } = await import('../../../supabaseClient');

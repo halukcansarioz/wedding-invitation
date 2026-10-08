@@ -4,35 +4,24 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ScheduleTab } from './ScheduleTab';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
-
 describe('ScheduleTab Admin Bileşen Testleri', () => {
-  let mockUpdateDraftArrayItem, mockAddDraftArrayItem, mockRemoveDraftArrayItem, mockUpdateDraftObject;
+  let initialState;
 
   beforeEach(() => {
-    mockUpdateDraftArrayItem = vi.fn();
-    mockAddDraftArrayItem = vi.fn();
-    mockRemoveDraftArrayItem = vi.fn();
-    mockUpdateDraftObject = vi.fn();
-
-    useStore.mockImplementation((selector) => selector({
+    initialState = useStore.getState();
+    useStore.setState({
       adminDraft: {
         settings: { visibility: { schedule: true } },
         scheduleItems: [
           { time: "18:00", title: "Karşılama", description: "Misafirlerin gelişi" }
         ]
-      },
-      updateDraftObject: mockUpdateDraftObject,
-      saveSiteContent: vi.fn(),
-      updateDraftArrayItem: mockUpdateDraftArrayItem,
-      addDraftArrayItem: mockAddDraftArrayItem,
-      removeDraftArrayItem: mockRemoveDraftArrayItem,
-      moveDraftArrayItem: vi.fn()
-    }));
+      }
+    });
   });
 
   afterEach(() => {
     cleanup();
+    useStore.setState(initialState, true);
     vi.clearAllMocks();
   });
 
@@ -43,13 +32,13 @@ describe('ScheduleTab Admin Bileşen Testleri', () => {
     expect(screen.getByDisplayValue('Karşılama')).toBeInTheDocument();
   });
 
-  it('Program başlığı değiştirildiğinde updateDraftArrayItem tetiklenmeli', () => {
+  it('Program başlığı değiştirildiğinde store tetiklenmeli', () => {
     render(<ScheduleTab isEn={false} />);
     
     const titleInput = screen.getByDisplayValue('Karşılama');
     fireEvent.change(titleInput, { target: { value: 'Kokteyl' } });
 
-    expect(mockUpdateDraftArrayItem).toHaveBeenCalledWith('scheduleItems', 0, 'title', 'Kokteyl');
+    expect(useStore.getState().adminDraft.scheduleItems[0].title).toBe('Kokteyl');
   });
 
   it('Yeni Program Ekle butonuna tıklandığında listeye boş eleman eklenmeli', () => {
@@ -58,9 +47,9 @@ describe('ScheduleTab Admin Bileşen Testleri', () => {
     const addBtn = screen.getByRole('button', { name: /Yeni Program Ekle/i });
     fireEvent.click(addBtn);
 
-    expect(mockAddDraftArrayItem).toHaveBeenCalledWith('scheduleItems', { 
-      time: "22:00", title: "Yeni Program", description: "" 
-    });
+    const items = useStore.getState().adminDraft.scheduleItems;
+    expect(items.length).toBe(2);
+    expect(items[1].title).toBe('Yeni Program');
   });
 
   it('Düğün Takvimi görünürlük checkboxı çalıştığında state güncellenmeli', () => {
@@ -69,8 +58,6 @@ describe('ScheduleTab Admin Bileşen Testleri', () => {
     const visibilityCheckbox = screen.getByLabelText(/Düğün Takvimi bölümünü göster/i);
     fireEvent.click(visibilityCheckbox);
 
-    expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'visibility', expect.objectContaining({
-      schedule: false
-    }));
+    expect(useStore.getState().adminDraft.settings.visibility.schedule).toBe(false);
   });
 });

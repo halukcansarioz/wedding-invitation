@@ -4,9 +4,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { OverviewTab } from './OverviewTab';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
-
-// Supabase'den gelen istatistik verilerini mockluyoruz
 vi.mock('../../../supabaseClient', () => ({
   supabase: {
     from: vi.fn((table) => {
@@ -31,17 +28,28 @@ vi.mock('../../../supabaseClient', () => ({
 
 describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
   let mockSetActiveTab: any;
+  let originalLocation: any;
+  let initialState: any;
 
   beforeEach(() => {
     mockSetActiveTab = vi.fn();
-    (useStore as any).mockImplementation((selector: any) => selector({
-      adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } }
-    }));
     vi.spyOn(window, 'open').mockImplementation(() => null);
+    
+    initialState = useStore.getState();
+    useStore.setState({
+      adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } } as any
+    });
+
+    // DÜZELTME: JSDOM location hatasını önleme
+    originalLocation = window.location;
+    delete (window as any).location;
+    window.location = { pathname: '/demo' } as any;
   });
 
   afterEach(() => {
     cleanup();
+    window.location = originalLocation;
+    useStore.setState(initialState, true);
     vi.clearAllMocks();
   });
 
@@ -56,11 +64,8 @@ describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
   });
 
   it('Barkovizyonu Başlat butonuna tıklandığında yeni sekmede /live rotasını açmalı', async () => {
-    Object.defineProperty(window, 'location', { value: { pathname: '/demo' }, writable: true });
-    
     render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
     
-    // GÜNCELLENDİ: Act uyarısını kesmek için tıklamadan önce asenkron işlemlerin oturmasını bekliyoruz.
     await waitFor(() => {
       expect(screen.getByText('5')).toBeInTheDocument();
     });

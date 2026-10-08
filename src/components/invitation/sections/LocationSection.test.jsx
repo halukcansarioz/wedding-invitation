@@ -3,9 +3,6 @@ import { render, screen, fireEvent } from '../../../../tests/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { LocationSection } from './LocationSection';
 
-vi.mock('framer-motion', () => ({
-  m: { section: ({ children, className }) => <section className={className}>{children}</section> }
-}));
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
 }));
@@ -16,7 +13,6 @@ describe('LocationSection Bileşen Testleri', () => {
   it('Konuma Git butonuna tıklandığında Navigasyon Modalı açılmalı ve kapatılabilmeli', () => {
     render(<LocationSection invitation={mockInvitation} />);
     
-    // getAllByRole kullanarak ilk butona tıklıyoruz
     const mapButtons = screen.getAllByRole('button', { name: 'ui.goToMap' });
     fireEvent.click(mapButtons[0]);
 

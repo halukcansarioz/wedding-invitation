@@ -4,28 +4,25 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MessagesTab } from './MessagesTab';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
-
 describe('MessagesTab Admin Bileşen Testleri', () => {
-  let mockUpdateDraftObject;
+  let initialState;
 
   beforeEach(() => {
-    mockUpdateDraftObject = vi.fn();
-    useStore.mockImplementation((selector) => selector({
+    initialState = useStore.getState();
+    useStore.setState({
       adminDraft: {
         messages: {
           guestGreeting: "Merhaba {guest}, düğünümüze bekleriz.",
           whatsappShareMessage: "Davetiyemiz: {link}",
           rsvpWhatsappMessage: "LCV formunu doldurdum!"
         }
-      },
-      updateDraftObject: mockUpdateDraftObject,
-      saveSiteContent: vi.fn()
-    }));
+      }
+    });
   });
 
   afterEach(() => {
     cleanup();
+    useStore.setState(initialState, true);
     vi.clearAllMocks();
   });
 
@@ -36,12 +33,12 @@ describe('MessagesTab Admin Bileşen Testleri', () => {
     expect(screen.getByDisplayValue('Davetiyemiz: {link}')).toBeInTheDocument();
   });
 
-  it('Metin değiştirildiğinde updateDraftObject fonksiyonu çağrılmalı', () => {
+  it('Metin değiştirildiğinde store güncellenmeli', () => {
     render(<MessagesTab isEn={false} />);
     
     const greetingTextarea = screen.getByDisplayValue('Merhaba {guest}, düğünümüze bekleriz.');
     fireEvent.change(greetingTextarea, { target: { value: 'Selam {guest}!' } });
     
-    expect(mockUpdateDraftObject).toHaveBeenCalledWith('messages', 'guestGreeting', 'Selam {guest}!');
+    expect(useStore.getState().adminDraft.messages.guestGreeting).toBe('Selam {guest}!');
   });
 });

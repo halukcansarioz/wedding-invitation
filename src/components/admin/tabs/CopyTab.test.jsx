@@ -1,18 +1,15 @@
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'; // Doğrudan RTL render kullanıyoruz
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CopyTab } from './CopyTab';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
-
 describe('CopyTab Admin Bileşen Testleri', () => {
-  let mockUpdateDraftObject;
+  let initialState;
 
   beforeEach(() => {
-    mockUpdateDraftObject = vi.fn();
-
-    useStore.mockImplementation((selector) => selector({
+    initialState = useStore.getState();
+    useStore.setState({
       adminDraft: {
         copy: {
           heroLabel: "Evleniyoruz",
@@ -20,14 +17,13 @@ describe('CopyTab Admin Bileşen Testleri', () => {
           wishesTitle: "Anı Defteri",
           thanksText: "Katıldığınız için teşekkürler."
         }
-      },
-      updateDraftObject: mockUpdateDraftObject,
-      saveSiteContent: vi.fn()
-    }));
+      }
+    });
   });
 
   afterEach(() => {
     cleanup();
+    useStore.setState(initialState, true);
     vi.clearAllMocks();
   });
 
@@ -39,22 +35,21 @@ describe('CopyTab Admin Bileşen Testleri', () => {
     expect(screen.getByDisplayValue('Katıldığınız için teşekkürler.')).toBeInTheDocument();
   });
 
-  it('Bir başlık değiştirildiğinde updateDraftObject doğru parametrelerle tetiklenmeli', () => {
+  it('Bir başlık değiştirildiğinde store doğru şekilde güncellenmeli', () => {
     render(<CopyTab isEn={false} />);
     
     const heroInput = screen.getByDisplayValue('Evleniyoruz');
     fireEvent.change(heroInput, { target: { value: 'Düğünümüze Hoş Geldiniz' } });
     
-    expect(mockUpdateDraftObject).toHaveBeenCalledWith('copy', 'heroLabel', 'Düğünümüze Hoş Geldiniz');
+    expect(useStore.getState().adminDraft.copy.heroLabel).toBe('Düğünümüze Hoş Geldiniz');
   });
 
-  it('Taslakta copy objesi yoksa bileşen çökmek yerine null dönmeli', () => {
-    useStore.mockImplementation((selector) => selector({ 
-      adminDraft: {},
-      updateDraftObject: vi.fn(),
-      saveSiteContent: vi.fn()
-    }));
+  it('Taslakta copy objesi yoksa bileşen çökmek yerine boş dönmeli', () => {
+    useStore.setState({ adminDraft: {} });
     const { container } = render(<CopyTab isEn={false} />);
-    expect(container.firstChild).toBeNull();
+    
+    expect(container.firstChild).toBeEmptyDOMElement();
+    
+    expect(screen.queryByText(/Başlıklar ve Sayfa Metinleri/i)).not.toBeInTheDocument();
   });
 });

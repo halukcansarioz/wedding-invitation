@@ -4,15 +4,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { FamilyTab } from './FamilyTab';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
-
 describe('FamilyTab Admin Bileşen Testleri', () => {
-  let mockUpdateDraftObject;
+  let initialState;
 
   beforeEach(() => {
-    mockUpdateDraftObject = vi.fn();
-
-    useStore.mockImplementation((selector) => selector({
+    initialState = useStore.getState();
+    useStore.setState({
       adminDraft: {
         settings: { visibility: { family: true } },
         familyInfo: {
@@ -22,14 +19,13 @@ describe('FamilyTab Admin Bileşen Testleri', () => {
           groomFamilyName: "Demir Ailesi",
           text: "Sizleri aramızda görmekten mutluluk duyarız."
         }
-      },
-      updateDraftObject: mockUpdateDraftObject,
-      saveSiteContent: vi.fn()
-    }));
+      }
+    });
   });
 
   afterEach(() => {
     cleanup();
+    useStore.setState(initialState, true);
     vi.clearAllMocks();
   });
 
@@ -41,12 +37,12 @@ describe('FamilyTab Admin Bileşen Testleri', () => {
     expect(screen.getByDisplayValue('Sizleri aramızda görmekten mutluluk duyarız.')).toBeInTheDocument();
   });
 
-  it('Gelin ailesi ismi güncellendiğinde ilgili fonksiyon çağrılmalı', () => {
+  it('Gelin ailesi ismi güncellendiğinde store güncellenmeli', () => {
     render(<FamilyTab isEn={false} />);
     
     const brideFamilyInput = screen.getByDisplayValue('Yılmaz Ailesi');
     fireEvent.change(brideFamilyInput, { target: { value: 'Yılmaz & Kaya Ailesi' } });
 
-    expect(mockUpdateDraftObject).toHaveBeenCalledWith('familyInfo', 'brideFamilyName', 'Yılmaz & Kaya Ailesi');
+    expect(useStore.getState().adminDraft.familyInfo.brideFamilyName).toBe('Yılmaz & Kaya Ailesi');
   });
 });

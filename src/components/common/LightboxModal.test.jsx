@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from "../../../tests/test-utils";
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { LightboxModal } from './LightboxModal';
 
@@ -27,8 +27,8 @@ describe('LightboxModal Bileşen Testleri', () => {
     const { container } = render(
       <LightboxModal gallery={mockGallery} lightboxIndex={null} />
     );
-    // Modal kapalıyken DOM'a hiçbir şey eklenmemeli
-    expect(container.firstChild).toBeNull();
+    // Modal kapalıyken DOM'a eklenen gallery-lightbox-overlay class'ına sahip eleman olmamalı
+    expect(container.querySelector('.gallery-lightbox-overlay')).not.toBeInTheDocument();
   });
 
   it('Sağ ve Sol yön tuşlarına basıldığında ilgili fonksiyonları tetiklemeli', () => {

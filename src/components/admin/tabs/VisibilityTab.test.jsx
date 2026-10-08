@@ -1,15 +1,15 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent } from '../../../../tests/test-utils';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { VisibilityTab } from './VisibilityTab';
 import { useStore } from '../../../store/useStore';
 import { DEFAULT_SITE_DATA } from '../../../config/constants';
 
-// i18next Mock - i18n objesi ve language özelliği eklendi
+// i18next Mock
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ 
     t: (key) => key,
-    i18n: { language: 'tr' } // Hatanın çözüldüğü satır
+    i18n: { language: 'tr' } 
   })
 }));
 

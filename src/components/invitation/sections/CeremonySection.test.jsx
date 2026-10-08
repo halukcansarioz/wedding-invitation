@@ -3,10 +3,6 @@ import { render } from '../../../../tests/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { CeremonySection } from './CeremonySection';
 
-vi.mock('framer-motion', () => ({
-  m: { section: ({ children, className }) => <section className={className}>{children}</section> }
-}));
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
 }));

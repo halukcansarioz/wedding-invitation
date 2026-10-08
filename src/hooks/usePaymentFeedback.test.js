@@ -16,29 +16,21 @@ describe('usePaymentFeedback Hook Testleri', () => {
     mockShowAppAlert = vi.fn();
     useStore.mockReturnValue(mockShowAppAlert);
 
-    // Güvenli window.location mock'laması (TypeError önleme)
+    // DÜZELTME: JSDOM window.location güvenli mocklaması
     originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      value: { search: '', pathname: '/' },
-      writable: true
-    });
+    delete window.location;
+    window.location = { search: '', pathname: '/' };
     window.history.replaceState = vi.fn();
   });
 
   afterEach(() => {
-    // Lokasyonu orijinal haline güvenle geri döndür
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true
-    });
+    window.location = originalLocation;
     vi.clearAllMocks();
   });
 
   it('URL parametresinde ?payment=success varsa başarı mesajı göstermeli ve URL temizlenmeli', () => {
     window.location.search = '?payment=success';
-    
     renderHook(() => usePaymentFeedback());
-
     expect(mockShowAppAlert).toHaveBeenCalledWith(
       expect.stringContaining('Hediyeniz başarıyla ulaştı'),
       expect.objectContaining({ tone: 'success' })
@@ -48,9 +40,7 @@ describe('usePaymentFeedback Hook Testleri', () => {
 
   it('URL parametresinde ?payment=cancel varsa iptal mesajı göstermeli', () => {
     window.location.search = '?payment=cancel';
-    
     renderHook(() => usePaymentFeedback());
-
     expect(mockShowAppAlert).toHaveBeenCalledWith(
       expect.stringContaining('iptal edildi'),
       expect.objectContaining({ tone: 'info' })
@@ -59,9 +49,7 @@ describe('usePaymentFeedback Hook Testleri', () => {
 
   it('URL parametresi yoksa hiçbir işlem yapmamalı', () => {
     window.location.search = '';
-    
     renderHook(() => usePaymentFeedback());
-
     expect(mockShowAppAlert).not.toHaveBeenCalled();
     expect(window.history.replaceState).not.toHaveBeenCalled();
   });

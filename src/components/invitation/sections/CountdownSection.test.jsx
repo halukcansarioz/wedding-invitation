@@ -3,17 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { CountdownSection } from './CountdownSection';
 
-vi.mock('framer-motion', () => ({
-  m: {
-    section: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
-      <section {...props}>{children}</section>
-    ),
-    div: ({ children, initial, whileInView, viewport, variants, transition, ...props }) => (
-      <div {...props}>{children}</div>
-    ),
-  },
-}));
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key) => key,

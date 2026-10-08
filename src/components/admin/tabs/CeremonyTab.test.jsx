@@ -1,39 +1,27 @@
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { CeremonyTab } from './CeremonyTab';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
-
 describe('CeremonyTab Admin Bileşen Testleri', () => {
-  let mockUpdateDraftArrayItem;
-  let mockAddDraftArrayItem;
-  let mockRemoveDraftArrayItem;
+  let initialState;
 
   beforeEach(() => {
-    mockUpdateDraftArrayItem = vi.fn();
-    mockAddDraftArrayItem = vi.fn();
-    mockRemoveDraftArrayItem = vi.fn();
-
-    useStore.mockImplementation((selector) => selector({
+    initialState = useStore.getState();
+    useStore.setState({
       adminDraft: {
         settings: { visibility: { ceremony: true } },
         eventDetails: [
           { label: "Kına Gecesi", time: "18:00", location: "Bahçe", description: "Bekleriz" }
         ]
-      },
-      updateDraftArrayItem: mockUpdateDraftArrayItem,
-      addDraftArrayItem: mockAddDraftArrayItem,
-      removeDraftArrayItem: mockRemoveDraftArrayItem,
-      moveDraftArrayItem: vi.fn(),
-      saveSiteContent: vi.fn(),
-      updateDraftObject: vi.fn()
-    }));
+      }
+    });
   });
 
   afterEach(() => {
     cleanup();
+    useStore.setState(initialState, true);
     vi.clearAllMocks();
   });
 
@@ -46,13 +34,13 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
     expect(screen.getByDisplayValue('Bekleriz')).toBeInTheDocument();
   });
 
-  it('Girdiler değiştiğinde array öğesini güncelleme fonksiyonunu tetiklemeli', () => {
+  it('Girdiler değiştiğinde array öğesini güncellemeli', () => {
     render(<CeremonyTab isEn={false} />);
     
     const timeInput = screen.getByDisplayValue('18:00');
     fireEvent.change(timeInput, { target: { value: '19:30' } });
 
-    expect(mockUpdateDraftArrayItem).toHaveBeenCalledWith('eventDetails', 0, 'time', '19:30');
+    expect(useStore.getState().adminDraft.eventDetails[0].time).toBe('19:30');
   });
 
   it('Yeni etkinlik ekle butonuna tıklandığında varsayılan değerlerle listeye eleman eklemeli', () => {
@@ -61,12 +49,10 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
     const addBtn = screen.getByRole('button', { name: /Yeni Etkinlik Ekle/i });
     fireEvent.click(addBtn);
 
-    expect(mockAddDraftArrayItem).toHaveBeenCalledWith('eventDetails', {
-      label: "Yeni Etkinlik",
-      time: "20:00",
-      location: "",
-      description: ""
-    });
+    const details = useStore.getState().adminDraft.eventDetails;
+    expect(details.length).toBe(2);
+    expect(details[1].label).toBe('Yeni Etkinlik');
+    expect(details[1].time).toBe('20:00');
   });
 
   it('Etkinlik sil butonuna basıldığında listeyi güncellemeli', () => {
@@ -75,6 +61,6 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
     const deleteBtn = screen.getByRole('button', { name: /Sil 🗑️/i });
     fireEvent.click(deleteBtn);
 
-    expect(mockRemoveDraftArrayItem).toHaveBeenCalledWith('eventDetails', 0);
+    expect(useStore.getState().adminDraft.eventDetails.length).toBe(0);
   });
 });

@@ -1,21 +1,15 @@
-export async function setupE2EMocks(page) {
-  // 1. Görsel ve Medyaları Engelle (Testleri Hızlandırır)
+export async function setupE2EMocks(page, mockApi = true) {
+  // 1. Görsel ve Medyaları Engelle
   const emptyImage = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
   await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => route.fulfill({ body: emptyImage, contentType: 'image/png' }));
   await page.route('**/*.{mp4,webm,ogg,mp3,wav}', route => route.abort());
 
-  // 2. Animasyonları Kapat (Stable & Scroll Timeout hatalarını KESİN olarak çözer)
+  // 2. Animasyonları Kapat
   await page.addStyleTag({ 
-    content: `
-      *, *::before, *::after { 
-        transition-duration: 0s !important; 
-        animation-duration: 0s !important; 
-        scroll-behavior: auto !important; 
-      }
-    ` 
+    content: `*, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; scroll-behavior: auto !important; }` 
   });
 
-  // 3. Turnstile Global Mock (RSVP ve Anı Defteri Butonlarının Disabled kalmasını ENGELLER)
+  // 3. Turnstile Mock (Gönder butonunun açılmasını sağlar)
   await page.route('**/turnstile/v0/api.js*', async route => {
     const url = new URL(route.request().url());
     const onloadFn = url.searchParams.get('onload');
@@ -39,24 +33,19 @@ export async function setupE2EMocks(page) {
     });
   });
 
-  // 4. Supabase Edge Functions Mock (Guest Upload "Processing..." takılmasını GİDERİR)
-  await page.route('**/functions/v1/**', async route => {
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ 
-        status: 200, 
-        headers: { 
-          'Access-Control-Allow-Origin': '*', 
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS', 
-          'Access-Control-Allow-Headers': '*' 
-        } 
+  // 4. Supabase API Mock (Tüm form gönderimlerini her zaman başarılı sayar)
+  if (mockApi) {
+    await page.route('**/functions/v1/submit-form', async route => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': '*' } });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ success: true, data: { id: 'mock-id' }, approved: true })
       });
-      return;
-    }
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ success: true, data: { id: 'mock-id' }, approved: true })
     });
-  });
+  }
 }
