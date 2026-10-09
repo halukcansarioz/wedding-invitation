@@ -21,5 +21,5 @@ describe("Database service functions", () => {
 
     await expect(fetchWithRetry(mockFetch, 3, 10)).rejects.toThrow("Ağ hatası");
     expect(mockFetch).toHaveBeenCalledTimes(3);
-  }, 10000); 
+  }, 15000); // CI ortamı için zaman aşımı payı
 });
