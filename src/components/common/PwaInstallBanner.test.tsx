@@ -1,17 +1,16 @@
+/// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { PwaInstallBanner } from './PwaInstallBanner';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
-// Named export olduğu için vi.fn() ile açıkça mockluyoruz
 vi.mock('../../hooks/usePWAInstall', () => ({
   usePWAInstall: vi.fn(),
 }));
 
 describe('PwaInstallBanner İleri Seviye Testleri', () => {
   it('Cihaz iOS ise Safari paylaşım yönergelerini göstermeli', () => {
-    // Artık .mockReturnValue güvenle kullanılabilir
     (usePWAInstall as any).mockReturnValue({
       isIos: true,
       isInstallable: true,
