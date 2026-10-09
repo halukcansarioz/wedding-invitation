@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
 import { TablePlanTab } from './TablePlanTab';
 
 // @dnd-kit kütüphanesini test ortamında çökmelerden korumak için mockluyoruz
@@ -21,7 +22,7 @@ describe('TablePlanTab Admin Bileşen Testleri', () => {
   });
 
   it('Atanmamış (Bekleyen) misafirleri listeleyebilmeli', () => {
-    render(<TablePlanTab guests={mockGuests} assignTable={vi.fn()} isEn={false} />);
+    render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
     
     // Masa atanmamış Ahmet Yılmaz "Bekleyenler" listesinde görünmeli
     expect(screen.getByText('Ahmet Yılmaz')).toBeInTheDocument();
@@ -31,7 +32,7 @@ describe('TablePlanTab Admin Bileşen Testleri', () => {
   });
 
   it('Masaları ve atanan misafirleri render edebilmeli', () => {
-    render(<TablePlanTab guests={mockGuests} assignTable={vi.fn()} isEn={false} />);
+    render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
     
     // Masa 1 başlığı görünmeli
     expect(screen.getByText('Masa 1')).toBeInTheDocument();

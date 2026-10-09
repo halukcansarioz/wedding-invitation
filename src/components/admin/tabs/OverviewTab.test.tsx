@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
 import { OverviewTab } from './OverviewTab';
 import { useStore } from '../../../store/useStore';
 

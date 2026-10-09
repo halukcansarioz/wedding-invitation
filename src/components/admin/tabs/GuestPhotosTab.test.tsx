@@ -25,8 +25,9 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
 
     render(<GuestPhotosTab isEn={false} />);
     
-    // GÜNCELLENDİ: Yeni Spinner ve metin tasarımına uygun regex araması
-    expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeInTheDocument();
+    // GÜNCELLENDİ: TS hatasını (ts-2339) önlemek için toBeInTheDocument yerine toBeDefined kullanıldı.
+    // getByText zaten elementi bulamazsa hata fırlatır, test güvenliği aynı kalır.
+    expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeDefined();
   });
 
   it('Bekleyen ve Onaylanan fotoğrafları listelemeli ve buton aksiyonlarını tetiklemeli', () => {
@@ -40,8 +41,8 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
 
     render(<GuestPhotosTab isEn={false} />);
     
-    expect(screen.getByText('Onay Bekleyenler (1)')).toBeInTheDocument();
-    expect(screen.getByText('Yayında Olanlar (1)')).toBeInTheDocument();
+    expect(screen.getByText('Onay Bekleyenler (1)')).toBeDefined();
+    expect(screen.getByText('Yayında Olanlar (1)')).toBeDefined();
 
     const approveBtn = screen.getByRole('button', { name: /Onayla/i });
     fireEvent.click(approveBtn);

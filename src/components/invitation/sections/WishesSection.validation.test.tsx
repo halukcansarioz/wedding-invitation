@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
 import { WishesSection } from './WishesSection';
 import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
 

@@ -1,7 +1,14 @@
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
 import { useStore } from "../../../store/useStore";
-import { EventDetailItem } from "../../../types";
+
+// types/index.ts içinde export edilmediği için tipi burada yerel olarak tanımlıyoruz
+interface EventDetailItem {
+  label: string;
+  time: string;
+  location: string;
+  description: string;
+}
 
 interface CeremonyTabProps {
   isEn: boolean;
