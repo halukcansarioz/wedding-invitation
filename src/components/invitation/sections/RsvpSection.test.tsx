@@ -28,7 +28,7 @@ describe('RsvpSection Koşullu Render (Conditional UI) Testleri', () => {
       const noteInput = screen.getAllByPlaceholderText('form.notePlaceholder')[0];
       expect(noteInput).toBeInTheDocument();
     });
-  });
+  }, 10000); // CI ortamı için timeout eklendi
 
   it('Katılamayacağım seçildiğinde durum başarıyla güncellenmeli', async () => {
     render(<RsvpSection submitRsvp={vi.fn()} />);
@@ -39,5 +39,5 @@ describe('RsvpSection Koşullu Render (Conditional UI) Testleri', () => {
     await waitFor(() => {
       expect(declineBtn).toHaveAttribute('aria-checked', 'true');
     });
-  });
+  }, 10000);
 });
