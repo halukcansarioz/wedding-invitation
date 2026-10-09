@@ -48,6 +48,9 @@ describe('CopyTab Admin Bileşen Testleri', () => {
     useStore.setState({ adminDraft: {} });
     const { container } = render(<CopyTab isEn={false} />);
     
+    // DÜZELTME: Setup mock'larındaki BrowserRouter fazladan bir <div> oluşturur.
+    // Bu sebeple container.firstChild 'null' olamaz. Bunun yerine o <div> etiketinin
+    // tamamen boş (empty) olduğunu doğrulamak, bileşenin null döndüğünü kanıtlar.
     expect(container.firstChild).toBeEmptyDOMElement();
     
     expect(screen.queryByText(/Başlıklar ve Sayfa Metinleri/i)).not.toBeInTheDocument();

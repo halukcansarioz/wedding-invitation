@@ -1,10 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GuestsAdminPanel } from './GuestsAdminPanel';
 import { useStore } from '../../../store/useStore';
 
-vi.mock('../../../store/useStore');
 vi.mock('react-virtuoso', () => ({
   Virtuoso: ({ data, itemContent }) => <div>{data.map((item, index) => <React.Fragment key={item.id}>{itemContent(index, item)}</React.Fragment>)}</div>,
 }));
@@ -23,15 +22,28 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
     { id: '3', name: 'Mehmet Kaya', attendance: 'Katılacağım', personCount: '3' }
   ];
 
+  let initialState;
+
   beforeEach(() => {
-    useStore.mockImplementation((selector) => selector({
+    initialState = useStore.getState();
+    
+    // Verileri (data) setState ile, Fonksiyonları (actions) spyOn ile yönetmeliyiz
+    useStore.setState({
       adminDraft: {
         settings: { visibility: { guests: true } },
         invitation: { bride: "Gelin", groom: "Damat", mapLink: "" },
-      },
-      updateDraftObject: vi.fn(),
-      showAppConfirm: vi.fn().mockResolvedValue(true)
-    }));
+      }
+    });
+
+    vi.spyOn(useStore.getState(), 'updateDraftObject').mockImplementation(() => {});
+    vi.spyOn(useStore.getState(), 'showAppConfirm').mockResolvedValue(true);
+    vi.spyOn(useStore.getState(), 'showAppAlert').mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+    useStore.setState(initialState, true); // Orijinal saf haline döndür
   });
 
   it('Misafir istatistiklerini doğru hesaplamalı', () => {
@@ -40,14 +52,7 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
   });
 
   it('Davetiye taslağında davetli bilgisi yoksa paneli açabilmeli', () => {
-    useStore.mockImplementation((selector) => selector({
-      adminDraft: { settings: { visibility: { guests: true } } },
-      updateDraftObject: vi.fn(),
-      showAppAlert: vi.fn(),
-    }));
-
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} />);
-
     expect(screen.getByText('Katılım Yanıtları & Kapı Kontrolü')).toBeInTheDocument();
   });
 
@@ -55,7 +60,6 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
     const mockSetSearch = vi.fn();
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} adminGuestSearch="" setAdminGuestSearch={mockSetSearch} isEn={false} />);
     
-    // Doğru placeholder metni
     const searchInput = screen.getByPlaceholderText(/İsim veya tel ara/i);
     fireEvent.change(searchInput, { target: { value: 'Zeynep' } });
     expect(mockSetSearch).toHaveBeenCalledWith('Zeynep');

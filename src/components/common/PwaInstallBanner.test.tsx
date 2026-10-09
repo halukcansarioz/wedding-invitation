@@ -1,7 +1,6 @@
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as i18next from 'react-i18next';
 
 import { PwaInstallBanner } from './PwaInstallBanner';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
@@ -11,29 +10,33 @@ vi.mock('../../hooks/usePWAInstall', () => ({
   usePWAInstall: vi.fn()
 }));
 
+// 2. ESM spyOn hatasını önlemek için react-i18next mock'unu doğrudan dosya seviyesine alıyoruz
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const k = key.toLowerCase();
+      if (k.includes('ios') || k.includes('add') || k.includes('home')) return 'Ana Ekrana Ekle';
+      return 'Yükle';
+    },
+    i18n: { language: 'tr' },
+    ready: true
+  })
+}));
+
 describe('PwaInstallBanner İleri Seviye Testleri', () => {
   beforeEach(() => {
-    // 2. KRİTİK: isolate: false olduğu için diğer testlerde banner kapatılıp 
-    // localStorage'a kaydedilmiş olabilir. Bileşenin gizlenmemesi (null dönmemesi) 
-    // için her testten önce storage'ı temizliyoruz.
+    vi.useFakeTimers(); // Bileşendeki setTimeout gecikmelerini yakalamak için
     window.localStorage.clear();
     window.sessionStorage.clear();
     vi.clearAllMocks();
-
-    // 3. setupTests.js içindeki global i18next mock'unu dinamik olarak eziyoruz.
-    // Böylece render edilen metinler Zod/i18n key'leri değil, beklediğimiz Türkçe metinler olacak.
-    vi.spyOn(i18next, 'useTranslation').mockReturnValue({
-      t: (key: string) => {
-        const k = key.toLowerCase();
-        if (k.includes('ios') || k.includes('add') || k.includes('home')) return 'Ana Ekrana Ekle';
-        return 'Yükle';
-      },
-      i18n: { language: 'tr' } as any,
-      ready: true
-    });
   });
 
   afterEach(() => {
+    // Açık kalan zamanlayıcıları temizle
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+    vi.useRealTimers();
     cleanup();
   });
 
@@ -47,6 +50,12 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
     
     render(<PwaInstallBanner />);
     
+    // Bileşen içindeki setTimeout delayını aşmak için zamanı anında ileri sarıyoruz
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
+    
+    // waitFor'a gerek kalmadan senkron olarak kontrol ediyoruz
     expect(screen.getByText(/Ana Ekrana Ekle/i)).toBeInTheDocument();
   });
 
@@ -59,6 +68,10 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
     });
     
     render(<PwaInstallBanner />);
+    
+    act(() => {
+      vi.advanceTimersByTime(10000);
+    });
     
     const installBtn = screen.getByRole('button', { name: /Yükle/i });
     expect(installBtn).toBeInTheDocument();

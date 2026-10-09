@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup } from '../../../../tests/test-utils'; // DÜZELTİLDİ
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { GuestsListSection } from './GuestsListSection';
 

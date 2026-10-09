@@ -9,18 +9,20 @@ vi.mock('react-i18next', () => ({
 
 describe('ShareSection Bileşen Testleri', () => {
   let mockCopyLink;
+  let originalShare; // DÜZELTİLDİ
 
   beforeEach(() => {
     mockCopyLink = vi.fn();
+    originalShare = navigator.share; // Orijinal halini tut
   });
 
   afterEach(() => {
+    navigator.share = originalShare; // DÜZELTİLDİ: Sızıntı engellendi
     cleanup();
     vi.clearAllMocks();
   });
 
   it('Cihaz Web Share API desteklemiyorsa (navigator.share yoksa) kopyalama fonksiyonuna (fallback) düşmeli', async () => {
-    const originalShare = navigator.share;
     delete navigator.share;
 
     render(<ShareSection copyInvitationLink={mockCopyLink} shareText="Davetiye" />);
@@ -29,8 +31,6 @@ describe('ShareSection Bileşen Testleri', () => {
     fireEvent.click(shareButton);
 
     expect(mockCopyLink).toHaveBeenCalledTimes(1);
-
-    navigator.share = originalShare;
   });
 
   it('Cihaz Web Share API destekliyorsa native paylaşım menüsünü tetiklemeli', async () => {

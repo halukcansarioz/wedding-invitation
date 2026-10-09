@@ -9,6 +9,10 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     headless: true,
+    // EKLENDİ: Tarayıcının PWA, CORS ve Cross-Origin kısıtlamalarını testlerde devre dışı bırakır.
+    launchOptions: {
+      args: ['--disable-web-security']
+    }
   },
   webServer: {
     command: 'npm run dev',

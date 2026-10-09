@@ -8,7 +8,6 @@ import { useStore } from '../store/useStore';
 
 vi.mock('../hooks/useWishesQuery');
 vi.mock('../hooks/useGuestPhotosQuery');
-vi.mock('../store/useStore');
 vi.mock('../supabaseClient', () => ({
   supabase: {
     channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() })),
@@ -20,10 +19,10 @@ describe('LiveProjector İleri Seviye Zamanlayıcı Testleri', () => {
   beforeEach(() => {
     vi.useFakeTimers(); 
     
-    // Zustand selector fonksiyonunu destekleyecek şekilde güncellendi
-    (useStore as any).mockImplementation((selector: any) => selector({
+    // DÜZELTİLDİ: Zustand sızıntısını engellemek için setState kullanıldı
+    useStore.setState({
       siteData: { invitation: { bride: 'Hande', groom: 'Haluk' } }
-    }));
+    } as any);
 
     (useWishesQuery as any).mockReturnValue({
       wishes: [

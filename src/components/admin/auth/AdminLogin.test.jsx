@@ -4,32 +4,33 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AdminLogin } from './AdminLogin';
 import { useAdminStore } from '../../../store/useAdminStore';
 
-// Zustand Store'u Mockluyoruz
-vi.mock('../../../store/useAdminStore');
-
 describe('AdminLogin Bileşen Testleri', () => {
-  let mockStore;
+  let initialAdminState;
+  let mockSetShowForgotPassword;
+  let mockSetAdminError;
 
   beforeEach(() => {
-    mockStore = {
+    initialAdminState = useAdminStore.getState();
+    
+    // Verileri sıfırla ama store fonksiyonlarını YAKMA
+    useAdminStore.setState({
       isPasswordRecovery: false,
       showForgotPassword: false,
       adminEmail: '',
       adminPassword: '',
       adminAuthLoading: false,
-      setAdminEmail: vi.fn(),
-      setAdminPassword: vi.fn(),
-      setShowForgotPassword: vi.fn(),
-      setForgotPasswordEmail: vi.fn(),
-      setAdminError: vi.fn(),
-      setAdminLoginNotice: vi.fn(),
-    };
-    useAdminStore.mockReturnValue(mockStore);
+      adminError: ''
+    });
+
+    // İzlenmesi gerekenleri spyOn ile bağla
+    mockSetShowForgotPassword = vi.spyOn(useAdminStore.getState(), 'setShowForgotPassword');
+    mockSetAdminError = vi.spyOn(useAdminStore.getState(), 'setAdminError');
   });
 
   afterEach(() => {
-    cleanup(); // Testler arası DOM temizliği
-    vi.clearAllMocks();
+    cleanup();
+    vi.restoreAllMocks();
+    useAdminStore.setState(initialAdminState, true); // Orijinal duruma getir
   });
 
   it('Varsayılan durumda standart giriş (Login) formunu göstermeli', () => {
@@ -46,12 +47,12 @@ describe('AdminLogin Bileşen Testleri', () => {
     const forgotBtn = screen.getByRole('button', { name: /Şifremi unuttum/i });
     fireEvent.click(forgotBtn);
 
-    expect(mockStore.setShowForgotPassword).toHaveBeenCalledWith(true);
-    expect(mockStore.setAdminError).toHaveBeenCalledWith('');
+    expect(mockSetShowForgotPassword).toHaveBeenCalledWith(true);
+    expect(mockSetAdminError).toHaveBeenCalledWith('');
   });
 
   it('showForgotPassword true olduğunda Kurtarma E-postası formunu göstermeli', () => {
-    useAdminStore.mockReturnValue({ ...mockStore, showForgotPassword: true });
+    useAdminStore.setState({ showForgotPassword: true });
     
     render(<AdminLogin isEn={false} sendPasswordResetEmail={vi.fn()} />);
     

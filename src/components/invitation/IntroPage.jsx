@@ -76,6 +76,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
         <button 
           className="envelope-seal" 
           onClick={handleOpen}
+          disabled={!isHeroLoaded || isOpening}
           style={{ 
             opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
             pointerEvents: isOpening ? "none" : "auto",
@@ -110,3 +111,4 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
     </section>
   );
 }
+

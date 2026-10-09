@@ -199,14 +199,15 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
 
   const sendPasswordResetEmail = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { adminEmail, setForgotPasswordMessage, setAdminError, setForgotPasswordLoading } = useAdminStore.getState();
+    // HATA DÜZELTİLDİ: Kurtarma formundaki giriş alanı adminEmail yerine forgotPasswordEmail okumalıdır.
+    const { forgotPasswordEmail, setForgotPasswordMessage, setAdminError, setForgotPasswordLoading } = useAdminStore.getState();
     setForgotPasswordMessage("");
     setAdminError("");
     setForgotPasswordLoading(true);
 
     try {
       if (!isSupabaseReady()) { setForgotPasswordMessage(getSupabaseSetupMessage()); return; }
-      const email = (adminEmail || "").trim();
+      const email = (forgotPasswordEmail || "").trim();
       if (!email) { setForgotPasswordMessage(isEn ? "Please enter admin email to reset password." : "Şifre sıfırlama linki için admin e-postanı yazmalısın."); return; }
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: getAdminRedirectUrl() });

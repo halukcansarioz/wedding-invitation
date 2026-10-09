@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useAdminGuestPhotos } from './useAdminGuestPhotos';
+import { useStore } from '../store/useStore';
 
 const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
@@ -24,20 +25,22 @@ vi.mock('../supabaseClient', () => ({
   }
 }));
 
-// Storage silme fonksiyonunu mockluyoruz
 vi.mock('../services/database', () => ({
   deleteMediaFile: vi.fn().mockResolvedValue(true)
-}));
-
-// Zustand store (Alert gösterimi için)
-vi.mock('../store/useStore', () => ({
-  useStore: vi.fn(() => vi.fn()) // showAppAlert mock
 }));
 
 describe('useAdminGuestPhotos Hook Testleri', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(window, 'confirm').mockImplementation(() => true); // Silme onayı her zaman "Evet"
+    vi.spyOn(window, 'confirm').mockImplementation(() => true);
+    
+    // KRİTİK DÜZELTME: setState ile değil, spyOn ile fonksiyonu izliyoruz!
+    vi.spyOn(useStore.getState(), 'showAppAlert').mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    // Test bitince orijinal fonksiyonu geri yükler
+    vi.restoreAllMocks();
   });
 
   it('Verileri çektikten sonra onaylı ve onaysız olarak doğru ayırmalı', async () => {
@@ -60,7 +63,6 @@ describe('useAdminGuestPhotos Hook Testleri', () => {
     });
 
     expect(mockUpdate).toHaveBeenCalledWith({ approved: true });
-    // State güncellendiği için onay bekleyen kalmamalı
     expect(result.current.pendingPhotos).toHaveLength(0);
   });
 });
