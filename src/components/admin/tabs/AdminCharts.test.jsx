@@ -3,13 +3,17 @@ import { render, screen, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import AdminCharts from './AdminCharts';
 
-vi.mock('recharts', async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    ResponsiveContainer: ({ children }) => <div data-testid="recharts-container">{children}</div>,
-  };
-});
+vi.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }) => <div data-testid="recharts-container">{children}</div>,
+  PieChart: ({ children }) => <div>{children}</div>,
+  Pie: ({ children }) => <div>{children}</div>,
+  Cell: () => <div />,
+  BarChart: ({ children }) => <div>{children}</div>,
+  Bar: () => <div />,
+  XAxis: () => <div />,
+  YAxis: () => <div />,
+  Tooltip: () => <div />
+}));
 
 describe('AdminCharts Bileşen Testleri', () => {
   const mockSideData = [
@@ -22,7 +26,6 @@ describe('AdminCharts Bileşen Testleri', () => {
     { name: 'Beklenenler', value: 20 }
   ];
 
-  // DOM temizliği eklenerek testler arası sızıntı önlendi
   afterEach(() => {
     cleanup();
   });
@@ -46,7 +49,6 @@ describe('AdminCharts Bileşen Testleri', () => {
       <AdminCharts sideData={[]} checkInData={[]} isEn={false} />
     );
     
-    // Cleanup sayesinde artık burada sadece 2 adet container bulunacak
     const containers = screen.getAllByTestId('recharts-container');
     expect(containers).toHaveLength(2);
     expect(container).toBeInTheDocument();
