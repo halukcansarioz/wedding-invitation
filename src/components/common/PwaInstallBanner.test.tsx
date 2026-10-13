@@ -1,7 +1,7 @@
 /// <reference types="@testing-library/jest-dom" />
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { PwaInstallBanner } from './PwaInstallBanner';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
@@ -10,6 +10,12 @@ vi.mock('../../hooks/usePWAInstall', () => ({
 }));
 
 describe('PwaInstallBanner İleri Seviye Testleri', () => {
+  
+  // Her testten sonra DOM'u temizleyerek testlerin birbirine karışmasını (multiple elements hatasını) önlüyoruz
+  afterEach(() => {
+    cleanup();
+  });
+
   it('Cihaz iOS ise Safari paylaşım yönergelerini göstermeli', () => {
     (usePWAInstall as any).mockReturnValue({
       isIos: true,
@@ -18,7 +24,9 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
     });
 
     render(<PwaInstallBanner />);
-    expect(screen.getByText(/Ana Ekrana Ekle/i)).toBeInTheDocument();
+    
+    // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
+    expect(screen.getByText(/Ana Ekrana Ekle/i)).toBeDefined();
   });
 
   it('Cihaz Android/PC ise tek tıklamalık Yükle butonunu göstermeli', () => {
@@ -29,7 +37,7 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
     });
 
     render(<PwaInstallBanner />);
-    const installBtn = screen.getByRole('button', { name: /Yükle/i });
-    expect(installBtn).toBeInTheDocument();
+    
+    expect(screen.getByRole('button', { name: /Yükle/i })).toBeDefined();
   });
 });

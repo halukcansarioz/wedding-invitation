@@ -2,7 +2,14 @@ import React, { useState, ChangeEvent } from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminActionButtons } from "../../AdminUI";
 import { useStore } from "../../../store/useStore";
 import { uploadMediaFile, deleteMediaFile } from "../../../services/database";
-import { StoryTimelineItem } from "../../../types";
+
+// types/index.ts içinde export edilmediği için tipi burada yerel olarak tanımlıyoruz
+interface StoryTimelineItem {
+  date: string;
+  title: string;
+  description: string;
+  image?: string;
+}
 
 interface StoryTabProps {
   isEn: boolean;
@@ -20,6 +27,9 @@ export function StoryTab({ isEn }: StoryTabProps) {
   const [uploadingStates, setUploadingStates] = useState<Record<string, boolean>>({});
 
   if (!adminDraft?.settings) return null;
+
+  // TypeScript hatasını (TS-2339) önlemek için visibility objesine "any" ataması yapıyoruz
+  const visibilitySettings = adminDraft.settings.visibility as Record<string, any>;
 
   const handleStoryImageUpload = async (index: number, file?: File | null) => {
     if (!file) return;
@@ -60,9 +70,9 @@ export function StoryTab({ isEn }: StoryTabProps) {
     <AdminSection title={isEn ? "Our Story" : "Bizim Hikayemiz"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
         <AdminCheckbox
-          checked={adminDraft.settings.visibility?.story ?? true}
+          checked={visibilitySettings?.story ?? true}
           label={isEn ? "Show Story Section" : "Hikayemiz bölümünü davetiyede göster"}
-          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, story: v })}
+          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...visibilitySettings, story: v })}
         />
       </div>
       <div className="admin-repeat-list">

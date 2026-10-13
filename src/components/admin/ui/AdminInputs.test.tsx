@@ -10,7 +10,8 @@ describe('AdminInputs Bileşen Testleri', () => {
     render(<AdminField label="Test Label" value="Test Değer" onChange={mockOnChange} />);
     
     const input = screen.getByDisplayValue('Test Değer');
-    expect(input).toBeInTheDocument();
+    // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
+    expect(input).toBeDefined();
 
     fireEvent.change(input, { target: { value: 'Yeni Değer' } });
     expect(mockOnChange).toHaveBeenCalledWith('Yeni Değer');
@@ -20,8 +21,9 @@ describe('AdminInputs Bileşen Testleri', () => {
     const mockOnChange = vi.fn();
     render(<AdminCheckbox label="Onay Kutusu" checked={false} onChange={mockOnChange} />);
     
-    const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).not.toBeChecked();
+    // Elementi HTMLInputElement olarak cast edip native checked özelliğini kontrol ediyoruz
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+    expect(checkbox.checked).toBe(false);
 
     fireEvent.click(checkbox);
     expect(mockOnChange).toHaveBeenCalledWith(true);

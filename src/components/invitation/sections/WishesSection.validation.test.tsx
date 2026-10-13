@@ -20,7 +20,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
 }));
 
-// KRİTİK DÜZELTME 2: Canvas kullanan triggerConfetti fonksiyonunun JSDOM ortamında (clearRect okuyamadığı için) çökmesini engeller
+// KRİTİK DÜZELTME 2: Canvas kullanan triggerConfetti fonksiyonunun JSDOM ortamında çökmesini engeller
 vi.mock('../../../utils/helpers', async (importOriginal) => {
   const actual: any = await importOriginal();
   return {
@@ -50,20 +50,22 @@ describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
   });
 
   it('Zorunlu alanlar boş bırakıldığında Zod şeması hata mesajlarını göstermeli ve formu göndermemeli', async () => {
-    render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
+    // TypeScript uyarısını (Type Error) aşmak için "as any" kullanıldı
+    render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
     
     fireEvent.click(screen.getByTestId('turnstile-btn'));
     fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
 
     await waitFor(() => {
-      expect(screen.getByText('form.missingNameMessage')).toBeInTheDocument();
-      expect(screen.getByText('form.missingWishMessage')).toBeInTheDocument();
+      // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
+      expect(screen.getByText('form.missingNameMessage')).toBeDefined();
+      expect(screen.getByText('form.missingWishMessage')).toBeDefined();
       expect(mockSubmitWish).not.toHaveBeenCalled();
     });
   });
 
   it('Geçerli veriler girildiğinde submitWish fonksiyonu çağrılmalı ve form sıfırlanmalı', async () => {
-    render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
+    render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
     
     fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Ahmet Yılmaz' } });
     fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Harika bir düğün, mutluluklar dilerim!' } });
@@ -82,7 +84,7 @@ describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
   });
 
   it('Honeypot alanı doldurulursa (Bot saldırısı simülasyonu) gönderim engellenmeli', async () => {
-    const { container } = render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
+    const { container } = render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
     
     const honeypotInput = container.querySelector('input[name="honeypot"]') as HTMLInputElement;
     fireEvent.change(honeypotInput, { target: { value: 'spam-bot-data' } });

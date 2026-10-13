@@ -334,6 +334,114 @@ vitest.setup.js
 <files>
 This section contains the contents of the repository's files.
 
+<file path="src/components/invitation/sections/FamilySection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const FamilySection = memo(function FamilySection({ copy, familyInfo }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card family-card">
+      <p className="section-label">{isEn ? t('invitation.familyLabel') : copy?.familyLabel}</p>
+      <h2>{isEn ? t('invitation.familyTitle') : copy?.familyTitle}</h2>
+      <p>{familyInfo?.text}</p>
+      <div className="family-grid">
+        <div><span>{familyInfo?.brideFamilyTitle}</span><strong>{familyInfo?.brideFamilyName}</strong></div>
+        <div><span>{familyInfo?.groomFamilyTitle}</span><strong>{familyInfo?.groomFamilyName}</strong></div>
+      </div>
+    </m.section>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/FooterSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const FooterSection = memo(function FooterSection({ coupleName, invitation, copy }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  return (
+    <m.footer initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="footer">
+      <p>{coupleName}</p>
+      <span>{invitation?.dateText}</span>
+      <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
+      <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
+    </m.footer>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/InvitationMessageSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const InvitationMessageSection = memo(function InvitationMessageSection({ copy, invitation }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card invitation-card">
+      <p className="section-label">{isEn ? t('invitation.invitationLabel') : copy?.invitationLabel}</p>
+      <h2>{isEn ? t('invitation.invitationTitle') : copy?.invitationTitle}</h2>
+      <p>{invitation?.message}</p>
+    </m.section>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/ScheduleSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const ScheduleSection = memo(function ScheduleSection({ copy, invitation, scheduleItems }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const items = Array.isArray(scheduleItems) ? scheduleItems : [];
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card schedule-card">
+      <p className="section-label">{isEn ? t('invitation.scheduleLabel') : copy?.scheduleLabel}</p>
+      <h2>{invitation?.dateText}</h2>
+      <div className="schedule-list">
+        {items.map((item, index) => (
+          <div className="schedule-item" key={`${item.time}-${index}`}>
+            <strong>{item.time}</strong><div><span>{item.title}</span><p>{item.description}</p></div>
+          </div>
+        ))}
+      </div>
+    </m.section>
+  );
+});
+</file>
+
 <file path=".oxlintrc.json">
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
@@ -470,77 +578,6 @@ export default function AdminCharts({ sideData, checkInData, isEn }) {
         </ResponsiveContainer>
       </div>
     </div>
-  );
-}
-</file>
-
-<file path="src/components/admin/tabs/CeremonyTab.tsx">
-import React from "react";
-import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
-import { useStore } from "../../../store/useStore";
-
-// types/index.ts içinde export edilmediği için tipi burada yerel olarak tanımlıyoruz
-interface EventDetailItem {
-  label: string;
-  time: string;
-  location: string;
-  description: string;
-}
-
-interface CeremonyTabProps {
-  isEn: boolean;
-}
-
-export function CeremonyTab({ isEn }: CeremonyTabProps) {
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-  const updateDraftArrayItem = useStore((state) => state.updateDraftArrayItem);
-  const removeDraftArrayItem = useStore((state) => state.removeDraftArrayItem);
-  const addDraftArrayItem = useStore((state) => state.addDraftArrayItem);
-  const moveDraftArrayItem = useStore((state) => state.moveDraftArrayItem);
-
-  if (!adminDraft?.settings) return null;
-
-  return (
-    <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"} onSave={() => saveSiteContent(isEn)}>
-      <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
-        <AdminCheckbox 
-          checked={adminDraft.settings.visibility?.ceremony ?? true} 
-          label={isEn ? "Show Ceremony Section" : "Nikah bölümünü göster"} 
-          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} 
-        />
-      </div>
-      <div className="admin-repeat-list">
-        {(adminDraft.eventDetails || []).map((event: EventDetailItem, index: number) => (
-          <div key={index} className="admin-repeat-item">
-            <div className="admin-repeat-title">
-              <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
-              <AdminActionButtons 
-                onMoveUp={index > 0 ? () => moveDraftArrayItem("eventDetails", index, -1) : null}
-                onMoveDown={index < (adminDraft.eventDetails?.length || 0) - 1 ? () => moveDraftArrayItem("eventDetails", index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} 
-                onDelete={() => removeDraftArrayItem("eventDetails", index)} 
-                isEn={isEn} 
-              />
-            </div>
-            <div className="admin-edit-grid">
-              <AdminField label={isEn ? "Title" : "Başlık"} value={event.label} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "label", v)} placeholder="Örn: Nikah Töreni" />
-              <AdminField label={isEn ? "Time" : "Saat"} value={event.time} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "time", v)} placeholder="Örn: 19:00" />
-              <AdminField label={isEn ? "Location" : "Mekan"} value={event.location} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "location", v)} placeholder="Örn: Kır Bahçesi" />
-              <AdminTextarea label={isEn ? "Description" : "Açıklama"} value={event.description} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "description", v)} />
-            </div>
-          </div>
-        ))}
-        <button 
-          type="button" 
-          className="admin-add-button" 
-          onClick={() => addDraftArrayItem("eventDetails", { label: "Yeni Etkinlik", time: "20:00", location: "", description: "" })}
-        >
-          {isEn ? "Add New Event" : "Yeni Etkinlik Ekle"}
-        </button>
-      </div>
-    </AdminSection>
   );
 }
 </file>
@@ -993,51 +1030,6 @@ export function StoryTab({ isEn }: StoryTabProps) {
 }
 </file>
 
-<file path="src/components/admin/tabs/TablePlanTab.test.tsx">
-import React from 'react';
-import { render, screen, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { TablePlanTab } from './TablePlanTab';
-
-// @dnd-kit kütüphanesini test ortamında çökmelerden korumak için mockluyoruz
-vi.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: any) => <div data-testid="dnd-context">{children}</div>,
-  useDraggable: () => ({ attributes: {}, listeners: {}, setNodeRef: vi.fn(), transform: null }),
-  useDroppable: () => ({ isOver: false, setNodeRef: vi.fn() })
-}));
-
-describe('TablePlanTab Admin Bileşen Testleri', () => {
-  const mockGuests = [
-    { id: '1', name: 'Ahmet Yılmaz', attendance: 'Katılacağım', personCount: '2', side: 'Gelin', hasChild: 'Hayır', has_arrived: false },
-    { id: '2', name: 'Ayşe Kaya', attendance: 'Katılacağım', personCount: '1', side: 'Damat', hasChild: 'Hayır', has_arrived: false, tableNumber: '1' }
-  ];
-
-  afterEach(() => {
-    cleanup();
-  });
-
-  it('Atanmamış (Bekleyen) misafirleri listeleyebilmeli', () => {
-    render(<TablePlanTab guests={mockGuests} assignTable={vi.fn()} isEn={false} />);
-    
-    // Masa atanmamış Ahmet Yılmaz "Bekleyenler" listesinde görünmeli
-    expect(screen.getByText('Ahmet Yılmaz')).toBeInTheDocument();
-    
-    // Bekleyen sayısı 1 olmalı
-    expect(screen.getByText('Bekleyenler (1)')).toBeInTheDocument();
-  });
-
-  it('Masaları ve atanan misafirleri render edebilmeli', () => {
-    render(<TablePlanTab guests={mockGuests} assignTable={vi.fn()} isEn={false} />);
-    
-    // Masa 1 başlığı görünmeli
-    expect(screen.getByText('Masa 1')).toBeInTheDocument();
-    
-    // Ayşe Kaya Masa 1'e atandığı için ismi DOM'da yer almalı
-    expect(screen.getByText(/Ayşe Kaya/i)).toBeInTheDocument();
-  });
-});
-</file>
-
 <file path="src/components/admin/tabs/ThemeTab.tsx">
 import React from "react";
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
@@ -1156,84 +1148,6 @@ export function AdminCheckbox({ label, checked, onChange }) {
       <input type="checkbox" checked={Boolean(checked)} onChange={(e) => onChange(e.target.checked)} />
       <span>{label}</span>
     </label>
-  );
-}
-</file>
-
-<file path="src/components/admin/ui/AdminInputs.test.tsx">
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { AdminField, AdminCheckbox } from './AdminInputs';
-
-describe('AdminInputs Bileşen Testleri', () => {
-  it('AdminField değere göre inputu doldurmalı ve değişimde onChange tetiklemeli', () => {
-    const mockOnChange = vi.fn();
-    render(<AdminField label="Test Label" value="Test Değer" onChange={mockOnChange} />);
-    
-    const input = screen.getByDisplayValue('Test Değer');
-    expect(input).toBeInTheDocument();
-
-    fireEvent.change(input, { target: { value: 'Yeni Değer' } });
-    expect(mockOnChange).toHaveBeenCalledWith('Yeni Değer');
-  });
-
-  it('AdminCheckbox işaretlendiğinde doğru değeri iletmeli', () => {
-    const mockOnChange = vi.fn();
-    render(<AdminCheckbox label="Onay Kutusu" checked={false} onChange={mockOnChange} />);
-    
-    const checkbox = screen.getByRole('checkbox');
-    expect(checkbox).not.toBeChecked();
-
-    fireEvent.click(checkbox);
-    expect(mockOnChange).toHaveBeenCalledWith(true);
-  });
-});
-</file>
-
-<file path="src/components/admin/ui/AdminLayout.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-
-export function AdminSection({ title, children, onSave }) {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith("en");
-
-  return (
-    <div className="admin-editor-section">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-        <h3 style={{ margin: 0 }}>{title}</h3>
-        {onSave && (
-          <button 
-            type="button" 
-            className="secondary-button small-admin-button" 
-            onClick={onSave}
-          >
-            {isEn ? "Save 💾" : "Kaydet 💾"}
-          </button>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isEn }) {
-  return (
-    <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
-      {onMoveUp && (
-        <button type="button" className="secondary-button small-admin-button" onClick={onMoveUp} title={isEn ? "Move Up" : "Yukarı Taşı"}>↑</button>
-      )}
-      {onMoveDown && (
-        <button type="button" className="secondary-button small-admin-button" onClick={onMoveDown} title={isEn ? "Move Down" : "Aşağı Taşı"}>↓</button>
-      )}
-      {onSave && (
-        <button type="button" className="secondary-button small-admin-button" onClick={onSave}>{isEn ? "Save 💾" : "Kaydet 💾"}</button>
-      )}
-      {onDelete && (
-        <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
-      )}
-    </div>
   );
 }
 </file>
@@ -1664,249 +1578,6 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz", i
 }
 </file>
 
-<file path="src/components/invitation/sections/FamilySection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const FamilySection = memo(function FamilySection({ copy, familyInfo }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card family-card">
-      <p className="section-label">{isEn ? t('invitation.familyLabel') : copy?.familyLabel}</p>
-      <h2>{isEn ? t('invitation.familyTitle') : copy?.familyTitle}</h2>
-      <p>{familyInfo?.text}</p>
-      <div className="family-grid">
-        <div><span>{familyInfo?.brideFamilyTitle}</span><strong>{familyInfo?.brideFamilyName}</strong></div>
-        <div><span>{familyInfo?.groomFamilyTitle}</span><strong>{familyInfo?.groomFamilyName}</strong></div>
-      </div>
-    </m.section>
-  );
-});
-</file>
-
-<file path="src/components/invitation/sections/FooterSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const FooterSection = memo(function FooterSection({ coupleName, invitation, copy }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  return (
-    <m.footer initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="footer">
-      <p>{coupleName}</p>
-      <span>{invitation?.dateText}</span>
-      <small>{isEn ? t('invitation.thanksText') : copy?.thanksText}</small>
-      <small>{isEn ? t('invitation.footerSmall') : copy?.footerSmall}</small>
-    </m.footer>
-  );
-});
-</file>
-
-<file path="src/components/invitation/sections/InvitationMessageSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const InvitationMessageSection = memo(function InvitationMessageSection({ copy, invitation }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card invitation-card">
-      <p className="section-label">{isEn ? t('invitation.invitationLabel') : copy?.invitationLabel}</p>
-      <h2>{isEn ? t('invitation.invitationTitle') : copy?.invitationTitle}</h2>
-      <p>{invitation?.message}</p>
-    </m.section>
-  );
-});
-</file>
-
-<file path="src/components/invitation/sections/ScheduleSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const ScheduleSection = memo(function ScheduleSection({ copy, invitation, scheduleItems }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const items = Array.isArray(scheduleItems) ? scheduleItems : [];
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card schedule-card">
-      <p className="section-label">{isEn ? t('invitation.scheduleLabel') : copy?.scheduleLabel}</p>
-      <h2>{invitation?.dateText}</h2>
-      <div className="schedule-list">
-        {items.map((item, index) => (
-          <div className="schedule-item" key={`${item.time}-${index}`}>
-            <strong>{item.time}</strong><div><span>{item.title}</span><p>{item.description}</p></div>
-          </div>
-        ))}
-      </div>
-    </m.section>
-  );
-});
-</file>
-
-<file path="src/components/invitation/sections/WishesSection.test.tsx">
-import React from 'react';
-import { render, screen } from '../../../../tests/test-utils';
-import { describe, it, expect, vi } from 'vitest';
-import { WishesSection } from './WishesSection';
-import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
-
-vi.mock('../../../hooks/useAudioRecorder');
-vi.mock('@marsidev/react-turnstile', () => ({ 
-  Turnstile: ({ onSuccess }: any) => <button onClick={() => onSuccess('fake-token')}>Token Al</button> 
-}));
-vi.mock('react-i18next', () => ({ 
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
-}));
-
-describe('WishesSection Bileşen Testleri', () => {
-  it('Ses kaydı devam ediyorken Durdur (Stop) butonunu göstermeli', () => {
-    (useAudioRecorder as any).mockReturnValue({
-      isRecording: true, 
-      recordingTime: 15, 
-      startRecording: vi.fn(), 
-      stopRecording: vi.fn(), 
-      clearRecording: vi.fn()
-    });
-
-    render(<WishesSection submitWish={vi.fn()} approvedWishes={[]} />);
-    
-    expect(screen.getByRole('button', { name: /Durdur/i })).toBeInTheDocument();
-    expect(screen.getByText(/00:15/i)).toBeInTheDocument();
-  });
-});
-</file>
-
-<file path="src/components/invitation/sections/WishesSection.validation.test.tsx">
-import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { WishesSection } from './WishesSection';
-import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
-
-vi.mock('../../../hooks/useAudioRecorder');
-
-// KRİTİK DÜZELTME 1: Butonun varsayılan submit davranışını önlemek için type="button" eklendi
-vi.mock('@marsidev/react-turnstile', () => ({ 
-  Turnstile: ({ onSuccess }: any) => (
-    <button type="button" data-testid="turnstile-btn" onClick={() => onSuccess('valid-token')}>
-      Token Al
-    </button>
-  )
-}));
-
-vi.mock('react-i18next', () => ({ 
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
-}));
-
-// KRİTİK DÜZELTME 2: Canvas kullanan triggerConfetti fonksiyonunun JSDOM ortamında (clearRect okuyamadığı için) çökmesini engeller
-vi.mock('../../../utils/helpers', async (importOriginal) => {
-  const actual: any = await importOriginal();
-  return {
-    ...actual,
-    triggerConfetti: vi.fn()
-  };
-});
-
-describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
-  const mockSubmitWish = vi.fn().mockResolvedValue(undefined);
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    (useAudioRecorder as any).mockReturnValue({
-      isRecording: false,
-      recordingTime: 0,
-      startRecording: vi.fn(),
-      stopRecording: vi.fn(),
-      clearRecording: vi.fn(),
-      audioBlob: null,
-      uploadAudio: vi.fn()
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-  });
-
-  it('Zorunlu alanlar boş bırakıldığında Zod şeması hata mesajlarını göstermeli ve formu göndermemeli', async () => {
-    render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
-    
-    fireEvent.click(screen.getByTestId('turnstile-btn'));
-    fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('form.missingNameMessage')).toBeInTheDocument();
-      expect(screen.getByText('form.missingWishMessage')).toBeInTheDocument();
-      expect(mockSubmitWish).not.toHaveBeenCalled();
-    });
-  });
-
-  it('Geçerli veriler girildiğinde submitWish fonksiyonu çağrılmalı ve form sıfırlanmalı', async () => {
-    render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
-    
-    fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Ahmet Yılmaz' } });
-    fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Harika bir düğün, mutluluklar dilerim!' } });
-    
-    fireEvent.click(screen.getByTestId('turnstile-btn'));
-    fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
-
-    await waitFor(() => {
-      expect(mockSubmitWish).toHaveBeenCalledTimes(1);
-      expect(mockSubmitWish).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'Ahmet Yılmaz',
-        message: 'Harika bir düğün, mutluluklar dilerim!',
-        turnstileToken: 'valid-token'
-      }));
-    });
-  });
-
-  it('Honeypot alanı doldurulursa (Bot saldırısı simülasyonu) gönderim engellenmeli', async () => {
-    const { container } = render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
-    
-    const honeypotInput = container.querySelector('input[name="honeypot"]') as HTMLInputElement;
-    fireEvent.change(honeypotInput, { target: { value: 'spam-bot-data' } });
-    
-    fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Bot' } });
-    fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Spam mesaj' } });
-    
-    fireEvent.click(screen.getByTestId('turnstile-btn'));
-    fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
-
-    await waitFor(() => {
-      expect(mockSubmitWish).not.toHaveBeenCalled();
-    });
-  });
-});
-</file>
-
 <file path="src/components/AdminUI.jsx">
 export * from "./admin/ui/AdminInputs";
 export * from "./admin/ui/AdminMediaFields";
@@ -2151,6 +1822,38 @@ export function useAdminTablePlan(guests: Guest[], isEn: boolean) {
     tables,
     exportTablePlanPDF
   };
+}
+</file>
+
+<file path="src/hooks/useAssetPreloader.js">
+import { useState, useEffect } from 'react';
+
+export function useAssetPreloader(mediaUrl) {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!mediaUrl) {
+      setIsLoaded(true);
+      return;
+    }
+
+    const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+
+    if (isVideo) {
+      const video = document.createElement('video');
+      video.src = mediaUrl;
+      video.onloadeddata = () => setIsLoaded(true);
+      video.onerror = () => setIsLoaded(true);
+      video.load();
+    } else {
+      const img = new Image();
+      img.src = mediaUrl;
+      img.onload = () => setIsLoaded(true);
+      img.onerror = () => setIsLoaded(true);
+    }
+  }, [mediaUrl]);
+
+  return isLoaded;
 }
 </file>
 
@@ -4285,6 +3988,77 @@ export function CeremonyTab({ isEn }) {
 }
 </file>
 
+<file path="src/components/admin/tabs/CeremonyTab.tsx">
+import React from "react";
+import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
+
+// types/index.ts içinde export edilmediği için tipi burada yerel olarak tanımlıyoruz
+interface EventDetailItem {
+  label: string;
+  time: string;
+  location: string;
+  description: string;
+}
+
+interface CeremonyTabProps {
+  isEn: boolean;
+}
+
+export function CeremonyTab({ isEn }: CeremonyTabProps) {
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+  const updateDraftArrayItem = useStore((state) => state.updateDraftArrayItem);
+  const removeDraftArrayItem = useStore((state) => state.removeDraftArrayItem);
+  const addDraftArrayItem = useStore((state) => state.addDraftArrayItem);
+  const moveDraftArrayItem = useStore((state) => state.moveDraftArrayItem);
+
+  if (!adminDraft?.settings) return null;
+
+  return (
+    <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"} onSave={() => saveSiteContent(isEn)}>
+      <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
+        <AdminCheckbox 
+          checked={adminDraft.settings.visibility?.ceremony ?? true} 
+          label={isEn ? "Show Ceremony Section" : "Nikah bölümünü göster"} 
+          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} 
+        />
+      </div>
+      <div className="admin-repeat-list">
+        {(adminDraft.eventDetails || []).map((event: EventDetailItem, index: number) => (
+          <div key={index} className="admin-repeat-item">
+            <div className="admin-repeat-title">
+              <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
+              <AdminActionButtons 
+                onMoveUp={index > 0 ? () => moveDraftArrayItem("eventDetails", index, -1) : null}
+                onMoveDown={index < (adminDraft.eventDetails?.length || 0) - 1 ? () => moveDraftArrayItem("eventDetails", index, 1) : null}
+                onSave={() => saveSiteContent(isEn)} 
+                onDelete={() => removeDraftArrayItem("eventDetails", index)} 
+                isEn={isEn} 
+              />
+            </div>
+            <div className="admin-edit-grid">
+              <AdminField label={isEn ? "Title" : "Başlık"} value={event.label} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "label", v)} placeholder="Örn: Nikah Töreni" />
+              <AdminField label={isEn ? "Time" : "Saat"} value={event.time} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "time", v)} placeholder="Örn: 19:00" />
+              <AdminField label={isEn ? "Location" : "Mekan"} value={event.location} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "location", v)} placeholder="Örn: Kır Bahçesi" />
+              <AdminTextarea label={isEn ? "Description" : "Açıklama"} value={event.description} onChange={(v: string) => updateDraftArrayItem("eventDetails", index, "description", v)} />
+            </div>
+          </div>
+        ))}
+        <button 
+          type="button" 
+          className="admin-add-button" 
+          onClick={() => addDraftArrayItem("eventDetails", { label: "Yeni Etkinlik", time: "20:00", location: "", description: "" })}
+        >
+          {isEn ? "Add New Event" : "Yeni Etkinlik Ekle"}
+        </button>
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
 <file path="src/components/admin/tabs/CopyTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea } from "../../AdminUI";
@@ -4544,64 +4318,6 @@ describe('GiftTab Admin Bileşen Testleri', () => {
 });
 </file>
 
-<file path="src/components/admin/tabs/GuestPhotosTab.test.tsx">
-import React from 'react';
-import { render, screen, fireEvent } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GuestPhotosTab } from './GuestPhotosTab';
-import { useAdminGuestPhotos } from '../../../hooks/useAdminGuestPhotos';
-
-vi.mock('../../../hooks/useAdminGuestPhotos');
-
-describe('GuestPhotosTab Admin Bileşen Testleri', () => {
-  const mockApprovePhoto = vi.fn();
-  const mockRejectPhoto = vi.fn();
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('Veriler yüklenirken Loading ekranını göstermeli', () => {
-    (useAdminGuestPhotos as any).mockReturnValue({
-      isLoading: true,
-      pendingPhotos: [],
-      approvedPhotos: [],
-      approvePhoto: mockApprovePhoto,
-      rejectPhoto: mockRejectPhoto
-    });
-
-    render(<GuestPhotosTab isEn={false} />);
-    
-    // GÜNCELLENDİ: TS hatasını (ts-2339) önlemek için toBeInTheDocument yerine toBeDefined kullanıldı.
-    // getByText zaten elementi bulamazsa hata fırlatır, test güvenliği aynı kalır.
-    expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeDefined();
-  });
-
-  it('Bekleyen ve Onaylanan fotoğrafları listelemeli ve buton aksiyonlarını tetiklemeli', () => {
-    (useAdminGuestPhotos as any).mockReturnValue({
-      isLoading: false,
-      pendingPhotos: [{ id: '1', image_url: 'bekleyen.jpg' }],
-      approvedPhotos: [{ id: '2', image_url: 'onayli.jpg' }],
-      approvePhoto: mockApprovePhoto,
-      rejectPhoto: mockRejectPhoto
-    });
-
-    render(<GuestPhotosTab isEn={false} />);
-    
-    expect(screen.getByText('Onay Bekleyenler (1)')).toBeDefined();
-    expect(screen.getByText('Yayında Olanlar (1)')).toBeDefined();
-
-    const approveBtn = screen.getByRole('button', { name: /Onayla/i });
-    fireEvent.click(approveBtn);
-    expect(mockApprovePhoto).toHaveBeenCalledWith('1');
-
-    const removeBtn = screen.getByRole('button', { name: /Kaldır/i });
-    fireEvent.click(removeBtn);
-    expect(mockRejectPhoto).toHaveBeenCalledWith('2', 'onayli.jpg');
-  });
-});
-</file>
-
 <file path="src/components/admin/tabs/GuestPhotosTab.tsx">
 import React, { useCallback } from "react";
 import { AdminSection } from "../../AdminUI";
@@ -4851,87 +4567,6 @@ export function OverviewTab({ guests = [], wishes = [], isEn, setActiveAdminTab 
     </AdminSection>
   );
 }
-</file>
-
-<file path="src/components/admin/tabs/OverviewTab.test.tsx">
-import React from 'react';
-import { render, screen, waitFor, fireEvent, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { OverviewTab } from './OverviewTab';
-import { useStore } from '../../../store/useStore';
-
-vi.mock('../../../supabaseClient', () => ({
-  supabase: {
-    from: vi.fn((table) => {
-      if (table === 'guest_photos') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({ count: 5, data: [] })
-        };
-      }
-      if (table === 'payments') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({ 
-            data: [{ amount: '500' }, { amount: '1500' }] 
-          })
-        };
-      }
-      return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ count: 0, data: [] }) };
-    })
-  }
-}));
-
-describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
-  let mockSetActiveTab: any;
-  let originalLocation: any;
-  let initialState: any;
-
-  beforeEach(() => {
-    mockSetActiveTab = vi.fn();
-    vi.spyOn(window, 'open').mockImplementation(() => null);
-    
-    initialState = useStore.getState();
-    useStore.setState({
-      adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } } as any
-    });
-
-    // DÜZELTME: JSDOM location hatasını önleme
-    originalLocation = window.location;
-    delete (window as any).location;
-    window.location = { pathname: '/demo' } as any;
-  });
-
-  afterEach(() => {
-    cleanup();
-    window.location = originalLocation;
-    useStore.setState(initialState, true);
-    vi.clearAllMocks();
-  });
-
-  it('Supabase verilerini çekip istatistikleri (Fotoğraf ve Hediye) ekranda göstermeli', async () => {
-    render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('5')).toBeInTheDocument();
-      const formattedTotal = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(2000);
-      expect(screen.getByText(formattedTotal)).toBeInTheDocument();
-    });
-  });
-
-  it('Barkovizyonu Başlat butonuna tıklandığında yeni sekmede /live rotasını açmalı', async () => {
-    render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('5')).toBeInTheDocument();
-    });
-
-    const liveBtn = screen.getByRole('button', { name: /Barkovizyonu Başlat/i });
-    fireEvent.click(liveBtn);
-
-    expect(window.open).toHaveBeenCalledWith('/demo/live', '_blank');
-  });
-});
 </file>
 
 <file path="src/components/admin/tabs/PaymentsTab.test.jsx">
@@ -5266,6 +4901,52 @@ describe('StoryTab Admin Bileşen Testleri', () => {
 });
 </file>
 
+<file path="src/components/admin/tabs/TablePlanTab.test.tsx">
+import React from 'react';
+import { render, screen, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
+import { TablePlanTab } from './TablePlanTab';
+
+// @dnd-kit kütüphanesini test ortamında çökmelerden korumak için mockluyoruz
+vi.mock('@dnd-kit/core', () => ({
+  DndContext: ({ children }: any) => <div data-testid="dnd-context">{children}</div>,
+  useDraggable: () => ({ attributes: {}, listeners: {}, setNodeRef: vi.fn(), transform: null }),
+  useDroppable: () => ({ isOver: false, setNodeRef: vi.fn() })
+}));
+
+describe('TablePlanTab Admin Bileşen Testleri', () => {
+  const mockGuests = [
+    { id: '1', name: 'Ahmet Yılmaz', attendance: 'Katılacağım', personCount: '2', side: 'Gelin', hasChild: 'Hayır', has_arrived: false },
+    { id: '2', name: 'Ayşe Kaya', attendance: 'Katılacağım', personCount: '1', side: 'Damat', hasChild: 'Hayır', has_arrived: false, tableNumber: '1' }
+  ];
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('Atanmamış (Bekleyen) misafirleri listeleyebilmeli', () => {
+    render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
+    
+    // Masa atanmamış Ahmet Yılmaz "Bekleyenler" listesinde görünmeli
+    expect(screen.getByText('Ahmet Yılmaz')).toBeInTheDocument();
+    
+    // Bekleyen sayısı 1 olmalı
+    expect(screen.getByText('Bekleyenler (1)')).toBeInTheDocument();
+  });
+
+  it('Masaları ve atanan misafirleri render edebilmeli', () => {
+    render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
+    
+    // Masa 1 başlığı görünmeli
+    expect(screen.getByText('Masa 1')).toBeInTheDocument();
+    
+    // Ayşe Kaya Masa 1'e atandığı için ismi DOM'da yer almalı
+    expect(screen.getByText(/Ayşe Kaya/i)).toBeInTheDocument();
+  });
+});
+</file>
+
 <file path="src/components/admin/tabs/VisibilityTab.test.jsx">
 import React from 'react';
 import { render, screen, fireEvent } from '../../../../tests/test-utils';
@@ -5310,6 +4991,87 @@ describe('VisibilityTab Bileşeni ve Zustand Entegrasyonu', () => {
     expect(currentDraft.settings.visibility.gallery).toBe(false);
   });
 });
+</file>
+
+<file path="src/components/admin/ui/AdminInputs.test.tsx">
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom';
+import { AdminField, AdminCheckbox } from './AdminInputs';
+
+describe('AdminInputs Bileşen Testleri', () => {
+  it('AdminField değere göre inputu doldurmalı ve değişimde onChange tetiklemeli', () => {
+    const mockOnChange = vi.fn();
+    render(<AdminField label="Test Label" value="Test Değer" onChange={mockOnChange} />);
+    
+    const input = screen.getByDisplayValue('Test Değer');
+    expect(input).toBeInTheDocument();
+
+    fireEvent.change(input, { target: { value: 'Yeni Değer' } });
+    expect(mockOnChange).toHaveBeenCalledWith('Yeni Değer');
+  });
+
+  it('AdminCheckbox işaretlendiğinde doğru değeri iletmeli', () => {
+    const mockOnChange = vi.fn();
+    render(<AdminCheckbox label="Onay Kutusu" checked={false} onChange={mockOnChange} />);
+    
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(mockOnChange).toHaveBeenCalledWith(true);
+  });
+});
+</file>
+
+<file path="src/components/admin/ui/AdminLayout.jsx">
+import React from "react";
+import { useTranslation } from "react-i18next";
+
+// onSave parametresindeki gereksiz "= undefined" ataması kaldırılarak TypeScript'in
+// buraya bir fonksiyon atanmasına izin vermesi sağlandı.
+export function AdminSection({ title, children, onSave }) {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith("en");
+
+  return (
+    <div className="admin-editor-section">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+        <h3 style={{ margin: 0 }}>{title}</h3>
+        {onSave && (
+          <button 
+            type="button" 
+            className="secondary-button small-admin-button" 
+            onClick={onSave}
+          >
+            {isEn ? "Save 💾" : "Kaydet 💾"}
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isEn }) {
+  return (
+    <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
+      {onMoveUp && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onMoveUp} title={isEn ? "Move Up" : "Yukarı Taşı"}>↑</button>
+      )}
+      {onMoveDown && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onMoveDown} title={isEn ? "Move Down" : "Aşağı Taşı"}>↓</button>
+      )}
+      {onSave && (
+        <button type="button" className="secondary-button small-admin-button" onClick={onSave}>{isEn ? "Save 💾" : "Kaydet 💾"}</button>
+      )}
+      {onDelete && (
+        <button type="button" className="secondary-button danger-button small-admin-button" onClick={onDelete}>{isEn ? "Delete 🗑️" : "Sil 🗑️"}</button>
+      )}
+    </div>
+  );
+}
 </file>
 
 <file path="src/components/admin/ui/AdminMediaFields.jsx">
@@ -5729,6 +5491,112 @@ export function ResponsiveSlideShow({ children }) {
 }
 </file>
 
+<file path="src/components/invitation/sections/CeremonySection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { LocalizedDate } from "../../common/LocalizedDate";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const CeremonySection = memo(function CeremonySection({ copy, eventDetails }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const events = Array.isArray(eventDetails) ? eventDetails : [];
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
+      <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
+      <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
+      
+      <div className="ceremony-date" style={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}>
+        <LocalizedDate dateString="2026-08-22T19:00:00" />
+      </div>
+
+      <div className="ceremony-grid">
+        {events.map((event, index) => (
+          <div className="ceremony-item" key={`${event.label}-${index}`}>
+            <span>{event.label}</span><strong>{event.time}</strong><p>{event.description}</p><em>{event.location}</em>
+          </div>
+        ))}
+      </div>
+    </m.section>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/GallerySection.jsx">
+import React, { useState, useCallback, memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { LazyImage } from "../../common/LazyImage";
+import { LightboxModal } from "../../common/LightboxModal"; 
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const GallerySection = memo(function GallerySection({ copy, invitation }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
+  
+  const [lightboxIndex, setLightboxIndex] = useState(null);
+
+  const openLightbox = (index) => setLightboxIndex(index);
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  
+  const prevImage = useCallback((e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
+  }, [gallery.length]);
+  
+  const nextImage = useCallback((e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
+  }, [gallery.length]);
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+      <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
+      <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
+      
+      <div className="gallery-grid">
+        {gallery.map((image, index) => (
+          <LazyImage 
+            key={`gallery-img-${index}`} 
+            src={image} 
+            alt={`Galeri ${index + 1}`} 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openLightbox(index);
+            }}
+            className="gallery-image"
+            style={{ cursor: "zoom-in" }}
+          />
+        ))}
+      </div>
+
+      {/* OPTİMİZASYON: lightboxIndex null değilse (yani bir resme tıklandıysa) bileşeni çiz */}
+      {lightboxIndex !== null && (
+        <LightboxModal 
+          gallery={gallery} 
+          lightboxIndex={lightboxIndex} 
+          closeLightbox={closeLightbox} 
+          prevImage={prevImage} 
+          nextImage={nextImage} 
+        />
+      )}
+    </m.section>
+  );
+});
+</file>
+
 <file path="src/components/invitation/sections/index.js">
 export { HeroSection } from './HeroSection';
 export { CountdownSection } from './CountdownSection';
@@ -5747,6 +5615,118 @@ export { WishesSection } from './WishesSection';
 export { GuestsListSection } from './GuestsListSection';
 export { GuestCameraSection } from './GuestCameraSection';
 export { SmartAlbumSection } from './SmartAlbumSection';
+</file>
+
+<file path="src/components/invitation/sections/LocationSection.jsx">
+import React, { useState } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import { handleAddToCalendar, getNavigationLinks } from "../../../utils/helpers";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
+  const [copied, setCopied] = useState(false);
+  
+  // Hata yapma potansiyeli olan sembolleri tamamen temizledik
+  if (isOpen === false) return null;
+  if (typeof document === "undefined") return null;
+
+  const links = getNavigationLinks(invitation);
+
+  const copyAddress = () => {
+    // || yerine ?? kullanıldı
+    const venueText = invitation?.venue ?? "";
+    const addressText = invitation?.address ?? "";
+    navigator.clipboard.writeText(`${venueText} ${addressText}`.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  return createPortal(
+    <div onClick={onClose} className="app-modal-backdrop">
+      <div onClick={(e) => e.stopPropagation()} className="app-modal-card location-nav-modal">
+        <h3 className="location-nav-title">
+          {t('navigation.chooseApp', 'Yol Tarifi Al')}
+        </h3>
+        <p className="location-nav-address">
+          {invitation?.venue} – {invitation?.address}
+        </p>
+
+        <div className="location-nav-grid">
+          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+            Google Maps 🗺️
+          </a>
+          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+            Apple Maps 🍏
+          </a>
+          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+            Yandex Navi 🚕
+          </a>
+          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+            Waze 🚙
+          </a>
+        </div>
+
+        <button type="button" className="main-button location-nav-copy" onClick={copyAddress}>
+          {copied ? t('navigation.addressCopied', 'Adres Kopyalandı') : t('navigation.copyAddress', 'Adresi Kopyala')}
+        </button>
+        <button type="button" className="secondary-button location-nav-close" onClick={onClose}>
+          {t('ui.closeBtn', 'Kapat')}
+        </button>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+export function LocationSection({ copy, invitation, googleCalendarLink }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
+  // KARIŞIKLIĞA SEBEP OLAN KISMI TERTEMİZ DEĞİŞKENLERE AYIRDIK
+  const venueStr = invitation?.venue ?? "";
+  const addressStr = invitation?.address ?? "";
+  const mapQuery = encodeURIComponent(`${venueStr} ${addressStr}`);
+  const mapIframeSrc = `https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+      <p className="section-label">{isEn ? t('invitation.locationLabel', 'Tarih ve Konum') : copy?.locationLabel}</p>
+      <h2>{isEn ? t('invitation.locationTitle', 'Düğün Bilgileri') : copy?.locationTitle}</h2>
+      <div className="info-list">
+        <div className="info-row"><span>{t('ui.date', 'Tarih')}</span><strong>{invitation?.dateText}</strong></div>
+        <div className="info-row"><span>{t('ui.time', 'Saat')}</span><strong>{invitation?.timeText}</strong></div>
+        <div className="info-row"><span>{t('ui.venue', 'Mekan')}</span><strong>{invitation?.venue}</strong></div>
+        <div className="info-row"><span>{t('ui.address', 'Adres')}</span><strong>{invitation?.address}</strong></div>
+      </div>
+      <div className="mini-map">
+        <iframe 
+          title="Map" 
+          src={mapIframeSrc} 
+          loading="lazy" 
+          allowFullScreen 
+          referrerPolicy="no-referrer-when-downgrade"
+        ></iframe>
+      </div>
+      <div className="button-group">
+        <button type="button" className="main-button" onClick={() => setIsNavOpen(true)}>
+          {t('ui.goToMap', 'Konuma Git')}
+        </button>
+        <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>
+          {t('ui.addToCalendar', 'Takvime Ekle')}
+        </button>
+      </div>
+
+      {isNavOpen && <NavigationModal invitation={invitation} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} isEn={isEn} t={t} />}
+    </m.section>
+  );
+}
 </file>
 
 <file path="src/components/invitation/sections/LocationSection.test.jsx">
@@ -5787,6 +5767,197 @@ describe('ScheduleSection Bileşen Testleri', () => {
   it('Hiç program girilmemişse boş liste ile hatasız render olmalı', () => {
     const { container } = render(<ScheduleSection scheduleItems={undefined} />);
     expect(container.querySelector('.schedule-card')).toBeInTheDocument();
+  });
+});
+</file>
+
+<file path="src/components/invitation/sections/StorySection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const StorySection = memo(function StorySection({ copy, storyTimeline }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  const stories = Array.isArray(storyTimeline) ? storyTimeline : [];
+
+  if (stories.length === 0) return null;
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
+      <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
+      <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
+      
+      <div className="story-timeline-container">
+        {/* Orijinal CSS yapınızdaki statik çizgi geri getirildi */}
+        <div className="story-line"></div>
+        
+        {stories.map((story, index) => (
+          <m.div 
+            initial={{ opacity: 0, y: 30 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6, delay: index * 0.2 }} 
+            viewport={{ once: true, amount: 0.3 }}
+            className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
+            key={index}
+          >
+            {/* Orijinal CSS yapınızdaki durak (dot) noktası */}
+            <div className="story-dot"></div>
+            
+            <div className="story-content-box">
+              <span className="story-date">{story.date}</span>
+              <h3 className="story-heading">{story.title}</h3>
+              <p className="story-desc">{story.description}</p>
+              {story.image && (
+                <img src={story.image} alt={story.title} className="story-image" loading="lazy" />
+              )}
+            </div>
+          </m.div>
+        ))}
+      </div>
+    </m.section>
+  );
+});
+</file>
+
+<file path="src/components/invitation/sections/WishesSection.test.tsx">
+import React from 'react';
+import { render, screen } from '../../../../tests/test-utils';
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom';
+import { WishesSection } from './WishesSection';
+import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
+
+vi.mock('../../../hooks/useAudioRecorder');
+vi.mock('@marsidev/react-turnstile', () => ({ 
+  Turnstile: ({ onSuccess }: any) => <button onClick={() => onSuccess('fake-token')}>Token Al</button> 
+}));
+vi.mock('react-i18next', () => ({ 
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
+}));
+
+describe('WishesSection Bileşen Testleri', () => {
+  it('Ses kaydı devam ediyorken Durdur (Stop) butonunu göstermeli', () => {
+    (useAudioRecorder as any).mockReturnValue({
+      isRecording: true, 
+      recordingTime: 15, 
+      startRecording: vi.fn(), 
+      stopRecording: vi.fn(), 
+      clearRecording: vi.fn()
+    });
+
+    render(<WishesSection submitWish={vi.fn()} approvedWishes={[]} />);
+    
+    expect(screen.getByRole('button', { name: /Durdur/i })).toBeInTheDocument();
+    expect(screen.getByText(/00:15/i)).toBeInTheDocument();
+  });
+});
+</file>
+
+<file path="src/components/invitation/sections/WishesSection.validation.test.tsx">
+import React from 'react';
+import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
+import { WishesSection } from './WishesSection';
+import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
+
+vi.mock('../../../hooks/useAudioRecorder');
+
+// KRİTİK DÜZELTME 1: Butonun varsayılan submit davranışını önlemek için type="button" eklendi
+vi.mock('@marsidev/react-turnstile', () => ({ 
+  Turnstile: ({ onSuccess }: any) => (
+    <button type="button" data-testid="turnstile-btn" onClick={() => onSuccess('valid-token')}>
+      Token Al
+    </button>
+  )
+}));
+
+vi.mock('react-i18next', () => ({ 
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
+}));
+
+// KRİTİK DÜZELTME 2: Canvas kullanan triggerConfetti fonksiyonunun JSDOM ortamında (clearRect okuyamadığı için) çökmesini engeller
+vi.mock('../../../utils/helpers', async (importOriginal) => {
+  const actual: any = await importOriginal();
+  return {
+    ...actual,
+    triggerConfetti: vi.fn()
+  };
+});
+
+describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
+  const mockSubmitWish = vi.fn().mockResolvedValue(undefined);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useAudioRecorder as any).mockReturnValue({
+      isRecording: false,
+      recordingTime: 0,
+      startRecording: vi.fn(),
+      stopRecording: vi.fn(),
+      clearRecording: vi.fn(),
+      audioBlob: null,
+      uploadAudio: vi.fn()
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it('Zorunlu alanlar boş bırakıldığında Zod şeması hata mesajlarını göstermeli ve formu göndermemeli', async () => {
+    render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
+    
+    fireEvent.click(screen.getByTestId('turnstile-btn'));
+    fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('form.missingNameMessage')).toBeInTheDocument();
+      expect(screen.getByText('form.missingWishMessage')).toBeInTheDocument();
+      expect(mockSubmitWish).not.toHaveBeenCalled();
+    });
+  });
+
+  it('Geçerli veriler girildiğinde submitWish fonksiyonu çağrılmalı ve form sıfırlanmalı', async () => {
+    render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
+    
+    fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Ahmet Yılmaz' } });
+    fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Harika bir düğün, mutluluklar dilerim!' } });
+    
+    fireEvent.click(screen.getByTestId('turnstile-btn'));
+    fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
+
+    await waitFor(() => {
+      expect(mockSubmitWish).toHaveBeenCalledTimes(1);
+      expect(mockSubmitWish).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'Ahmet Yılmaz',
+        message: 'Harika bir düğün, mutluluklar dilerim!',
+        turnstileToken: 'valid-token'
+      }));
+    });
+  });
+
+  it('Honeypot alanı doldurulursa (Bot saldırısı simülasyonu) gönderim engellenmeli', async () => {
+    const { container } = render(<WishesSection submitWish={mockSubmitWish} approvedWishes={[]} />);
+    
+    const honeypotInput = container.querySelector('input[name="honeypot"]') as HTMLInputElement;
+    fireEvent.change(honeypotInput, { target: { value: 'spam-bot-data' } });
+    
+    fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Bot' } });
+    fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Spam mesaj' } });
+    
+    fireEvent.click(screen.getByTestId('turnstile-btn'));
+    fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
+
+    await waitFor(() => {
+      expect(mockSubmitWish).not.toHaveBeenCalled();
+    });
   });
 });
 </file>
@@ -6346,38 +6517,6 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
   };
 
   return { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin };
-}
-</file>
-
-<file path="src/hooks/useAssetPreloader.js">
-import { useState, useEffect } from 'react';
-
-export function useAssetPreloader(mediaUrl) {
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!mediaUrl) {
-      setIsLoaded(true);
-      return;
-    }
-
-    const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i);
-
-    if (isVideo) {
-      const video = document.createElement('video');
-      video.src = mediaUrl;
-      video.onloadeddata = () => setIsLoaded(true);
-      video.onerror = () => setIsLoaded(true);
-      video.load();
-    } else {
-      const img = new Image();
-      img.src = mediaUrl;
-      img.onload = () => setIsLoaded(true);
-      img.onerror = () => setIsLoaded(true);
-    }
-  }, [mediaUrl]);
-
-  return isLoaded;
 }
 </file>
 
@@ -8356,6 +8495,64 @@ export function GiftTab({ isEn }) {
 }
 </file>
 
+<file path="src/components/admin/tabs/GuestPhotosTab.test.tsx">
+import React from 'react';
+import { render, screen, fireEvent } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { GuestPhotosTab } from './GuestPhotosTab';
+import { useAdminGuestPhotos } from '../../../hooks/useAdminGuestPhotos';
+
+vi.mock('../../../hooks/useAdminGuestPhotos');
+
+describe('GuestPhotosTab Admin Bileşen Testleri', () => {
+  const mockApprovePhoto = vi.fn();
+  const mockRejectPhoto = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('Veriler yüklenirken Loading ekranını göstermeli', () => {
+    (useAdminGuestPhotos as any).mockReturnValue({
+      isLoading: true,
+      pendingPhotos: [],
+      approvedPhotos: [],
+      approvePhoto: mockApprovePhoto,
+      rejectPhoto: mockRejectPhoto
+    });
+
+    render(<GuestPhotosTab isEn={false} />);
+    
+    // GÜNCELLENDİ: TS hatasını (ts-2339) önlemek için toBeInTheDocument yerine toBeDefined kullanıldı.
+    // getByText zaten elementi bulamazsa hata fırlatır, test güvenliği aynı kalır.
+    expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeDefined();
+  });
+
+  it('Bekleyen ve Onaylanan fotoğrafları listelemeli ve buton aksiyonlarını tetiklemeli', () => {
+    (useAdminGuestPhotos as any).mockReturnValue({
+      isLoading: false,
+      pendingPhotos: [{ id: '1', image_url: 'bekleyen.jpg' }],
+      approvedPhotos: [{ id: '2', image_url: 'onayli.jpg' }],
+      approvePhoto: mockApprovePhoto,
+      rejectPhoto: mockRejectPhoto
+    });
+
+    render(<GuestPhotosTab isEn={false} />);
+    
+    expect(screen.getByText('Onay Bekleyenler (1)')).toBeDefined();
+    expect(screen.getByText('Yayında Olanlar (1)')).toBeDefined();
+
+    const approveBtn = screen.getByRole('button', { name: /Onayla/i });
+    fireEvent.click(approveBtn);
+    expect(mockApprovePhoto).toHaveBeenCalledWith('1');
+
+    const removeBtn = screen.getByRole('button', { name: /Kaldır/i });
+    fireEvent.click(removeBtn);
+    expect(mockRejectPhoto).toHaveBeenCalledWith('2', 'onayli.jpg');
+  });
+});
+</file>
+
 <file path="src/components/admin/tabs/GuestsAdminPanel.test.jsx">
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
@@ -8525,6 +8722,88 @@ describe('NotificationsTab Kapsamlı Bileşen Testleri', () => {
       expect(screen.getByText('✅ Bildirim 10 aboneye başarıyla iletildi.')).toBeInTheDocument();
       expect(screen.getByRole('button')).toHaveTextContent(/Anlık Bildirimi Gönder/i);
     });
+  });
+});
+</file>
+
+<file path="src/components/admin/tabs/OverviewTab.test.tsx">
+import React from 'react';
+import { render, screen, waitFor, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
+import { OverviewTab } from './OverviewTab';
+import { useStore } from '../../../store/useStore';
+
+vi.mock('../../../supabaseClient', () => ({
+  supabase: {
+    from: vi.fn((table) => {
+      if (table === 'guest_photos') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({ count: 5, data: [] })
+        };
+      }
+      if (table === 'payments') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockResolvedValue({ 
+            data: [{ amount: '500' }, { amount: '1500' }] 
+          })
+        };
+      }
+      return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ count: 0, data: [] }) };
+    })
+  }
+}));
+
+describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
+  let mockSetActiveTab: any;
+  let originalLocation: any;
+  let initialState: any;
+
+  beforeEach(() => {
+    mockSetActiveTab = vi.fn();
+    vi.spyOn(window, 'open').mockImplementation(() => null);
+    
+    initialState = useStore.getState();
+    useStore.setState({
+      adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } } as any
+    });
+
+    // DÜZELTME: JSDOM location hatasını önleme
+    originalLocation = window.location;
+    delete (window as any).location;
+    window.location = { pathname: '/demo' } as any;
+  });
+
+  afterEach(() => {
+    cleanup();
+    window.location = originalLocation;
+    useStore.setState(initialState, true);
+    vi.clearAllMocks();
+  });
+
+  it('Supabase verilerini çekip istatistikleri (Fotoğraf ve Hediye) ekranda göstermeli', async () => {
+    render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+      const formattedTotal = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(2000);
+      expect(screen.getByText(formattedTotal)).toBeInTheDocument();
+    });
+  });
+
+  it('Barkovizyonu Başlat butonuna tıklandığında yeni sekmede /live rotasını açmalı', async () => {
+    render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeInTheDocument();
+    });
+
+    const liveBtn = screen.getByRole('button', { name: /Barkovizyonu Başlat/i });
+    fireEvent.click(liveBtn);
+
+    expect(window.open).toHaveBeenCalledWith('/demo/live', '_blank');
   });
 });
 </file>
@@ -9100,43 +9379,6 @@ describe('LocalizedDate Bileşeni', () => {
 });
 </file>
 
-<file path="src/components/invitation/sections/CeremonySection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { LocalizedDate } from "../../common/LocalizedDate";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const CeremonySection = memo(function CeremonySection({ copy, eventDetails }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const events = Array.isArray(eventDetails) ? eventDetails : [];
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
-      <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
-      <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
-      
-      <div className="ceremony-date" style={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}>
-        <LocalizedDate dateString="2026-08-22T19:00:00" />
-      </div>
-
-      <div className="ceremony-grid">
-        {events.map((event, index) => (
-          <div className="ceremony-item" key={`${event.label}-${index}`}>
-            <span>{event.label}</span><strong>{event.time}</strong><p>{event.description}</p><em>{event.location}</em>
-          </div>
-        ))}
-      </div>
-    </m.section>
-  );
-});
-</file>
-
 <file path="src/components/invitation/sections/CeremonySection.test.jsx">
 import React from 'react';
 import { render } from '../../../../tests/test-utils';
@@ -9152,75 +9394,6 @@ describe('CeremonySection Bileşen Testleri', () => {
     const { container } = render(<CeremonySection eventDetails={undefined} />);
     expect(container.querySelector('.ceremony-card')).toBeInTheDocument();
   });
-});
-</file>
-
-<file path="src/components/invitation/sections/GallerySection.jsx">
-import React, { useState, useCallback, memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { LazyImage } from "../../common/LazyImage";
-import { LightboxModal } from "../../common/LightboxModal"; 
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const GallerySection = memo(function GallerySection({ copy, invitation }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
-  
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-
-  const openLightbox = (index) => setLightboxIndex(index);
-  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
-  
-  const prevImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === 0 ? gallery.length - 1 : prev - 1));
-  }, [gallery.length]);
-  
-  const nextImage = useCallback((e) => {
-    if (e && e.stopPropagation) e.stopPropagation();
-    setLightboxIndex((prev) => (prev === gallery.length - 1 ? 0 : prev + 1));
-  }, [gallery.length]);
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
-      <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
-      
-      <div className="gallery-grid">
-        {gallery.map((image, index) => (
-          <LazyImage 
-            key={`gallery-img-${index}`} 
-            src={image} 
-            alt={`Galeri ${index + 1}`} 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              openLightbox(index);
-            }}
-            className="gallery-image"
-            style={{ cursor: "zoom-in" }}
-          />
-        ))}
-      </div>
-
-      {/* OPTİMİZASYON: lightboxIndex null değilse (yani bir resme tıklandıysa) bileşeni çiz */}
-      {lightboxIndex !== null && (
-        <LightboxModal 
-          gallery={gallery} 
-          lightboxIndex={lightboxIndex} 
-          closeLightbox={closeLightbox} 
-          prevImage={prevImage} 
-          nextImage={nextImage} 
-        />
-      )}
-    </m.section>
-  );
 });
 </file>
 
@@ -9379,118 +9552,6 @@ describe('HeroSection Bileşen Testleri', () => {
 });
 </file>
 
-<file path="src/components/invitation/sections/LocationSection.jsx">
-import React, { useState } from "react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
-import { handleAddToCalendar, getNavigationLinks } from "../../../utils/helpers";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-function NavigationModal({ invitation, isOpen, onClose, isEn, t }) {
-  const [copied, setCopied] = useState(false);
-  
-  // Hata yapma potansiyeli olan sembolleri tamamen temizledik
-  if (isOpen === false) return null;
-  if (typeof document === "undefined") return null;
-
-  const links = getNavigationLinks(invitation);
-
-  const copyAddress = () => {
-    // || yerine ?? kullanıldı
-    const venueText = invitation?.venue ?? "";
-    const addressText = invitation?.address ?? "";
-    navigator.clipboard.writeText(`${venueText} ${addressText}`.trim());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
-
-  return createPortal(
-    <div onClick={onClose} className="app-modal-backdrop">
-      <div onClick={(e) => e.stopPropagation()} className="app-modal-card location-nav-modal">
-        <h3 className="location-nav-title">
-          {t('navigation.chooseApp', 'Yol Tarifi Al')}
-        </h3>
-        <p className="location-nav-address">
-          {invitation?.venue} – {invitation?.address}
-        </p>
-
-        <div className="location-nav-grid">
-          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
-            Google Maps 🗺️
-          </a>
-          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
-            Apple Maps 🍏
-          </a>
-          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
-            Yandex Navi 🚕
-          </a>
-          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
-            Waze 🚙
-          </a>
-        </div>
-
-        <button type="button" className="main-button location-nav-copy" onClick={copyAddress}>
-          {copied ? t('navigation.addressCopied', 'Adres Kopyalandı') : t('navigation.copyAddress', 'Adresi Kopyala')}
-        </button>
-        <button type="button" className="secondary-button location-nav-close" onClick={onClose}>
-          {t('ui.closeBtn', 'Kapat')}
-        </button>
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-export function LocationSection({ copy, invitation, googleCalendarLink }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const [isNavOpen, setIsNavOpen] = useState(false);
-
-  // KARIŞIKLIĞA SEBEP OLAN KISMI TERTEMİZ DEĞİŞKENLERE AYIRDIK
-  const venueStr = invitation?.venue ?? "";
-  const addressStr = invitation?.address ?? "";
-  const mapQuery = encodeURIComponent(`${venueStr} ${addressStr}`);
-  const mapIframeSrc = `https://maps.google.com/maps?q=${mapQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.locationLabel', 'Tarih ve Konum') : copy?.locationLabel}</p>
-      <h2>{isEn ? t('invitation.locationTitle', 'Düğün Bilgileri') : copy?.locationTitle}</h2>
-      <div className="info-list">
-        <div className="info-row"><span>{t('ui.date', 'Tarih')}</span><strong>{invitation?.dateText}</strong></div>
-        <div className="info-row"><span>{t('ui.time', 'Saat')}</span><strong>{invitation?.timeText}</strong></div>
-        <div className="info-row"><span>{t('ui.venue', 'Mekan')}</span><strong>{invitation?.venue}</strong></div>
-        <div className="info-row"><span>{t('ui.address', 'Adres')}</span><strong>{invitation?.address}</strong></div>
-      </div>
-      <div className="mini-map">
-        <iframe 
-          title="Map" 
-          src={mapIframeSrc} 
-          loading="lazy" 
-          allowFullScreen 
-          referrerPolicy="no-referrer-when-downgrade"
-        ></iframe>
-      </div>
-      <div className="button-group">
-        <button type="button" className="main-button" onClick={() => setIsNavOpen(true)}>
-          {t('ui.goToMap', 'Konuma Git')}
-        </button>
-        <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>
-          {t('ui.addToCalendar', 'Takvime Ekle')}
-        </button>
-      </div>
-
-      {isNavOpen && <NavigationModal invitation={invitation} isOpen={isNavOpen} onClose={() => setIsNavOpen(false)} isEn={isEn} t={t} />}
-    </m.section>
-  );
-}
-</file>
-
 <file path="src/components/invitation/sections/RsvpSection.test.tsx">
 import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
@@ -9534,6 +9595,98 @@ describe('RsvpSection Koşullu Render (Conditional UI) Testleri', () => {
       expect(declineBtn).toHaveAttribute('aria-checked', 'true');
     });
   }, 10000);
+});
+</file>
+
+<file path="src/components/invitation/sections/ShareSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { getQrImageUrl } from "../../../utils/helpers";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, shareText, copyInvitationLink }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  const safeQrUrl = qrImageUrl || getQrImageUrl();
+
+  // Web Share API ile Native Paylaşım
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          // ÇÖZÜM: Hardcoded metinler yerine i18n t() ve admin copy verileri entegre edildi
+          title: isEn ? t('invitation.shareTitle') : (copy?.shareTitle || 'Düğün Davetiyemiz'),
+          text: isEn ? t('invitation.shareDescription') : (copy?.shareDescription || 'Bu mutlu günümüzde sizi de aramızda görmek isteriz.'),
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.log('Paylaşım iptal edildi.', err);
+      }
+    } else {
+      copyInvitationLink(); 
+    }
+  };
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+      <p className="section-label">{isEn ? t('invitation.shareLabel') : copy?.shareLabel}</p>
+      <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
+      <p style={{ marginBottom: "20px" }}>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
+      
+      <div style={{ 
+        margin: '0 auto 32px', 
+        padding: '20px', 
+        background: 'var(--paper)', 
+        borderRadius: '20px', 
+        display: 'inline-block', 
+        border: '1px solid rgba(var(--theme-rgb), 0.15)', 
+        boxShadow: '0 8px 24px rgba(0,0,0,0.04)' 
+      }}>
+        <img src={safeQrUrl} alt="QR Code" loading="lazy" style={{ display: 'block', width: '160px', height: '160px', margin: '0 auto 12px', borderRadius: '8px' }} />
+        <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
+          {isEn ? "Share quickly via QR code." : "QR kod ile hızlıca paylaşın."}
+        </span>
+      </div>
+      
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '380px', margin: '0 auto' }}>
+        
+        <button className="main-button" onClick={handleNativeShare} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px', width: '100%', margin: 0, borderRadius: '14px', fontSize: '16px' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span>{isEn ? "Share Invitation" : "Davetiyeyi Paylaş"}</span>
+        </button>
+
+        <div style={{ display: 'flex', gap: '14px' }}>
+          <a className="secondary-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, padding: '14px 12px', margin: 0, borderRadius: '14px', textDecoration: 'none', fontSize: '15px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+            <span>WhatsApp</span>
+          </a>
+          
+          <button className="secondary-button" onClick={copyInvitationLink} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, padding: '14px 12px', margin: 0, borderRadius: '14px', fontSize: '15px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>{isEn ? "Copy Link" : "Kopyala"}</span>
+          </button>
+        </div>
+
+      </div>
+    </m.section>
+  );
 });
 </file>
 
@@ -9588,60 +9741,6 @@ describe('ShareSection Bileşen Testleri', () => {
     
     expect(mockCopyLink).not.toHaveBeenCalled();
   });
-});
-</file>
-
-<file path="src/components/invitation/sections/StorySection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const StorySection = memo(function StorySection({ copy, storyTimeline }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  const stories = Array.isArray(storyTimeline) ? storyTimeline : [];
-
-  if (stories.length === 0) return null;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
-      <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
-      <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
-      
-      <div className="story-timeline-container">
-        {/* Orijinal CSS yapınızdaki statik çizgi geri getirildi */}
-        <div className="story-line"></div>
-        
-        {stories.map((story, index) => (
-          <m.div 
-            initial={{ opacity: 0, y: 30 }} 
-            whileInView={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6, delay: index * 0.2 }} 
-            viewport={{ once: true, amount: 0.3 }}
-            className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
-            key={index}
-          >
-            {/* Orijinal CSS yapınızdaki durak (dot) noktası */}
-            <div className="story-dot"></div>
-            
-            <div className="story-content-box">
-              <span className="story-date">{story.date}</span>
-              <h3 className="story-heading">{story.title}</h3>
-              <p className="story-desc">{story.description}</p>
-              {story.image && (
-                <img src={story.image} alt={story.title} className="story-image" loading="lazy" />
-              )}
-            </div>
-          </m.div>
-        ))}
-      </div>
-    </m.section>
-  );
 });
 </file>
 
@@ -9819,6 +9918,122 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
     </section>
   );
 });
+</file>
+
+<file path="src/components/invitation/IntroPage.jsx">
+import React, { useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { triggerConfetti } from "../../utils/helpers";
+import { Spinner } from "../common/UIComponents";
+
+export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  const openText = isEn 
+    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
+    : copy.openButton;
+
+  const handleOpen = useCallback(() => {
+    if (!isHeroLoaded) return;
+    triggerConfetti();
+    openInvitation();
+  }, [openInvitation, isHeroLoaded]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isOpening || !isHeroLoaded) return;
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        handleOpen();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpening, handleOpen, isHeroLoaded]);
+
+  return (
+    <section className={`intro-page ${isOpening ? "opening" : ""}`}>
+      <div className="petal-layer" aria-hidden="true">
+        {Array.from({ length: 16 }).map((_, index) => (
+          <span key={index}></span>
+        ))}
+      </div>
+
+      <div className="envelope-container">
+        <div className="envelope-back"></div>
+
+        <div className="intro-card">
+          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
+            ❀
+          </div>
+          
+          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
+
+          <h1 className="couple-title">
+            <span>{invitation.bride}</span>
+            <em>&</em>
+            <span>{invitation.groom}</span>
+          </h1>
+
+          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
+        </div>
+
+        <div className="envelope-front"></div>
+        <div className="envelope-flap"></div>
+
+        {personalGuestName && (
+          <div className="envelope-guest-badge">
+            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
+            {personalTableNumber && (
+              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
+                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
+              </span>
+            )}
+          </div>
+        )}
+
+        <button 
+          className="envelope-seal" 
+          onClick={handleOpen}
+          disabled={!isHeroLoaded || isOpening}
+          style={{ 
+            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
+            pointerEvents: isOpening ? "none" : "auto",
+            cursor: isHeroLoaded ? "pointer" : "wait",
+            transition: "opacity 0.4s ease"
+          }}
+        >
+          <span 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              lineHeight: '1.2',
+              color: '#ffffff', 
+              WebkitTextFillColor: '#ffffff',
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
+              fontWeight: '900',
+              fontSize: isHeroLoaded ? '18px' : '15px',
+              letterSpacing: '0.5px'
+            }}
+          >
+            {!isHeroLoaded ? (
+              <>
+                <Spinner size={18} color="#ffffff" />
+                {isEn ? "Loading..." : "Yükleniyor..."}
+              </>
+            ) : openText}
+          </span>
+        </button>
+      </div>
+    </section>
+  );
+}
 </file>
 
 <file path="src/hooks/useAdminSession.js">
@@ -12172,6 +12387,75 @@ describe('ResponsiveSlideShow Bileşen Testleri', () => {
 });
 </file>
 
+<file path="src/components/invitation/sections/CountdownSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { useCountdown } from "../../../hooks/useCountdown";
+import { useStore } from "../../../store/useStore";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const CountdownSection = memo(function CountdownSection({ copy, timeLeft: propTimeLeft, invitation }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const storeWeddingDate = useStore(state => state.siteData?.invitation?.weddingDate);
+  const targetDate = invitation?.weddingDate || storeWeddingDate;
+  
+  const calculatedTimeLeft = useCountdown(targetDate);
+  const timeLeft = propTimeLeft || calculatedTimeLeft;
+
+  const isFinished = 
+    (timeLeft?.days || 0) === 0 && 
+    (timeLeft?.hours || 0) === 0 && 
+    (timeLeft?.minutes || 0) === 0 && 
+    (timeLeft?.seconds || 0) === 0;
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
+      <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
+      <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
+      
+      {isFinished ? (
+        <div className="countdown-finished-box" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '8% 5%',
+          background: 'var(--paper-soft)',
+          border: '1px solid rgba(var(--theme-rgb), 0.15)',
+          borderRadius: '16px',
+          margin: '20px auto 0',
+          width: '100%',
+          boxSizing: 'border-box',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.04)'
+        }}>
+          <span className="countdown-finished-icon" style={{ fontSize: 'clamp(2.5rem, 8vw, 3rem)', marginBottom: '16px', display: 'block', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}>🎉💍✨</span>
+          <strong className="countdown-finished-title" style={{ fontSize: 'clamp(1.2rem, 5vw, 1.5rem)', color: 'var(--rose-dark)', marginBottom: '12px', textAlign: 'center', fontFamily: '"Playfair Display", serif' }}>
+            {isEn ? "Today is the Big Day!" : "Bugün En Mutlu Günümüz!"}
+          </strong>
+          <p className="countdown-finished-text" style={{ fontSize: 'clamp(0.9rem, 4vw, 1rem)', color: 'var(--text-muted)', textAlign: 'center', margin: 0, lineHeight: 1.5 }}>
+            {isEn ? "We can't wait to celebrate with you." : "Sizinle kutlamak için sabırsızlanıyoruz."}
+          </p>
+        </div>
+      ) : (
+        <div className="countdown-grid">
+          <div className="count-box countdown-animated"><strong>{timeLeft?.days || 0}</strong><span>{t('ui.days')}</span></div>
+          <div className="count-box countdown-animated"><strong>{timeLeft?.hours || 0}</strong><span>{t('ui.hours')}</span></div>
+          <div className="count-box countdown-animated"><strong>{timeLeft?.minutes || 0}</strong><span>{t('ui.mins')}</span></div>
+          <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
+        </div>
+      )}
+    </m.section>
+  );
+});
+</file>
+
 <file path="src/components/invitation/sections/CountdownSection.test.jsx">
 import React from 'react';
 import { render, screen } from '../../../../tests/test-utils'; // DÜZELTİLDİ
@@ -12254,6 +12538,112 @@ describe('GallerySection Bileşen Testleri', () => {
     render(<GallerySection invitation={{ gallery: [] }} />);
     expect(screen.queryAllByRole('img')).toHaveLength(0);
   });
+});
+</file>
+
+<file path="src/components/invitation/sections/GiftSection.jsx">
+import React, { useState, memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+import { supabase } from "../../../supabaseClient";
+import { useStore } from "../../../store/useStore";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+export const GiftSection = memo(function GiftSection({ giftData }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+  
+  const settings = useStore((state) => state.siteData?.settings);
+  const showCreditCard = settings?.visibility?.creditCard ?? false;
+
+  const [copied, setCopied] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const copyIban = () => {
+    if (giftData?.iban) {
+      navigator.clipboard.writeText(giftData.iban);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
+  const handleCreditCardPayment = async () => {
+    const userAmount = window.prompt(
+      isEn ? "Enter the amount you want to send (TL):" : "Göndermek istediğiniz tutarı girin (TL):", 
+      "1000"
+    );
+
+    if (!userAmount || isNaN(userAmount) || Number(userAmount) <= 0) return;
+
+    setIsRedirecting(true);
+    try {
+      const res = await supabase.functions.invoke('create-payment', {
+        body: { 
+          amount: Number(userAmount), 
+          guestName: "Düğün Misafiri", 
+          note: "Davetiye Üzerinden Online Hediye" 
+        }
+      });
+      
+      if (res.data?.paymentUrl) {
+        window.location.href = res.data.paymentUrl;
+      } else {
+        throw new Error("Ödeme linki oluşturulamadı.");
+      }
+    } catch (error) {
+      alert(isEn ? "Payment system is currently unavailable." : "Ödeme altyapısına şu an ulaşılamıyor. Lütfen IBAN ile devam edin.");
+    } finally {
+      setIsRedirecting(false);
+    }
+  };
+
+  if (!giftData) return null;
+
+  return (
+    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
+      <p className="section-label">{t('ui.giftTitle')}</p>
+      <h2>{isEn ? t('ui.giftTitle') : giftData.title}</h2>
+      <p className="gift-description">
+        {isEn ? t('ui.giftDescription') : giftData.description}
+      </p>
+      
+      <div className="gift-card" style={{ 
+        background: 'var(--paper-soft)', 
+        padding: '20px 16px', 
+        borderRadius: '12px', 
+        margin: '16px auto 24px auto', 
+        maxWidth: '450px',
+        textAlign: 'center', 
+        border: '1px solid rgba(var(--theme-rgb), 0.15)' 
+      }}>
+        <strong className="gift-card-receiver" style={{ display: 'block', fontSize: '16px', color: 'var(--rose-dark)', fontWeight: '700', marginBottom: '4px' }}>
+          {giftData.receiver}
+        </strong>
+        <span className="gift-card-bank" style={{ display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
+          {giftData.bankName}
+        </span>
+        <code className="gift-card-iban" style={{ display: 'inline-block', fontSize: '14px', padding: '10px 18px', background: 'var(--paper)', borderRadius: '8px', border: '1px dashed var(--rose-dark)', color: 'var(--text-main)', letterSpacing: '1px', wordBreak: 'break-all' }}>
+          {giftData.iban}
+        </code>
+      </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', flexWrap: 'wrap', width: '100%', maxWidth: '500px', margin: '0 auto' }}>
+        <button type="button" className="secondary-button gift-copy-button" onClick={copyIban} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px' }}>
+          {copied ? t('ui.copied') : t('ui.copyIban')}
+        </button>
+
+        {showCreditCard && (
+          <button type="button" className="main-button" onClick={handleCreditCardPayment} disabled={isRedirecting} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px', background: 'linear-gradient(135deg, #27ae60, #2ecc71)', borderColor: '#27ae60' }}>
+            💳 {isRedirecting ? (isEn ? "Redirecting..." : "Yönlendiriliyor...") : (isEn ? "Send via Credit Card" : "Kredi Kartı ile Gönder")}
+          </button>
+        )}
+      </div>
+    </m.section>
+  );
 });
 </file>
 
@@ -12580,98 +12970,6 @@ describe('GuestCameraSection Hata Yönetimi Testi', () => {
 });
 </file>
 
-<file path="src/components/invitation/sections/ShareSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { getQrImageUrl } from "../../../utils/helpers";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, shareText, copyInvitationLink }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const safeQrUrl = qrImageUrl || getQrImageUrl();
-
-  // Web Share API ile Native Paylaşım
-  const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          // ÇÖZÜM: Hardcoded metinler yerine i18n t() ve admin copy verileri entegre edildi
-          title: isEn ? t('invitation.shareTitle') : (copy?.shareTitle || 'Düğün Davetiyemiz'),
-          text: isEn ? t('invitation.shareDescription') : (copy?.shareDescription || 'Bu mutlu günümüzde sizi de aramızda görmek isteriz.'),
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Paylaşım iptal edildi.', err);
-      }
-    } else {
-      copyInvitationLink(); 
-    }
-  };
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{isEn ? t('invitation.shareLabel') : copy?.shareLabel}</p>
-      <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
-      <p style={{ marginBottom: "20px" }}>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
-      
-      <div style={{ 
-        margin: '0 auto 32px', 
-        padding: '20px', 
-        background: 'var(--paper)', 
-        borderRadius: '20px', 
-        display: 'inline-block', 
-        border: '1px solid rgba(var(--theme-rgb), 0.15)', 
-        boxShadow: '0 8px 24px rgba(0,0,0,0.04)' 
-      }}>
-        <img src={safeQrUrl} alt="QR Code" loading="lazy" style={{ display: 'block', width: '160px', height: '160px', margin: '0 auto 12px', borderRadius: '8px' }} />
-        <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
-          {isEn ? "Share quickly via QR code." : "QR kod ile hızlıca paylaşın."}
-        </span>
-      </div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '380px', margin: '0 auto' }}>
-        
-        <button className="main-button" onClick={handleNativeShare} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px', width: '100%', margin: 0, borderRadius: '14px', fontSize: '16px' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-          <span>{isEn ? "Share Invitation" : "Davetiyeyi Paylaş"}</span>
-        </button>
-
-        <div style={{ display: 'flex', gap: '14px' }}>
-          <a className="secondary-button" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, padding: '14px 12px', margin: 0, borderRadius: '14px', textDecoration: 'none', fontSize: '15px' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-            </svg>
-            <span>WhatsApp</span>
-          </a>
-          
-          <button className="secondary-button" onClick={copyInvitationLink} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, padding: '14px 12px', margin: 0, borderRadius: '14px', fontSize: '15px' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span>{isEn ? "Copy Link" : "Kopyala"}</span>
-          </button>
-        </div>
-
-      </div>
-    </m.section>
-  );
-});
-</file>
-
 <file path="src/components/invitation/sections/SmartAlbumSection.jsx">
 import React, { useState, useRef, memo } from "react";
 import { useTranslation } from "react-i18next";
@@ -12786,122 +13084,6 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
     </m.section>
   );
 });
-</file>
-
-<file path="src/components/invitation/IntroPage.jsx">
-import React, { useEffect, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import { triggerConfetti } from "../../utils/helpers";
-import { Spinner } from "../common/UIComponents";
-
-export default function IntroPage({ isOpening, copy, invitation, personalGuestName, personalTableNumber, openInvitation, isHeroLoaded }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const openText = isEn 
-    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
-    : copy.openButton;
-
-  const handleOpen = useCallback(() => {
-    if (!isHeroLoaded) return;
-    triggerConfetti();
-    openInvitation();
-  }, [openInvitation, isHeroLoaded]);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isOpening || !isHeroLoaded) return;
-      if (e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        handleOpen();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpening, handleOpen, isHeroLoaded]);
-
-  return (
-    <section className={`intro-page ${isOpening ? "opening" : ""}`}>
-      <div className="petal-layer" aria-hidden="true">
-        {Array.from({ length: 16 }).map((_, index) => (
-          <span key={index}></span>
-        ))}
-      </div>
-
-      <div className="envelope-container">
-        <div className="envelope-back"></div>
-
-        <div className="intro-card">
-          <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
-            ❀
-          </div>
-          
-          <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
-
-          <h1 className="couple-title">
-            <span>{invitation.bride}</span>
-            <em>&</em>
-            <span>{invitation.groom}</span>
-          </h1>
-
-          <p className="intro-text">{isEn ? t('invitation.introText') : copy.introText}</p>
-        </div>
-
-        <div className="envelope-front"></div>
-        <div className="envelope-flap"></div>
-
-        {personalGuestName && (
-          <div className="envelope-guest-badge">
-            {isEn ? "Dear" : "Sevgili"} {personalGuestName}
-            {personalTableNumber && (
-              <span style={{ display: 'block', fontSize: '12px', opacity: 0.9, marginTop: '2px', fontWeight: 'bold' }}>
-                {isEn ? `Table: ${personalTableNumber}` : `Masa: ${personalTableNumber}`}
-              </span>
-            )}
-          </div>
-        )}
-
-        <button 
-          className="envelope-seal" 
-          onClick={handleOpen}
-          disabled={!isHeroLoaded || isOpening}
-          style={{ 
-            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
-            pointerEvents: isOpening ? "none" : "auto",
-            cursor: isHeroLoaded ? "pointer" : "wait",
-            transition: "opacity 0.4s ease"
-          }}
-        >
-          <span 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              lineHeight: '1.2',
-              color: '#ffffff', 
-              WebkitTextFillColor: '#ffffff',
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
-              fontWeight: '900',
-              fontSize: isHeroLoaded ? '18px' : '15px',
-              letterSpacing: '0.5px'
-            }}
-          >
-            {!isHeroLoaded ? (
-              <>
-                <Spinner size={18} color="#ffffff" />
-                {isEn ? "Loading..." : "Yükleniyor..."}
-              </>
-            ) : openText}
-          </span>
-        </button>
-      </div>
-    </section>
-  );
-}
 </file>
 
 <file path="src/components/invitation/IntroPage.test.jsx">
@@ -15253,6 +15435,91 @@ test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
 });
 </file>
 
+<file path="index.html">
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover, shrink-to-fit=no, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16171d" media="(prefers-color-scheme: dark)">
+    
+    <!-- Apple iOS specific -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Düğün Davetiyesi">
+    <meta name="apple-itunes-app" content="app-id=">
+    
+    <!-- Android specific -->
+    <meta name="application-name" content="Düğün Davetiyesi">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Color scheme & format detection -->
+    <meta name="format-detection" content="telephone=no, email=no, address=no">
+    
+    <!-- Safe area & notch support -->
+    <meta name="supported-color-schemes" content="light dark">
+
+    <script>
+      (() => {
+        if (/(?:^|\/)(?:admin|live)(?:\/|$)/.test(location.pathname) || location.hash.includes("type=recovery")) return;
+
+        let heroImage = "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp";
+        try {
+          const savedSiteData = JSON.parse(localStorage.getItem("wedding-site-data") || "null");
+          const savedHeroImage = savedSiteData?.invitation?.heroImage;
+          if (typeof savedHeroImage === "string" && savedHeroImage.trim()) heroImage = savedHeroImage;
+        } catch {}
+
+        if (heroImage === "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg") {
+          heroImage = "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp";
+        }
+
+        try {
+          const imageUrl = new URL(heroImage, location.origin);
+          if (imageUrl.origin !== location.origin) return;
+
+          const preload = document.createElement("link");
+          preload.rel = "preload";
+          preload.as = "image";
+          preload.href = imageUrl.href;
+          preload.fetchPriority = "high";
+          document.head.appendChild(preload);
+        } catch {}
+      })();
+    </script>
+
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+
+    <!-- Font preload hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Başlık ve Temel Açıklama -->
+    <title>Handenur & Haluk Can | Düğün Davetiyesi</title>
+    <meta name="description" content="Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz.">
+
+    <!-- Open Graph (WhatsApp, Facebook, iMessage) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Handenur & Haluk Can | Düğün Davetiyesi 💍">
+    <meta property="og:description" content="Hayatımızın en özel gününde sizleri de aramızda görmekten mutluluk duyarız.">
+    <meta property="og:image" content="/images/themes/lavanta/8.jpg">
+    <meta property="og:url" content="https://wedding-invitation-halook.vercel.app/">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Handenur & Haluk Can | Düğün Davetiyesi 💍">
+    <meta name="twitter:description" content="Hayatımızın en özel gününde sizleri de aramızda görmekten mutluluk duyarız.">
+    <meta name="twitter:image" content="/images/themes/lavanta/8.jpg">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+</file>
+
 <file path="src/components/admin/tabs/WishesAdminPanel.jsx">
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -15466,181 +15733,6 @@ export function LazyImage({ src, alt, className, style, onClick, aspectRatio = "
     </div>
   );
 }
-</file>
-
-<file path="src/components/invitation/sections/CountdownSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { useCountdown } from "../../../hooks/useCountdown";
-import { useStore } from "../../../store/useStore";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const CountdownSection = memo(function CountdownSection({ copy, timeLeft: propTimeLeft, invitation }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const storeWeddingDate = useStore(state => state.siteData?.invitation?.weddingDate);
-  const targetDate = invitation?.weddingDate || storeWeddingDate;
-  
-  const calculatedTimeLeft = useCountdown(targetDate);
-  const timeLeft = propTimeLeft || calculatedTimeLeft;
-
-  const isFinished = 
-    (timeLeft?.days || 0) === 0 && 
-    (timeLeft?.hours || 0) === 0 && 
-    (timeLeft?.minutes || 0) === 0 && 
-    (timeLeft?.seconds || 0) === 0;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
-      <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
-      <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
-      
-      {isFinished ? (
-        <div className="countdown-finished-box" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '8% 5%',
-          background: 'var(--paper-soft)',
-          border: '1px solid rgba(var(--theme-rgb), 0.15)',
-          borderRadius: '16px',
-          margin: '20px auto 0',
-          width: '100%',
-          boxSizing: 'border-box',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.04)'
-        }}>
-          <span className="countdown-finished-icon" style={{ fontSize: 'clamp(2.5rem, 8vw, 3rem)', marginBottom: '16px', display: 'block', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}>🎉💍✨</span>
-          <strong className="countdown-finished-title" style={{ fontSize: 'clamp(1.2rem, 5vw, 1.5rem)', color: 'var(--rose-dark)', marginBottom: '12px', textAlign: 'center', fontFamily: '"Playfair Display", serif' }}>
-            {isEn ? "Today is the Big Day!" : "Bugün En Mutlu Günümüz!"}
-          </strong>
-          <p className="countdown-finished-text" style={{ fontSize: 'clamp(0.9rem, 4vw, 1rem)', color: 'var(--text-muted)', textAlign: 'center', margin: 0, lineHeight: 1.5 }}>
-            {isEn ? "We can't wait to celebrate with you." : "Sizinle kutlamak için sabırsızlanıyoruz."}
-          </p>
-        </div>
-      ) : (
-        <div className="countdown-grid">
-          <div className="count-box countdown-animated"><strong>{timeLeft?.days || 0}</strong><span>{t('ui.days')}</span></div>
-          <div className="count-box countdown-animated"><strong>{timeLeft?.hours || 0}</strong><span>{t('ui.hours')}</span></div>
-          <div className="count-box countdown-animated"><strong>{timeLeft?.minutes || 0}</strong><span>{t('ui.mins')}</span></div>
-          <div className="count-box countdown-animated"><strong>{timeLeft?.seconds || 0}</strong><span>{t('ui.secs')}</span></div>
-        </div>
-      )}
-    </m.section>
-  );
-});
-</file>
-
-<file path="src/components/invitation/sections/GiftSection.jsx">
-import React, { useState, memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-import { supabase } from "../../../supabaseClient";
-import { useStore } from "../../../store/useStore";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-export const GiftSection = memo(function GiftSection({ giftData }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
-  const settings = useStore((state) => state.siteData?.settings);
-  const showCreditCard = settings?.visibility?.creditCard ?? false;
-
-  const [copied, setCopied] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
-
-  const copyIban = () => {
-    if (giftData?.iban) {
-      navigator.clipboard.writeText(giftData.iban);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  };
-
-  const handleCreditCardPayment = async () => {
-    const userAmount = window.prompt(
-      isEn ? "Enter the amount you want to send (TL):" : "Göndermek istediğiniz tutarı girin (TL):", 
-      "1000"
-    );
-
-    if (!userAmount || isNaN(userAmount) || Number(userAmount) <= 0) return;
-
-    setIsRedirecting(true);
-    try {
-      const res = await supabase.functions.invoke('create-payment', {
-        body: { 
-          amount: Number(userAmount), 
-          guestName: "Düğün Misafiri", 
-          note: "Davetiye Üzerinden Online Hediye" 
-        }
-      });
-      
-      if (res.data?.paymentUrl) {
-        window.location.href = res.data.paymentUrl;
-      } else {
-        throw new Error("Ödeme linki oluşturulamadı.");
-      }
-    } catch (error) {
-      alert(isEn ? "Payment system is currently unavailable." : "Ödeme altyapısına şu an ulaşılamıyor. Lütfen IBAN ile devam edin.");
-    } finally {
-      setIsRedirecting(false);
-    }
-  };
-
-  if (!giftData) return null;
-
-  return (
-    <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
-      <p className="section-label">{t('ui.giftTitle')}</p>
-      <h2>{isEn ? t('ui.giftTitle') : giftData.title}</h2>
-      <p className="gift-description">
-        {isEn ? t('ui.giftDescription') : giftData.description}
-      </p>
-      
-      <div className="gift-card" style={{ 
-        background: 'var(--paper-soft)', 
-        padding: '20px 16px', 
-        borderRadius: '12px', 
-        margin: '16px auto 24px auto', 
-        maxWidth: '450px',
-        textAlign: 'center', 
-        border: '1px solid rgba(var(--theme-rgb), 0.15)' 
-      }}>
-        <strong className="gift-card-receiver" style={{ display: 'block', fontSize: '16px', color: 'var(--rose-dark)', fontWeight: '700', marginBottom: '4px' }}>
-          {giftData.receiver}
-        </strong>
-        <span className="gift-card-bank" style={{ display: 'block', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-          {giftData.bankName}
-        </span>
-        <code className="gift-card-iban" style={{ display: 'inline-block', fontSize: '14px', padding: '10px 18px', background: 'var(--paper)', borderRadius: '8px', border: '1px dashed var(--rose-dark)', color: 'var(--text-main)', letterSpacing: '1px', wordBreak: 'break-all' }}>
-          {giftData.iban}
-        </code>
-      </div>
-      
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', flexWrap: 'wrap', width: '100%', maxWidth: '500px', margin: '0 auto' }}>
-        <button type="button" className="secondary-button gift-copy-button" onClick={copyIban} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px' }}>
-          {copied ? t('ui.copied') : t('ui.copyIban')}
-        </button>
-
-        {showCreditCard && (
-          <button type="button" className="main-button" onClick={handleCreditCardPayment} disabled={isRedirecting} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px', background: 'linear-gradient(135deg, #27ae60, #2ecc71)', borderColor: '#27ae60' }}>
-            💳 {isRedirecting ? (isEn ? "Redirecting..." : "Yönlendiriliyor...") : (isEn ? "Send via Credit Card" : "Kredi Kartı ile Gönder")}
-          </button>
-        )}
-      </div>
-    </m.section>
-  );
-});
 </file>
 
 <file path="src/components/invitation/sections/SmartAlbumSection.test.jsx">
@@ -16199,91 +16291,6 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
 });
 </file>
 
-<file path="index.html">
-<!doctype html>
-<html lang="tr">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover, shrink-to-fit=no, interactive-widget=resizes-content">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#16171d" media="(prefers-color-scheme: dark)">
-    
-    <!-- Apple iOS specific -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Düğün Davetiyesi">
-    <meta name="apple-itunes-app" content="app-id=">
-    
-    <!-- Android specific -->
-    <meta name="application-name" content="Düğün Davetiyesi">
-    <meta name="mobile-web-app-capable" content="yes">
-    
-    <!-- Color scheme & format detection -->
-    <meta name="format-detection" content="telephone=no, email=no, address=no">
-    
-    <!-- Safe area & notch support -->
-    <meta name="supported-color-schemes" content="light dark">
-
-    <script>
-      (() => {
-        if (/(?:^|\/)(?:admin|live)(?:\/|$)/.test(location.pathname) || location.hash.includes("type=recovery")) return;
-
-        let heroImage = "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp";
-        try {
-          const savedSiteData = JSON.parse(localStorage.getItem("wedding-site-data") || "null");
-          const savedHeroImage = savedSiteData?.invitation?.heroImage;
-          if (typeof savedHeroImage === "string" && savedHeroImage.trim()) heroImage = savedHeroImage;
-        } catch {}
-
-        if (heroImage === "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.jpg") {
-          heroImage = "/images/themes/lavanta/annie-spratt-NrflUuJJK0I-unsplash.webp";
-        }
-
-        try {
-          const imageUrl = new URL(heroImage, location.origin);
-          if (imageUrl.origin !== location.origin) return;
-
-          const preload = document.createElement("link");
-          preload.rel = "preload";
-          preload.as = "image";
-          preload.href = imageUrl.href;
-          preload.fetchPriority = "high";
-          document.head.appendChild(preload);
-        } catch {}
-      })();
-    </script>
-
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-
-    <!-- Font preload hints -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <!-- Başlık ve Temel Açıklama -->
-    <title>Handenur & Haluk Can | Düğün Davetiyesi</title>
-    <meta name="description" content="Hayatımızın en özel gününde mutluluğumuzu sizinle paylaşmak istiyoruz.">
-
-    <!-- Open Graph (WhatsApp, Facebook, iMessage) -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Handenur & Haluk Can | Düğün Davetiyesi 💍">
-    <meta property="og:description" content="Hayatımızın en özel gününde sizleri de aramızda görmekten mutluluk duyarız.">
-    <meta property="og:image" content="/images/themes/lavanta/8.jpg">
-    <meta property="og:url" content="https://wedding-invitation-halook.vercel.app/">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Handenur & Haluk Can | Düğün Davetiyesi 💍">
-    <meta name="twitter:description" content="Hayatımızın en özel gününde sizleri de aramızda görmekten mutluluk duyarız.">
-    <meta name="twitter:image" content="/images/themes/lavanta/8.jpg">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
-</file>
-
 <file path="src/components/common/PwaInstallBanner.jsx">
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16393,6 +16400,80 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
     const installBtn = screen.getByRole('button', { name: /Yükle/i });
     expect(installBtn).toBeInTheDocument();
   });
+});
+</file>
+
+<file path="src/components/invitation/sections/HeroSection.jsx">
+import React, { memo } from "react";
+import { useTranslation } from "react-i18next";
+import { m } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 45 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
+};
+
+// React.memo ile sarmalandı
+export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  const isPostWedding = settings?.isPostWedding;
+  
+  return (
+    <m.section 
+      initial="hidden" animate="visible" variants={fadeUp}
+      className="hero-section" 
+    >
+      {invitation?.heroVideo ? (
+        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
+          <source src={invitation.heroVideo} type="video/mp4" />
+        </video>
+      ) : null}
+      
+      <div className="hero-content">
+        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
+        </p>
+
+        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
+          <span>{invitation?.bride}</span>
+          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
+          <span>{invitation?.groom}</span>
+        </h1>
+        
+        {isPostWedding ? (
+          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
+          </p>
+        ) : (
+          <>
+            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
+              {invitation?.dateText}
+            </p>
+            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+              {t('ui.time')} {invitation?.timeText}
+            </p>
+          </>
+        )}
+
+        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <span>{t('ui.scroll')}</span>
+        </div>
+        
+        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
+        {personalTableNumber && (
+          <div style={{ marginTop: '14px' }}>
+            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
+            </span>
+          </div>
+        )}
+      </div>
+    </m.section>
+  );
 });
 </file>
 
@@ -16597,225 +16678,6 @@ export const restoreBackupToDatabase = async (parsedData: any): Promise<void> =>
     await supabase.from("wishes").insert(wishesToInsert);
   }
 };
-</file>
-
-<file path="tests/responsive-mobile.spec.js">
-import { test, expect } from '@playwright/test';
-
-const mockMedia = async (page) => {
-  await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
-};
-
-test.describe('Mobil Cihazlarda Responsive Slayt (Slideshow) Davranışı', () => {
-
-  test.beforeEach(async ({ page }) => {
-    await mockMedia(page);
-    // DÜZELTME: Testin takılmasını (timeout) önlemek için sayfa yükleme stratejisi değiştirildi.
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    const envelopeSeal = page.locator('.envelope-seal');
-    await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-    await envelopeSeal.waitFor({ state: 'visible' });
-    await envelopeSeal.click();
-    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
-  });
-
-  test('Mobil ekranda scroll gizlenmeli ve slayt kontrolleri görünmeli', async ({ page }) => {
-    // Çözünürlüğü mobl boyutuna getiriyoruz
-    await page.setViewportSize({ width: 375, height: 812 });
-
-    const slideshowContainer = page.locator('.slideshow-container');
-    await expect(slideshowContainer).toBeVisible({ timeout: 10000 });
-
-    // Gövdedeki taşmanın (overflow) gizlendiğini teyit et
-    const bodyOverflow = await page.evaluate(() => document.body.style.overflow);
-    expect(bodyOverflow).toBe('hidden');
-
-    // Slayt kontrollerinin görünür olduğunu doğrula
-    const slideControls = page.locator('.slide-controls');
-    await expect(slideControls).toBeVisible();
-  });
-});
-</file>
-
-<file path="tests/rsvp.spec.js">
-import { test, expect } from '@playwright/test';
-
-test.describe('Düğün Davetiyesi LCV (RSVP) Süreçleri', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
-    
-    // Turnstile by-pass
-    await page.addInitScript(() => { 
-      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true }); 
-    });
-    
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
-    const envelopeSeal = page.locator('.envelope-seal');
-    await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-    await envelopeSeal.waitFor({ state: 'visible' });
-    await envelopeSeal.click();
-    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
-  });
-
-  test('LCV formu boş gönderilmek istendiğinde doğrulama hataları (Zod) gösterilmeli', async ({ page }) => {
-    const rsvpSection = page.locator('.card').filter({ hasText: /Katılım Durumu|RSVP/i });
-    await rsvpSection.scrollIntoViewIfNeeded();
-
-    const submitBtn = rsvpSection.locator('button[type="submit"]');
-    await submitBtn.click();
-
-    // DÜZELTME: Metin diline bağlı kalmadan (Required, Zorunlu vs), doğrudan hatayı ifade eden kırmızı "span" elementini dinliyoruz.
-    const errorMsg = rsvpSection.locator('span').filter({ hasText: /./ }).first();
-    await expect(errorMsg).toBeVisible({ timeout: 10000 });
-  });
-});
-</file>
-
-<file path="src/components/admin/ui/AdminLayout.test.jsx">
-import React from 'react';
-import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { AdminSection, AdminActionButtons } from './AdminLayout';
-
-// i18next kütüphanesini mockluyoruz[cite: 1]
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ i18n: { language: 'tr' } })
-}));
-
-describe('AdminLayout Bileşenleri Testleri', () => {
-  
-  afterEach(() => {
-    cleanup(); // Testler arası DOM temizliği[cite: 1]
-  });
-
-  it('AdminSection başlığı ve çocuk elemanları doğru render etmeli', () => {
-    const mockOnSave = vi.fn();
-    // Render işleminden dönen container objesini alıyoruz
-    const { container } = render(
-      <AdminSection title="Test Başlığı" onSave={mockOnSave}>
-        <div data-testid="child-element">İçerik</div>
-      </AdminSection>
-    );
-    
-    expect(screen.getByText('Test Başlığı')).toBeInTheDocument();
-    expect(screen.getByTestId('child-element')).toBeInTheDocument();
-    
-    // ÇÖZÜM: Global arama yapmak yerine render edilen section içerisindeki butonu seçiyoruz[cite: 1]
-    const saveBtn = container.querySelector('.admin-editor-section button');
-    expect(saveBtn).toBeInTheDocument();
-    
-    fireEvent.click(saveBtn);
-    expect(mockOnSave).toHaveBeenCalledTimes(1);
-  });
-
-  it('AdminActionButtons sağlanan proplara göre butonları oluşturmalı ve tetiklemeli', () => {
-    const mockMoveUp = vi.fn();
-    const mockMoveDown = vi.fn();
-    const mockDelete = vi.fn();
-
-    const { container } = render(
-      <AdminActionButtons 
-        onMoveUp={mockMoveUp} 
-        onMoveDown={mockMoveDown} 
-        onDelete={mockDelete} 
-        isEn={false} 
-      />
-    );
-
-    // Kaydet prop olarak gönderilmediği için ilgili buton DOM'da olmamalı[cite: 1]
-    const saveButtonQuery = Array.from(container.querySelectorAll('button')).find(btn => btn.textContent.includes('Kaydet'));
-    expect(saveButtonQuery).toBeUndefined();
-
-    const btnUp = screen.getByTitle('Yukarı Taşı');
-    const btnDown = screen.getByTitle('Aşağı Taşı');
-    const btnDelete = screen.getByRole('button', { name: /Sil 🗑️/i });
-
-    fireEvent.click(btnUp);
-    fireEvent.click(btnDown);
-    fireEvent.click(btnDelete);
-
-    expect(mockMoveUp).toHaveBeenCalledTimes(1);
-    expect(mockMoveDown).toHaveBeenCalledTimes(1);
-    expect(mockDelete).toHaveBeenCalledTimes(1);
-  });
-});
-</file>
-
-<file path="src/components/invitation/sections/HeroSection.jsx">
-import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
-import { m } from "framer-motion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 45 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
-};
-
-// React.memo ile sarmalandı
-export const HeroSection = memo(function HeroSection({ invitation, copy, guestGreeting, personalTableNumber, scrollToNext, settings }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  const isPostWedding = settings?.isPostWedding;
-  
-  return (
-    <m.section 
-      initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
-    >
-      {invitation?.heroVideo ? (
-        <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
-          <source src={invitation.heroVideo} type="video/mp4" />
-        </video>
-      ) : null}
-      
-      <div className="hero-content">
-        <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-          {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
-        </p>
-
-        <h1 className="couple-title" style={{ color: "#fff", textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>
-          <span>{invitation?.bride}</span>
-          <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
-          <span>{invitation?.groom}</span>
-        </h1>
-        
-        {isPostWedding ? (
-          <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-            {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
-          </p>
-        ) : (
-          <>
-            <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
-              {invitation?.dateText}
-            </p>
-            <p className="hero-time" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
-              {t('ui.time')} {invitation?.timeText}
-            </p>
-          </>
-        )}
-
-        <div className="scroll-indicator" onClick={(e) => { e.stopPropagation(); if (scrollToNext) scrollToNext(); }} style={{ cursor: 'pointer', zIndex: 20 }}>
-          <div className="mouse">
-            <div className="wheel"></div>
-          </div>
-          <span>{t('ui.scroll')}</span>
-        </div>
-        
-        {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
-        {personalTableNumber && (
-          <div style={{ marginTop: '14px' }}>
-            <span style={{ display: 'inline-block', padding: '6px 16px', background: 'rgba(255,255,255,0.85)', color: 'var(--rose-deep)', borderRadius: '999px', fontWeight: 'bold', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-              🍽️ {isEn ? `Reserved Table: ${personalTableNumber}` : `Masa Numaranız: ${personalTableNumber}`}
-            </span>
-          </div>
-        )}
-      </div>
-    </m.section>
-  );
-});
 </file>
 
 <file path="src/styles/admin.css">
@@ -21650,6 +21512,290 @@ html[data-theme]
 }
 </file>
 
+<file path="tests/responsive-mobile.spec.js">
+import { test, expect } from '@playwright/test';
+
+const mockMedia = async (page) => {
+  await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
+};
+
+test.describe('Mobil Cihazlarda Responsive Slayt (Slideshow) Davranışı', () => {
+
+  test.beforeEach(async ({ page }) => {
+    await mockMedia(page);
+    // DÜZELTME: Testin takılmasını (timeout) önlemek için sayfa yükleme stratejisi değiştirildi.
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
+    await envelopeSeal.waitFor({ state: 'visible' });
+    await envelopeSeal.click();
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Mobil ekranda scroll gizlenmeli ve slayt kontrolleri görünmeli', async ({ page }) => {
+    // Çözünürlüğü mobl boyutuna getiriyoruz
+    await page.setViewportSize({ width: 375, height: 812 });
+
+    const slideshowContainer = page.locator('.slideshow-container');
+    await expect(slideshowContainer).toBeVisible({ timeout: 10000 });
+
+    // Gövdedeki taşmanın (overflow) gizlendiğini teyit et
+    const bodyOverflow = await page.evaluate(() => document.body.style.overflow);
+    expect(bodyOverflow).toBe('hidden');
+
+    // Slayt kontrollerinin görünür olduğunu doğrula
+    const slideControls = page.locator('.slide-controls');
+    await expect(slideControls).toBeVisible();
+  });
+});
+</file>
+
+<file path="tests/rsvp.spec.js">
+import { test, expect } from '@playwright/test';
+
+test.describe('Düğün Davetiyesi LCV (RSVP) Süreçleri', () => {
+  
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
+    
+    // Turnstile by-pass
+    await page.addInitScript(() => { 
+      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true }); 
+    });
+    
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
+    await envelopeSeal.waitFor({ state: 'visible' });
+    await envelopeSeal.click();
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+  });
+
+  test('LCV formu boş gönderilmek istendiğinde doğrulama hataları (Zod) gösterilmeli', async ({ page }) => {
+    const rsvpSection = page.locator('.card').filter({ hasText: /Katılım Durumu|RSVP/i });
+    await rsvpSection.scrollIntoViewIfNeeded();
+
+    const submitBtn = rsvpSection.locator('button[type="submit"]');
+    await submitBtn.click();
+
+    // DÜZELTME: Metin diline bağlı kalmadan (Required, Zorunlu vs), doğrudan hatayı ifade eden kırmızı "span" elementini dinliyoruz.
+    const errorMsg = rsvpSection.locator('span').filter({ hasText: /./ }).first();
+    await expect(errorMsg).toBeVisible({ timeout: 10000 });
+  });
+});
+</file>
+
+<file path="src/components/admin/ui/AdminLayout.test.jsx">
+import React from 'react';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { AdminSection, AdminActionButtons } from './AdminLayout';
+
+// i18next kütüphanesini mockluyoruz[cite: 1]
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ i18n: { language: 'tr' } })
+}));
+
+describe('AdminLayout Bileşenleri Testleri', () => {
+  
+  afterEach(() => {
+    cleanup(); // Testler arası DOM temizliği[cite: 1]
+  });
+
+  it('AdminSection başlığı ve çocuk elemanları doğru render etmeli', () => {
+    const mockOnSave = vi.fn();
+    // Render işleminden dönen container objesini alıyoruz
+    const { container } = render(
+      <AdminSection title="Test Başlığı" onSave={mockOnSave}>
+        <div data-testid="child-element">İçerik</div>
+      </AdminSection>
+    );
+    
+    expect(screen.getByText('Test Başlığı')).toBeInTheDocument();
+    expect(screen.getByTestId('child-element')).toBeInTheDocument();
+    
+    // ÇÖZÜM: Global arama yapmak yerine render edilen section içerisindeki butonu seçiyoruz[cite: 1]
+    const saveBtn = container.querySelector('.admin-editor-section button');
+    expect(saveBtn).toBeInTheDocument();
+    
+    fireEvent.click(saveBtn);
+    expect(mockOnSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('AdminActionButtons sağlanan proplara göre butonları oluşturmalı ve tetiklemeli', () => {
+    const mockMoveUp = vi.fn();
+    const mockMoveDown = vi.fn();
+    const mockDelete = vi.fn();
+
+    const { container } = render(
+      <AdminActionButtons 
+        onMoveUp={mockMoveUp} 
+        onMoveDown={mockMoveDown} 
+        onDelete={mockDelete} 
+        isEn={false} 
+      />
+    );
+
+    // Kaydet prop olarak gönderilmediği için ilgili buton DOM'da olmamalı[cite: 1]
+    const saveButtonQuery = Array.from(container.querySelectorAll('button')).find(btn => btn.textContent.includes('Kaydet'));
+    expect(saveButtonQuery).toBeUndefined();
+
+    const btnUp = screen.getByTitle('Yukarı Taşı');
+    const btnDown = screen.getByTitle('Aşağı Taşı');
+    const btnDelete = screen.getByRole('button', { name: /Sil 🗑️/i });
+
+    fireEvent.click(btnUp);
+    fireEvent.click(btnDown);
+    fireEvent.click(btnDelete);
+
+    expect(mockMoveUp).toHaveBeenCalledTimes(1);
+    expect(mockMoveDown).toHaveBeenCalledTimes(1);
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+  });
+});
+</file>
+
+<file path="src/pages/InvitationController.jsx">
+import React, { Suspense, lazy, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Helmet } from "react-helmet-async"; // EKLENDİ: Meta etiketleri için
+import { useAudio } from "../hooks/useAudio";
+import { useScrollNavigation } from "../hooks/useScrollNavigation";
+import IntroPage from "../components/invitation/IntroPage";
+import { FloatingMenu } from "../components/common/FloatingMenu";
+import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
+import { useAssetPreloader } from "../hooks/useAssetPreloader";
+import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
+import { useStore } from "../store/useStore";
+import '../styles/invitation.css';
+
+const InvitationView = lazy(() => import("./InvitationView"));
+
+export default function InvitationController() {
+  const { i18n } = useTranslation();
+  const isEn = i18n.language.startsWith('en');
+
+  const siteData = useStore((state) => state.siteData);
+  const opened = useStore((state) => state.opened);
+  const setOpened = useStore((state) => state.setOpened);
+  const isOpening = useStore((state) => state.isOpening);
+  const setIsOpening = useStore((state) => state.setIsOpening);
+
+  const invitation = siteData.invitation;
+  const isHeroLoaded = useAssetPreloader(invitation.heroImage);
+  const personalGuestName = getGuestNameFromUrl();
+  const currentShareLink = invitation.shareLink || getCurrentShareLink();
+  const coupleName = `${invitation.bride} & ${invitation.groom}`;
+  const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
+
+  const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
+  
+  const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
+
+  useEffect(() => {
+    if (!opened) return;
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [opened, handleWheel, handleTouchStart, handleTouchEnd]);
+
+  const openInvitation = () => {
+    setIsOpening(true);
+    startMusic().catch(console.error);
+    setTimeout(() => setOpened(true), 4000);
+  };
+
+  // EKLENDİ: Dinamik SEO ve Meta Etiket Bilgileri
+  const pageTitle = isEn ? `${coupleName} | Wedding Invitation` : `${coupleName} | Düğün Davetiyesi`;
+  const pageDescription = invitation.message || (isEn ? "You are invited to our wedding." : "Düğün davetiyemize davetlisiniz.");
+  // Eğer video varsa ve görsel yoksa intro imajını yedek (fallback) olarak kullan
+  const ogImage = invitation.heroImage || invitation.introImage;
+
+  // Ortak render fonksiyonu (Kod tekrarını önlemek için)
+  const renderSEO = () => (
+    <Helmet>
+      <title>{pageTitle}</title>
+      <meta name="description" content={pageDescription} />
+      
+      {/* Open Graph / Facebook / WhatsApp */}
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={currentShareLink} />
+      <meta property="og:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
+      <meta property="og:description" content={pageDescription} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:site_name" content={coupleName} />
+      
+      {/* Twitter */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={currentShareLink} />
+      <meta name="twitter:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
+      <meta name="twitter:description" content={pageDescription} />
+      <meta name="twitter:image" content={ogImage} />
+    </Helmet>
+  );
+
+  if (!opened) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
+        {renderSEO()}
+        <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="none" />
+        <IntroPage 
+          isOpening={isOpening} 
+          copy={siteData.copy} 
+          invitation={invitation} 
+          personalGuestName={personalGuestName} 
+          personalTableNumber={getTableFromUrl()}
+          openInvitation={openInvitation} 
+          isHeroLoaded={isHeroLoaded}
+        />
+        <FloatingMenu 
+          isEn={isEn} 
+          toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
+          shareText={shareText} 
+          toggleMusic={toggleMusic} 
+          isMusicPlaying={isMusicPlaying} 
+          showScrollDown={false} 
+          scrollToNext={scrollToNext} 
+          showScrollTop={false} 
+          scrollToPrev={scrollToPrev} 
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
+      {renderSEO()}
+      <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="none" />
+      <PwaInstallBanner />
+      <FloatingMenu 
+        isEn={isEn} 
+        toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
+        shareText={shareText} 
+        toggleMusic={toggleMusic} 
+        isMusicPlaying={isMusicPlaying} 
+        showScrollDown={showScrollDown} 
+        scrollToNext={scrollToNext} 
+        showScrollTop={showScrollTop} 
+        scrollToPrev={scrollToPrev} 
+      />
+      <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
+        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} currentSlideIndex={currentSlideIndex} />
+      </Suspense>
+    </div>
+  );
+}
+</file>
+
 <file path="src/main.jsx">
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -21977,145 +22123,6 @@ export default function AdminController() {
         toggleCheckIn={toggleCheckIn} assignTable={assignTable}
       />
     </Suspense>
-  );
-}
-</file>
-
-<file path="src/pages/InvitationController.jsx">
-import React, { Suspense, lazy, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Helmet } from "react-helmet-async"; // EKLENDİ: Meta etiketleri için
-import { useAudio } from "../hooks/useAudio";
-import { useScrollNavigation } from "../hooks/useScrollNavigation";
-import IntroPage from "../components/invitation/IntroPage";
-import { FloatingMenu } from "../components/common/FloatingMenu";
-import { formatMessageTemplate, getCurrentShareLink, getGuestNameFromUrl, getTableFromUrl } from "../utils/helpers";
-import { useAssetPreloader } from "../hooks/useAssetPreloader";
-import { PwaInstallBanner } from "../components/common/PwaInstallBanner";
-import { useStore } from "../store/useStore";
-import '../styles/invitation.css';
-
-const InvitationView = lazy(() => import("./InvitationView"));
-
-export default function InvitationController() {
-  const { i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-
-  const siteData = useStore((state) => state.siteData);
-  const opened = useStore((state) => state.opened);
-  const setOpened = useStore((state) => state.setOpened);
-  const isOpening = useStore((state) => state.isOpening);
-  const setIsOpening = useStore((state) => state.setIsOpening);
-
-  const invitation = siteData.invitation;
-  const isHeroLoaded = useAssetPreloader(invitation.heroImage);
-  const personalGuestName = getGuestNameFromUrl();
-  const currentShareLink = invitation.shareLink || getCurrentShareLink();
-  const coupleName = `${invitation.bride} & ${invitation.groom}`;
-  const shareText = encodeURIComponent(formatMessageTemplate(siteData.messages.whatsappShareMessage, { couple: coupleName, link: currentShareLink, guest: personalGuestName }));
-
-  const { audioRef, isMusicPlaying, startMusic, toggleMusic } = useAudio(invitation.musicFile);
-  
-  const { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd } = useScrollNavigation(false, opened);
-
-  useEffect(() => {
-    if (!opened) return;
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [opened, handleWheel, handleTouchStart, handleTouchEnd]);
-
-  const openInvitation = () => {
-    setIsOpening(true);
-    startMusic().catch(console.error);
-    setTimeout(() => setOpened(true), 4000);
-  };
-
-  // EKLENDİ: Dinamik SEO ve Meta Etiket Bilgileri
-  const pageTitle = isEn ? `${coupleName} | Wedding Invitation` : `${coupleName} | Düğün Davetiyesi`;
-  const pageDescription = invitation.message || (isEn ? "You are invited to our wedding." : "Düğün davetiyemize davetlisiniz.");
-  // Eğer video varsa ve görsel yoksa intro imajını yedek (fallback) olarak kullan
-  const ogImage = invitation.heroImage || invitation.introImage;
-
-  // Ortak render fonksiyonu (Kod tekrarını önlemek için)
-  const renderSEO = () => (
-    <Helmet>
-      <title>{pageTitle}</title>
-      <meta name="description" content={pageDescription} />
-      
-      {/* Open Graph / Facebook / WhatsApp */}
-      <meta property="og:type" content="website" />
-      <meta property="og:url" content={currentShareLink} />
-      <meta property="og:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
-      <meta property="og:description" content={pageDescription} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:site_name" content={coupleName} />
-      
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={currentShareLink} />
-      <meta name="twitter:title" content={`${coupleName} | ${isEn ? "We're Getting Married!" : "Evleniyoruz! 💍"}`} />
-      <meta name="twitter:description" content={pageDescription} />
-      <meta name="twitter:image" content={ogImage} />
-    </Helmet>
-  );
-
-  if (!opened) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
-        {renderSEO()}
-        <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="none" />
-        <IntroPage 
-          isOpening={isOpening} 
-          copy={siteData.copy} 
-          invitation={invitation} 
-          personalGuestName={personalGuestName} 
-          personalTableNumber={getTableFromUrl()}
-          openInvitation={openInvitation} 
-          isHeroLoaded={isHeroLoaded}
-        />
-        <FloatingMenu 
-          isEn={isEn} 
-          toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
-          shareText={shareText} 
-          toggleMusic={toggleMusic} 
-          isMusicPlaying={isMusicPlaying} 
-          showScrollDown={false} 
-          scrollToNext={scrollToNext} 
-          showScrollTop={false} 
-          scrollToPrev={scrollToPrev} 
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", width: "100%", overflowX: "hidden" }}>
-      {renderSEO()}
-      <audio key={invitation.musicFile} ref={audioRef} src={invitation.musicFile || ""} loop preload="none" />
-      <PwaInstallBanner />
-      <FloatingMenu 
-        isEn={isEn} 
-        toggleLanguage={() => i18n.changeLanguage(isEn ? 'tr' : 'en')} 
-        shareText={shareText} 
-        toggleMusic={toggleMusic} 
-        isMusicPlaying={isMusicPlaying} 
-        showScrollDown={showScrollDown} 
-        scrollToNext={scrollToNext} 
-        showScrollTop={showScrollTop} 
-        scrollToPrev={scrollToPrev} 
-      />
-      <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
-        <InvitationView scrollToNext={scrollToNext} scrollToPrev={scrollToPrev} currentSlideIndex={currentSlideIndex} />
-      </Suspense>
-    </div>
   );
 }
 </file>

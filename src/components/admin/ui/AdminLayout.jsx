@@ -1,7 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-export function AdminSection({ title, children, onSave = undefined }) {
+// onSave parametresindeki gereksiz "= undefined" ataması kaldırılarak TypeScript'in
+// buraya bir fonksiyon atanmasına izin vermesi sağlandı.
+export function AdminSection({ title, children, onSave }) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
 
@@ -24,7 +26,7 @@ export function AdminSection({ title, children, onSave = undefined }) {
   );
 }
 
-export function AdminActionButtons({ onSave = undefined, onDelete = undefined, onMoveUp = undefined, onMoveDown = undefined, isEn }) {
+export function AdminActionButtons({ onSave, onDelete, onMoveUp, onMoveDown, isEn }) {
   return (
     <div style={{ display: "flex", gap: "8px", alignItems: "center", alignSelf: "flex-end" }}>
       {onMoveUp && (

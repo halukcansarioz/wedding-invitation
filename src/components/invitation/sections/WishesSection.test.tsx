@@ -25,7 +25,8 @@ describe('WishesSection Bileşen Testleri', () => {
 
     render(<WishesSection submitWish={vi.fn()} approvedWishes={[]} />);
     
-    expect(screen.getByRole('button', { name: /Durdur/i })).toBeInTheDocument();
-    expect(screen.getByText(/00:15/i)).toBeInTheDocument();
+    // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
+    expect(screen.getByRole('button', { name: /Durdur/i })).toBeDefined();
+    expect(screen.getByText(/00:15/i)).toBeDefined();
   });
 });

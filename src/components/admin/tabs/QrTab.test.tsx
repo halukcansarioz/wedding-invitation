@@ -35,7 +35,10 @@ describe('QrTab Admin Bileşen Testleri', () => {
 
     // Doğru butonu CSS sınıfı (admin-link-copy-btn) üzerinden seçiyoruz
     const copyBtn = container.querySelector('.admin-link-copy-btn');
-    expect(copyBtn).toBeInTheDocument();
+    
+    // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
+    expect(copyBtn).toBeDefined();
+    expect(copyBtn).not.toBeNull();
     
     fireEvent.click(copyBtn!);
 

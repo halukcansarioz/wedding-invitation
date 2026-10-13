@@ -1,30 +1,31 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { Spinner } from "../common/UIComponents";
 
 // Sekmeleri (Tabs) asenkron olarak (Lazy Load) yüklüyoruz.
-const OverviewTab = lazy(() => import("./tabs").then(m => ({ default: m.OverviewTab })));
-const GeneralTab = lazy(() => import("./tabs").then(m => ({ default: m.GeneralTab })));
-const ThemeTab = lazy(() => import("./tabs").then(m => ({ default: m.ThemeTab })));
-const GalleryTab = lazy(() => import("./tabs").then(m => ({ default: m.GalleryTab })));
-const GuestsAdminPanel = lazy(() => import("./tabs").then(m => ({ default: m.GuestsAdminPanel })));
-const WishesAdminPanel = lazy(() => import("./tabs").then(m => ({ default: m.WishesAdminPanel })));
-const PersonalLinkPanel = lazy(() => import("./tabs").then(m => ({ default: m.PersonalLinkPanel })));
-const VisibilityTab = lazy(() => import("./tabs").then(m => ({ default: m.VisibilityTab })));
-const SecurityTab = lazy(() => import("./tabs").then(m => ({ default: m.SecurityTab })));
-const MessagesTab = lazy(() => import("./tabs").then(m => ({ default: m.MessagesTab })));
-const CopyTab = lazy(() => import("./tabs").then(m => ({ default: m.CopyTab })));
-const FamilyTab = lazy(() => import("./tabs").then(m => ({ default: m.FamilyTab })));
-const CeremonyTab = lazy(() => import("./tabs").then(m => ({ default: m.CeremonyTab })));
-const ScheduleTab = lazy(() => import("./tabs").then(m => ({ default: m.ScheduleTab })));
-const QrTab = lazy(() => import("./tabs").then(m => ({ default: m.QrTab })));
-const DataTab = lazy(() => import("./tabs").then(m => ({ default: m.DataTab })));
-const GiftTab = lazy(() => import("./tabs").then(m => ({ default: m.GiftTab })));
-const StoryTab = lazy(() => import("./tabs").then(m => ({ default: m.StoryTab })));
-const TablePlanTab = lazy(() => import("./tabs").then(m => ({ default: m.TablePlanTab })));
-const GuestPhotosTab = lazy(() => import("./tabs").then(m => ({ default: m.GuestPhotosTab })));
-const PaymentsTab = lazy(() => import("./tabs").then(m => ({ default: m.PaymentsTab })));
-const NotificationsTab = lazy(() => import("./tabs").then(m => ({ default: m.NotificationsTab })));
+// TypeScript'in JS exportlarını tanıyabilmesi için ComponentType<any> ile cast ediyoruz.
+const OverviewTab = lazy(() => import("./tabs").then(m => ({ default: m.OverviewTab as ComponentType<any> })));
+const GeneralTab = lazy(() => import("./tabs").then(m => ({ default: m.GeneralTab as ComponentType<any> })));
+const ThemeTab = lazy(() => import("./tabs").then(m => ({ default: m.ThemeTab as ComponentType<any> })));
+const GalleryTab = lazy(() => import("./tabs").then(m => ({ default: m.GalleryTab as ComponentType<any> })));
+const GuestsAdminPanel = lazy(() => import("./tabs").then(m => ({ default: m.GuestsAdminPanel as ComponentType<any> })));
+const WishesAdminPanel = lazy(() => import("./tabs").then(m => ({ default: m.WishesAdminPanel as ComponentType<any> })));
+const PersonalLinkPanel = lazy(() => import("./tabs").then(m => ({ default: m.PersonalLinkPanel as ComponentType<any> })));
+const VisibilityTab = lazy(() => import("./tabs").then(m => ({ default: m.VisibilityTab as ComponentType<any> })));
+const SecurityTab = lazy(() => import("./tabs").then(m => ({ default: m.SecurityTab as ComponentType<any> })));
+const MessagesTab = lazy(() => import("./tabs").then(m => ({ default: m.MessagesTab as ComponentType<any> })));
+const CopyTab = lazy(() => import("./tabs").then(m => ({ default: m.CopyTab as ComponentType<any> })));
+const FamilyTab = lazy(() => import("./tabs").then(m => ({ default: m.FamilyTab as ComponentType<any> })));
+const CeremonyTab = lazy(() => import("./tabs").then(m => ({ default: m.CeremonyTab as ComponentType<any> })));
+const ScheduleTab = lazy(() => import("./tabs").then(m => ({ default: m.ScheduleTab as ComponentType<any> })));
+const QrTab = lazy(() => import("./tabs").then(m => ({ default: m.QrTab as ComponentType<any> })));
+const DataTab = lazy(() => import("./tabs").then(m => ({ default: m.DataTab as ComponentType<any> })));
+const GiftTab = lazy(() => import("./tabs").then(m => ({ default: m.GiftTab as ComponentType<any> })));
+const StoryTab = lazy(() => import("./tabs").then(m => ({ default: m.StoryTab as ComponentType<any> })));
+const TablePlanTab = lazy(() => import("./tabs").then(m => ({ default: m.TablePlanTab as ComponentType<any> })));
+const GuestPhotosTab = lazy(() => import("./tabs").then(m => ({ default: m.GuestPhotosTab as ComponentType<any> })));
+const PaymentsTab = lazy(() => import("./tabs").then(m => ({ default: m.PaymentsTab as ComponentType<any> })));
+const NotificationsTab = lazy(() => import("./tabs").then(m => ({ default: m.NotificationsTab as ComponentType<any> })));
 
 interface AdminPanelContentProps {
   activeAdminTab: string;

@@ -58,9 +58,9 @@ describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
     render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
     
     await waitFor(() => {
-      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeDefined();
       const formattedTotal = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(2000);
-      expect(screen.getByText(formattedTotal)).toBeInTheDocument();
+      expect(screen.getByText(formattedTotal)).toBeDefined();
     });
   });
 
@@ -68,7 +68,7 @@ describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
     render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
     
     await waitFor(() => {
-      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeDefined();
     });
 
     const liveBtn = screen.getByRole('button', { name: /Barkovizyonu Başlat/i });

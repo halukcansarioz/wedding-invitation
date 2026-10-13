@@ -25,19 +25,19 @@ describe('TablePlanTab Admin Bileşen Testleri', () => {
     render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
     
     // Masa atanmamış Ahmet Yılmaz "Bekleyenler" listesinde görünmeli
-    expect(screen.getByText('Ahmet Yılmaz')).toBeInTheDocument();
+    expect(screen.getByText('Ahmet Yılmaz')).toBeDefined();
     
     // Bekleyen sayısı 1 olmalı
-    expect(screen.getByText('Bekleyenler (1)')).toBeInTheDocument();
+    expect(screen.getByText('Bekleyenler (1)')).toBeDefined();
   });
 
   it('Masaları ve atanan misafirleri render edebilmeli', () => {
     render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
     
     // Masa 1 başlığı görünmeli
-    expect(screen.getByText('Masa 1')).toBeInTheDocument();
+    expect(screen.getByText('Masa 1')).toBeDefined();
     
     // Ayşe Kaya Masa 1'e atandığı için ismi DOM'da yer almalı
-    expect(screen.getByText(/Ayşe Kaya/i)).toBeInTheDocument();
+    expect(screen.getByText(/Ayşe Kaya/i)).toBeDefined();
   });
 });

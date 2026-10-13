@@ -14,7 +14,10 @@ export function GuestPhotosTab({ isEn }: GuestPhotosTabProps) {
   const handleReject = useCallback((id: string, url: string) => () => rejectPhoto(id, url), [rejectPhoto]);
 
   return (
-    <AdminSection title={isEn ? "Guest Uploads (POV)" : "Misafir Fotoğrafları (POV)"}>
+    <AdminSection 
+      title={isEn ? "Guest Uploads (POV)" : "Misafir Fotoğrafları (POV)"}
+      onSave={undefined}
+    >
       <p className="admin-help-text">
         {isEn 
           ? "Photos uploaded by guests appear here. Approved photos are shown in the main gallery." 
