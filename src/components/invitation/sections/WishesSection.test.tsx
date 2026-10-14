@@ -1,32 +1,42 @@
 import React from 'react';
-import { render, screen } from '../../../../tests/test-utils';
-import { describe, it, expect, vi } from 'vitest';
-import '@testing-library/jest-dom';
+import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WishesSection } from './WishesSection';
-import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
 
-vi.mock('../../../hooks/useAudioRecorder');
-vi.mock('@marsidev/react-turnstile', () => ({ 
-  Turnstile: ({ onSuccess }: any) => <button onClick={() => onSuccess('fake-token')}>Token Al</button> 
+// Çeviri mock'u: t() fonksiyonu kendisine verilen metni aynen döndürür
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } })
 }));
-vi.mock('react-i18next', () => ({ 
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
+
+// Ses kaydedici hook'unu kontrol edilebilir şekilde mockluyoruz
+const mockStartRecording = vi.fn();
+const mockStopRecording = vi.fn();
+
+vi.mock('../../../hooks/useAudioRecorder', () => ({
+  useAudioRecorder: () => ({
+    isRecording: false,
+    recordingTime: 0,
+    startRecording: mockStartRecording,
+    stopRecording: mockStopRecording,
+    clearRecording: vi.fn(),
+    audioBlob: null,
+    uploadAudio: vi.fn()
+  })
 }));
 
 describe('WishesSection Bileşen Testleri', () => {
-  it('Ses kaydı devam ediyorken Durdur (Stop) butonunu göstermeli', () => {
-    (useAudioRecorder as any).mockReturnValue({
-      isRecording: true, 
-      recordingTime: 15, 
-      startRecording: vi.fn(), 
-      stopRecording: vi.fn(), 
-      clearRecording: vi.fn()
-    });
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
 
-    render(<WishesSection submitWish={vi.fn()} approvedWishes={[]} />);
-    
-    // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
-    expect(screen.getByRole('button', { name: /Durdur/i })).toBeDefined();
-    expect(screen.getByText(/00:15/i)).toBeDefined();
+  it('Ses kaydı butonuna tıklandığında startRecording tetiklenmeli', async () => {
+    render(<WishesSection submitWish={vi.fn()} />);
+
+    // Kayıt başlatma butonunu bul (Mikrofon ikonlu buton)
+    const micButton = screen.getByRole('button', { name: /🎤/i });
+    fireEvent.click(micButton);
+
+    expect(mockStartRecording).toHaveBeenCalledTimes(1);
   });
 });
