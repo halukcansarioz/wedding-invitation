@@ -21,7 +21,6 @@ vi.mock('../../../hooks/useAudioRecorder', () => ({
 
 describe('WishesSection Bileşen Testleri', () => {
   beforeEach(() => {
-    // isolate: false nedeniyle önceki testlerden kalan DOM kalıntılarını temizler
     cleanup();
     document.body.innerHTML = '';
   });
