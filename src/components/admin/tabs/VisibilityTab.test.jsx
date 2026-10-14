@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, screen, fireEvent } from '../../../../tests/test-utils';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { VisibilityTab } from './VisibilityTab';
 import { useStore } from '../../../store/useStore';
 import { DEFAULT_SITE_DATA } from '../../../config/constants';
@@ -17,15 +17,20 @@ describe('VisibilityTab Bileşeni ve Zustand Entegrasyonu', () => {
   beforeEach(() => {
     // Testten önce mağazayı varsayılan ayarlarla başlat
     useStore.setState({
-      adminDraft: { ...DEFAULT_SITE_DATA }
+      adminDraft: JSON.parse(JSON.stringify(DEFAULT_SITE_DATA))
     });
+  });
+
+  afterEach(() => {
+    cleanup(); // DOM çakışmalarını önlemek için temizlik
+    vi.clearAllMocks();
   });
 
   it('checkbox değiştirildiğinde Zustand adminDraft durumunu güncellemeli', () => {
     render(<VisibilityTab isEn={false} />);
     
-    // "visibility.gallery" etiketine sahip checkbox'ı bul
-    const galleryCheckbox = screen.getByLabelText('visibility.gallery');
+    // ÇÖZÜM: Sayfada birden fazla checkbox olduğu için name (etiket) ile spesifik seçiyoruz
+    const galleryCheckbox = screen.getByRole('checkbox', { name: 'visibility.gallery' });
     
     // Varsayılan olarak işaretli (true) olmalı
     expect(galleryCheckbox.checked).toBe(true);
