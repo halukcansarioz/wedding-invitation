@@ -82,7 +82,10 @@ serve(async (req) => {
       const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY || "", {
         global: { headers: { Authorization: authHeader } },
       });
-      const { data: { user }, error: authError } = await client.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await client.auth.getUser();
 
       if (authError || !user) {
         return new Response(
@@ -145,12 +148,24 @@ serve(async (req) => {
 
     // 2. AKSİYON: ÇÖP TOPLAYICI (GARBAGE COLLECTION)
     if (action === "cleanup-orphans") {
-      const knownBuckets = ["images", "guest_photos", "audio_wishes"];
+      const knownBuckets = ["wedding-media", "images", "guest_photos", "audio_wishes"];
       let orphanCount = 0;
 
-      // Veritabanında kullanılan aktif medyaları topla
-      const { data: settingsRow } = await supabaseAdmin.from("settings").select("data").single();
-      const siteData = settingsRow?.data || {};
+      // Hem invitation_settings (content) hem de eski settings (data) tablosunu kontrol et
+      const { data: invitationSettingsRow } = await supabaseAdmin
+        .from("invitation_settings")
+        .select("content")
+        .eq("id", "main")
+        .maybeSingle();
+
+      let siteData = invitationSettingsRow?.content;
+      if (!siteData) {
+        const { data: legacySettingsRow } = await supabaseAdmin
+          .from("settings")
+          .select("data")
+          .maybeSingle();
+        siteData = legacySettingsRow?.data || {};
+      }
 
       const activeUrls = new Set<string>();
 
@@ -162,16 +177,23 @@ serve(async (req) => {
         siteData.invitation.gallery.forEach((g: string) => activeUrls.add(g));
       }
       if (Array.isArray(siteData.storyTimeline)) {
-        siteData.storyTimeline.forEach((s: any) => { if (s?.image) activeUrls.add(s.image); });
+        siteData.storyTimeline.forEach((s: any) => {
+          if (s?.image) activeUrls.add(s.image);
+        });
       }
 
       // Guest photos tablosundaki aktif medyalar
       const { data: guestPhotos } = await supabaseAdmin.from("guest_photos").select("image_url");
-      guestPhotos?.forEach((gp: any) => { if (gp.image_url) activeUrls.add(gp.image_url); });
+      guestPhotos?.forEach((gp: any) => {
+        if (gp.image_url) activeUrls.add(gp.image_url);
+      });
 
-      // Wishes ses dosyaları
-      const { data: wishes } = await supabaseAdmin.from("wishes").select("audio_url");
-      wishes?.forEach((w: any) => { if (w.audio_url) activeUrls.add(w.audio_url); });
+      // Wishes ses dosyaları (audio_url ve audioUrl uyumluluğu)
+      const { data: wishes } = await supabaseAdmin.from("wishes").select("*");
+      wishes?.forEach((w: any) => {
+        const audio = w.audio_url || w.audioUrl;
+        if (audio) activeUrls.add(audio);
+      });
 
       for (const bucket of knownBuckets) {
         const { data: fileList, error: listError } = await supabaseAdmin.storage.from(bucket).list();
@@ -179,6 +201,7 @@ serve(async (req) => {
 
         const filesToDelete: string[] = [];
         for (const file of fileList) {
+          if (file.name === ".emptyFolderPlaceholder") continue;
           const isReferenced = Array.from(activeUrls).some((url) => url.includes(file.name));
           if (!isReferenced) {
             filesToDelete.push(file.name);
@@ -186,13 +209,19 @@ serve(async (req) => {
         }
 
         if (filesToDelete.length > 0) {
-          const { error: removeError } = await supabaseAdmin.storage.from(bucket).remove(filesToDelete);
+          const { error: removeError } = await supabaseAdmin.storage
+            .from(bucket)
+            .remove(filesToDelete);
           if (!removeError) orphanCount += filesToDelete.length;
         }
       }
 
       return new Response(
-        JSON.stringify({ success: true, count: orphanCount, message: `${orphanCount} adet yetim dosya temizlendi.` }),
+        JSON.stringify({
+          success: true,
+          count: orphanCount,
+          message: `${orphanCount} adet yetim dosya temizlendi.`,
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

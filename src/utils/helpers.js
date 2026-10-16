@@ -97,7 +97,7 @@ export const getTableFromUrl = () => {
   return (params.get("table") || params.get("masa") || "").trim();
 };
 
-export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personCount = "") => {
+export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personCount = "", guestId = "") => {
   const cleanLink = (baseLink || "").split("?")[0].replace(/\/$/, "");
   const nameParam = encodeURIComponent((guestName || "").trim());
   let url = `${cleanLink}/?guest=${nameParam}`;
@@ -105,7 +105,10 @@ export const buildPersonalLink = (baseLink, guestName, tableNumber = "", personC
     url += `&table=${encodeURIComponent(String(tableNumber).trim())}`;
   }
   if (personCount) {
-    url += `&count=${encodeURIComponent(String(personCount).trim())}`; 
+    url += `&count=${encodeURIComponent(String(personCount).trim())}`;
+  }
+  if (guestId) {
+    url += `&id=${encodeURIComponent(String(guestId).trim())}`;
   }
   return url;
 };
@@ -171,10 +174,10 @@ export const createCsv = (items, type = "guests", isEn = false) => {
   let rows = [];
 
   if (type === "guests") {
-    headers = isEn 
+    headers = isEn
       ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Table No", "Song Request", "Note"]
       : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Masa No", "Müzik İsteği", "Not"];
-    rows = items.map(g => [
+    rows = items.map((g) => [
       `"${g.name || ""}"`,
       `"${g.attendance || ""}"`,
       `"${g.phone || ""}"`,
@@ -183,27 +186,27 @@ export const createCsv = (items, type = "guests", isEn = false) => {
       `"${g.hasChild || ""}"`,
       `"${g.tableNumber || ""}"`,
       `"${g.songRequest || ""}"`,
-      `"${(g.note || "").replace(/"/g, '""')}"`
+      `"${(g.note || "").replace(/"/g, '""')}"`,
     ]);
   } else {
     headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
-    rows = items.map(w => [
+    rows = items.map((w) => [
       `"${w.name || ""}"`,
       `"${(w.message || "").replace(/"/g, '""')}"`,
-      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`
+      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`,
     ]);
   }
 
-  return [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
 };
 
 export const createExcelTable = (items, type = "guests", isEn = false) => {
   const csvContent = createCsv(items, type, isEn);
-  const rows = csvContent.split("\n").map(r => r.split(","));
+  const rows = csvContent.split("\n").map((r) => r.split(","));
   let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"></head><body><table border="1">`;
   rows.forEach((row, i) => {
     html += "<tr>";
-    row.forEach(cell => {
+    row.forEach((cell) => {
       const clean = cell.replace(/^"|"$/g, "");
       html += i === 0 ? `<th style="background:#f4f4f4;">${clean}</th>` : `<td>${clean}</td>`;
     });
@@ -244,6 +247,7 @@ export const uiWishToDb = (w) => ({
   name: w.name,
   message: w.message,
   approved: w.approved ?? true,
+  audio_url: w.audioUrl || w.audio_url || null,
 });
 
 export const dbWishToUi = (w) => ({
@@ -251,6 +255,8 @@ export const dbWishToUi = (w) => ({
   name: w.name,
   message: w.message,
   approved: w.approved,
+  audioUrl: w.audio_url || w.audioUrl || "",
+  message_translated: w.message_translated || "",
   createdAt: w.created_at,
 });
 
@@ -297,13 +303,13 @@ export const triggerConfetti = () => {
 
   const activeTheme = document.documentElement.dataset.theme || "lavanta";
   const themeColors = THEME_FAVICON_COLORS[activeTheme] || THEME_FAVICON_COLORS.lavanta;
-  
+
   const colors = [
-    themeColors.petal, 
-    themeColors.stroke, 
-    themeColors.circle, 
-    themeColors.center, 
-    themeColors.bg
+    themeColors.petal,
+    themeColors.stroke,
+    themeColors.circle,
+    themeColors.center,
+    themeColors.bg,
   ];
 
   const particles = Array.from({ length: 65 }).map(() => ({
@@ -316,7 +322,7 @@ export const triggerConfetti = () => {
     rotation: Math.random() * 360,
     rotationSpeed: (Math.random() - 0.5) * 10,
     opacity: 1,
-    isPetal: Math.random() > 0.4
+    isPetal: Math.random() > 0.4,
   }));
 
   let animationFrame;
@@ -327,7 +333,7 @@ export const triggerConfetti = () => {
     particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
-      p.vy += 0.35; 
+      p.vy += 0.35;
       p.vx *= 0.98;
       p.rotation += p.rotationSpeed;
       p.opacity -= 0.009;

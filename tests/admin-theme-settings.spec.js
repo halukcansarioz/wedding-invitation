@@ -15,7 +15,7 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
     
-    // 1. Supabase Auth Mock (Giriş İstemi - Eksik token bilgileri eklendi)
+    // 1. Supabase Auth Mock
     await page.route('**/auth/v1/token?grant_type=password', async route => {
       const now = Math.floor(Date.now() / 1000);
       const timestamp = new Date().toISOString();
@@ -27,36 +27,36 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
           expires_in: 3600, 
           expires_at: now + 3600, 
           refresh_token: 'fake-refresh-token',
-          user: { id: '123', aud: 'authenticated', role: 'authenticated', email: 'test@admin.com', created_at: timestamp },
+          user: { id: '123', aud: 'authenticated', role: 'authenticated', email: 'admin@test.com', created_at: timestamp },
         }),
       });
     });
 
     // 2. Supabase REST API Mock
     await page.route('**/rest/v1/**', async route => {
-        const url = route.request().url();
-        if (url.includes('settings')) {
-          await route.fulfill({
-            status: 200, contentType: 'application/json',
-            // DÜZELTME: loadSettingsFromDatabase büyük ihtimalle .single() kullanıyor.
-            // Bu nedenle köşeli parantez (dizi) yerine doğrudan süslü parantez (obje) dönmeliyiz.
-            body: JSON.stringify({ 
+      const url = route.request().url();
+      if (url.includes('settings')) {
+        await route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ 
+            content: {
               invitation: { bride: 'Hande', groom: 'Haluk' }, 
               settings: { visibility: {}, theme: 'lavanta' }
-            })
-          });
-        } else {
-          await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-        }
-      });
+            }
+          })
+        });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+      }
+    });
 
-    await page.goto('/admin', { waitUntil: 'domcontentloaded' }); // Ekstra stabilite için eklendi
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
     
     const emailInput = page.locator('input[type="email"]');
     
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
-    await emailInput.fill('halukcansarioz19@gmail.com');
-    await page.locator('input[type="password"]').fill('211225');
+    await emailInput.fill('admin@test.com');
+    await page.locator('input[type="password"]').fill('123456');
     await page.locator('button[type="submit"]').click();
     
     // Giriş formunun kaybolduğunu doğrula
@@ -64,7 +64,6 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
   });
 
   test('Tema kartına tıklanıp kaydedildiğinde HTML data-theme niteliği değişmeli', async ({ page }) => {
-    // DÜZELTME 3: Doğrudan menü başlığını hedefliyoruz (AdminView.tsx ile uyumlu)
     const themeTabButton = page.locator('text="Tema"').first();
     await themeTabButton.waitFor({ state: 'visible', timeout: 10000 });
     await themeTabButton.click();

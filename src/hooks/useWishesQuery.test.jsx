@@ -1,6 +1,6 @@
 import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useWishesQuery } from './useWishesQuery';
 
@@ -20,6 +20,10 @@ vi.mock('../services/database', () => ({
 }));
 
 describe('useWishesQuery (React Query) Testleri', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   // Testler için taze bir QueryClient sağlıyoruz
   const createTestQueryClient = () => new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -69,5 +73,38 @@ describe('useWishesQuery (React Query) Testleri', () => {
     // Mocklanan Supabase fonksiyonunun çağrıldığından emin oluyoruz
     const { supabase } = await import('../supabaseClient');
     expect(supabase.functions.invoke).toHaveBeenCalledWith('submit-form', expect.any(Object));
+  });
+
+  it('Sesli mesaj (audioUrl) eklendiğinde submit-form gövdesine audio_url olarak iletilmeli', async () => {
+    const queryClient = createTestQueryClient();
+    const wrapper = ({ children }) => (
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    );
+
+    const { result } = renderHook(() => useWishesQuery(), { wrapper });
+
+    await result.current.addWish({
+      name: 'Selin',
+      message: 'Sesli tebrik!',
+      approved: true,
+      audioUrl: 'https://storage.example.com/audio_wishes/voice.webm',
+      turnstileToken: 'fake-token'
+    });
+
+    const { supabase } = await import('../supabaseClient');
+    expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'submit-form',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          type: 'wish',
+          data: expect.objectContaining({
+            name: 'Selin',
+            audio_url: 'https://storage.example.com/audio_wishes/voice.webm'
+          })
+        })
+      })
+    );
   });
 });

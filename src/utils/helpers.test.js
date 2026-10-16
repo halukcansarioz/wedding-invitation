@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPersonalLink, normalizeSiteData, normalizeText, formatMessageTemplate, getQrImageUrl } from './helpers';
+import { buildPersonalLink, normalizeSiteData, normalizeText, formatMessageTemplate, getQrImageUrl, dbWishToUi, uiWishToDb } from './helpers';
 
 describe('Helpers Utilities Test Suite', () => {
   
@@ -18,6 +18,12 @@ describe('Helpers Utilities Test Suite', () => {
     const base = "https://wedding.com/";
     const url = buildPersonalLink(base, "Ayşe Demir", "12");
     expect(url).toBe("https://wedding.com/?guest=Ay%C5%9Fe%20Demir&table=12");
+  });
+
+  it('buildPersonalLink appends guest id when provided for QR check-in', () => {
+    const base = "https://wedding.com/";
+    const url = buildPersonalLink(base, "Ayşe Demir", "12", "2", "guest-99");
+    expect(url).toBe("https://wedding.com/?guest=Ay%C5%9Fe%20Demir&table=12&count=2&id=guest-99");
   });
 
   it('formatMessageTemplate replaces variables correctly', () => {
@@ -50,6 +56,25 @@ describe('Helpers Utilities Test Suite', () => {
       "/images/themes/lavanta/antony-bec-nD9tEn63suc-unsplash.webp",
       "https://storage.example.com/user-upload.jpg",
     ]);
+  });
+
+  it('maps audio_url and message_translated properly between DB and UI wish models', () => {
+    const dbRow = {
+      id: "w-1",
+      name: "Selin",
+      message: "Mutluluklar!",
+      approved: true,
+      audio_url: "https://storage.example.com/audio_wishes/1.webm",
+      message_translated: "Best wishes!",
+      created_at: "2026-08-01T10:00:00Z",
+    };
+
+    const uiWish = dbWishToUi(dbRow);
+    expect(uiWish.audioUrl).toBe("https://storage.example.com/audio_wishes/1.webm");
+    expect(uiWish.message_translated).toBe("Best wishes!");
+
+    const mappedBack = uiWishToDb(uiWish);
+    expect(mappedBack.audio_url).toBe("https://storage.example.com/audio_wishes/1.webm");
   });
 
 });

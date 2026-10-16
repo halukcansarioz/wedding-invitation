@@ -20,13 +20,15 @@ test.describe('Düğün Davetiyesi LCV (RSVP) Süreçleri', () => {
   });
 
   test('LCV formu boş gönderilmek istendiğinde doğrulama hataları (Zod) gösterilmeli', async ({ page }) => {
-    const rsvpSection = page.locator('.card').filter({ hasText: /Katılım Durumu|RSVP/i });
+    // GuestsListSection içindeki güvenlik notunda da "RSVP" kelimesi geçtiği için
+    // strict mode çakışmasını önlemek adına doğrudan .rsvp-card sınıfını hedefliyoruz.
+    const rsvpSection = page.locator('.rsvp-card');
     await rsvpSection.scrollIntoViewIfNeeded();
 
     const submitBtn = rsvpSection.locator('button[type="submit"]');
     await submitBtn.click();
 
-    // DÜZELTME: Metin diline bağlı kalmadan (Required, Zorunlu vs), doğrudan hatayı ifade eden kırmızı "span" elementini dinliyoruz.
+    // Metin diline bağlı kalmadan, doğrudan hatayı ifade eden span elementini dinliyoruz.
     const errorMsg = rsvpSection.locator('span').filter({ hasText: /./ }).first();
     await expect(errorMsg).toBeVisible({ timeout: 10000 });
   });

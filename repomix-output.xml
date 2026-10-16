@@ -51,7 +51,6 @@ src/
       tabs/
         AdminCharts.jsx
         AdminCharts.test.jsx
-        CeremonyTab.jsx
         CeremonyTab.test.jsx
         CeremonyTab.tsx
         CopyTab.jsx
@@ -61,7 +60,6 @@ src/
         FamilyTab.jsx
         FamilyTab.test.jsx
         GalleryTab.jsx
-        GeneralTab.jsx
         GeneralTab.test.jsx
         GeneralTab.tsx
         GiftTab.jsx
@@ -87,12 +85,10 @@ src/
         ScheduleTab.test.jsx
         SecurityTab.jsx
         SecurityTab.test.jsx
-        StoryTab.jsx
         StoryTab.test.jsx
         StoryTab.tsx
         TablePlanTab.test.tsx
         TablePlanTab.tsx
-        ThemeTab.jsx
         ThemeTab.test.jsx
         ThemeTab.tsx
         VisibilityTab.jsx
@@ -169,14 +165,12 @@ src/
     useAdminGuestPhotos.ts
     useAdminQr.test.ts
     useAdminQr.ts
-    useAdminSession.js
     useAdminSession.test.js
     useAdminSession.ts
     useAdminTablePlan.test.ts
     useAdminTablePlan.ts
     useAssetPreloader.js
     useAssetPreloader.test.js
-    useAudio.js
     useAudio.test.js
     useAudio.ts
     useAudioRecorder.js
@@ -1152,53 +1146,6 @@ export default function AdminCharts({ sideData, checkInData, isEn }) {
 }
 </file>
 
-<file path="src/components/admin/tabs/CeremonyTab.jsx">
-import React from "react";
-import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
-import { useStore } from "../../../store/useStore";
-
-export function CeremonyTab({ isEn }) {
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-  const updateDraftArrayItem = useStore((state) => state.updateDraftArrayItem);
-  const removeDraftArrayItem = useStore((state) => state.removeDraftArrayItem);
-  const addDraftArrayItem = useStore((state) => state.addDraftArrayItem);
-  const moveDraftArrayItem = useStore((state) => state.moveDraftArrayItem);
-
-  if (!adminDraft?.settings) return null;
-
-  return (
-    <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"} onSave={() => saveSiteContent(isEn)}>
-      <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.ceremony ?? true} label={isEn ? "Show Ceremony Section" : "Nikah bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} />
-      </div>
-      <div className="admin-repeat-list">
-        {(adminDraft.eventDetails || []).map((event, index) => (
-          <div key={index} className="admin-repeat-item">
-            <div className="admin-repeat-title">
-              <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
-              <AdminActionButtons 
-                onMoveUp={index > 0 ? () => moveDraftArrayItem("eventDetails", index, -1) : null}
-                onMoveDown={index < (adminDraft.eventDetails?.length || 0) - 1 ? () => moveDraftArrayItem("eventDetails", index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} onDelete={() => removeDraftArrayItem("eventDetails", index)} isEn={isEn} 
-              />
-            </div>
-            <div className="admin-edit-grid">
-              <AdminField label={isEn ? "Title" : "Başlık"} value={event.label} onChange={(v) => updateDraftArrayItem("eventDetails", index, "label", v)} placeholder="Örn: Nikah Töreni" />
-              <AdminField label={isEn ? "Time" : "Saat"} value={event.time} onChange={(v) => updateDraftArrayItem("eventDetails", index, "time", v)} placeholder="Örn: 19:00" />
-              <AdminField label={isEn ? "Location" : "Mekan"} value={event.location} onChange={(v) => updateDraftArrayItem("eventDetails", index, "location", v)} placeholder="Örn: Kır Bahçesi" />
-              <AdminTextarea label={isEn ? "Description" : "Açıklama"} value={event.description} onChange={(v) => updateDraftArrayItem("eventDetails", index, "description", v)} />
-            </div>
-          </div>
-        ))}
-        <button type="button" className="admin-add-button" onClick={() => addDraftArrayItem("eventDetails", { label: "Yeni Etkinlik", time: "20:00", location: "", description: "" })}>{isEn ? "Add New Event" : "Yeni Etkinlik Ekle"}</button>
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/CopyTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea } from "../../AdminUI";
@@ -2055,14 +2002,19 @@ import { useTranslation } from 'react-i18next';
 
 export const LocalizedDate = ({ dateString = "2026-08-22T19:00:00" }) => {
   const { i18n } = useTranslation();
-  const date = new Date(dateString);
+  const parsedDate = new Date(dateString);
+  
+  // Geçersiz tarih girilirse uygulamanın çökmesini engelle
+  const safeDate = Number.isNaN(parsedDate.getTime()) 
+    ? new Date("2026-08-22T19:00:00") 
+    : parsedDate;
   
   const formattedDate = new Intl.DateTimeFormat(i18n.language, {
     weekday: 'long', 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric'
-  }).format(date);
+  }).format(safeDate);
 
   return <span>{formattedDate}</span>;
 };
@@ -2283,10 +2235,11 @@ const fadeUp = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.2, 0.8, 0.2, 1] } }
 };
 
-export const CeremonySection = memo(function CeremonySection({ copy, eventDetails }) {
+export const CeremonySection = memo(function CeremonySection({ copy, eventDetails, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const events = Array.isArray(eventDetails) ? eventDetails : [];
+  const weddingDate = invitation?.weddingDate || "2026-08-22T19:00:00";
 
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
@@ -2294,13 +2247,16 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
       <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
       
       <div className="ceremony-date" style={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}>
-        <LocalizedDate dateString="2026-08-22T19:00:00" />
+        <LocalizedDate dateString={weddingDate} />
       </div>
 
       <div className="ceremony-grid">
         {events.map((event, index) => (
           <div className="ceremony-item" key={`${event.label}-${index}`}>
-            <span>{event.label}</span><strong>{event.time}</strong><p>{event.description}</p><em>{event.location}</em>
+            <span>{event.label}</span>
+            <strong>{event.time}</strong>
+            <p>{event.description}</p>
+            <em>{event.location}</em>
           </div>
         ))}
       </div>
@@ -2585,67 +2541,6 @@ export function useAssetPreloader(mediaUrl) {
   }, [mediaUrl]);
 
   return isLoaded;
-}
-</file>
-
-<file path="src/hooks/useAudio.js">
-import { useRef, useState, useEffect, useCallback } from "react";
-
-export function useAudio(musicFile) {
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.load();
-    }
-  }, [musicFile]);
-
-  const stopMusic = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setIsMusicPlaying(false);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("wedding-music-muted", "true");
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      stopMusic();
-    };
-  }, [stopMusic]);
-
-  const startMusic = useCallback(async (forcePlay = false) => {
-    if (forcePlay !== true && typeof window !== "undefined") {
-      if (localStorage.getItem("wedding-music-muted") === "true") {
-        return;
-      }
-    }
-
-    try {
-      if (musicFile && audioRef.current) {
-        audioRef.current.volume = 0.15;
-        await audioRef.current.play();
-        setIsMusicPlaying(true);
-        if (typeof window !== "undefined") localStorage.setItem("wedding-music-muted", "false");
-      }
-    } catch (error) {
-      console.error("Müzik başlatılamadı:", error);
-      setIsMusicPlaying(false);
-    }
-  }, [musicFile]);
-
-  const toggleMusic = useCallback(async () => {
-    if (isMusicPlaying) {
-      stopMusic();
-    } else {
-      await startMusic(true);
-    }
-  }, [isMusicPlaying, stopMusic, startMusic]);
-
-  return { audioRef, isMusicPlaying, setIsMusicPlaying, startMusic, stopMusic, toggleMusic };
 }
 </file>
 
@@ -4448,54 +4343,6 @@ describe('FamilyTab Admin Bileşen Testleri', () => {
 });
 </file>
 
-<file path="src/components/admin/tabs/GeneralTab.jsx">
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
-import { getCurrentShareLink } from "../../../utils/helpers";
-import { useStore } from "../../../store/useStore";
-
-export function GeneralTab({ isEn }) {
-  const { t } = useTranslation();
-  
-  const invitation = useStore((state) => state.adminDraft.invitation);
-  const visibility = useStore((state) => state.adminDraft.settings.visibility);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-
-  return (
-    <AdminSection title={t('admin.general.title', isEn ? "General Invitation Information" : "Genel Davetiye Bilgileri")} onSave={() => saveSiteContent(isEn)}>
-      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox 
-          checked={visibility?.countdown ?? true} 
-          label={t('admin.general.showCountdown', isEn ? "Show Countdown Section" : "Geri Sayım bölümünü göster")} 
-          onChange={(v) => updateDraftObject("settings", "visibility", { ...visibility, countdown: v })} 
-        />
-        <AdminCheckbox 
-          checked={visibility?.location ?? true} 
-          label={t('admin.general.showLocation', isEn ? "Show Map & Location" : "Konum bölümünü göster")} 
-          onChange={(v) => updateDraftObject("settings", "visibility", { ...visibility, location: v })} 
-        />
-      </div>
-      <div className="admin-edit-grid">
-        <AdminField label={t('admin.general.brideName', isEn ? "Bride Name" : "Gelin adı")} onChange={(v) => updateDraftObject("invitation", "bride", v)} value={invitation.bride} />
-        <AdminField label={t('admin.general.groomName', isEn ? "Groom Name" : "Damat adı")} onChange={(v) => updateDraftObject("invitation", "groom", v)} value={invitation.groom} />
-        <AdminField label={t('admin.general.dateText', isEn ? "Display Date" : "Görünen tarih")} onChange={(v) => updateDraftObject("invitation", "dateText", v)} value={invitation.dateText} />
-        <AdminField label={t('admin.general.timeText', isEn ? "Time" : "Saat")} onChange={(v) => updateDraftObject("invitation", "timeText", v)} value={invitation.timeText} />
-        <AdminField type="datetime-local" label={t('admin.general.weddingDate', isEn ? "Countdown Target Date" : "Geri sayım tarihi")} onChange={(v) => updateDraftObject("invitation", "weddingDate", v)} value={invitation.weddingDate} />
-        <AdminField type="date" label={t('admin.general.rsvpDeadline', isEn ? "RSVP Deadline" : "LCV Son Bildirim Tarihi")} onChange={(v) => updateDraftObject("invitation", "rsvpDeadline", v)} value={invitation.rsvpDeadline} />
-        <AdminField label={t('admin.general.whatsapp', isEn ? "WhatsApp Number" : "WhatsApp numarası")} onChange={(v) => updateDraftObject("invitation", "whatsappNumber", v)} value={invitation.whatsappNumber} />
-        <AdminField label={t('admin.general.venue', isEn ? "Venue Name" : "Mekan adı")} onChange={(v) => updateDraftObject("invitation", "venue", v)} value={invitation.venue} />
-        <AdminField label={t('admin.general.address', isEn ? "Address" : "Adres")} onChange={(v) => updateDraftObject("invitation", "address", v)} value={invitation.address} />
-        <AdminField label={t('admin.general.mapLink', isEn ? "Map Link" : "Harita linki")} onChange={(v) => updateDraftObject("invitation", "mapLink", v)} value={invitation.mapLink} />
-        <AdminField label={t('admin.general.shareLink', isEn ? "Share Link" : "Paylaşım linki")} onChange={(v) => updateDraftObject("invitation", "shareLink", v)} value={invitation.shareLink} placeholder={getCurrentShareLink()} />
-        <AdminTextarea label={t('admin.general.message', isEn ? "Main Invitation Text" : "Ana davet metni")} onChange={(v) => updateDraftObject("invitation", "message", v)} value={invitation.message} />
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/GiftTab.jsx">
 import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox } from "../../AdminUI";
@@ -4923,102 +4770,6 @@ export function SecurityTab({ changeAdminPassword, isEn }) {
 }
 </file>
 
-<file path="src/components/admin/tabs/StoryTab.jsx">
-import React, { useState } from "react"; // EKLENDİ: useState dahil edildi
-import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField, AdminActionButtons } from "../../AdminUI";
-import { useStore } from "../../../store/useStore";
-import { uploadMediaFile, deleteMediaFile } from "../../../services/database"; // EKLENDİ: deleteMediaFile dahil edildi
-
-export function StoryTab({ isEn }) {
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-  const updateDraftArrayItem = useStore((state) => state.updateDraftArrayItem);
-  const removeDraftArrayItem = useStore((state) => state.removeDraftArrayItem);
-  const addDraftArrayItem = useStore((state) => state.addDraftArrayItem);
-  const moveDraftArrayItem = useStore((state) => state.moveDraftArrayItem);
-
-  // EKLENDİ: Yükleme state'leri için obje
-  const [uploadingStates, setUploadingStates] = useState({});
-
-  if (!adminDraft?.settings) return null;
-
-  const handleStoryImageUpload = async (index, file) => {
-    if(!file) return;
-    const uploadKey = `story_${index}`;
-    setUploadingStates(prev => ({ ...prev, [uploadKey]: true }));
-    
-    try {
-      const url = await uploadMediaFile(file, "images");
-      if(url) {
-        // EKLENDİ: Yeni görsel yüklendiğinde eskisini fiziksel olarak sil (Storage Garbage Collection)
-        const oldUrl = adminDraft.storyTimeline[index]?.image;
-        if (oldUrl) await deleteMediaFile(oldUrl).catch(() => {});
-        
-        updateDraftArrayItem("storyTimeline", index, "image", url);
-      }
-    } finally {
-      setUploadingStates(prev => ({ ...prev, [uploadKey]: false }));
-    }
-  };
-
-  const handleRemoveStoryImage = async (index) => {
-    // EKLENDİ: Butona basarak silindiğinde dosyayı buluttan da sil
-    const oldUrl = adminDraft.storyTimeline[index]?.image;
-    if (oldUrl) await deleteMediaFile(oldUrl).catch(() => {});
-    
-    updateDraftArrayItem("storyTimeline", index, "image", "");
-  };
-
-  const handleDeleteStoryItem = async (index) => {
-    // EKLENDİ: Hikaye tümden silinirse içindeki görseli de sil
-    const oldUrl = adminDraft.storyTimeline[index]?.image;
-    if (oldUrl) await deleteMediaFile(oldUrl).catch(() => {});
-    
-    removeDraftArrayItem("storyTimeline", index);
-  };
-
-  return (
-    <AdminSection title={isEn ? "Our Story" : "Bizim Hikayemiz"} onSave={() => saveSiteContent(isEn)}>
-      <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.story ?? true} label={isEn ? "Show Story Section" : "Hikayemiz bölümünü davetiyede göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, story: v })} />
-      </div>
-      <div className="admin-repeat-list">
-        {(adminDraft.storyTimeline || []).map((item, index) => (
-          <div key={index} className="admin-repeat-item">
-            <div className="admin-repeat-title">
-              <strong>{isEn ? `Memory ${index + 1}` : `Anı ${index + 1}`}</strong>
-              <AdminActionButtons 
-                onMoveUp={index > 0 ? () => moveDraftArrayItem("storyTimeline", index, -1) : null}
-                onMoveDown={index < (adminDraft.storyTimeline?.length || 0) - 1 ? () => moveDraftArrayItem("storyTimeline", index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} 
-                onDelete={() => handleDeleteStoryItem(index)} // GÜNCELLENDİ
-                isEn={isEn} 
-              />
-            </div>
-            <div className="admin-edit-grid">
-              <AdminField label={isEn ? "Date/Year" : "Tarih / Yıl"} value={item.date} onChange={(v) => updateDraftArrayItem("storyTimeline", index, "date", v)} placeholder="Örn: 22 Ağustos 2026" />
-              <AdminField label={isEn ? "Title" : "Başlık"} value={item.title} onChange={(v) => updateDraftArrayItem("storyTimeline", index, "title", v)} placeholder="Örn: Büyük Teklif" />
-              <AdminTextarea label={isEn ? "Description" : "Açıklama"} value={item.description} onChange={(v) => updateDraftArrayItem("storyTimeline", index, "description", v)} />
-              <div className="admin-field-wide">
-                <AdminImageField 
-                  label={isEn ? "Memory Photo" : "Anı Fotoğrafı"} 
-                  value={item.image} 
-                  isUploading={uploadingStates[`story_${index}`]} // GÜNCELLENDİ
-                  onFileSelect={(e) => handleStoryImageUpload(index, e.target.files[0])} 
-                  onClear={() => handleRemoveStoryImage(index)} // GÜNCELLENDİ
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-        <button type="button" className="admin-add-button" onClick={() => addDraftArrayItem("storyTimeline", { date: "Yeni Tarih", title: "Yeni Anı", description: "", image: "" })}>{isEn ? "Add New Memory" : "Yeni Anı Ekle"}</button>
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
 <file path="src/components/admin/tabs/StoryTab.test.jsx">
 import React from 'react';
 import { render, screen, fireEvent, cleanup, waitFor } from '../../../../tests/test-utils';
@@ -5219,73 +4970,6 @@ export function StoryTab({ isEn }: StoryTabProps) {
         >
           {isEn ? "Add New Memory" : "Yeni Anı Ekle"}
         </button>
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
-<file path="src/components/admin/tabs/ThemeTab.jsx">
-import React from "react";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { THEMES } from "../../../config/constants";
-import { useStore } from "../../../store/useStore";
-
-export function ThemeTab({ isEn }) {
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const saveSiteContent = useStore((state) => state.saveSiteContent);
-
-  const handleThemeChange = (themeValue) => {
-    updateDraftObject("settings", "theme", themeValue);
-    document.documentElement.setAttribute('data-theme', themeValue);
-  };
-
-  if (!adminDraft?.settings) return null;
-
-  return (
-    <AdminSection title={isEn ? "Theme & Publishing Settings" : "Tema ve Yayın Ayarları"} onSave={() => saveSiteContent(isEn)}>
-      <p className="admin-help-text">
-        {isEn ? "When the theme changes, buttons, cards, text colors adjust accordingly." : "Tema değiştiğinde butonlar, kartlar, yazı renkleri aynı temaya göre değişir."}
-      </p>
-      
-      <div className="theme-picker-grid">
-        {THEMES.map((theme) => (
-          <button 
-            type="button" 
-            key={theme.value} 
-            className={adminDraft.settings.theme === theme.value ? "theme-option-card active" : "theme-option-card"} 
-            data-theme-preview={theme.value} 
-            onClick={() => handleThemeChange(theme.value)}
-          >
-            <span className="theme-swatch" aria-hidden="true"></span>
-            <strong>{theme.label}</strong>
-            <small>{adminDraft.settings.theme === theme.value ? (isEn ? "Selected theme" : "Seçili tema") : (isEn ? "Use this theme" : "Bu temayı kullan")}</small>
-          </button>
-        ))}
-      </div>
-
-      <div className="admin-theme-check-row">
-        <AdminCheckbox 
-          checked={adminDraft.settings.requireWishApproval} 
-          label={isEn ? "Guestbook messages require admin approval" : "Anı defteri mesajları admin onayından sonra yayınlansın"} 
-          onChange={(value) => updateDraftObject("settings", "requireWishApproval", value)} 
-        />
-        <AdminCheckbox 
-          checked={adminDraft.settings.isPostWedding || false} 
-          label={isEn ? "Post-Wedding Mode (Thanks & Memories)" : "Düğün Bitti Modu (Teşekkür & Anı Sitesi)"} 
-          onChange={(value) => updateDraftObject("settings", "isPostWedding", value)} 
-        />
-      </div>
-
-      <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "1px solid var(--border)" }}>
-        <h4 style={{ marginBottom: "12px", color: "var(--rose-dark)" }}>{isEn ? "Default Theme (For Reset)" : "Varsayılan Tema (Sıfırlama İçin)"}</h4>
-        <Dropdown 
-          value={adminDraft.settings.defaultTheme || "lavanta"} 
-          onChange={(value) => updateDraftObject("settings", "defaultTheme", value)} 
-          options={THEMES} 
-        />
       </div>
     </AdminSection>
   );
@@ -10276,300 +9960,6 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
       </div>
     </section>
   );
-}
-</file>
-
-<file path="src/hooks/useAdminSession.js">
-import { useEffect } from "react";
-import { supabase } from "../supabaseClient";
-import { getReadableAuthError, getSupabaseSetupMessage, isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadAllWishesFromDatabase } from "../services/database";
-import { normalizeSiteData, touchAdminSession, clearAdminSessionTimestamp, isAdminSessionFresh, getAdminRedirectUrl } from "../utils/helpers";
-import { ADMIN_ACTIVITY_EVENTS, SITE_DATA_KEY } from "../config/constants";
-import { useStore } from "../store/useStore";
-import { useAdminStore } from "../store/useAdminStore";
-
-export function useAdminSession({ isAdminPage, isEn }) {
-  const adminStore = useAdminStore();
-  const mainStore = useStore();
-
-  useEffect(() => {
-    if (!isAdminPage || !isSupabaseReady()) return undefined;
-
-    const loadSessionForAdmin = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-
-        if (error) {
-          adminStore.setAdminError(getReadableAuthError(error));
-          return;
-        }
-
-        if (!session?.user) {
-          clearAdminSessionTimestamp();
-          adminStore.setAdminUser(null);
-          adminStore.setIsAdminUnlocked(false);
-          adminStore.setAdminPassword("");
-          adminStore.setAdminError("");
-          adminStore.setAdminLoginNotice(isEn ? "Please log in to access the admin panel." : "Admin paneline girmek için giriş yapmalısın.");
-          return;
-        }
-
-        if (!isAdminSessionFresh()) {
-          clearAdminSessionTimestamp();
-          adminStore.setAdminUser(null);
-          adminStore.setIsAdminUnlocked(false);
-          adminStore.setAdminPassword("");
-          adminStore.setAdminError("");
-          adminStore.setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
-          return;
-        }
-
-        touchAdminSession();
-        adminStore.setAdminUser(session.user);
-        adminStore.setAdminPassword("");
-        adminStore.setAdminError("");
-        adminStore.setAdminLoginNotice(isEn ? "Session is active. No need to log in again." : "Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
-        adminStore.setIsAdminUnlocked(true);
-
-        const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadGuestsFromDatabase(),
-          loadAllWishesFromDatabase(),
-        ]);
-
-        if (databaseSettings) {
-          const normalizedSettings = normalizeSiteData(databaseSettings);
-          mainStore.setSiteData(normalizedSettings);
-          mainStore.setAdminDraft(normalizedSettings);
-        }
-
-        mainStore.setGuests(adminGuests);
-        mainStore.setWishes(adminWishes);
-      } catch (error) {
-        adminStore.setAdminError(getReadableAuthError(error));
-      }
-    };
-
-    loadSessionForAdmin();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        clearAdminSessionTimestamp();
-        adminStore.setAdminUser(null);
-        adminStore.setIsAdminUnlocked(false);
-      } else if (event === 'SIGNED_IN' && session) {
-        touchAdminSession();
-        adminStore.setAdminUser(session.user);
-        adminStore.setIsAdminUnlocked(true);
-      }
-    });
-
-    return () => {
-      if (authListener && authListener.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdminPage, isEn]);
-
-  useEffect(() => {
-    if (!isAdminPage || !adminStore.isAdminUnlocked) return undefined;
-
-    const markActivity = () => touchAdminSession();
-
-    const checkSessionTimeout = async () => {
-      if (isAdminSessionFresh()) return;
-
-      if (isSupabaseReady()) await supabase.auth.signOut();
-
-      clearAdminSessionTimestamp();
-      adminStore.clearAdminAuth();
-      mainStore.setActiveAdminTab("general");
-      adminStore.setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
-      
-      // EKLENDİ: Güvenlik ihlali olmaması için hafızadaki misafirleri sil
-      mainStore.setGuests([]);
-      mainStore.setWishes(mainStore.wishes.filter(w => w.approved));
-    };
-
-    markActivity();
-    ADMIN_ACTIVITY_EVENTS.forEach((eventName) => window.addEventListener(eventName, markActivity, { passive: true }));
-    const timeoutCheckInterval = window.setInterval(checkSessionTimeout, 60 * 1000);
-
-    return () => {
-      ADMIN_ACTIVITY_EVENTS.forEach((eventName) => window.removeEventListener(eventName, markActivity));
-      window.clearInterval(timeoutCheckInterval);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdminPage, adminStore.isAdminUnlocked, isEn]);
-
-  const submitAdminPassword = async (e) => {
-    e.preventDefault();
-    const { setAdminError, setAdminLoginNotice, setAdminAuthLoading, setAdminUser, setIsAdminUnlocked, setIsPasswordRecovery, setShowForgotPassword, setForgotPasswordMessage, setAdminPassword, adminEmail, adminPassword } = useAdminStore.getState();
-    const { setSiteData, setAdminDraft, setGuests, setWishes, setActiveAdminTab, siteData } = useStore.getState();
-
-    setAdminError("");
-    setAdminLoginNotice("");
-    setAdminAuthLoading(true);
-
-    try {
-      if (!isSupabaseReady()) { setAdminError(getSupabaseSetupMessage()); return; }
-      if (!adminEmail.trim() || !adminPassword.trim()) { setAdminError(isEn ? "Please enter admin email and password." : "Lütfen admin e-posta ve şifresini gir."); return; }
-
-      const { data, error } = await supabase.auth.signInWithPassword({ email: adminEmail.trim(), password: adminPassword });
-      if (error) { setAdminError(getReadableAuthError(error)); return; }
-
-      touchAdminSession();
-      setAdminUser(data.user);
-      setIsAdminUnlocked(true);
-      setActiveAdminTab("general");
-      setIsPasswordRecovery(false);
-      setShowForgotPassword(false);
-      setForgotPasswordMessage("");
-      setAdminPassword("");
-
-      const [databaseSettings, adminGuests, adminWishes] = await Promise.all([loadSettingsFromDatabase(), loadGuestsFromDatabase(), loadAllWishesFromDatabase()]);
-
-      if (databaseSettings) {
-        const normalized = normalizeSiteData(databaseSettings);
-        setSiteData(normalized);
-        setAdminDraft(normalized);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalized));
-      } else {
-        setAdminDraft(normalizeSiteData(siteData));
-      }
-      setGuests(adminGuests);
-      setWishes(adminWishes);
-    } catch (error) {
-      setAdminError(getReadableAuthError(error));
-    } finally {
-      setAdminAuthLoading(false);
-    }
-  };
-
-  const sendPasswordResetEmail = async (e) => {
-    e.preventDefault();
-    const { adminEmail, setForgotPasswordMessage, setAdminError, setForgotPasswordLoading } = useAdminStore.getState();
-    setForgotPasswordMessage("");
-    setAdminError("");
-    setForgotPasswordLoading(true);
-
-    try {
-      if (!isSupabaseReady()) { setForgotPasswordMessage(getSupabaseSetupMessage()); return; }
-      const email = (adminEmail || "").trim();
-      if (!email) { setForgotPasswordMessage(isEn ? "Please enter admin email to reset password." : "Şifre sıfırlama linki için admin e-postanı yazmalısın."); return; }
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: getAdminRedirectUrl() });
-      if (error) { setForgotPasswordMessage(getReadableAuthError(error)); return; }
-
-      setForgotPasswordMessage(isEn ? `Password reset link sent to ${email}.` : `Şifre sıfırlama linki ${email} adresine gönderildi.`);
-    } catch (error) {
-      setForgotPasswordMessage(getReadableAuthError(error));
-    } finally {
-      setForgotPasswordLoading(false);
-    }
-  };
-
-  const completePasswordRecovery = async (e) => {
-    e.preventDefault();
-    const { recoveryPassword, recoveryPasswordAgain, adminEmail, setRecoveryMessage, setRecoveryLoading, setRecoveryPassword, setRecoveryPasswordAgain, setIsPasswordRecovery, setShowForgotPassword, setAdminUser, setAdminEmail, setAdminPassword, setIsAdminUnlocked, setAdminLoginNotice, clearAdminAuth } = useAdminStore.getState();
-    setRecoveryMessage("");
-    setRecoveryLoading(true);
-
-    try {
-      if (recoveryPassword.trim().length < 6) { setRecoveryMessage(isEn ? "New password must be at least 6 characters." : "Yeni şifre en az 6 karakter olmalı."); return; }
-      if (recoveryPassword !== recoveryPasswordAgain) { setRecoveryMessage(isEn ? "Passwords do not match." : "Yeni şifreler aynı değil."); return; }
-
-      if (typeof window !== "undefined") {
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get("code");
-        if (code) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-          if (exchangeError) { setRecoveryMessage(getReadableAuthError(exchangeError)); return; }
-        }
-      }
-
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !sessionData.session?.user) {
-        setRecoveryMessage(isEn ? "Recovery session not found." : "Şifre sıfırlama oturumu bulunamadı."); return;
-      }
-
-      const { error } = await supabase.auth.updateUser({ password: recoveryPassword });
-      if (error) { setRecoveryMessage(getReadableAuthError(error)); return; }
-
-      const recoveredEmail = sessionData.session.user?.email || adminEmail;
-      await supabase.auth.signOut();
-      clearAdminSessionTimestamp();
-
-      clearAdminAuth();
-      setAdminEmail(recoveredEmail);
-      setAdminLoginNotice(isEn ? "Password updated. Session closed for security; log in with your new password." : "Şifren güncellendi. Güvenlik için yeni şifrenle tekrar giriş yap.");
-
-      if (typeof window !== "undefined") window.history.replaceState(null, "", `${window.location.pathname}?admin=1`);
-    } catch (error) {
-      setRecoveryMessage(getReadableAuthError(error));
-    } finally {
-      setRecoveryLoading(false);
-    }
-  };
-
-  const changeAdminPassword = async (e) => {
-    e.preventDefault();
-    const { adminUser, adminEmail, adminCurrentPassword, adminNewPassword, adminNewPasswordAgain, setAdminPasswordMessage, clearAdminAuth, setAdminLoginNotice } = useAdminStore.getState();
-    setAdminPasswordMessage("");
-
-    const email = adminUser?.email || adminEmail;
-    if (!email) { setAdminPasswordMessage(isEn ? "Admin email not found." : "Admin e-posta bilgisi bulunamadı."); return; }
-    if (!adminCurrentPassword.trim()) { setAdminPasswordMessage(isEn ? "Enter current password." : "Mevcut şifreyi yazmalısın."); return; }
-    if (adminNewPassword.trim().length < 6) { setAdminPasswordMessage(isEn ? "New password must be at least 6 characters." : "Yeni şifre en az 6 karakter olmalı."); return; }
-    if (adminNewPassword !== adminNewPasswordAgain) { setAdminPasswordMessage(isEn ? "Passwords do not match." : "Yeni şifreler aynı değil."); return; }
-
-    const { error: reLoginError } = await supabase.auth.signInWithPassword({ email, password: adminCurrentPassword });
-    if (reLoginError) { setAdminPasswordMessage(getReadableAuthError(reLoginError)); return; }
-
-    const { error } = await supabase.auth.updateUser({ password: adminNewPassword });
-    if (error) { setAdminPasswordMessage(getReadableAuthError(error)); return; }
-
-    const { error: signOutError } = await supabase.auth.signOut();
-    clearAdminSessionTimestamp();
-
-    if (signOutError) {
-      setAdminPasswordMessage(isEn ? "Password updated but session couldn't close." : "Şifre güncellendi fakat oturum otomatik kapatılamadı. Lütfen sayfayı yenile.");
-      return;
-    }
-
-    clearAdminAuth();
-    setAdminLoginNotice(isEn ? "Password updated. Log in again with your new password." : "Admin şifresi güncellendi. Yeni şifrenle tekrar giriş yapmalısın.");
-  };
-
-  const logoutAdmin = async () => {
-    const { showAppConfirm, setActiveAdminTab, setGuests, setWishes, wishes } = useStore.getState();
-    const { clearAdminAuth, setAdminLoginNotice, setAdminSaveMessage } = useAdminStore.getState();
-
-    const confirmed = await showAppConfirm(
-      isEn ? "Are you sure you want to log out of the admin panel?" : "Admin panelden çıkış yapmak istiyor musun?", 
-      { title: isEn ? "Log Out" : "Çıkış yap", confirmText: isEn ? "Log Out" : "Çıkış Yap", tone: "warning" }
-    );
-    if (!confirmed) return;
-
-    try {
-      if (isSupabaseReady()) await supabase.auth.signOut();
-    } catch (error) {
-      setAdminSaveMessage(getReadableAuthError(error)); return;
-    }
-
-    clearAdminSessionTimestamp();
-    clearAdminAuth();
-    setActiveAdminTab("general");
-    
-    // EKLENDİ: Çıkış yapınca hafızadaki gizli verileri (guests ve onaysız mesajları) temizle (GDPR Data Leak Önlemi)
-    setGuests([]); 
-    setWishes(wishes.filter(w => w.approved)); 
-
-    setAdminLoginNotice(isEn ? "Logged out. Please log in again to access the admin panel." : "Çıkış yapıldı. Admin paneline girmek için tekrar giriş yapmalısın.");
-  };
-
-  return { submitAdminPassword, sendPasswordResetEmail, completePasswordRecovery, changeAdminPassword, logoutAdmin };
 }
 </file>
 
@@ -22845,555 +22235,6 @@ function App() {
 export default App;
 </file>
 
-<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
-import React, { Suspense, lazy, useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { Virtuoso } from "react-virtuoso";
-import { AdminSection, AdminCheckbox } from "../../AdminUI";
-import { Dropdown } from "../../common/UIComponents";
-import { useStore } from "../../../store/useStore";
-import { supabase } from "../../../supabaseClient";
-// DİKKAT: import { Html5QrcodeScanner } from "html5-qrcode"; statik importu performans için kaldırıldı!
-
-const AdminCharts = lazy(() => import('./AdminCharts'));
-
-export function GuestsAdminPanel({ 
-  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
-  filteredGuests, editGuest, deleteGuest, clearGuests,
-  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
-  toggleCheckIn
-}) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith("en") || false;
-
-  const adminDraft = useStore((state) => state.adminDraft);
-  const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const showAppAlert = useStore((state) => state.showAppAlert); 
-
-  const [isScanning, setIsScanning] = useState(false);
-  const [scannerInstance, setScannerInstance] = useState(null);
-
-  // YENİ: Dinamik Import Mantığı
-  useEffect(() => {
-    let activeScanner = null;
-
-    const startScanner = async () => {
-      if (isScanning) {
-        try {
-          // Kütüphaneyi sadece butona basıldığında (on-demand) indiriyoruz!
-          const { Html5QrcodeScanner } = await import("html5-qrcode");
-          
-          activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-          setScannerInstance(activeScanner);
-
-          activeScanner.render(
-            (decodedText) => {
-              activeScanner.clear();
-              setIsScanning(false);
-              const urlParams = new URLSearchParams(decodedText.split('?')[1]);
-              const guestId = urlParams.get('id');
-              if (guestId) {
-                 toggleCheckIn(guestId, false); 
-                 alert(isEn ? "✅ Guest check-in successful!" : "✅ Misafir başarıyla onaylandı!");
-              } else {
-                 alert(isEn ? "❌ Invalid QR code." : "❌ Geçersiz QR kod.");
-              }
-            },
-            (error) => { /* Hataları yoksay */ }
-          );
-        } catch (err) {
-          console.error("QR Kütüphanesi yüklenemedi:", err);
-          showAppAlert("Kamera başlatılamadı.", { tone: "error" });
-          setIsScanning(false);
-        }
-      }
-    };
-
-    startScanner();
-
-    return () => {
-      if (activeScanner) {
-        activeScanner.clear().catch(console.error);
-      }
-    };
-  }, [isScanning, toggleCheckIn, isEn, showAppAlert]);
-
-  const startMassWhatsApp = async () => {
-    const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
-    if (attendingGuests.length === 0) {
-      alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
-      return;
-    }
-
-    const defaultMsg = isEn 
-      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
-      : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
-
-    const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
-    
-    if (msg) {
-      showAppAlert(isEn ? "Sending messages..." : "Mesajlar arka planda gönderiliyor...", { title: "Bilgi ℹ️" });
-      
-      try {
-        const { error } = await supabase.functions.invoke('broadcast-whatsapp', {
-          body: { guests: attendingGuests, message: msg }
-        });
-        
-        if (error) throw error;
-        showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
-      } catch (err) {
-        showAppAlert(isEn ? "Failed to send messages." : "Mesajlar gönderilirken bir hata oluştu.", { tone: "error" });
-      }
-    }
-  };
-
-  const generateAiThankYou = async (guestName) => {
-    showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
-    try {
-      const { data, error } = await supabase.functions.invoke('ai-thank-you', {
-        body: {
-          guestName: guestName,
-          coupleName: `${adminDraft?.invitation?.bride || "Gelin"} & ${adminDraft?.invitation?.groom || "Damat"}`,
-        }
-      });
-
-      if (error) throw error;
-
-      if(data?.text) {
-        prompt(isEn ? "Generated AI Message:" : "Üretilen AI Teşekkür Mesajı (Kopyalayabilirsiniz):", data.text);
-      }
-    } catch (err) {
-      console.error(err);
-      alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
-    }
-  };
-  
-  if (!adminDraft?.settings) return null;
-
-  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
-  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
-
-  const sideData = [
-    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
-    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
-  ].filter(d => d.value > 0);
-
-  const checkInData = [
-    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
-    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
-  ];
-
-  const bride = adminDraft?.invitation?.bride || "Gelin";
-  const groom = adminDraft?.invitation?.groom || "Damat";
-  const mapLink = adminDraft?.invitation?.mapLink || "";
-
-  return (
-    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
-      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
-        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
-      </div>
-      
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
-          {isScanning ? (isEn ? "📷 Close Camera" : "📷 Kamerayı Kapat") : (isEn ? "📷 QR Check-in" : "📷 QR ile Kapı Kontrolü")}
-        </button>
-        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
-          {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
-        </button>
-      </div>
-
-      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--admin-border-color)" }}></div>}
-
-      <div className="admin-stats admin-stats-inside" style={{ marginBottom: "14px" }}>
-        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
-        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
-        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
-        <div className="admin-guest-badge arrived">
-          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
-          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
-        </div>
-      </div>
-
-      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
-        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
-      </Suspense>
-
-      <div className="admin-toolbar-flex">
-        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
-        <div className="admin-toolbar-filter">
-          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
-        </div>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
-        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
-        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
-      </div>
-
-      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px", overflowY: "auto" }}>
-        {filteredGuests.length === 0 ? (
-          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
-        ) : (
-          <Virtuoso
-            style={{ height: '100%', width: '100%' }}
-            data={filteredGuests}
-            itemContent={(index, guest) => {
-              const isAttending = guest.attendance === "Katılacağım";
-              
-              const whatsappMsg = encodeURIComponent(
-                isEn 
-                ? `Hello ${guest.name},\n\nYour RSVP for ${bride} & ${groom}'s wedding has been confirmed. ✅\n\n${guest.tableNumber ? `🍽️ Reserved Table: ${guest.tableNumber}\n\n` : ''}📍 Location:\n${mapLink}\n\nWe can't wait to celebrate with you! 🎉`
-                : `Merhaba ${guest.name},\n\n${bride} & ${groom} düğün davetiyemize LCV (katılım) kaydınız başarıyla alınmıştır. ✅\n\n${guest.tableNumber ? `🍽️ Sizin İçin Ayrılan Masa: ${guest.tableNumber}\n\n` : ''}📍 Konum ve Yol Tarifi:\n${mapLink}\n\nSizi aramızda görmek için sabırsızlanıyoruz! 🎉`
-              );
-
-              return (
-                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
-                  <div className="admin-guest-header">
-                    <strong>{guest.name}</strong>
-                  </div>
-                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
-                  
-                  {guest.phone && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
-                      <span>📞 {guest.phone}</span>
-                      {isAttending && (
-                        <>
-                          <a 
-                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="secondary-button" 
-                            style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
-                          >
-                            {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
-                          </a>
-                          
-                          {adminDraft.settings.isPostWedding && (
-                            <button 
-                              type="button"
-                              onClick={() => generateAiThankYou(guest.name)}
-                              className="secondary-button"
-                              style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#8e44ad', borderColor: '#8e44ad', fontWeight: 'bold' }}
-                            >
-                              {isEn ? "AI Thank You 🤖" : "AI Teşekkür Et 🤖"}
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
-                  {guest.note && <em>Not: {guest.note}</em>}
-                  
-                  <div className="admin-row-actions admin-guest-actions">
-                    <button 
-                      type="button" 
-                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
-                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
-                    >
-                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
-                    </button>
-                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
-                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
-                    </button>
-                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
-                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
-                    </button>
-                  </div>
-                </div>
-              );
-            }}
-          />
-        )}
-      </div>
-    </AdminSection>
-  );
-}
-</file>
-
-<file path="src/components/invitation/sections/RsvpSection.jsx">
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
-import { createPortal } from "react-dom";
-import { useTranslation } from "react-i18next";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import FocusTrap from 'focus-trap-react';
-import { Turnstile } from '@marsidev/react-turnstile';
-import { OptionGroup } from "../../common/UIComponents";
-import { triggerConfetti, getQrImageUrl } from "../../../utils/helpers";
-import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
-import { getRsvpSchema } from "../../../validations/schemas";
-import { subscribeToPushNotifications } from "../../common/PwaInstallBanner";
-
-const DeadlineBanner = memo(({ isEn, title, text }) => (
-  <div className="rsvp-deadline-banner">
-    <div className="deadline-icon">⏳</div>
-    <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
-    <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
-  </div>
-));
-
-const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) => {
-  const handleClose = () => resetAndCloseModal();
-  if (!showDeclineModal) return null;
-
-  return createPortal(
-    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
-      <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
-        <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
-          <div className="app-modal-content">
-            <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
-            <p className="deadline-text modal-message">
-              {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
-            </p>
-          </div>
-
-          {!showDeclineGift ? (
-            <div className="app-modal-actions">
-              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.close')}</button>
-              {showIban && giftData && (
-                <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}><span>{t('ui.sendGift')}</span></button>
-              )}
-            </div>
-          ) : (
-            <div className="app-modal-content">
-              <div className="modal-gift-card">
-                <strong className="modal-gift-receiver">{giftData.receiver}</strong>
-                <span className="modal-gift-bank">{giftData.bankName}</span>
-                <code className="modal-gift-iban">{giftData.iban}</code>
-              </div>
-              <div className="app-modal-actions">
-                <button type="button" className="main-button" onClick={copyIban}>{copied ? t('ui.copied') : t('ui.copyIban')}</button>
-                <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.closeBtn')}</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </FocusTrap>,
-    document.body
-  );
-});
-
-export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
-  const { t, i18n } = useTranslation();
-  const isEn = i18n.language?.startsWith('en') || false;
-  
-  const [showDeclineModal, setShowDeclineModal] = useState(false);
-  const [showDeclineGift, setShowDeclineGift] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [urlGuestName, setUrlGuestName] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const [formKey, setFormKey] = useState(0); 
-  
-  // YENİ: Cüzdana bilet ekleme için başarılı kayıt tutucu
-  const [submittedGuest, setSubmittedGuest] = useState(null);
-
-  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
-
-  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
-  });
-
-  const currentNote = watch("note") || "";
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const guestName = params.get("guest") || params.get("davetli") || "";
-    const countParam = params.get("count") || params.get("kisi") || "";
-
-    if (guestName) {
-      setUrlGuestName(guestName);
-      setValue("name", guestName);
-    }
-    if (countParam) setValue("note", `${countParam} Kişi`); 
-  }, [setValue]);
-
-  const todayStr = new Date().toLocaleDateString('en-CA'); 
-  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
-
-  const onSubmit = async (data) => {
-    if (data.honeypot) return;
-    if (!turnstileToken && navigator.onLine) return;
-
-    const isDeclining = data.attendance === "Katılamayacağım";
-    await submitGuest({ ...data, turnstileToken });
-    
-    if (!isDeclining) {
-      triggerConfetti();
-      setSubmittedGuest(data); // Bileti oluşturmak için bilgiyi kaydet
-      
-      setTimeout(() => {
-        if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
-          subscribeToPushNotifications();
-        }
-      }, 1500);
-    } else {
-      setShowDeclineModal(true);
-    }
-    
-    reset();
-    setTurnstileToken("");
-    setFormKey(prev => prev + 1);
-  };
-
-  // YENİ: Apple/Google Wallet (Dijital Bilet) Üretici Fonksiyon
-  const downloadDigitalTicket = () => {
-    if (!submittedGuest) return;
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 700;
-    const ctx = canvas.getContext('2d');
-    
-    // Arka Plan
-    ctx.fillStyle = '#fffafb';
-    ctx.fillRect(0, 0, 400, 700);
-    
-    // Üst Header
-    ctx.fillStyle = '#9f4f68';
-    ctx.fillRect(0, 0, 400, 110);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(isEn ? 'VIP WEDDING PASS' : 'VIP DAVETİYE KARTI', 200, 65);
-    
-    // Çift İsmi
-    ctx.fillStyle = '#55303b';
-    ctx.font = 'bold 20px serif';
-    ctx.fillText(`${invitation?.bride} & ${invitation?.groom}`, 200, 160);
-    
-    // Tarih ve Saat
-    ctx.font = '16px sans-serif';
-    ctx.fillStyle = '#6f4451';
-    ctx.fillText(`${invitation?.dateText} - ${invitation?.timeText}`, 200, 190);
-    
-    // Kesik Çizgi (Bilet Formu)
-    ctx.setLineDash([8, 8]);
-    ctx.beginPath();
-    ctx.moveTo(20, 240);
-    ctx.lineTo(380, 240);
-    ctx.strokeStyle = '#d98ca1';
-    ctx.stroke();
-    
-    // Misafir İsmi
-    ctx.fillStyle = '#55303b';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText(submittedGuest.name, 200, 300);
-    
-    // Masa Numarası
-    if(personalTableNumber) {
-      ctx.font = 'bold 18px sans-serif';
-      ctx.fillStyle = '#27ae60';
-      ctx.fillText(isEn ? `TABLE: ${personalTableNumber}` : `MASA: ${personalTableNumber}`, 200, 340);
-    }
-
-    // QR Code (API'den çekip çizmek asenkron olduğundan Dummy Text ekliyoruz, Wallet okuyucuları için sembolik)
-    ctx.fillStyle = '#000';
-    ctx.fillRect(125, 400, 150, 150);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(135, 410, 130, 130);
-    ctx.fillStyle = '#000';
-    ctx.font = '12px monospace';
-    ctx.fillText('QR SCAN', 200, 480);
-    
-    // Alt Bilgi
-    ctx.fillStyle = '#6f4451';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(isEn ? 'Save this to your Photos / Wallet' : 'Girişte göstermek için galerinize kaydedin.', 200, 620);
-    
-    // İndirme Tetikle
-    const link = document.createElement('a');
-    link.download = `${submittedGuest.name}-Bilet.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  };
-
-  const resetAndCloseModal = useCallback(() => {
-    setShowDeclineModal(false);
-    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
-  }, []);
-
-  const copyIban = useCallback(() => {
-    if (giftData?.iban) {
-      navigator.clipboard.writeText(giftData.iban);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  }, [giftData?.iban]);
-
-  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label })), [isEn, t]);
-
-  return (
-    <section className="card rsvp-card">
-      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
-      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
-      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
-      
-      {isDeadlinePassed ? (
-        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
-      ) : (
-        <>
-          <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
-
-            {urlGuestName && (
-              <div className="guest-badge-banner">
-                {t('ui.prefilled', { name: urlGuestName })}
-                {personalTableNumber && ` (Masa: ${personalTableNumber})`}
-              </div>
-            )}
-
-            <div style={{ width: '100%' }}>
-              <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
-              {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
-            </div>
-
-            <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
-
-            <div className="field-with-counter" style={{ marginTop: '12px' }}>
-              <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
-              <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
-            </div>
-
-            <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
-              <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
-            </div>
-
-            <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
-              {isSubmitting ? "..." : t('form.submitRsvp')}
-            </button>
-          </form>
-          
-          {/* YENİ: Başarılı Katılım Sonrası Bilet İndirme Butonu */}
-          {submittedGuest && (
-            <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(46, 204, 113, 0.1)', border: '1px solid #2ecc71', borderRadius: '12px', textAlign: 'center' }}>
-              <p style={{ color: '#27ae60', fontWeight: 'bold', marginBottom: '12px' }}>
-                {isEn ? "RSVP Confirmed!" : "Katılım Onaylandı!"}
-              </p>
-              <button onClick={downloadDigitalTicket} className="main-button" style={{ background: '#27ae60', borderColor: '#27ae60', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                🎟️ {isEn ? "Add to Apple/Google Wallet" : "Cüzdana/Galeriye Ekle"}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
-        <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
-          {t('form.whatsappRsvp')}
-        </a>
-      </div>
-      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
-    </section>
-  );
-});
-</file>
-
 <file path="src/index.css">
 @charset "UTF-8";
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
@@ -25319,6 +24160,555 @@ html[data-theme] body .app .schedule-item p {
 }
 </file>
 
+<file path="src/components/admin/tabs/GuestsAdminPanel.jsx">
+import React, { Suspense, lazy, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Virtuoso } from "react-virtuoso";
+import { AdminSection, AdminCheckbox } from "../../AdminUI";
+import { Dropdown } from "../../common/UIComponents";
+import { useStore } from "../../../store/useStore";
+import { supabase } from "../../../supabaseClient";
+// DİKKAT: import { Html5QrcodeScanner } from "html5-qrcode"; statik importu performans için kaldırıldı!
+
+const AdminCharts = lazy(() => import('./AdminCharts'));
+
+export function GuestsAdminPanel({ 
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+  filteredGuests, editGuest, deleteGuest, clearGuests,
+  adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
+  toggleCheckIn
+}) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith("en") || false;
+
+  const adminDraft = useStore((state) => state.adminDraft);
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const showAppAlert = useStore((state) => state.showAppAlert); 
+
+  const [isScanning, setIsScanning] = useState(false);
+  const [scannerInstance, setScannerInstance] = useState(null);
+
+  // YENİ: Dinamik Import Mantığı
+  useEffect(() => {
+    let activeScanner = null;
+
+    const startScanner = async () => {
+      if (isScanning) {
+        try {
+          // Kütüphaneyi sadece butona basıldığında (on-demand) indiriyoruz!
+          const { Html5QrcodeScanner } = await import("html5-qrcode");
+          
+          activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+          setScannerInstance(activeScanner);
+
+          activeScanner.render(
+            (decodedText) => {
+              activeScanner.clear();
+              setIsScanning(false);
+              const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+              const guestId = urlParams.get('id');
+              if (guestId) {
+                 toggleCheckIn(guestId, false); 
+                 alert(isEn ? "✅ Guest check-in successful!" : "✅ Misafir başarıyla onaylandı!");
+              } else {
+                 alert(isEn ? "❌ Invalid QR code." : "❌ Geçersiz QR kod.");
+              }
+            },
+            (error) => { /* Hataları yoksay */ }
+          );
+        } catch (err) {
+          console.error("QR Kütüphanesi yüklenemedi:", err);
+          showAppAlert("Kamera başlatılamadı.", { tone: "error" });
+          setIsScanning(false);
+        }
+      }
+    };
+
+    startScanner();
+
+    return () => {
+      if (activeScanner) {
+        activeScanner.clear().catch(console.error);
+      }
+    };
+  }, [isScanning, toggleCheckIn, isEn, showAppAlert]);
+
+  const startMassWhatsApp = async () => {
+    const attendingGuests = guests.filter(g => g.attendance === 'Katılacağım' && g.phone);
+    if (attendingGuests.length === 0) {
+      alert(isEn ? "No attending guests with phone numbers found." : "Telefon numarası olan ve katılacak misafir bulunamadı.");
+      return;
+    }
+
+    const defaultMsg = isEn 
+      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
+      : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
+
+    const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
+    
+    if (msg) {
+      showAppAlert(isEn ? "Sending messages..." : "Mesajlar arka planda gönderiliyor...", { title: "Bilgi ℹ️" });
+      
+      try {
+        const { error } = await supabase.functions.invoke('broadcast-whatsapp', {
+          body: { guests: attendingGuests, message: msg }
+        });
+        
+        if (error) throw error;
+        showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
+      } catch (err) {
+        showAppAlert(isEn ? "Failed to send messages." : "Mesajlar gönderilirken bir hata oluştu.", { tone: "error" });
+      }
+    }
+  };
+
+  const generateAiThankYou = async (guestName) => {
+    showAppAlert(isEn ? "AI generating message..." : "Yapay zeka mesajı hazırlıyor...", { title: "AI Asistan 🤖" });
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-thank-you', {
+        body: {
+          guestName: guestName,
+          coupleName: `${adminDraft?.invitation?.bride || "Gelin"} & ${adminDraft?.invitation?.groom || "Damat"}`,
+        }
+      });
+
+      if (error) throw error;
+
+      if(data?.text) {
+        prompt(isEn ? "Generated AI Message:" : "Üretilen AI Teşekkür Mesajı (Kopyalayabilirsiniz):", data.text);
+      }
+    } catch (err) {
+      console.error(err);
+      alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
+    }
+  };
+  
+  if (!adminDraft?.settings) return null;
+
+  const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
+  const arrivedCount = guests.filter(g => g.has_arrived).reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+  const totalAttendingPersonCount = attendingGuests.reduce((tot, g) => tot + Number(g.personCount || 1), 0);
+
+  const sideData = [
+    { name: isEn ? 'Bride Side' : 'Gelin Tarafı', value: guests.filter(g => g.side === 'Gelin Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Groom Side' : 'Damat Tarafı', value: guests.filter(g => g.side === 'Damat Tarafı' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) },
+    { name: isEn ? 'Mutual' : 'Ortak', value: guests.filter(g => g.side === 'Ortak' && g.attendance === 'Katılacağım').reduce((a,b)=>a+Number(b.personCount||1),0) }
+  ].filter(d => d.value > 0);
+
+  const checkInData = [
+    { name: isEn ? 'Expected' : 'Beklenen', value: totalAttendingPersonCount },
+    { name: isEn ? 'Arrived' : 'Gelen', value: arrivedCount }
+  ];
+
+  const bride = adminDraft?.invitation?.bride || "Gelin";
+  const groom = adminDraft?.invitation?.groom || "Damat";
+  const mapLink = adminDraft?.invitation?.mapLink || "";
+
+  return (
+    <AdminSection title={isEn ? "RSVP Responses & Check-in" : "Katılım Yanıtları & Kapı Kontrolü"}>
+      <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
+        <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
+        <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
+      </div>
+      
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
+          {isScanning ? (isEn ? "📷 Close Camera" : "📷 Kamerayı Kapat") : (isEn ? "📷 QR Check-in" : "📷 QR ile Kapı Kontrolü")}
+        </button>
+        <button type="button" className="secondary-button" style={{ color: '#25D366', borderColor: '#25D366' }} onClick={startMassWhatsApp}>
+          {isEn ? "📢 Mass Broadcast (WhatsApp)" : "📢 Toplu Duyuru Gönder (WhatsApp)"}
+        </button>
+      </div>
+
+      {isScanning && <div id="qr-reader" style={{ width: "100%", maxWidth: "400px", margin: "0 auto 20px", borderRadius: "12px", overflow: "hidden", border: "1px solid var(--admin-border-color)" }}></div>}
+
+      <div className="admin-stats admin-stats-inside" style={{ marginBottom: "14px" }}>
+        <div><strong>{guests.length}</strong><span>{isEn ? "Total Forms" : "Doldurulan Form"}</span></div>
+        <div><strong>{totalAttendingPersonCount}</strong><span>{isEn ? "Expected Guests" : "Beklenen Kişi"}</span></div>
+        <div><strong>{guests.filter(g => g.attendance === "Katılamayacağım").length}</strong><span>{isEn ? "Not Attending" : "Katılmayacak"}</span></div>
+        <div className="admin-guest-badge arrived">
+          <strong style={{ color: "#27ae60" }}>{arrivedCount}</strong>
+          <span style={{ color: "#27ae60" }}>{isEn ? "Arrived" : "Mekana Girdi"}</span>
+        </div>
+      </div>
+
+      <Suspense fallback={<div style={{ height: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Grafikler Yükleniyor...</div>}>
+        <AdminCharts sideData={sideData} checkInData={checkInData} isEn={isEn} />
+      </Suspense>
+
+      <div className="admin-toolbar-flex">
+        <input className="admin-toolbar-search" value={adminGuestSearch} onChange={(e) => setAdminGuestSearch(e.target.value)} placeholder={isEn ? "Search name or phone..." : "İsim veya tel ara..."} />
+        <div className="admin-toolbar-filter">
+          <Dropdown value={adminGuestAttendanceFilter} onChange={setAdminGuestAttendanceFilter} options={[{ value: "all", label: isEn ? "All Attendance" : "Tüm Durumlar" }, { value: "Katılacağım", label: isEn ? "Attending" : "Katılacak" }, { value: "Katılamayacağım", label: isEn ? "Not Attending" : "Katılmayacak" }]} />
+        </div>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsExcel}>{isEn ? "Excel 📊" : "Excel İndir 📊"}</button>
+        <button type="button" className="secondary-button admin-toolbar-btn" onClick={exportGuestsCsv}>{isEn ? "CSV 📄" : "CSV İndir 📄"}</button>
+        <button type="button" className="secondary-button danger-button admin-toolbar-btn" onClick={clearGuests}>{isEn ? "Clear All 🚨" : "Tümünü Sil 🚨"}</button>
+      </div>
+
+      <div className="admin-list admin-list-full admin-guest-list-container" style={{ height: "500px", overflowY: "auto" }}>
+        {filteredGuests.length === 0 ? (
+          <p className="empty-text">{isEn ? "No matching responses found." : "Kayıt bulunamadı."}</p>
+        ) : (
+          <Virtuoso
+            style={{ height: '100%', width: '100%' }}
+            data={filteredGuests}
+            itemContent={(index, guest) => {
+              const isAttending = guest.attendance === "Katılacağım";
+              
+              const whatsappMsg = encodeURIComponent(
+                isEn 
+                ? `Hello ${guest.name},\n\nYour RSVP for ${bride} & ${groom}'s wedding has been confirmed. ✅\n\n${guest.tableNumber ? `🍽️ Reserved Table: ${guest.tableNumber}\n\n` : ''}📍 Location:\n${mapLink}\n\nWe can't wait to celebrate with you! 🎉`
+                : `Merhaba ${guest.name},\n\n${bride} & ${groom} düğün davetiyemize LCV (katılım) kaydınız başarıyla alınmıştır. ✅\n\n${guest.tableNumber ? `🍽️ Sizin İçin Ayrılan Masa: ${guest.tableNumber}\n\n` : ''}📍 Konum ve Yol Tarifi:\n${mapLink}\n\nSizi aramızda görmek için sabırsızlanıyoruz! 🎉`
+              );
+
+              return (
+                <div className="admin-row admin-guest-row" style={{ borderLeftColor: guest.has_arrived ? "#27ae60" : undefined, marginBottom: '14px' }}>
+                  <div className="admin-guest-header">
+                    <strong>{guest.name}</strong>
+                  </div>
+                  <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
+                  
+                  {guest.phone && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+                      <span>📞 {guest.phone}</span>
+                      {isAttending && (
+                        <>
+                          <a 
+                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="secondary-button" 
+                            style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
+                          >
+                            {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
+                          </a>
+                          
+                          {adminDraft.settings.isPostWedding && (
+                            <button 
+                              type="button"
+                              onClick={() => generateAiThankYou(guest.name)}
+                              className="secondary-button"
+                              style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#8e44ad', borderColor: '#8e44ad', fontWeight: 'bold' }}
+                            >
+                              {isEn ? "AI Thank You 🤖" : "AI Teşekkür Et 🤖"}
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
+                  {guest.note && <em>Not: {guest.note}</em>}
+                  
+                  <div className="admin-row-actions admin-guest-actions">
+                    <button 
+                      type="button" 
+                      className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
+                      onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
+                    >
+                      {guest.has_arrived ? (isEn ? "Cancel Check-in ↩️" : "Girişi İptal Et ↩️") : (isEn ? "Check-in ✅" : "Mekana Girdi ✅")}
+                    </button>
+                    <button type="button" className="secondary-button small-admin-button" onClick={() => editGuest(guest.id)}>
+                      {isEn ? "Edit ✏️" : "Düzenle ✏️"}
+                    </button>
+                    <button type="button" className="secondary-button danger-button small-admin-button" onClick={() => deleteGuest(guest.id)}>
+                      {isEn ? "Delete 🗑️" : "Sil 🗑️"}
+                    </button>
+                  </div>
+                </div>
+              );
+            }}
+          />
+        )}
+      </div>
+    </AdminSection>
+  );
+}
+</file>
+
+<file path="src/components/invitation/sections/RsvpSection.jsx">
+import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import FocusTrap from 'focus-trap-react';
+import { Turnstile } from '@marsidev/react-turnstile';
+import { OptionGroup } from "../../common/UIComponents";
+import { triggerConfetti, getQrImageUrl } from "../../../utils/helpers";
+import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
+import { getRsvpSchema } from "../../../validations/schemas";
+import { subscribeToPushNotifications } from "../../common/PwaInstallBanner";
+
+const DeadlineBanner = memo(({ isEn, title, text }) => (
+  <div className="rsvp-deadline-banner">
+    <div className="deadline-icon">⏳</div>
+    <h3 className="deadline-title">{isEn ? title : (title || "Form Kapatıldı")}</h3>
+    <p className="deadline-text">{isEn ? text : (text || "Form süresi dolmuştur.")}</p>
+  </div>
+));
+
+const DeclineModal = memo(({ isEn, copy, showIban, giftData, showDeclineGift, showDeclineModal, resetAndCloseModal, setShowDeclineGift, copyIban, copied, t }) => {
+  const handleClose = () => resetAndCloseModal();
+  if (!showDeclineModal) return null;
+
+  return createPortal(
+    <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
+      <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
+        <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
+          <div className="app-modal-content">
+            <h3>{isEn ? t('invitation.declineTitle') : (copy?.declineTitle || t('invitation.declineTitle'))}</h3>
+            <p className="deadline-text modal-message">
+              {isEn ? t('invitation.declineMessage') : (copy?.declineMessage || t('invitation.declineMessage'))}
+            </p>
+          </div>
+
+          {!showDeclineGift ? (
+            <div className="app-modal-actions">
+              <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.close')}</button>
+              {showIban && giftData && (
+                <button type="button" className="main-button" onClick={() => setShowDeclineGift(true)}><span>{t('ui.sendGift')}</span></button>
+              )}
+            </div>
+          ) : (
+            <div className="app-modal-content">
+              <div className="modal-gift-card">
+                <strong className="modal-gift-receiver">{giftData.receiver}</strong>
+                <span className="modal-gift-bank">{giftData.bankName}</span>
+                <code className="modal-gift-iban">{giftData.iban}</code>
+              </div>
+              <div className="app-modal-actions">
+                <button type="button" className="main-button" onClick={copyIban}>{copied ? t('ui.copied') : t('ui.copyIban')}</button>
+                <button type="button" className="secondary-button app-modal-cancel" onClick={handleClose}>{t('ui.closeBtn')}</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </FocusTrap>,
+    document.body
+  );
+});
+
+export const RsvpSection = memo(function RsvpSection({ copy, submitGuest, invitation, rsvpWhatsappText, showIban, giftData, personalTableNumber }) {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language?.startsWith('en') || false;
+  
+  const [showDeclineModal, setShowDeclineModal] = useState(false);
+  const [showDeclineGift, setShowDeclineGift] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [urlGuestName, setUrlGuestName] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [formKey, setFormKey] = useState(0); 
+  
+  // YENİ: Cüzdana bilet ekleme için başarılı kayıt tutucu
+  const [submittedGuest, setSubmittedGuest] = useState(null);
+
+  const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
+
+  const { control, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(rsvpSchema),
+    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" }
+  });
+
+  const currentNote = watch("note") || "";
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const guestName = params.get("guest") || params.get("davetli") || "";
+    const countParam = params.get("count") || params.get("kisi") || "";
+
+    if (guestName) {
+      setUrlGuestName(guestName);
+      setValue("name", guestName);
+    }
+    if (countParam) setValue("note", `${countParam} Kişi`); 
+  }, [setValue]);
+
+  const todayStr = new Date().toLocaleDateString('en-CA'); 
+  const isDeadlinePassed = invitation?.rsvpDeadline && todayStr > invitation.rsvpDeadline;
+
+  const onSubmit = async (data) => {
+    if (data.honeypot) return;
+    if (!turnstileToken && navigator.onLine) return;
+
+    const isDeclining = data.attendance === "Katılamayacağım";
+    await submitGuest({ ...data, turnstileToken });
+    
+    if (!isDeclining) {
+      triggerConfetti();
+      setSubmittedGuest(data); // Bileti oluşturmak için bilgiyi kaydet
+      
+      setTimeout(() => {
+        if (window.confirm(isEn ? "Would you like to receive a reminder notification 1 day before the wedding?" : "Düğüne 1 gün kala hatırlatma bildirimi almak ister misiniz?")) {
+          subscribeToPushNotifications();
+        }
+      }, 1500);
+    } else {
+      setShowDeclineModal(true);
+    }
+    
+    reset();
+    setTurnstileToken("");
+    setFormKey(prev => prev + 1);
+  };
+
+  // YENİ: Apple/Google Wallet (Dijital Bilet) Üretici Fonksiyon
+  const downloadDigitalTicket = () => {
+    if (!submittedGuest) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 700;
+    const ctx = canvas.getContext('2d');
+    
+    // Arka Plan
+    ctx.fillStyle = '#fffafb';
+    ctx.fillRect(0, 0, 400, 700);
+    
+    // Üst Header
+    ctx.fillStyle = '#9f4f68';
+    ctx.fillRect(0, 0, 400, 110);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 24px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(isEn ? 'VIP WEDDING PASS' : 'VIP DAVETİYE KARTI', 200, 65);
+    
+    // Çift İsmi
+    ctx.fillStyle = '#55303b';
+    ctx.font = 'bold 20px serif';
+    ctx.fillText(`${invitation?.bride} & ${invitation?.groom}`, 200, 160);
+    
+    // Tarih ve Saat
+    ctx.font = '16px sans-serif';
+    ctx.fillStyle = '#6f4451';
+    ctx.fillText(`${invitation?.dateText} - ${invitation?.timeText}`, 200, 190);
+    
+    // Kesik Çizgi (Bilet Formu)
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(20, 240);
+    ctx.lineTo(380, 240);
+    ctx.strokeStyle = '#d98ca1';
+    ctx.stroke();
+    
+    // Misafir İsmi
+    ctx.fillStyle = '#55303b';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText(submittedGuest.name, 200, 300);
+    
+    // Masa Numarası
+    if(personalTableNumber) {
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillStyle = '#27ae60';
+      ctx.fillText(isEn ? `TABLE: ${personalTableNumber}` : `MASA: ${personalTableNumber}`, 200, 340);
+    }
+
+    // QR Code (API'den çekip çizmek asenkron olduğundan Dummy Text ekliyoruz, Wallet okuyucuları için sembolik)
+    ctx.fillStyle = '#000';
+    ctx.fillRect(125, 400, 150, 150);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(135, 410, 130, 130);
+    ctx.fillStyle = '#000';
+    ctx.font = '12px monospace';
+    ctx.fillText('QR SCAN', 200, 480);
+    
+    // Alt Bilgi
+    ctx.fillStyle = '#6f4451';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(isEn ? 'Save this to your Photos / Wallet' : 'Girişte göstermek için galerinize kaydedin.', 200, 620);
+    
+    // İndirme Tetikle
+    const link = document.createElement('a');
+    link.download = `${submittedGuest.name}-Bilet.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
+  const resetAndCloseModal = useCallback(() => {
+    setShowDeclineModal(false);
+    setTimeout(() => { setShowDeclineGift(false); setCopied(false); }, 300);
+  }, []);
+
+  const copyIban = useCallback(() => {
+    if (giftData?.iban) {
+      navigator.clipboard.writeText(giftData.iban);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }, [giftData?.iban]);
+
+  const translatedAttendance = useMemo(() => ATTENDANCE_OPTIONS.map(opt => ({ ...opt, label: isEn ? (opt.value === "Katılacağım" ? t('ui.attending') : t('ui.notAttending')) : opt.label })), [isEn, t]);
+
+  return (
+    <section className="card rsvp-card">
+      <p className="section-label">{isEn ? t('invitation.rsvpLabel') : copy?.rsvpLabel}</p>
+      <h2>{isEn ? t('invitation.rsvpTitle') : copy?.rsvpTitle}</h2>
+      <p>{isEn ? t('invitation.rsvpText') : copy?.rsvpText}</p>
+      
+      {isDeadlinePassed ? (
+        <DeadlineBanner isEn={isEn} title={t('invitation.deadlineTitle')} text={t('invitation.deadlineText')} />
+      ) : (
+        <>
+          <form key={`rsvp-form-${formKey}`} className="rsvp-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
+
+            {urlGuestName && (
+              <div className="guest-badge-banner">
+                {t('ui.prefilled', { name: urlGuestName })}
+                {personalTableNumber && ` (Masa: ${personalTableNumber})`}
+              </div>
+            )}
+
+            <div style={{ width: '100%' }}>
+              <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
+              {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name.message}</span>}
+            </div>
+
+            <Controller name="attendance" control={control} render={({ field }) => <OptionGroup onChange={field.onChange} options={translatedAttendance} value={field.value} />} />
+
+            <div className="field-with-counter" style={{ marginTop: '12px' }}>
+              <Controller name="note" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.notePlaceholder')} maxLength={NOTE_MAX_LENGTH}></textarea>} />
+              <span>{currentNote.length}/{NOTE_MAX_LENGTH}</span>
+            </div>
+
+            <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
+              <Turnstile siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} onSuccess={(token) => setTurnstileToken(token)} onExpire={() => setTurnstileToken("")} />
+            </div>
+
+            <button type="submit" className="main-button form-button" disabled={isSubmitting || (!turnstileToken && navigator.onLine)}>
+              {isSubmitting ? "..." : t('form.submitRsvp')}
+            </button>
+          </form>
+          
+          {/* YENİ: Başarılı Katılım Sonrası Bilet İndirme Butonu */}
+          {submittedGuest && (
+            <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(46, 204, 113, 0.1)', border: '1px solid #2ecc71', borderRadius: '12px', textAlign: 'center' }}>
+              <p style={{ color: '#27ae60', fontWeight: 'bold', marginBottom: '12px' }}>
+                {isEn ? "RSVP Confirmed!" : "Katılım Onaylandı!"}
+              </p>
+              <button onClick={downloadDigitalTicket} className="main-button" style={{ background: '#27ae60', borderColor: '#27ae60', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🎟️ {isEn ? "Add to Apple/Google Wallet" : "Cüzdana/Galeriye Ekle"}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      <div className="rsvp-actions" style={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+        <a className="secondary-button rsvp-whatsapp-button" style={{ width: "fit-content", margin: "0 auto" }} href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`} target="_blank" rel="noreferrer">
+          {t('form.whatsappRsvp')}
+        </a>
+      </div>
+      <DeclineModal isEn={isEn} copy={copy} showIban={showIban} giftData={giftData} showDeclineGift={showDeclineGift} showDeclineModal={showDeclineModal} resetAndCloseModal={resetAndCloseModal} setShowDeclineGift={setShowDeclineGift} copyIban={copyIban} copied={copied} t={t} />
+    </section>
+  );
+});
+</file>
+
 <file path="src/components/common/FloatingMenu.jsx">
 import React, { memo } from "react";
 
@@ -25510,168 +24900,6 @@ export const FloatingMenu = memo(function FloatingMenu({
     </>
   );
 });
-</file>
-
-<file path="src/pages/InvitationView.jsx">
-import React from "react";
-import { useStore } from "../store/useStore";
-import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
-import { usePaymentFeedback } from '../hooks/usePaymentFeedback';
-import {
-  HeroSection,
-  CountdownSection,
-  InvitationMessageSection,
-  FamilySection,
-  StorySection,
-  CeremonySection,
-  ScheduleSection,
-  LocationSection,
-  GallerySection,
-  ShareSection,
-  GiftSection,
-  RsvpSection,
-  WishesSection,
-  GuestsListSection,
-  GuestCameraSection,
-  SmartAlbumSection,
-  FooterSection
-} from "../components/invitation/sections";
-
-export default function InvitationView(props) {
-  const siteData = useStore((state) => state.siteData);
-  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
-  
-  const v = settings?.visibility || {};
-
-  usePaymentFeedback();
-
-  return (
-    <ResponsiveSlideShow>
-      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
-      
-      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
-      
-      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
-      
-      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
-      
-      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
-      
-      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
-      
-      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
-      
-      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.guests && <GuestCameraSection {...props} />}
-      
-      {v.guests && <SmartAlbumSection {...props} />}
-      
-      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
-      
-      {v.wishes && <WishesSection {...props} copy={copy} />}
-      
-      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
-      
-      <ShareSection {...props} copy={copy} />
-      
-      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
-    </ResponsiveSlideShow>
-  );
-}
-</file>
-
-<file path="package.json">
-{
-  "name": "dugun-davetiyesi",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "test:unit": "vitest run src/",
-    "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run test:e2e"
-  },
-  "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@hookform/resolvers": "^5.9.0",
-    "@marsidev/react-turnstile": "^1.6.1",
-    "@sentry/react": "^10.75.0",
-    "@supabase/supabase-js": "^2.108.2",
-    "@tanstack/query-async-storage-persister": "^5.104.0",
-    "@tanstack/query-sync-storage-persister": "^5.103.2",
-    "@tanstack/react-query": "^5.103.2",
-    "@tanstack/react-query-persist-client": "^5.103.2",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0",
-    "browser-image-compression": "^2.0.2",
-    "focus-trap-react": "^12.0.3",
-    "framer-motion": "^13.1.0",
-    "heic2any": "^0.0.4",
-    "html5-qrcode": "^2.3.8",
-    "i18next": "^26.3.6",
-    "i18next-browser-languagedetector": "^8.2.1",
-    "idb-keyval": "^6.3.0",
-    "jspdf": "^4.2.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-helmet-async": "^3.0.0",
-    "react-hook-form": "^7.85.0",
-    "react-hot-toast": "^2.6.0",
-    "react-i18next": "^17.0.11",
-    "react-photo-album": "^3.6.1",
-    "react-router-dom": "^7.18.2",
-    "react-virtuoso": "^4.18.15",
-    "recharts": "^3.10.1",
-    "yet-another-react-lightbox": "^3.32.2",
-    "zod": "^3.25.76",
-    "zustand": "^5.0.15"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.3",
-    "@vitejs/plugin-legacy": "^8.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "autoprefixer": "^10.5.4",
-    "jsdom": "^29.1.1",
-    "oxlint": "^1.69.0",
-    "postcss": "^8.5.26",
-    "supabase": "^2.117.0",
-    "terser": "^5.49.2",
-    "vite": "^8.1.0",
-    "vite-plugin-image-optimizer": "^2.0.3",
-    "vite-plugin-pwa": "^1.3.0",
-    "vitest": "^5.0.0"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all",
-      "ios >= 12",
-      "safari >= 12"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "overrides": {
-    "glob": "^11.0.0"
-  },
-  "allowScripts": {
-    "core-js": true
-  }
-}
 </file>
 
 <file path="src/hooks/useScrollNavigation.js">
@@ -25932,6 +25160,168 @@ export function useScrollNavigation(isAdminPage, opened) {
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
   
   return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
+}
+</file>
+
+<file path="src/pages/InvitationView.jsx">
+import React from "react";
+import { useStore } from "../store/useStore";
+import { ResponsiveSlideShow } from "../components/common/ResponsiveSlideShow";
+import { usePaymentFeedback } from '../hooks/usePaymentFeedback';
+import {
+  HeroSection,
+  CountdownSection,
+  InvitationMessageSection,
+  FamilySection,
+  StorySection,
+  CeremonySection,
+  ScheduleSection,
+  LocationSection,
+  GallerySection,
+  ShareSection,
+  GiftSection,
+  RsvpSection,
+  WishesSection,
+  GuestsListSection,
+  GuestCameraSection,
+  SmartAlbumSection,
+  FooterSection
+} from "../components/invitation/sections";
+
+export default function InvitationView(props) {
+  const siteData = useStore((state) => state.siteData);
+  const { settings, invitation, copy, eventDetails, scheduleItems, storyTimeline, familyInfo, giftRegistry } = siteData;
+  
+  const v = settings?.visibility || {};
+
+  usePaymentFeedback();
+
+  return (
+    <ResponsiveSlideShow>
+      <HeroSection {...props} invitation={invitation} copy={copy} settings={settings} />
+      
+      {v.countdown && <CountdownSection {...props} copy={copy} timeLeft={props.timeLeft} />}
+      
+      <InvitationMessageSection {...props} copy={copy} invitation={invitation} />
+      
+      {v.family && <FamilySection {...props} copy={copy} familyInfo={familyInfo} />}
+      
+      {v.story && <StorySection {...props} copy={copy} storyTimeline={storyTimeline} />}
+      
+      {v.ceremony && <CeremonySection {...props} copy={copy} eventDetails={eventDetails} />}
+      
+      {v.schedule && <ScheduleSection {...props} copy={copy} invitation={invitation} scheduleItems={scheduleItems} />}
+      
+      {v.location && <LocationSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.gallery && <GallerySection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.guests && <GuestCameraSection {...props} />}
+      
+      {v.guests && <SmartAlbumSection {...props} />}
+      
+      {v.rsvp && <RsvpSection {...props} copy={copy} invitation={invitation} />}
+      
+      {v.wishes && <WishesSection {...props} copy={copy} />}
+      
+      {v.iban && <GiftSection {...props} giftData={giftRegistry} />}
+      
+      <ShareSection {...props} copy={copy} />
+      
+      <FooterSection {...props} coupleName={`${invitation.bride} & ${invitation.groom}`} invitation={invitation} copy={copy} />
+    </ResponsiveSlideShow>
+  );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "dugun-davetiyesi",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "test:unit": "vitest run src/",
+    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:e2e"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@hookform/resolvers": "^5.9.0",
+    "@marsidev/react-turnstile": "^1.6.1",
+    "@sentry/react": "^10.75.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "@tanstack/query-async-storage-persister": "^5.104.0",
+    "@tanstack/query-sync-storage-persister": "^5.103.2",
+    "@tanstack/react-query": "^5.103.2",
+    "@tanstack/react-query-persist-client": "^5.103.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
+    "browser-image-compression": "^2.0.2",
+    "focus-trap-react": "^12.0.3",
+    "framer-motion": "^13.1.0",
+    "heic2any": "^0.0.4",
+    "html5-qrcode": "^2.3.8",
+    "i18next": "^26.3.6",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "idb-keyval": "^6.3.0",
+    "jspdf": "^4.2.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-helmet-async": "^3.0.0",
+    "react-hook-form": "^7.85.0",
+    "react-hot-toast": "^2.6.0",
+    "react-i18next": "^17.0.11",
+    "react-photo-album": "^3.6.1",
+    "react-router-dom": "^7.18.2",
+    "react-virtuoso": "^4.18.15",
+    "recharts": "^3.10.1",
+    "yet-another-react-lightbox": "^3.32.2",
+    "zod": "^3.25.76",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@vitejs/plugin-legacy": "^8.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "autoprefixer": "^10.5.4",
+    "jsdom": "^29.1.1",
+    "oxlint": "^1.69.0",
+    "postcss": "^8.5.26",
+    "supabase": "^2.117.0",
+    "terser": "^5.49.2",
+    "vite": "^8.1.0",
+    "vite-plugin-image-optimizer": "^2.0.3",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^5.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all",
+      "ios >= 12",
+      "safari >= 12"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "overrides": {
+    "glob": "^11.0.0"
+  },
+  "allowScripts": {
+    "core-js": true
+  }
 }
 </file>
 

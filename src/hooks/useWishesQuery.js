@@ -20,7 +20,8 @@ export function useWishesQuery() {
           data: {
             name: newWishData.name,
             message: newWishData.message,
-            approved: newWishData.approved 
+            approved: newWishData.approved,
+            ...(newWishData.audioUrl ? { audio_url: newWishData.audioUrl } : {})
           }, 
           turnstileToken: token 
         }
@@ -41,6 +42,7 @@ export function useWishesQuery() {
           name: newWish.name, 
           message: newWish.message, 
           approved: newWish.approved,
+          ...(newWish.audioUrl ? { audioUrl: newWish.audioUrl } : {}),
           createdAt: new Date().toISOString()
         }, 
         ...old

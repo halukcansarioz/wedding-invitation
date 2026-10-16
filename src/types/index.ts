@@ -1,4 +1,3 @@
-
 export interface Guest {
   id: string;
   name: string;
@@ -19,6 +18,8 @@ export interface Wish {
   name: string;
   message: string;
   approved: boolean;
+  audioUrl?: string;
+  message_translated?: string;
   createdAt?: string;
 }
 

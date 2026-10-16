@@ -1,29 +1,35 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useStore } from "./store/useStore"; 
+import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 const AdminController = lazy(() => import("./pages/AdminController"));
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
-import { isSupabaseReady, loadSettingsFromDatabase, loadGuestsFromDatabase, loadPublishedWishesFromDatabase, syncFailedDeletes } from "./services/database";
+import {
+  isSupabaseReady,
+  loadSettingsFromDatabase,
+  loadPublicGuestsSummaryFromDatabase,
+  loadPublishedWishesFromDatabase,
+  syncFailedDeletes,
+} from "./services/database";
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
-const LiveProjector = lazy(() => import("./pages/LiveProjector.js"));
+const LiveProjector = lazy(() => import("./pages/LiveProjector"));
 
 function App() {
   const { t, i18n } = useTranslation();
-  const isEn = i18n.language.startsWith('en');
-  
+  const isEn = i18n.language.startsWith("en");
+
   const customAlert = useStore((state) => state.customAlert);
   const setCustomAlert = useStore((state) => state.setCustomAlert);
   const customConfirm = useStore((state) => state.customConfirm);
   const setCustomConfirm = useStore((state) => state.setCustomConfirm);
   const customPrompt = useStore((state) => state.customPrompt);
   const setCustomPrompt = useStore((state) => state.setCustomPrompt);
-  
+
   const siteData = useStore((state) => state.siteData);
   const setSiteData = useStore((state) => state.setSiteData);
   const setWishes = useStore((state) => state.setWishes);
@@ -33,20 +39,24 @@ function App() {
   const location = useLocation();
   const activeTheme = siteData.settings?.theme || "lavanta";
   const invitation = siteData.invitation;
-  const isAuthRecovery = location.hash.includes("access_token=") || location.hash.includes("type=recovery");
+  const isAuthRecovery =
+    location.hash.includes("access_token=") || location.hash.includes("type=recovery");
   const isLiveProjector = location.pathname.endsWith("/live");
 
-  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const prefersDark =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
   const resolvedTheme = isLiveProjector || prefersDark ? "dark" : activeTheme;
 
-  // YENİ: Otomatik Dil Algılama ve Ayarlama
+  // Otomatik Dil Algılama ve Ayarlama
   useEffect(() => {
-    if (typeof navigator !== 'undefined' && !localStorage.getItem('i18nextLng')) {
+    if (typeof navigator !== "undefined" && !localStorage.getItem("i18nextLng")) {
       const userLang = navigator.language || navigator.userLanguage;
-      if (userLang.startsWith('tr')) {
-        i18n.changeLanguage('tr');
+      if (userLang.startsWith("tr")) {
+        i18n.changeLanguage("tr");
       } else {
-        i18n.changeLanguage('en');
+        i18n.changeLanguage("en");
       }
     }
   }, [i18n]);
@@ -54,10 +64,11 @@ function App() {
   useEffect(() => {
     document.documentElement.lang = isEn ? "en" : "tr";
     document.documentElement.dataset.theme = resolvedTheme;
-    
-    const favicon = document.querySelector("link[rel='icon']") || document.createElement("link");
-    favicon.rel = "icon"; 
-    favicon.type = "image/svg+xml"; 
+
+    const favicon =
+      document.querySelector("link[rel='icon']") || document.createElement("link");
+    favicon.rel = "icon";
+    favicon.type = "image/svg+xml";
     favicon.href = getFaviconUrl(resolvedTheme);
     if (!favicon.parentNode) document.head.appendChild(favicon);
   }, [isEn, resolvedTheme]);
@@ -66,20 +77,22 @@ function App() {
     async function initDatabaseData() {
       if (!isSupabaseReady()) return;
       try {
-        const [dbSettings, dbWishes, dbGuests] = await Promise.all([
+        const [dbSettings, dbWishes, dbPublicGuests] = await Promise.all([
           loadSettingsFromDatabase(),
           loadPublishedWishesFromDatabase(),
-          loadGuestsFromDatabase()
+          loadPublicGuestsSummaryFromDatabase(),
         ]);
 
-        const normalizedSettings = dbSettings ? normalizeSiteData(dbSettings) : normalizeSiteData(null);
+        const normalizedSettings = dbSettings
+          ? normalizeSiteData(dbSettings)
+          : normalizeSiteData(null);
         localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
-        
+
         setSiteData(normalizedSettings);
         setAdminDraft(normalizedSettings);
         setWishes(dbWishes || []);
-        setGuests(dbGuests || []);
-        
+        setGuests(dbPublicGuests || []);
+
         syncFailedDeletes();
       } catch (error) {
         console.error("Veritabanından veriler okunamadı:", error);
@@ -91,14 +104,28 @@ function App() {
   return (
     <LazyMotion features={domAnimation} strict>
       {!isSupabaseReady() && (
-        <div style={{ background: '#e74c3c', color: 'white', padding: '12px', textAlign: 'center', position: 'fixed', top: 0, left: 0, width: '100%', zIndex: 999999, fontWeight: 'bold', fontSize: '14px' }}>
+        <div
+          style={{
+            background: "#e74c3c",
+            color: "white",
+            padding: "12px",
+            textAlign: "center",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            zIndex: 999999,
+            fontWeight: "bold",
+            fontSize: "14px",
+          }}
+        >
           ⚠️ Sistem Uyarı: Supabase bağlantısı kurulamadı. Mock Modunda çalışıyor.
         </div>
       )}
 
-      <div 
-        className="app" 
-        lang={isEn ? "en" : "tr"} 
+      <div
+        className="app"
+        lang={isEn ? "en" : "tr"}
         data-theme={resolvedTheme}
         style={{
           "--intro-image": `url(${invitation.introImage})`,
@@ -106,17 +133,67 @@ function App() {
           "--heroVideo": invitation.heroVideo ? `url(${invitation.heroVideo})` : "none",
         }}
       >
-        <GlobalModals customAlert={customAlert} setCustomAlert={setCustomAlert} customConfirm={customConfirm} setCustomConfirm={setCustomConfirm} customPrompt={customPrompt} setCustomPrompt={setCustomPrompt} t={t} />
-        
+        <GlobalModals
+          customAlert={customAlert}
+          setCustomAlert={setCustomAlert}
+          customConfirm={customConfirm}
+          setCustomConfirm={setCustomConfirm}
+          customPrompt={customPrompt}
+          setCustomPrompt={setCustomPrompt}
+          t={t}
+        />
+
         <Suspense fallback={<div className="app-loading">{isEn ? "Loading..." : "Yükleniyor..."}</div>}>
           <Routes>
-            <Route path="/" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-            <Route path="/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-            <Route path="/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+            <Route
+              path="/"
+              element={
+                <ErrorBoundary>
+                  {isAuthRecovery ? <AdminController /> : <InvitationController />}
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/admin/*"
+              element={
+                <ErrorBoundary>
+                  <AdminController />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/live"
+              element={
+                <ErrorBoundary>
+                  <LiveProjector />
+                </ErrorBoundary>
+              }
+            />
 
-            <Route path="/:tenant_slug" element={<ErrorBoundary>{isAuthRecovery ? <AdminController /> : <InvitationController />}</ErrorBoundary>} />
-            <Route path="/:tenant_slug/admin/*" element={<ErrorBoundary><AdminController /></ErrorBoundary>} />
-            <Route path="/:tenant_slug/live" element={<ErrorBoundary><LiveProjector /></ErrorBoundary>} /> 
+            <Route
+              path="/:tenant_slug"
+              element={
+                <ErrorBoundary>
+                  {isAuthRecovery ? <AdminController /> : <InvitationController />}
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/:tenant_slug/admin/*"
+              element={
+                <ErrorBoundary>
+                  <AdminController />
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/:tenant_slug/live"
+              element={
+                <ErrorBoundary>
+                  <LiveProjector />
+                </ErrorBoundary>
+              }
+            />
           </Routes>
         </Suspense>
       </div>

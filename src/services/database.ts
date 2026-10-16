@@ -8,27 +8,41 @@ export const getSupabaseUrl = (): string =>
   String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
 
 export const getSupabaseKey = (): string =>
-  String(import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env?.VITE_SUPABASE_ANON_KEY || "").trim();
+  String(
+    import.meta.env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+      import.meta.env?.VITE_SUPABASE_ANON_KEY ||
+      ""
+  ).trim();
 
 export const getSupabaseSetupMessage = (): string => {
   const url = getSupabaseUrl();
   const key = getSupabaseKey();
-  if (!url || !key) return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı.";
+  if (!url || !key) {
+    return "Supabase bağlantısı eksik. .env.local içinde VITE_SUPABASE_URL ve VITE_SUPABASE_ANON_KEY değerleri olmalı.";
+  }
   return "Supabase bağlantısı kurulamadı. Project URL / anon key değerlerini kontrol et.";
 };
 
 export const getReadableAuthError = (error: any): string => {
   if (!error) return "Bilinmeyen bir hata oluştu.";
   const status = error?.status || error?.code;
-  const message = String(error?.message || error?.name || "").toLocaleLowerCase("tr-TR");
+  // İngilizce hata mesajlarındaki "Invalid" kelimesinin başındaki "I" harfi
+  // toLocaleLowerCase("tr-TR") ile "ı" ("ınvalid") olduğu için standart toLowerCase() kullanıyoruz.
+  const message = String(error?.message || error?.name || "").toLowerCase();
   if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı.";
-  if (status === 429) return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar deneyin.";
+  if (status === 429) {
+    return "Çok fazla deneme yapıldı. Birkaç dakika bekleyip tekrar deneyin.";
+  }
   return error?.message || "İşlem tamamlanamadı. Bağlantınızı kontrol edin.";
 };
 
 export const isSupabaseReady = (): boolean => Boolean(getSupabaseUrl() && getSupabaseKey());
 
-export const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> => {
+export const fetchWithRetry = async <T>(
+  fetchFn: () => Promise<T>,
+  retries = 3,
+  delay = 1000
+): Promise<T> => {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       return await fetchFn();
@@ -43,7 +57,11 @@ export const fetchWithRetry = async <T>(fetchFn: () => Promise<T>, retries = 3, 
 export const loadSettingsFromDatabase = async (): Promise<SiteData | null> => {
   if (!isSupabaseReady()) return null;
   return fetchWithRetry(async () => {
-    const { data, error } = await supabase.from("invitation_settings").select("content").eq("id", "main").single();
+    const { data, error } = await supabase
+      .from("invitation_settings")
+      .select("content")
+      .eq("id", "main")
+      .single();
     if (error) throw error;
     return normalizeSiteData(data?.content || null) as SiteData;
   });
@@ -53,33 +71,72 @@ export const saveSettingsToDatabase = async (settings: SiteData): Promise<void> 
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
   const { error } = await supabase.from("invitation_settings").upsert(
     { id: "main", content: settings as any, updated_at: new Date().toISOString() },
-    { onConflict: "id" },
+    { onConflict: "id" }
   );
   if (error) throw error;
 };
 
 export const loadGuestsFromDatabase = async (): Promise<Guest[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("guests").select("*").order("created_at", { ascending: false }).limit(1000);
+  const { data, error } = await supabase
+    .from("guests")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1000);
   if (error) return [];
   return (data || []).map(dbGuestToUi);
 };
 
+/**
+ * Ziyaretçi (Public) görünümü için misafirlerin özel bilgilerini (isim, telefon, not)
+ * sızdırmadan yalnızca katılım istatistikleri için gereken alanları çeker.
+ */
+export const loadPublicGuestsSummaryFromDatabase = async (): Promise<Guest[]> => {
+  if (!isSupabaseReady()) return [];
+  const { data, error } = await supabase
+    .from("guests")
+    .select("id, attendance, person_count")
+    .order("created_at", { ascending: false })
+    .limit(1000);
+  if (error) return [];
+  return (data || []).map((g: any) => ({
+    id: g.id,
+    name: "",
+    attendance: g.attendance,
+    personCount: String(g.person_count || 1),
+    side: "Ortak",
+    hasChild: "Hayır",
+    has_arrived: false,
+  }));
+};
+
 export const loadAllWishesFromDatabase = async (): Promise<Wish[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").order("created_at", { ascending: false }).limit(1000);
+  const { data, error } = await supabase
+    .from("wishes")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(1000);
   if (error) return [];
   return (data || []).map(dbWishToUi);
 };
 
 export const loadPublishedWishesFromDatabase = async (): Promise<Wish[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase.from("wishes").select("*").eq("approved", true).order("created_at", { ascending: false }).limit(1000);
+  const { data, error } = await supabase
+    .from("wishes")
+    .select("*")
+    .eq("approved", true)
+    .order("created_at", { ascending: false })
+    .limit(1000);
   if (error) return [];
   return (data || []).map(dbWishToUi);
 };
 
-export const uploadMediaFile = async (rawFile: File, folder = "media"): Promise<string | null> => {
+export const uploadMediaFile = async (
+  rawFile: File,
+  folder = "media"
+): Promise<string | null> => {
   if (!rawFile) return null;
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
 
@@ -111,7 +168,9 @@ export const uploadMediaFile = async (rawFile: File, folder = "media"): Promise<
   return data.publicUrl;
 };
 
-export const uploadAndModerateGuestPhoto = async (rawFile: File): Promise<{ url: string | null; isApproved: boolean }> => {
+export const uploadAndModerateGuestPhoto = async (
+  rawFile: File
+): Promise<{ url: string | null; isApproved: boolean }> => {
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
 
   const url = await uploadMediaFile(rawFile, "guest_photos");
@@ -119,7 +178,7 @@ export const uploadAndModerateGuestPhoto = async (rawFile: File): Promise<{ url:
 
   try {
     const res = await supabase.functions.invoke("moderate-photo", { body: { imageUrl: url } });
-    const isSafe = res?.data?.isSafe;
+    const isSafe = Boolean(res?.data?.isSafe);
     await supabase.from("guest_photos").insert([{ image_url: url, approved: isSafe }]);
     return { url, isApproved: isSafe };
   } catch {
@@ -146,7 +205,10 @@ export const deleteMediaFile = async (fileUrl: string): Promise<void> => {
   }
 };
 
-export const syncFailedDeletes = async (): Promise<{ successCount: number; failCount: number }> => {
+export const syncFailedDeletes = async (): Promise<{
+  successCount: number;
+  failCount: number;
+}> => {
   const failedDeletes: string[] = (await get("failed_deletes")) || [];
   if (failedDeletes.length === 0 || !navigator.onLine) {
     return { successCount: 0, failCount: failedDeletes.length };
@@ -189,12 +251,16 @@ export const restoreBackupToDatabase = async (parsedData: any): Promise<void> =>
   if (parsedData.siteData) await saveSettingsToDatabase(parsedData.siteData);
   if (parsedData.guests && parsedData.guests.length > 0) {
     await supabase.from("guests").delete().not("id", "is", null);
-    const guestsToInsert = parsedData.guests.map(({ id, created_at, updated_at, ...rest }: any) => rest);
+    const guestsToInsert = parsedData.guests.map(
+      ({ id, created_at, updated_at, ...rest }: any) => rest
+    );
     await supabase.from("guests").insert(guestsToInsert);
   }
   if (parsedData.wishes && parsedData.wishes.length > 0) {
     await supabase.from("wishes").delete().not("id", "is", null);
-    const wishesToInsert = parsedData.wishes.map(({ id, created_at, updated_at, ...rest }: any) => rest);
+    const wishesToInsert = parsedData.wishes.map(
+      ({ id, created_at, updated_at, ...rest }: any) => rest
+    );
     await supabase.from("wishes").insert(wishesToInsert);
   }
 };
