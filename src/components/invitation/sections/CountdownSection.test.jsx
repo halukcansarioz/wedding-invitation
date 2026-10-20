@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '../../../../tests/test-utils'; // DÜZELTİLDİ
+import { render, screen } from '../../../../tests/test-utils'; 
 import { describe, it, expect, vi } from 'vitest';
 import { CountdownSection } from './CountdownSection';
 

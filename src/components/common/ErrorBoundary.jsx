@@ -14,7 +14,6 @@ export class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error("React Error Boundary Yakaladı:", error, errorInfo);
     
-    // Sentry hata fırlatma aktif edildi
     Sentry.captureException(error, { extra: errorInfo });
   }
 
@@ -22,7 +21,6 @@ export class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="error-boundary-container" style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-          {/* SABİT RENKLER YERİNE TEMA DEĞİŞKENLERİ KULLANILDI */}
           <h2 style={{ color: 'var(--rose-dark)', marginBottom: '14px' }}>Opps! Beklenmeyen bir hata oluştu.</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Lütfen sayfayı yenileyerek tekrar deneyin veya yöneticiyle iletişime geçin.</p>
           <button 

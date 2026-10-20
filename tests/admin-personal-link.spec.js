@@ -32,7 +32,6 @@ test.describe('Admin Paneli: Kişisel Link Oluşturma Testi', () => {
 
     await page.goto('/admin');
     
-    // ÇÖZÜM: `isVisible` yerine `waitFor` kullanarak sayfanın (React bileşenlerinin) hazır olmasını bekliyoruz
     const emailInput = page.locator('input[type="email"]').first();
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
     await emailInput.fill('test@admin.com');
@@ -43,7 +42,6 @@ test.describe('Admin Paneli: Kişisel Link Oluşturma Testi', () => {
   });
 
   test('Kişiye özel link oluşturma sekmesi çalışmalı ve link üretmeli', async ({ page }) => {
-     // ÇÖZÜM: Tab butonları arasında daha spesifik bir gezinme
      const personalLinkTabBtn = page.getByRole('button', { name: /Özel Link|Personal Link/i });
      await personalLinkTabBtn.waitFor({ state: 'visible', timeout: 10000 });
      await personalLinkTabBtn.click();

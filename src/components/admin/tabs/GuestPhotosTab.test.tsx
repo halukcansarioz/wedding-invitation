@@ -25,8 +25,6 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
 
     render(<GuestPhotosTab isEn={false} />);
     
-    // GÜNCELLENDİ: TS hatasını (ts-2339) önlemek için toBeInTheDocument yerine toBeDefined kullanıldı.
-    // getByText zaten elementi bulamazsa hata fırlatır, test güvenliği aynı kalır.
     expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeDefined();
   });
 

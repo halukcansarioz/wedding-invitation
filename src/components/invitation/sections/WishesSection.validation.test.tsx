@@ -7,7 +7,6 @@ import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
 
 vi.mock('../../../hooks/useAudioRecorder');
 
-// KRİTİK DÜZELTME 1: Butonun varsayılan submit davranışını önlemek için type="button" eklendi
 vi.mock('@marsidev/react-turnstile', () => ({ 
   Turnstile: ({ onSuccess }: any) => (
     <button type="button" data-testid="turnstile-btn" onClick={() => onSuccess('valid-token')}>
@@ -20,7 +19,6 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
 }));
 
-// KRİTİK DÜZELTME 2: Canvas kullanan triggerConfetti fonksiyonunun JSDOM ortamında çökmesini engeller
 vi.mock('../../../utils/helpers', async (importOriginal) => {
   const actual: any = await importOriginal();
   return {
@@ -50,14 +48,12 @@ describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
   });
 
   it('Zorunlu alanlar boş bırakıldığında Zod şeması hata mesajlarını göstermeli ve formu göndermemeli', async () => {
-    // TypeScript uyarısını (Type Error) aşmak için "as any" kullanıldı
     render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
     
     fireEvent.click(screen.getByTestId('turnstile-btn'));
     fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
 
     await waitFor(() => {
-      // TS-2339 hatasını önlemek için toBeInTheDocument yerine toBeDefined kullanıldı
       expect(screen.getByText('form.missingNameMessage')).toBeDefined();
       expect(screen.getByText('form.missingWishMessage')).toBeDefined();
       expect(mockSubmitWish).not.toHaveBeenCalled();

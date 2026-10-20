@@ -110,7 +110,7 @@ function LiveProjectorContent() {
               ) : (
                 <>
                   <div style={{ width: '100%', maxWidth: '600px', height: '400px', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }}>
-                    <LazyImage src={activeItem.data.image_url} alt="Misafir POV" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <LazyImage src={activeItem.data.image_url} alt="Misafir POV" style={{ width: '100%', height: '100%', objectFit: 'cover' }} className={undefined} onClick={undefined} />
                   </div>
                   <strong style={{ color: 'var(--gold, #c5a461)', fontSize: '1.2rem', marginTop: '20px', letterSpacing: '2px', fontWeight: 400 }}>
                     {isEn ? "Guest POV 📸" : "Misafir Kamerasından 📸"}

@@ -6,7 +6,6 @@ import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
 
-// Türkçe karakterleri PDF için uyumlu hale getirir
 const normalizeTR = (text) => {
   if (!text) return "";
   return text.replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
@@ -28,7 +27,6 @@ export function WishesAdminPanel({
   const updateDraftObject = useStore((state) => state.updateDraftObject);
 
   const exportWishesPDF = async () => {
-    // Kütüphane sadece butona tıklandığında indirilir (Code Splitting)
     const { default: jsPDF } = await import("jspdf");
     
     const doc = new jsPDF();

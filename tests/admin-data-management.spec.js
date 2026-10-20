@@ -35,11 +35,9 @@ test.describe('Admin Paneli: Veri Yedekleme (Data Export) İşlemleri', () => {
   });
 
   test('JSON İndir butonuna basıldığında tarayıcı indirme işlemini başlatmalı', async ({ page }) => {
-    // ÇÖZÜM: Filtrelemek yerine doğrudan butonun kendisini Role üzerinden yakalıyoruz.
     const dataTabButton = page.getByRole('button', { name: /Veri Yedeği|Data/i });
     await dataTabButton.click();
 
-    // ÇÖZÜM: İndirme event'ini kurmadan önce butonun DOM'a gelmesini (Lazy load asenkron durumu) bekliyoruz.
     const downloadBtn = page.locator('button', { hasText: /JSON İndir|Download JSON/i });
     await expect(downloadBtn).toBeVisible({ timeout: 15000 });
 

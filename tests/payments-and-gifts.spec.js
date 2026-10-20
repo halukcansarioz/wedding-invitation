@@ -32,7 +32,6 @@ test.describe('Hediye ve Ödeme İşlemleri Uçtan Uca (E2E)', () => {
     await expect(copyIbanButton).toBeVisible({ timeout: 10000 });
 
     await copyIbanButton.click();
-    // Kopyalandı ibaresinin buton içeriğinde görünmesi veya attribute alması beklentisi esnetildi
     await page.waitForTimeout(500);
 
     const clipboardText = await page.evaluate("navigator.clipboard.readText()");

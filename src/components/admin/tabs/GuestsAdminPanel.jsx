@@ -5,7 +5,6 @@ import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
 import { supabase } from "../../../supabaseClient";
-// DİKKAT: import { Html5QrcodeScanner } from "html5-qrcode"; statik importu performans için kaldırıldı!
 
 const AdminCharts = lazy(() => import('./AdminCharts'));
 
@@ -25,14 +24,12 @@ export function GuestsAdminPanel({
   const [isScanning, setIsScanning] = useState(false);
   const [scannerInstance, setScannerInstance] = useState(null);
 
-  // YENİ: Dinamik Import Mantığı
   useEffect(() => {
     let activeScanner = null;
 
     const startScanner = async () => {
       if (isScanning) {
         try {
-          // Kütüphaneyi sadece butona basıldığında (on-demand) indiriyoruz!
           const { Html5QrcodeScanner } = await import("html5-qrcode");
           
           activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);

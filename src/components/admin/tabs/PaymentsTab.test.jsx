@@ -39,7 +39,6 @@ describe('PaymentsTab İleri Seviye Testleri', () => {
       expect(screen.getByText('Mehmet')).toBeInTheDocument();
     });
 
-    // Toplam tutar: Sadece 1000 + 2000 = 3000 olmalı. (500 dahil edilmemeli)
     const expectedTotal = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(3000);
     const totalAmountElements = screen.getAllByText(expectedTotal);
     expect(totalAmountElements.length).toBeGreaterThan(0);

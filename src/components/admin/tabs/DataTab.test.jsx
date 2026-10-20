@@ -56,7 +56,6 @@ describe('DataTab Admin Bileşen Kapsamlı Testleri', () => {
   });
 
   it('Depolama Temizliği (Garbage Collection) hataya düşerse hata mesajı vermeli', async () => {
-    // Hata durumunu simüle et
     dbServices.syncFailedDeletes.mockRejectedValue(new Error('Network Error'));
     
     render(<DataTab isEn={false} />);

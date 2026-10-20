@@ -12,7 +12,8 @@ export function GeneralTab({ isEn }: GeneralTabProps) {
   const { t } = useTranslation();
   
   const invitation = useStore((state) => state.adminDraft.invitation);
-  const visibility = useStore((state) => state.adminDraft.settings.visibility);
+  const settings = useStore((state) => state.adminDraft.settings);
+  const visibility = settings?.visibility;
   const updateDraftObject = useStore((state) => state.updateDraftObject);
   const saveSiteContent = useStore((state) => state.saveSiteContent);
 
@@ -42,6 +43,12 @@ export function GeneralTab({ isEn }: GeneralTabProps) {
         <AdminField label={t('admin.general.address', isEn ? "Address" : "Adres")} onChange={(v: string) => updateDraftObject("invitation", "address", v)} value={invitation.address} />
         <AdminField label={t('admin.general.mapLink', isEn ? "Map Link" : "Harita linki")} onChange={(v: string) => updateDraftObject("invitation", "mapLink", v)} value={invitation.mapLink} />
         <AdminField label={t('admin.general.shareLink', isEn ? "Share Link" : "Paylaşım linki")} onChange={(v: string) => updateDraftObject("invitation", "shareLink", v)} value={invitation.shareLink} placeholder={getCurrentShareLink()} />
+        <AdminField 
+          type="number" 
+          label={isEn ? "Total Table Count (Seating & QR)" : "Toplam Masa Sayısı (Oturma Planı & QR)"} 
+          onChange={(v: string) => updateDraftObject("settings", "tableCount", Math.max(1, Number(v) || 15))} 
+          value={settings?.tableCount ?? 15} 
+        />
         <AdminTextarea label={t('admin.general.message', isEn ? "Main Invitation Text" : "Ana davet metni")} onChange={(v: string) => updateDraftObject("invitation", "message", v)} value={invitation.message} />
       </div>
     </AdminSection>

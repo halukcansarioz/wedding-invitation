@@ -18,12 +18,10 @@ export default defineConfig({
     headless: true,
     actionTimeout: 15 * 1000, 
     navigationTimeout: 20 * 1000, 
-    // EKLENDİ: Tarayıcıya mikrofon iznini otomatik ver
     permissions: ['microphone'],
     launchOptions: {
       args: [
         '--disable-web-security',
-        // EKLENDİ: GitHub Actions (CI) sunucusunda fiziksel mikrofon olmadığı için sanal mikrofon simüle et
         '--use-fake-ui-for-media-stream',
         '--use-fake-device-for-media-stream'
       ]

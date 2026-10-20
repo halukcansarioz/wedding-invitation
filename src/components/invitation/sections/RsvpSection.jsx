@@ -118,7 +118,6 @@ export const RsvpSection = memo(function RsvpSection({
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith("en") || false;
 
-  // E2E (Playwright) test ortamını tespit et
   const isAutomation = typeof window !== "undefined" && Boolean(window.navigator?.webdriver);
 
   const [showDeclineModal, setShowDeclineModal] = useState(false);
@@ -130,7 +129,6 @@ export const RsvpSection = memo(function RsvpSection({
   );
   const [formKey, setFormKey] = useState(0);
 
-  // Cüzdana bilet ekleme için başarılı kayıt tutucu
   const [submittedGuest, setSubmittedGuest] = useState(null);
 
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
@@ -205,7 +203,6 @@ export const RsvpSection = memo(function RsvpSection({
     setFormKey((prev) => prev + 1);
   };
 
-  // Apple/Google Wallet (Dijital Bilet) Üretici Fonksiyon — Kapı QR Check-in (?id=...) Uyumlu
   const downloadDigitalTicket = async () => {
     if (!submittedGuest) return;
 
@@ -214,11 +211,9 @@ export const RsvpSection = memo(function RsvpSection({
     canvas.height = 700;
     const ctx = canvas.getContext("2d");
 
-    // Arka Plan
     ctx.fillStyle = "#fffafb";
     ctx.fillRect(0, 0, 400, 700);
 
-    // Üst Header
     ctx.fillStyle = "#9f4f68";
     ctx.fillRect(0, 0, 400, 110);
     ctx.fillStyle = "#ffffff";
@@ -226,17 +221,14 @@ export const RsvpSection = memo(function RsvpSection({
     ctx.textAlign = "center";
     ctx.fillText(isEn ? "VIP WEDDING PASS" : "VIP DAVETİYE KARTI", 200, 65);
 
-    // Çift İsmi
     ctx.fillStyle = "#55303b";
     ctx.font = "bold 20px serif";
     ctx.fillText(`${invitation?.bride || "Gelin"} & ${invitation?.groom || "Damat"}`, 200, 160);
 
-    // Tarih ve Saat
     ctx.font = "16px sans-serif";
     ctx.fillStyle = "#6f4451";
     ctx.fillText(`${invitation?.dateText || ""} - ${invitation?.timeText || ""}`, 200, 190);
 
-    // Kesik Çizgi (Bilet Formu)
     ctx.setLineDash([8, 8]);
     ctx.beginPath();
     ctx.moveTo(20, 240);
@@ -245,12 +237,10 @@ export const RsvpSection = memo(function RsvpSection({
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Misafir İsmi
     ctx.fillStyle = "#55303b";
     ctx.font = "bold 28px sans-serif";
     ctx.fillText(submittedGuest.name, 200, 300);
 
-    // Masa Numarası
     if (personalTableNumber) {
       ctx.font = "bold 18px sans-serif";
       ctx.fillStyle = "#27ae60";
@@ -261,7 +251,6 @@ export const RsvpSection = memo(function RsvpSection({
       );
     }
 
-    // Kapı QR Check-in URL'si (?id=... parametresi ile GuestsAdminPanel tarayıcısıyla tam uyumlu)
     const baseShareLink = invitation?.shareLink || getCurrentShareLink();
     const checkInUrl = buildPersonalLink(
       baseShareLink,
@@ -300,7 +289,6 @@ export const RsvpSection = memo(function RsvpSection({
       drawFallbackQr();
     }
 
-    // Alt Bilgi
     ctx.fillStyle = "#6f4451";
     ctx.font = "14px sans-serif";
     ctx.fillText(
@@ -445,7 +433,6 @@ export const RsvpSection = memo(function RsvpSection({
             </button>
           </form>
 
-          {/* Başarılı Katılım Sonrası Bilet İndirme Butonu */}
           {submittedGuest && (
             <div
               style={{

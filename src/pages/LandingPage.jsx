@@ -16,7 +16,6 @@ export default function LandingPage() {
         </nav>
       </header>
 
-      {/* Hero Section */}
       <section style={{ padding: '100px 24px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
         <m.h2 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
@@ -37,7 +36,6 @@ export default function LandingPage() {
         </m.div>
       </section>
 
-      {/* Features Grid */}
       <section style={{ padding: '60px 24px', backgroundColor: 'var(--paper-soft)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
           

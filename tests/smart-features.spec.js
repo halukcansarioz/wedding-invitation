@@ -27,7 +27,6 @@ test.describe('Kamera ve Yapay Zeka Modülleri', () => {
     await cameraSection.scrollIntoViewIfNeeded();
 
     const cameraButton = cameraSection.locator('button', { hasText: /Kamera \/ Galeri Aç|Open Camera/i });
-    // waitForTimeout yerine stabil state beklentisi
     await cameraButton.waitFor({ state: 'visible', timeout: 10000 });
     await expect(cameraButton).toBeVisible();
 

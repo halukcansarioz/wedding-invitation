@@ -11,7 +11,6 @@ if (import.meta.env?.PROD && (!supabaseUrl || !supabaseAnonKey)) {
   throw new Error("Kritik Hata: Supabase ortam değişkenleri eksik! Uygulama başlatılamıyor.");
 }
 
-// Konsol hatalarını ve başarısız ağ isteklerini önleyen mock/proxy obje
 const createMockSupabase = () => {
   const warnDev = (method) => {
     console.warn(`[Supabase Mock Uyarı]: ${method} çalıştırıldı. Çevresel değişkenler eksik olduğu için veritabanı işlemi yapılmadı.`);

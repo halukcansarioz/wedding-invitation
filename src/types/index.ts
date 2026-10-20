@@ -1,15 +1,18 @@
+export type AttendanceStatus = 'attending' | 'declined' | 'Katılacağım' | 'Katılamayacağım';
+
 export interface Guest {
   id: string;
   name: string;
-  attendance: "Katılacağım" | "Katılamayacağım";
   phone?: string;
-  personCount: string;
-  side: "Gelin Tarafı" | "Damat Tarafı" | "Ortak";
-  hasChild: "Evet" | "Hayır";
+  email?: string;
+  attendance: AttendanceStatus | string;
+  personCount?: string | number;
+  side?: string;
+  hasChild?: string;
+  tableNumber?: string | number;
   songRequest?: string;
   note?: string;
-  tableNumber?: string;
-  has_arrived: boolean;
+  has_arrived?: boolean;
   createdAt?: string;
 }
 
@@ -18,40 +21,127 @@ export interface Wish {
   name: string;
   message: string;
   approved: boolean;
-  audioUrl?: string;
-  message_translated?: string;
-  createdAt?: string;
+  audioUrl?: string | null;
+  audio_url?: string | null;
+  created_at?: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  guest_name: string;
+  amount: number | string;
+  currency: string;
+  status: 'completed' | 'pending' | 'failed' | string;
+  stripe_session_id?: string;
+  note?: string;
+  created_at: string;
+}
+
+export interface EventDetailItem {
+  label: string;
+  time: string;
+  location: string;
+  description: string;
+}
+
+export interface ScheduleItem {
+  time: string;
+  title: string;
+  description: string;
+}
+
+export interface StoryTimelineItem {
+  date: string;
+  title: string;
+  description: string;
+  image?: string;
+}
+
+export interface SiteVisibility {
+  countdown?: boolean;
+  family?: boolean;
+  story?: boolean;
+  ceremony?: boolean;
+  schedule?: boolean;
+  location?: boolean;
+  gallery?: boolean;
+  rsvp?: boolean;
+  wishes?: boolean;
+  guests?: boolean;
+  iban?: boolean;
+  popupIban?: boolean;
+  creditCard?: boolean;
+  [key: string]: boolean | undefined;
 }
 
 export interface SiteSettings {
   theme: string;
-  defaultTheme: string;
-  requireWishApproval: boolean;
-  isPostWedding: boolean;
-  visibility: {
-    countdown: boolean;
-    family: boolean;
-    ceremony: boolean;
-    schedule: boolean;
-    location: boolean;
-    gallery: boolean;
-    rsvp: boolean;
-    guests: boolean;
-    wishes: boolean;
-    iban: boolean;
-    popupIban: boolean;
-    creditCard: boolean;
-  };
+  defaultTheme?: string;
+  requireWishApproval?: boolean;
+  isPostWedding?: boolean;
+  tableCount?: number;
+  seatsPerTable?: number;
+  visibility: SiteVisibility;
+}
+
+export interface InvitationInfo {
+  bride: string;
+  groom: string;
+  dateText: string;
+  timeText: string;
+  weddingDate: string;
+  rsvpDeadline?: string;
+  whatsappNumber?: string;
+  venue: string;
+  address: string;
+  mapLink?: string;
+  shareLink?: string;
+  message?: string;
+  heroImage?: string;
+  heroVideo?: string | null;
+  musicFile?: string | null;
+  musicName?: string;
+  gallery?: string[];
 }
 
 export interface SiteData {
-  invitation: Record<string, any>;
-  familyInfo: Record<string, any>;
-  giftRegistry: Record<string, any>;
-  copy: Record<string, any>;
+  invitation: InvitationInfo;
   settings: SiteSettings;
-  messages: Record<string, string>;
-  eventDetails: Array<{ label: string; time: string; location: string; description: string }>;
-  scheduleItems: Array<{ time: string; title: string; description: string }>;
-  storyTimeline: Array<{ date: string; title: string; description: string; image?: string }>;
+  copy: Record<string, string>;
+  familyInfo: {
+    brideFamilyTitle?: string;
+    brideFamilyName?: string;
+    groomFamilyTitle?: string;
+    groomFamilyName?: string;
+    text?: string;
+  };
+  eventDetails: EventDetailItem[];
+  scheduleItems: ScheduleItem[];
+  storyTimeline: StoryTimelineItem[];
+  giftRegistry: {
+    title?: string;
+    receiver?: string;
+    bankName?: string;
+    iban?: string;
+    description?: string;
+  };
+  messages: {
+    guestGreeting?: string;
+    whatsappShareMessage?: string;
+    rsvpWhatsappMessage?: string;
+  };
 }
+
+export const isAttendingGuest = (attendance?: string | boolean | null): boolean => {
+  if (typeof attendance === "boolean") return attendance;
+  if (!attendance) return false;
+  const val = String(attendance).trim().toLowerCase();
+  return val === "katılacağım" || val === "attending" || val === "yes" || val === "true";
+};
+
+export const isDeclinedGuest = (attendance?: string | boolean | null): boolean => {
+  if (typeof attendance === "boolean") return !attendance;
+  if (!attendance) return false;
+  const val = String(attendance).trim().toLowerCase();
+  return val === "katılamayacağım" || val === "declined" || val === "not attending" || val === "no" || val === "false";
+};

@@ -16,15 +16,11 @@ describe('GallerySection Bileşen Testleri', () => {
     const mockInvitation = { gallery: ['img1.jpg', 'img2.jpg', 'img3.jpg'] };
     const { container } = render(<GallerySection invitation={mockInvitation} />);
     
-    // ÇÖZÜM: Lightbox açıldığında DOM'a 4. bir kopya resim eklenir. 
-    // Çakışmayı önlemek için sadece grid içindeki resimleri sayıyoruz.
     const gridImages = container.querySelectorAll('.gallery-grid img');
     expect(gridImages.length).toBe(3);
 
-    // İlk fotoğrafa tıklayarak Lightbox'ı aç
     fireEvent.click(gridImages[0]);
 
-    // Lightbox'ın açıldığını "Büyütülmüş Fotoğraf" alt metninden doğrula
     expect(screen.getByAltText('Büyütülmüş Fotoğraf')).toBeDefined();
   });
 });

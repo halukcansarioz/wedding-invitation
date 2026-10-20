@@ -12,7 +12,7 @@ vi.mock('react-i18next', () => ({
 
 describe('GuestsListSection Bileşeni', () => {
   afterEach(() => {
-    cleanup(); // Testler arası DOM temizliği
+    cleanup(); 
     vi.clearAllMocks();
   });
 
@@ -30,13 +30,10 @@ describe('GuestsListSection Bileşeni', () => {
   it('misafir istatistiklerini doğru hesaplamalı ve göstermeli', () => {
     render(<GuestsListSection copy={mockCopy} guests={mockGuests} />);
     
-    // Toplam form yanıtı: 3
     expect(screen.getByText('3')).toBeInTheDocument();
     
-    // Katılan form sayısı: 2
     expect(screen.getByText('2')).toBeInTheDocument();
     
-    // Katılmayan form sayısı: 1 (container içerisinden spesifik seçerek çakışmayı önlüyoruz)
     const statsContainer = document.querySelector('.guest-stats');
     expect(statsContainer).toHaveTextContent('1');
   });

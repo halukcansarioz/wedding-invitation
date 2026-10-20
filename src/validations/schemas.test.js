@@ -11,7 +11,6 @@ describe('RSVP Zod Şeması İleri Seviye Sınır (Boundary) Testleri', () => {
     const minimalData = { 
       name: "Ali Veli", 
       attendance: "Katılacağım" 
-      // Diğer tüm alanlar eksik
     };
     const result = rsvpSchema.safeParse(minimalData);
     expect(result.success).toBe(true);

@@ -12,7 +12,6 @@ test.describe('Canlı Barkovizyon (Live Projector) Testleri', () => {
     const titleElement = page.locator('h1');
     await expect(titleElement).toBeVisible();
     
-    // ÇÖZÜM: dataset.theme kaldırıldı, kapsayıcı div "p" etiketi üzerinden bulunarak arka planı test edildi
     const mainContainer = page.locator('p', { hasText: /Canlı Anı Akışı|Live Memories/i }).locator('..');
     await expect(mainContainer).toHaveCSS('background-color', 'rgb(10, 10, 10)');
   });

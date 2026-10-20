@@ -16,7 +16,6 @@ test.describe('Navigasyon ve Harita (Location) Modal Akışı', () => {
   test('Konuma Git butonuna tıklandığında harita seçeneklerini göstermeli ve kapatılabilmeli', async ({ page }) => {
     const goToMapBtn = page.locator('button', { hasText: /Konuma Git|Go to Map/i }).first();
     
-    // Gereksiz waitForTimeout(500) silindi ve tıklamaya force eklendi
     await goToMapBtn.scrollIntoViewIfNeeded();
     await goToMapBtn.click({ force: true }); 
 

@@ -19,7 +19,6 @@ describe('useStore Zustand Birleştirilmiş Mimari Dayanıklılık Testleri', ()
   it('updateDraftObject var olmayan bir gruba müdahale etmeye çalıştığında çökmemeli', () => {
     const { updateDraftObject } = useStore.getState();
     
-    // "nonExistentGroup" adında bir grup yok
     expect(() => {
       updateDraftObject("nonExistentGroup", "anyKey", "value");
     }).not.toThrow();
@@ -29,16 +28,13 @@ describe('useStore Zustand Birleştirilmiş Mimari Dayanıklılık Testleri', ()
     const { moveDraftArrayItem, adminDraft } = useStore.getState();
     const initialScheduleLength = adminDraft.scheduleItems.length;
 
-    // 0. indeksteki elemanı -1 birim geri taşımak geçersizdir
     moveDraftArrayItem("scheduleItems", 0, -1);
     
     const afterState = useStore.getState().adminDraft;
-    // Eleman silinmemeli veya bozulmamalı, uzunluk aynı kalmalı
     expect(afterState.scheduleItems.length).toBe(initialScheduleLength);
   });
 
   it('removeDraftArrayItem ile son eleman silindiğinde dizi yapısı bozulmamalı (null olmamalı)', () => {
-    // HATA DÜZELTMESİ: Testin sabitlere bağımlı kalmaması için diziyi tam 2 elemanlı bilinen bir duruma getiriyoruz.
     useStore.setState({
       adminDraft: {
         ...useStore.getState().adminDraft,
@@ -48,13 +44,11 @@ describe('useStore Zustand Birleştirilmiş Mimari Dayanıklılık Testleri', ()
 
     const { removeDraftArrayItem } = useStore.getState();
     
-    // Artık dizide tam 2 eleman olduğunu biliyoruz, ikisini de sırayla siliyoruz (Her silmede 0. indexe yenisi geçer)
     removeDraftArrayItem("scheduleItems", 0);
     removeDraftArrayItem("scheduleItems", 0);
     
     const { adminDraft } = useStore.getState();
     
-    // Dizi boşaltılmış olmalı ama undefined/null dönmemeli
     expect(Array.isArray(adminDraft.scheduleItems)).toBe(true);
     expect(adminDraft.scheduleItems).toHaveLength(0);
   });

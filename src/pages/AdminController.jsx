@@ -8,7 +8,7 @@ import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
 import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
 import { restoreBackupToDatabase } from '../services/database'; 
-import { useAudio } from '../hooks/useAudio'; // DÜZELTME: Müzik kancası eklendi
+import { useAudio } from '../hooks/useAudio'; 
 import '../styles/admin.css';
 
 const AdminView = lazy(() => import('./AdminView'));
@@ -56,7 +56,6 @@ export default function AdminController() {
 
   const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
   
-  // DÜZELTME: Admin panele müzik kontrol işlevselliği bağlandı
   const { isMusicPlaying, toggleMusic } = useAudio(adminDraft.invitation?.musicFile);
 
   const closeAdminPage = useCallback(() => {

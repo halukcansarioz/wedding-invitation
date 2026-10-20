@@ -3,7 +3,6 @@ import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminImageField
 import { useStore } from "../../../store/useStore";
 import { uploadMediaFile, deleteMediaFile } from "../../../services/database";
 
-// types/index.ts içinde export edilmediği için tipi burada yerel olarak tanımlıyoruz
 interface StoryTimelineItem {
   date: string;
   title: string;
@@ -28,7 +27,6 @@ export function StoryTab({ isEn }: StoryTabProps) {
 
   if (!adminDraft?.settings) return null;
 
-  // TypeScript hatasını (TS-2339) önlemek için visibility objesine "any" ataması yapıyoruz
   const visibilitySettings = adminDraft.settings.visibility as Record<string, any>;
 
   const handleStoryImageUpload = async (index: number, file?: File | null) => {

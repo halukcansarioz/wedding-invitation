@@ -7,7 +7,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setupTests.js'],
-    isolate: true, // Testlerin birbirini etkilememesi için true yapıldı
+    isolate: true, 
     include: ['src/**/*.test.{js,jsx,ts,tsx}'], 
     exclude: ['tests/**/*.spec.{js,jsx,ts,tsx}', 'node_modules/**/*'], 
     testTimeout: 30000, 

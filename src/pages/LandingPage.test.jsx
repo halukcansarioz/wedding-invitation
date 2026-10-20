@@ -29,7 +29,6 @@ describe('LandingPage Bileşen Testleri', () => {
     vi.mocked(useNavigate).mockReturnValue(mockNavigate);
   });
 
-  // GÜNCELLENDİ: Testler arası sayfa temizliği eklendi (Hayalet elementler engellendi)
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -47,7 +46,6 @@ describe('LandingPage Bileşen Testleri', () => {
   it('Demo İncele butonlarına tıklandığında yönlendirme (navigate) yapmalı', () => {
     render(<LandingPage />);
     
-    // GÜNCELLENDİ: getAllByRole kullanılarak güvenli seçim yapıldı
     const demoButtons = screen.getAllByRole('button', { name: /Demo İncele|Hemen Ücretsiz Dene/i });
     
     fireEvent.click(demoButtons[0]);
@@ -57,7 +55,6 @@ describe('LandingPage Bileşen Testleri', () => {
   it('Admin Girişi butonuna tıklandığında admin paneline yönlendirmeli', () => {
     render(<LandingPage />);
     
-    // GÜNCELLENDİ: getAllByRole kullanılarak güvenli seçim yapıldı
     const adminBtns = screen.getAllByRole('button', { name: /Admin Girişi/i });
     fireEvent.click(adminBtns[0]);
     

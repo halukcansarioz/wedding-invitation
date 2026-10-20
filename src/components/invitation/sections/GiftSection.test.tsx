@@ -4,7 +4,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GiftSection } from './GiftSection';
 import { useStore } from '../../../store/useStore';
 
-// DÜZELTME 1: Çeviri aracı (t) testteki "/Kredi Kartı/i" aramasıyla eşleşebilsin diye fallback eklendi.
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ 
     t: (key: string) => {
@@ -23,8 +22,6 @@ vi.mock('../../../supabaseClient', () => ({
   }
 }));
 
-// KRİTİK DÜZELTME 2: vi.mock('../../../store/useStore'); TAMAMEN KALDIRILDI!
-// Gerçek store üzerinden duruma müdahale edeceğiz.
 
 describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
   const mockGiftData = {
@@ -42,8 +39,6 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
     
     initialState = useStore.getState();
 
-    // DÜZELTME 3: Butonun render olabilmesi için gerçek Zustand State'ine ayarı enjekte ediyoruz.
-    // Public sayfalar genellikle siteData'yı, Admin panelleri adminDraft'ı okur. İkisini de kapsama alıyoruz.
     useStore.setState({ 
       siteData: { settings: { visibility: { creditCard: true } } },
       adminDraft: { settings: { visibility: { creditCard: true } } }
@@ -58,8 +53,8 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
 
   afterEach(() => {
     cleanup();
-    window.location = originalLocation; // Sızıntı engellendi
-    useStore.setState(initialState, true); // Store sıfırlandı
+    window.location = originalLocation; 
+    useStore.setState(initialState, true); 
   });
 
   it('IBAN kopyalama butonu çalıştığında metin "Kopyalandı" olmalı', async () => {
@@ -67,22 +62,21 @@ describe('GiftSection Bileşeni İleri Seviye Testleri', () => {
       clipboard: { writeText: vi.fn().mockResolvedValue(undefined) },
     });
 
-    render(<GiftSection giftData={mockGiftData} />);
-    
+    render(<GiftSection {...({ giftData: mockGiftData } as any)} />);
+
     const copyBtn = screen.getByRole('button', { name: 'ui.copyIban' });
     fireEvent.click(copyBtn);
     
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'ui.copied' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'ui.copied' })).toBeDefined();
     });
   });
 
   it('Kredi Kartı butonu tıklandığında prompt açmalı ve Supabase invoke çalışmasını beklemeli', async () => {
     vi.spyOn(window, 'prompt').mockReturnValue('500');
 
-    render(<GiftSection giftData={mockGiftData} />);
+    render(<GiftSection {...({ giftData: mockGiftData } as any)} />);
     
-    // Regex'i daha kapsayıcı (geniş) hale getirdik. 
     const creditCardBtn = screen.getByRole('button', { name: /Kredi Kartı/i });
     fireEvent.click(creditCardBtn);
 

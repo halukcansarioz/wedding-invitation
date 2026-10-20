@@ -5,7 +5,6 @@ import { VisibilityTab } from './VisibilityTab';
 import { useStore } from '../../../store/useStore';
 import { DEFAULT_SITE_DATA } from '../../../config/constants';
 
-// i18next Mock
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ 
     t: (key) => key,

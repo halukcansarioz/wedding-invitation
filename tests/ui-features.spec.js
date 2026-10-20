@@ -8,7 +8,6 @@ test.describe('Kullanıcı Arayüzü ve Bileşen Etkileşimleri', () => {
 
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-    // Sayfanın ve event listener'ların tam oturmasını bekliyoruz
     await page.waitForTimeout(1000); 
     await envelopeSeal.click();
     await expect(page.locator('.intro-page')).not.toBeVisible({ timeout: 15000 });
@@ -17,9 +16,8 @@ test.describe('Kullanıcı Arayüzü ve Bileşen Etkileşimleri', () => {
   test('Galeri resmine tıklandığında Lightbox (Büyük Ekran) açılmalı ve kapanmalı', async ({ page }) => {
     const firstGalleryImage = page.locator('.gallery-image').first();
     await firstGalleryImage.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800); // DOM elementinin yerine oturmasını bekle
+    await page.waitForTimeout(800); 
     
-    // force: true kaldırıldı
     await firstGalleryImage.click();
 
     const lightboxOverlay = page.locator('.gallery-lightbox-overlay');

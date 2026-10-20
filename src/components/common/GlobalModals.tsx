@@ -1,5 +1,6 @@
+/// <reference types="vite/client" />
 import React, { memo } from "react";
-import "../../styles/modals.css"; 
+import "../../styles/modals.css";
 
 export interface ModalData {
   title: string;

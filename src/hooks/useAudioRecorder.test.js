@@ -2,7 +2,6 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useAudioRecorder } from './useAudioRecorder';
 
-// Tarayıcı MediaRecorder API'sini taklit ediyoruz
 class MockMediaRecorder {
   constructor(stream, options) {
     this.stream = stream;
@@ -12,7 +11,6 @@ class MockMediaRecorder {
   }
   start() {
     this.state = 'recording';
-    // Kayıt başladığında bir data parçası simüle ediyoruz
     if (this.ondataavailable) {
       this.ondataavailable({ data: new Blob(['chunk-data'], { type: 'audio/webm' }) });
     }
@@ -33,7 +31,6 @@ describe('useAudioRecorder Hook Testleri', () => {
     vi.useFakeTimers();
     
     global.MediaRecorder = MockMediaRecorder;
-    // isTypeSupported desteğini ekliyoruz
     global.MediaRecorder.isTypeSupported = vi.fn(() => true);
     
     Object.defineProperty(global.navigator, 'mediaDevices', {

@@ -4,7 +4,7 @@ import { setupE2EMocks } from './utils';
 test.describe('Admin Paneli Arayüz Etkileşimleri', () => {
   
   test.beforeEach(async ({ page }) => {
-    await setupE2EMocks(page); // Kritik: Tüm ağı sahtele
+    await setupE2EMocks(page); 
     await page.goto('/admin', { waitUntil: 'domcontentloaded', timeout: 15000 }); 
   });
 

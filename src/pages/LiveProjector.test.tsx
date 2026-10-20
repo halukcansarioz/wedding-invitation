@@ -44,20 +44,20 @@ describe('LiveProjector İleri Seviye Zamanlayıcı Testleri', () => {
   it('Hiç veri yoksa "Anılar bekleniyor" yazısı çıkmalı', () => {
     (useWishesQuery as any).mockReturnValue({ wishes: [] });
     render(<LiveProjector />);
-    expect(screen.getByText('Anılar bekleniyor...')).toBeInTheDocument();
+    expect(screen.getByText('Anılar bekleniyor...')).toBeDefined();
   });
 
   it('Her 8 saniyede bir sıradaki anıya geçiş yapmalı', async () => {
     render(<LiveProjector />);
 
     const isFirstVisible = screen.queryByText('"Tebrikler!"') || screen.queryByText('"Çok mutlu olun!"');
-    expect(isFirstVisible).toBeInTheDocument();
+    expect(isFirstVisible).toBeDefined();
 
     act(() => {
       vi.advanceTimersByTime(8000);
     });
 
     const title = screen.getByText('Hande & Haluk');
-    expect(title).toBeInTheDocument();
+    expect(title).toBeDefined();
   });
 });

@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { GlobalModals } from './GlobalModals';
 
 describe('GlobalModals Bileşen Testleri', () => {
-  const mockT = (key) => key; // i18n t() fonksiyonu simülasyonu
+  const mockT = (key) => key; 
 
   it('customAlert tetiklendiğinde Alert modalını göstermeli ve Onaylanabilmeli', () => {
     const mockResolve = vi.fn();
@@ -43,11 +43,9 @@ describe('GlobalModals Bileşen Testleri', () => {
     const yesButton = screen.getByRole('button', { name: 'ui.yes' });
     const cancelButton = screen.getByRole('button', { name: 'ui.cancel' });
 
-    // İptal'e basıldığında false dönmeli
     fireEvent.click(cancelButton);
     expect(mockResolve).toHaveBeenCalledWith(false);
 
-    // Evet'e basıldığında true dönmeli
     fireEvent.click(yesButton);
     expect(mockResolve).toHaveBeenCalledWith(true);
   });

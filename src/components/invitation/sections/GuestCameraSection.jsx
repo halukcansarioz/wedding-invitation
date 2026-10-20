@@ -22,7 +22,6 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Filigran / Çerçeve Basma Fonksiyonu (Sıkıştırma Optimizasyonlu)
   const applyPhotoboothFilter = (originalFile) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -32,13 +31,11 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         
-        // Maksimum çözünürlük sınırı (Full HD)
         const MAX_WIDTH = 1920;
         const MAX_HEIGHT = 1920;
         let width = img.width;
         let height = img.height;
 
-        // En-boy oranını koruyarak yeniden boyutlandırma
         if (width > height) {
           if (width > MAX_WIDTH) {
             height = Math.round((height *= MAX_WIDTH / width));
@@ -54,10 +51,8 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
         canvas.width = width;
         canvas.height = height;
 
-        // Orijinal Fotoğrafı yeniden boyutlandırarak çiz
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Dinamik Gradient Yüksekliği (Ekranın %15'i kadar)
         const gradientHeight = Math.floor(canvas.height * 0.15);
         const gradientY = canvas.height - gradientHeight;
         
@@ -67,20 +62,17 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, gradientY, canvas.width, gradientHeight);
 
-        // Çiftin İsmi (Responsive Font)
         const fontSizeTitle = Math.floor(canvas.width * 0.05);
         ctx.font = `bold ${fontSizeTitle}px serif`;
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.fillText(coupleName, canvas.width / 2, canvas.height - Math.floor(gradientHeight * 0.4));
         
-        // Tarih (Responsive Font)
         const fontSizeDate = Math.floor(canvas.width * 0.025);
         ctx.font = `${fontSizeDate}px sans-serif`;
         ctx.fillStyle = "#f1c40f"; 
         ctx.fillText(dateText, canvas.width / 2, canvas.height - Math.floor(gradientHeight * 0.15));
 
-        // %85 kalite ile JPEG formatında Blob'a çevir
         canvas.toBlob((blob) => {
           if (!blob) { reject(new Error("Canvas conversion failed")); return; }
           resolve(new File([blob], `photobooth_${Date.now()}.jpg`, { type: "image/jpeg" }));
@@ -98,7 +90,6 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
     try {
       showAppAlert(isEn ? "Applying wedding frame..." : "Düğün çerçevesi uygulanıyor...", { title: "Fotoğraf Kabini" });
       
-      // Fotoğrafa filigran bas (Ve Sıkıştır)
       const watermarkedFile = await applyPhotoboothFilter(file);
 
       showAppAlert(isEn ? "Uploading to shared album..." : "Ortak albüme yükleniyor...", { title: "Yükleniyor" });

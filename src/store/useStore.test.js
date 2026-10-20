@@ -6,10 +6,8 @@ describe('useStore Zustand Durum Yönetimi', () => {
   let initialState;
 
   beforeEach(() => {
-    // Mağazanın orijinal saf halini tut
     initialState = useStore.getState();
     
-    // Derin kopya (Deep Copy) kullanarak testler arası veri sızıntısını önle
     useStore.setState({
       opened: false,
       adminDraft: JSON.parse(JSON.stringify(DEFAULT_SITE_DATA)),
@@ -18,7 +16,6 @@ describe('useStore Zustand Durum Yönetimi', () => {
   });
 
   afterEach(() => {
-    // Store sızıntılarını önle
     useStore.setState(initialState, true);
   });
 

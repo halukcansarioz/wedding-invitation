@@ -21,7 +21,6 @@ describe('RSVP Zod Şeması Ek Doğrulama Testleri', () => {
       attendance: "Katılacağım" 
     };
     const result = rsvpSchema.safeParse(shortNameData);
-    // Zod şeması min(3) kuralına sahip olduğu için "Ali" (3 karakter) geçerlidir, "Al" ise geçersiz olmalıdır.
     const invalidShortName = { name: "Al", attendance: "Katılacağım" };
     expect(getRsvpSchema(mockT).safeParse(invalidShortName).success).toBe(false);
   });

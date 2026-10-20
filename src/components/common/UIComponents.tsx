@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useId } from "react";
 
-// --- YENİ EKLENEN MODERN SPINNER ---
 export function Spinner({ size = 24, color = "currentColor" }: { size?: number, color?: string }) {
   return (
     <svg
@@ -20,7 +19,6 @@ export function Spinner({ size = 24, color = "currentColor" }: { size?: number, 
     </svg>
   );
 }
-// -----------------------------------
 
 interface Option {
   label: string;

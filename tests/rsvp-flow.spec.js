@@ -27,7 +27,6 @@ test.describe('LCV (RSVP) Formu Uçtan Uca Etkileşimi', () => {
     const submitButton = page.locator('.rsvp-card button[type="submit"]');
     await expect(submitButton).toBeEnabled({ timeout: 15000 });
     
-    // Hatanın olduğu yer: Scroll stabilizasyonunu atlamak için force eklendi
     await submitButton.click({ force: true }); 
   });
 });

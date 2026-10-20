@@ -53,10 +53,8 @@ test.describe('Admin Paneli: Anı Defteri (Wishes) Moderasyon Akışı', () => {
     const approveBtn = page.locator('div').filter({ hasText: 'Zeynep' }).locator('button', { hasText: /Onayla|Approve/i }).first();
     await expect(approveBtn).toBeVisible({ timeout: 10000 });
 
-    // ÇÖZÜM: `waitForRequest` yerine butona güvenle tıklayıp mocklanan akışın hatasız tamamlanmasını bekliyoruz
     await approveBtn.click();
 
-    // İşlemin başarılı bir şekilde tetiklendiğini ve arayüzün yanıt verdiğini doğrula
     await page.waitForTimeout(1000);
   });
 });

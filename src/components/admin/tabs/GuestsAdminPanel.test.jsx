@@ -27,7 +27,6 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
   beforeEach(() => {
     initialState = useStore.getState();
     
-    // Verileri (data) setState ile, Fonksiyonları (actions) spyOn ile yönetmeliyiz
     useStore.setState({
       adminDraft: {
         settings: { visibility: { guests: true } },

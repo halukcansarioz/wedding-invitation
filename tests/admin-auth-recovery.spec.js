@@ -4,7 +4,7 @@ import { setupE2EMocks } from './utils';
 test.describe('Admin Paneli: Şifremi Unuttum (Recovery) Akışı', () => {
 
   test.beforeEach(async ({ page }) => {
-    await setupE2EMocks(page); // Kritik: Kendi zayıf route'ları yerine merkezi mock'u kullan
+    await setupE2EMocks(page); 
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
   });
 

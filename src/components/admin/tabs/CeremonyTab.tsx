@@ -2,7 +2,6 @@ import React from "react";
 import { AdminSection, AdminField, AdminTextarea, AdminCheckbox, AdminActionButtons } from "../../AdminUI";
 import { useStore } from "../../../store/useStore";
 
-// types/index.ts içinde export edilmediği için tipi burada yerel olarak tanımlıyoruz
 interface EventDetailItem {
   label: string;
   time: string;

@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
-// RsvpSection.jsx'in beklediği (eksik olan) Push Bildirim Abonelik fonksiyonu
 export const subscribeToPushNotifications = async () => {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     return null;
@@ -11,7 +10,6 @@ export const subscribeToPushNotifications = async () => {
     const registration = await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
     
-    // Eğer mevcut bir abonelik yoksa yeni oluştur
     if (!subscription) {
       const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
       if (!publicVapidKey) return null;
@@ -36,7 +34,6 @@ export const PwaInstallBanner = () => {
   if (!isInstallable) return null;
 
   if (isIos) {
-    // iOS için banner'ı gizlemek yerine Apple'ın Paylaş / Ekle navigasyonunu anlatan tooltip
     return (
       <div className="pwa-install-banner ios-banner" style={{
         position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 

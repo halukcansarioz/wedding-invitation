@@ -3,7 +3,6 @@ import { render, screen, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { LocalizedDate } from './LocalizedDate';
 
-// react-i18next kütüphanesini mockluyoruz
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     i18n: { language: 'tr' } 

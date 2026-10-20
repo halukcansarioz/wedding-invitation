@@ -14,7 +14,6 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
      const wishesSection = page.locator('.card', { hasText: /Anı Defteri|Guestbook/i });
      await wishesSection.scrollIntoViewIfNeeded();
 
-     // ÇÖZÜM: Çakışmayı önlemek için form class'ı ile kapsamı daraltıyoruz.
      await page.locator('.wish-form input[name="name"]').fill('Test Misafiri');
      await page.locator('.wish-form textarea[name="message"]').fill('Bu bir test mesajıdır, mutluluklar!');
 

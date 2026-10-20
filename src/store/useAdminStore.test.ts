@@ -3,7 +3,6 @@ import { useAdminStore } from './useAdminStore';
 
 describe('Zustand useAdminStore Testleri', () => {
   beforeEach(() => {
-    // Her testten önce auth state'i tamamen sıfırla
     useAdminStore.getState().clearAdminAuth();
   });
 
@@ -20,18 +19,15 @@ describe('Zustand useAdminStore Testleri', () => {
   it('clearAdminAuth çağrıldığında hassas güvenlik verileri sıfırlanmalı', () => {
     const store = useAdminStore.getState();
     
-    // Rastgele durumlar ata
     store.setIsAdminUnlocked(true);
     store.setAdminPassword('gizli-sifre-123');
     store.setAdminError('Hatalı giriş');
     store.setAdminNewPassword('yeni-sifre');
 
-    // Temizle
     useAdminStore.getState().clearAdminAuth();
 
     const clearedStore = useAdminStore.getState();
     
-    // Güvenlik riski oluşturacak verilerin silindiğinden emin ol
     expect(clearedStore.isAdminUnlocked).toBe(false);
     expect(clearedStore.adminPassword).toBe('');
     expect(clearedStore.adminError).toBe('');

@@ -34,12 +34,10 @@ describe('useAdminGuestPhotos Hook Testleri', () => {
     vi.clearAllMocks();
     vi.spyOn(window, 'confirm').mockImplementation(() => true);
     
-    // KRİTİK DÜZELTME: setState ile değil, spyOn ile fonksiyonu izliyoruz!
     vi.spyOn(useStore.getState(), 'showAppAlert').mockResolvedValue(true);
   });
 
   afterEach(() => {
-    // Test bitince orijinal fonksiyonu geri yükler
     vi.restoreAllMocks();
   });
 

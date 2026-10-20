@@ -31,7 +31,7 @@ describe('WishesSection Bileşen Testleri', () => {
   });
 
   it('WishesSection bileşeni hatasız bir şekilde render olmalı', () => {
-    const { container } = render(<WishesSection submitWish={vi.fn()} />);
+    const { container } = render(<WishesSection submitWish={vi.fn()} approvedWishes={[]} />);
     expect(container).toBeDefined();
   });
 });

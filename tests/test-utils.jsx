@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 const createTestQueryClient = () => new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false, // Testlerde ağ hatası olursa tekrar denemesin, hemen sonuç versin
+      retry: false,
       cacheTime: 0,
     },
   },
@@ -27,7 +27,5 @@ export function renderWithProviders(ui, options = {}) {
   return render(ui, { wrapper: Wrapper, ...options });
 }
 
-// Orijinal testing-library'deki her şeyi dışa aktar
 export * from '@testing-library/react';
-// Normal 'render' yerine bizim özel sarmalayıcımızı kullanılsın diye eziyoruz
 export { renderWithProviders as render };

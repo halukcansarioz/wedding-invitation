@@ -1,4 +1,3 @@
-// src/hooks/useGuestsQuery.ts
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { loadGuestsFromDatabase } from '../services/database';
@@ -15,14 +14,11 @@ export function useGuestsQuery() {
   });
 
   useEffect(() => {
-    // Sadece admin sayfasındaysak realtime bağlantısı kur
     const isAdminView = typeof window !== 'undefined' && window.location.pathname.includes('/admin');
     if (!isAdminView) return;
 
     let channel: ReturnType<typeof supabase.channel>;
     let isMounted = true;
-    
-    // React Strict Mode çakışmalarını önlemek için dinamik kanal ismi
     const channelName = `public:guests-${Date.now()}`;
 
     const setupSubscription = () => {
@@ -79,7 +75,7 @@ export function useGuestsQuery() {
 
       return { previousGuests };
     },
-    onError: (err, newGuest, context) => {
+    onError: (err, _newGuest, context) => {
       if (context?.previousGuests) queryClient.setQueryData(['guests'], context.previousGuests);
       console.error("LCV eklenirken hata oluştu:", err);
     },

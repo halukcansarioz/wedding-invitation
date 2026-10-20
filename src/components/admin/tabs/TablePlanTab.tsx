@@ -1,8 +1,10 @@
+/// <reference types="vite/client" />
 import React, { useMemo } from "react";
 import { AdminSection } from "../../AdminUI";
 import { DndContext, useDraggable, useDroppable, DragEndEvent } from "@dnd-kit/core";
 import { Guest } from "../../../types";
 import { useAdminTablePlan } from "../../../hooks/useAdminTablePlan";
+import { useStore } from "../../../store/useStore";
 
 interface DraggableGuestProps {
   guest: Guest;
@@ -36,7 +38,6 @@ interface DroppableTableProps {
 function DroppableTable({ tableNum, guests, isEn, assignTable }: DroppableTableProps) {
   const { isOver, setNodeRef } = useDroppable({ id: `table-${tableNum}` });
   
-  // React Performans Optimizasyonu: Her renderda masadaki kişi sayısını tekrardan saymayı engelliyoruz
   const tableTotal = useMemo(() => {
     return guests.reduce((acc, g) => acc + Number(g.personCount || 1), 0);
   }, [guests]);
@@ -76,9 +77,9 @@ interface TablePlanTabProps {
   isEn: boolean;
 }
 
-// guests prop'u artık varsayılan olarak boş dizi ataması ile güvende tutuluyor.
 export function TablePlanTab({ guests = [], assignTable, isEn }: TablePlanTabProps) {
-  const { search, setSearch, attendingGuests, unassigned, tables, exportTablePlanPDF } = useAdminTablePlan(guests, isEn);
+  const configuredTableCount = useStore((state) => state.adminDraft?.settings?.tableCount) || 12;
+  const { search, setSearch, attendingGuests, unassigned, tables, exportTablePlanPDF } = useAdminTablePlan(guests, isEn, configuredTableCount);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

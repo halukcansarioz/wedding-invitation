@@ -1,6 +1,7 @@
 import React from "react";
 import { AdminSection, AdminField } from "../../AdminUI";
 import { useAdminQr } from "../../../hooks/useAdminQr";
+import { useStore } from "../../../store/useStore";
 
 interface QrTabProps {
   saveSiteContent: (isEn: boolean) => void;
@@ -12,7 +13,15 @@ interface QrTabProps {
 }
 
 export function QrTab({ saveSiteContent, qrImageUrl, downloadQrCode, currentShareLink, copyAdminLink, isEn }: QrTabProps) {
-  const { tableCount, setTableCount, printTableCards } = useAdminQr(currentShareLink, isEn);
+  const configuredTableCount = useStore((state) => state.adminDraft?.settings?.tableCount) || 15;
+  const updateDraftObject = useStore((state) => state.updateDraftObject);
+  const { tableCount, setTableCount, printTableCards } = useAdminQr(currentShareLink, isEn, configuredTableCount);
+
+  const handleTableCountChange = (val: string) => {
+    const num = Math.max(1, Number(val) || 1);
+    setTableCount(num);
+    updateDraftObject("settings", "tableCount", num);
+  };
 
   return (
     <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"} onSave={() => saveSiteContent(isEn)}>
@@ -55,7 +64,7 @@ export function QrTab({ saveSiteContent, qrImageUrl, downloadQrCode, currentShar
               type="number" 
               label={isEn ? "Number of Tables" : "Toplam Masa Sayısı"} 
               value={tableCount.toString()} 
-              onChange={(v: string) => setTableCount(Number(v))} 
+              onChange={handleTableCountChange} 
             />
           </div>
           <button type="button" className="main-button" onClick={printTableCards} style={{ marginBottom: "14px" }}>

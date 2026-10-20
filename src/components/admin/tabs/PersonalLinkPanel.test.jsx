@@ -29,7 +29,6 @@ describe('PersonalLinkPanel Bileşen Testleri', () => {
       />
     );
 
-    // getAllByRole kullanarak birden fazla WhatsApp butonu çakışmasını önlüyoruz
     const whatsappBtns = screen.getAllByRole('button', { name: /WhatsApp ile Gönder/i });
     fireEvent.click(whatsappBtns[0]);
 

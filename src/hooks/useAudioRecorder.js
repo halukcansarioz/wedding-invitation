@@ -1,3 +1,4 @@
+// src/hooks/useAudioRecorder.js
 import { useState, useRef } from 'react';
 import { uploadMediaFile } from '../services/database';
 
@@ -7,9 +8,8 @@ export function useAudioRecorder() {
   const [recordingTime, setRecordingTime] = useState(0);
   const mediaRecorderRef = useRef(null);
   const timerRef = useRef(null);
-  const mimeTypeRef = useRef('audio/webm'); // Fallback olarak webm başlatıyoruz
+  const mimeTypeRef = useRef('audio/webm');
 
-  // Tarayıcının desteklediği ses formatını bulan yardımcı fonksiyon
   const getSupportedMimeType = () => {
     if (typeof MediaRecorder === 'undefined') return 'audio/webm';
     const types = ['audio/webm', 'audio/mp4', 'audio/aac', 'audio/ogg'];
@@ -34,7 +34,6 @@ export function useAudioRecorder() {
         const blob = new Blob(chunks, { type: mimeTypeRef.current });
         setAudioBlob(blob);
         clearInterval(timerRef.current);
-        // Mikrofonu kapat
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -63,7 +62,6 @@ export function useAudioRecorder() {
 
   const uploadAudio = async () => {
     if (!audioBlob) return null;
-    // MIME tipinden uzantıyı (extension) dinamik olarak alıyoruz
     const ext = mimeTypeRef.current.split('/')[1] || 'webm';
     const file = new File([audioBlob], `wish_audio_${Date.now()}.${ext}`, { type: mimeTypeRef.current });
     return await uploadMediaFile(file, 'audio_wishes'); 

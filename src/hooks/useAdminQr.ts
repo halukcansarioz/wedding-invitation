@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { buildPersonalLink, getQrImageUrl } from "../utils/helpers";
 
-export function useAdminQr(currentShareLink: string, isEn: boolean) {
-  const [tableCount, setTableCount] = useState<number>(15);
+export function useAdminQr(currentShareLink: string, isEn: boolean, initialTableCount: number = 15) {
+  const [tableCount, setTableCount] = useState<number>(initialTableCount);
+
+  useEffect(() => {
+    if (initialTableCount && initialTableCount > 0) {
+      setTableCount(initialTableCount);
+    }
+  }, [initialTableCount]);
 
   const printTableCards = () => {
     const printWindow = window.open('', '_blank');
@@ -14,7 +20,7 @@ export function useAdminQr(currentShareLink: string, isEn: boolean) {
           <title>${isEn ? 'Table QR Cards' : 'Masa QR Kartları'}</title>
           <style>
             body { font-family: 'Montserrat', sans-serif; text-align: center; background: #fff; margin: 0; padding: 20px; }
-            h2 { color: #9f4f68; margin: 0 0 10px 0; font-size: 36px; font-family: 'Playfair Display', serif; }
+            h2 { color: #9f4f68; margin: 0 0 10px 0; font-size: 32px; font-family: 'Playfair Display', serif; }
             .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
             .card { 
               border: 3px solid #9f4f68; 
@@ -24,7 +30,6 @@ export function useAdminQr(currentShareLink: string, isEn: boolean) {
               background: #fffafb;
             }
             img { width: 220px; height: 220px; margin-bottom: 10px; border-radius: 12px; }
-            h2 { color: #9f4f68; margin: 0 0 10px 0; font-size: 32px; }
             p { color: #55303b; font-size: 18px; margin: 0; font-family: sans-serif; }
             @media print {
               body { padding: 0; }

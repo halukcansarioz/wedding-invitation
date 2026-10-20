@@ -41,7 +41,6 @@ describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
       adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } } as any
     });
 
-    // DÜZELTME: JSDOM location hatasını önleme
     originalLocation = window.location;
     delete (window as any).location;
     window.location = { pathname: '/demo' } as any;

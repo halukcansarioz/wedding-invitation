@@ -18,7 +18,6 @@ export const setupE2EMocks = async (page) => {
     'Access-Control-Allow-Headers': '*'
   };
 
-  // 1. CORS Preflight İsteklerini Otomatik Onayla
   await page.route('**/*', async (route, request) => {
     if (request.method() === 'OPTIONS') {
       return route.fulfill({ status: 200, headers: corsHeaders });
@@ -26,12 +25,10 @@ export const setupE2EMocks = async (page) => {
     route.fallback();
   });
 
-  // 2. Supabase Auth Uç Noktalarını Simüle Et
   await page.route('**/auth/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return; 
     const url = route.request().url();
     
-    // Giriş, Kayıt ve Şifre Kurtarma işlemleri anında "Başarılı" dönsün
     if (url.includes('/token') || url.includes('/recover') || url.includes('/verify')) {
       return route.fulfill({
         status: 200,
@@ -44,7 +41,6 @@ export const setupE2EMocks = async (page) => {
       });
     }
     
-    // Uygulama ilk açıldığında çıkış yapmış (null) gibi başla (Giriş formunun görünmesi için)
     if (url.includes('/user') || url.includes('/session')) {
       return route.fulfill({ status: 200, headers: corsHeaders, contentType: 'application/json', body: JSON.stringify({ session: null }) });
     }
@@ -52,12 +48,10 @@ export const setupE2EMocks = async (page) => {
     return route.fulfill({ status: 200, headers: corsHeaders, body: '{}' });
   });
 
-  // 3. Supabase REST API (Veritabanı) Uç Noktalarını Simüle Et
   await page.route('**/rest/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return;
     const url = route.request().url();
 
-    // Site ayarları çekilirken sahte davetiye verisi dön
     if (url.includes('settings')) {
       return route.fulfill({
         status: 200, headers: corsHeaders, contentType: 'application/json',
@@ -68,14 +62,11 @@ export const setupE2EMocks = async (page) => {
         })
       });
     }
-    // Geriye kalan tüm veritabanı okumalarına boş dizi dön (Hataları engeller)
     return route.fulfill({ status: 200, headers: corsHeaders, contentType: 'application/json', body: '[]' });
   });
 
-  // 4. Supabase Edge Functions (Form Gönderimleri)
   await page.route('**/functions/v1/**', async route => {
     if (route.request().method() === 'OPTIONS') return;
-    // Anı defteri veya RSVP formu gönderildiğinde anında başarılı dönsün
     return route.fulfill({
       status: 200, headers: corsHeaders, contentType: 'application/json',
       body: JSON.stringify({ success: true, count: 1, data: { id: 'mocked-id' } })
@@ -83,7 +74,6 @@ export const setupE2EMocks = async (page) => {
   });
 };
 
-// Admin paneli gerektiren tüm testlerde bu fonksiyonu çağırarak saniyeler içinde giriş yapabilirsin.
 export const loginAdmin = async (page) => {
   await page.goto('/admin', { waitUntil: 'domcontentloaded' });
   const emailInput = page.locator('input[type="email"]');

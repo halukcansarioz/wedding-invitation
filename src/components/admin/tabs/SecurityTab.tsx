@@ -1,0 +1,33 @@
+import React, { FormEvent } from "react";
+import { AdminSection, AdminField } from "../../AdminUI";
+import { useStore } from "../../../store/useStore";
+import { useAdminStore } from "../../../store/useAdminStore";
+
+export interface SecurityTabProps {
+  changeAdminPassword: (e?: FormEvent<HTMLFormElement> | any) => void;
+  isEn: boolean;
+}
+
+export function SecurityTab({ changeAdminPassword, isEn }: SecurityTabProps) {
+  const saveSiteContent = useStore((state) => state.saveSiteContent);
+  const {
+    adminCurrentPassword, setAdminCurrentPassword,
+    adminNewPassword, setAdminNewPassword,
+    adminNewPasswordAgain, setAdminNewPasswordAgain,
+    adminPasswordMessage
+  } = useAdminStore();
+
+  return (
+    <AdminSection title={isEn ? "Admin Password" : "Admin Şifresi"} onSave={() => saveSiteContent(isEn)}>
+      <div className="admin-edit-grid">
+        <AdminField label={isEn ? "Current Password" : "Mevcut Şifre"} onChange={setAdminCurrentPassword} value={adminCurrentPassword} type="password" />
+        <AdminField label={isEn ? "New Password" : "Yeni Şifre"} onChange={setAdminNewPassword} value={adminNewPassword} type="password" />
+        <AdminField label={isEn ? "New Password Again" : "Yeni Şifre Tekrar"} onChange={setAdminNewPasswordAgain} value={adminNewPasswordAgain} type="password" />
+      </div>
+      <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+        <button type="button" className="main-button" onClick={changeAdminPassword}>{isEn ? "Change Password 🔐" : "Şifreyi Değiştir 🔐"}</button>
+      </div>
+      {adminPasswordMessage && <p className="admin-help-text">{adminPasswordMessage}</p>}
+    </AdminSection>
+  );
+}

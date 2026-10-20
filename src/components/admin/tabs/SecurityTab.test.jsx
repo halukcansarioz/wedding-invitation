@@ -13,7 +13,6 @@ describe('SecurityTab Admin Bileşen Testleri', () => {
     initialAdminState = useAdminStore.getState();
     initialStoreState = useStore.getState();
 
-    // Sadece verileri manipüle et, store fonksiyonlarını ezme
     useAdminStore.setState({
       adminCurrentPassword: 'eski',
       adminNewPassword: 'yeni',

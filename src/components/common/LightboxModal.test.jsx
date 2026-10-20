@@ -3,7 +3,6 @@ import { render, screen, fireEvent, cleanup } from "../../../tests/test-utils";
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { LightboxModal } from './LightboxModal';
 
-// FocusTrap kütüphanesi JSDOM (test ortamı) ile bazen çakışabilir, bu yüzden mockluyoruz
 vi.mock('focus-trap-react', () => ({
   default: ({ children }) => <div>{children}</div>
 }));
@@ -16,7 +15,6 @@ vi.mock('react-i18next', () => ({
 describe('LightboxModal Bileşen Testleri', () => {
   const mockGallery = ['resim1.jpg', 'resim2.jpg', 'resim3.jpg'];
 
-  // ÇÖZÜM: Her testten sonra DOM'u ve body portalını temizle
   afterEach(() => {
     cleanup();
     document.body.innerHTML = ''; 
@@ -27,7 +25,6 @@ describe('LightboxModal Bileşen Testleri', () => {
     const { container } = render(
       <LightboxModal gallery={mockGallery} lightboxIndex={null} />
     );
-    // Modal kapalıyken DOM'a eklenen gallery-lightbox-overlay class'ına sahip eleman olmamalı
     expect(container.querySelector('.gallery-lightbox-overlay')).not.toBeInTheDocument();
   });
 
@@ -46,7 +43,6 @@ describe('LightboxModal Bileşen Testleri', () => {
       />
     );
 
-    // Klavye olaylarını simüle et
     fireEvent.keyDown(window, { key: 'ArrowRight' });
     expect(mockNextImage).toHaveBeenCalledTimes(1);
 
@@ -67,7 +63,6 @@ describe('LightboxModal Bileşen Testleri', () => {
       />
     );
 
-    // İleri (&#10095;) ve Geri (&#10094;) butonları DOM'da olmamalı
     expect(screen.queryByTitle('ui.next')).not.toBeInTheDocument();
     expect(screen.queryByTitle('ui.prev')).not.toBeInTheDocument();
   });

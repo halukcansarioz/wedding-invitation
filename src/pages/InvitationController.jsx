@@ -178,7 +178,6 @@ export default function InvitationController() {
       <title>{pageTitle}</title>
       <meta name="description" content={pageDescription} />
 
-      {/* Open Graph / Facebook / WhatsApp */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={currentShareLink} />
       <meta

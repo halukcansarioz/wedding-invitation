@@ -4,7 +4,6 @@ test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Test
   test.beforeEach(async ({ page }) => {
     await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.abort());
 
-    // Admin Token Mock
     await page.route('**/auth/v1/token?grant_type=password', async r => {
       await r.fulfill({
         status: 200, contentType: 'application/json',
@@ -15,7 +14,6 @@ test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Test
       });
     });
 
-    // Settings REST API Mock
     await page.route('**/rest/v1/settings*', async r => {
       if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
       return r.fulfill({
@@ -39,12 +37,10 @@ test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Test
   });
 
   test('Görünürlük sekmesinden galeri kapatıldığında ayar state üzerinde güncellenmeli', async ({ page }) => {
-    // Bölüm Görünürlüğü sekmesine git
     const visibilityTabBtn = page.getByRole('button', { name: /Bölüm Görünürlüğü|Visibility/i });
     await visibilityTabBtn.waitFor({ state: 'visible', timeout: 10000 });
     await visibilityTabBtn.click();
 
-    // Galeri checkbox'ını bul ve işaretini kaldır
     const galleryCheckbox = page.locator('input[type="checkbox"]').first();
     await expect(galleryCheckbox).toBeVisible({ timeout: 10000 });
     

@@ -6,7 +6,6 @@ test.describe('Misafir Fotoğraf Yükleme (AR Photobooth) E2E Testi', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2EMocks(page);
 
-    // Storage mock: Dosya yükleme işlemine sahte onay verir
     await page.route('**/storage/v1/object/**', async route => {
       if (route.request().method() === 'OPTIONS') {
         await route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } }); return;
@@ -37,8 +36,6 @@ test.describe('Misafir Fotoğraf Yükleme (AR Photobooth) E2E Testi', () => {
 
     const uploadBtn = photoboothSection.locator('button');
     
-    // setupE2EMocks içindeki Supabase mock'u sayesinde fonksiyon anında başarılı döner. 
-    // İşleniyor (Processing) durumunda takılı kalmaz.
     await expect(uploadBtn).toHaveText(/Kamera \/ Galeri Aç|Open Camera/i, { timeout: 15000 });
   });
 });

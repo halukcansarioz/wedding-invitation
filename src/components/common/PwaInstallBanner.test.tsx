@@ -24,7 +24,7 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
       isIos: true,
       isInstallable: true,
       promptInstall: vi.fn(),
-      setIsInstallable: vi.fn(), // TypeScript hatasını çözen eksik fonksiyon
+      setIsInstallable: vi.fn(), 
     });
 
     render(<PwaInstallBanner />);
@@ -37,7 +37,7 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
       isIos: false,
       isInstallable: true,
       promptInstall: vi.fn(),
-      setIsInstallable: vi.fn(), // TypeScript hatasını çözen eksik fonksiyon
+      setIsInstallable: vi.fn(), 
     });
 
     render(<PwaInstallBanner />);

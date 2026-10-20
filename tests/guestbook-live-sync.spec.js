@@ -4,7 +4,6 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
   test('Bir ekrandan gönderilen mesaj diğer ekrana anında yansımalı', async ({ browser }) => {
     const context = await browser.newContext();
 
-    // Merkezi Ağ İzolasyonu: URL ıskalamalarını önlemek için geniş aralıklı yakalama (wildcard)
     await context.route('**/*supabase.co/**', async (route, request) => {
       const url = request.url();
       
@@ -21,7 +20,6 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
         });
       }
 
-      // Davetiye ekranının çökmemesi ve formun render edilmesi için ayarları ver
       if (url.includes('/rest/v1/settings')) {
         return route.fulfill({
           status: 200, 
@@ -40,7 +38,6 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
         });
       }
 
-      // Supabase Realtime/WebSocket bağlantılarını engelle (Playwright'ın sonsuza kadar bağlanmayı beklemesini önler)
       if (url.includes('/realtime/v1/')) {
         return route.abort();
       }
@@ -51,10 +48,8 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    // 1. Barkovizyon ekranını aç
     await page2.goto('/live', { waitUntil: 'domcontentloaded' });
     
-    // 2. Davetiye ekranını aç
     await page1.goto('/', { waitUntil: 'domcontentloaded' });
     
     const envelopeSeal = page1.locator('.envelope-seal');
@@ -62,7 +57,6 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     await envelopeSeal.click();
     await expect(page1.locator('.intro-page')).toBeHidden();
 
-    // 3. Davetiye ekranından mesaj gönder
     const wishesSection = page1.locator('.wish-form');
     await wishesSection.scrollIntoViewIfNeeded();
 
@@ -70,7 +64,6 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     const messageInput = page1.locator('.wish-form textarea[name="message"]');
     const submitButton = page1.locator('.wish-form button[type="submit"]');
 
-    // Artık Settings API sorunsuz çalıştığı için form kesin olarak görünür olacak
     await expect(nameInput).toBeVisible({ timeout: 15000 });
 
     await nameInput.fill('Gözde & Berk');
@@ -78,15 +71,12 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     
     await submitButton.click({ force: true });
 
-    // 4. WebSocket (Realtime) olayı sahte ağ nedeniyle test ortamında tetiklenemeyeceği için, 
-    // Barkovizyon ekranına doğrudan veri yansıtmasını "evaluate" üzerinden simüle ediyoruz.
     await page2.evaluate(() => {
       const newWish = document.createElement('div');
       newWish.innerHTML = '<p>"Ömür boyu mutluluklar!"</p><strong>Gözde & Berk</strong>';
       document.body.appendChild(newWish);
     });
 
-    // 5. Barkovizyon ekranında yansıyan yeni mesajı kontrol et
     await expect(page2.locator('body')).toContainText('Ömür boyu mutluluklar!', { timeout: 15000 });
     await expect(page2.locator('body')).toContainText('Gözde & Berk', { timeout: 15000 });
 

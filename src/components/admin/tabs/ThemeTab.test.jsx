@@ -34,7 +34,6 @@ describe('ThemeTab İleri Seviye Admin Bileşen Testleri', () => {
   it('Tema kartına tıklandığında document HTML etiketine "data-theme" eklenmeli', () => {
     const { container } = render(<ThemeTab isEn={false} />);
     
-    // Metin yerine data niteliği ile hatasız DOM seçimi
     const darkThemeButton = container.querySelector('[data-theme-preview="dark"]');
     fireEvent.click(darkThemeButton);
     

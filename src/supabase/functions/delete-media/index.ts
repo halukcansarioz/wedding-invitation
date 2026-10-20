@@ -16,15 +16,11 @@ interface DeleteMediaPayload {
   path?: string;
 }
 
-/**
- * Verilen tam URL veya göreli yoldan bucket ve dosya yolunu ayrıştırır.
- */
 function parseStorageUrl(rawUrl: string): { bucket: string; path: string } | null {
   try {
     const url = new URL(rawUrl, "http://localhost");
     const pathname = url.pathname;
 
-    // Örn: /storage/v1/object/public/{bucket}/{path} veya /{bucket}/{path}
     const publicMatch = pathname.match(/\/storage\/v1\/object\/(?:public|sign)\/([^/]+)\/(.+)$/);
     if (publicMatch) {
       return {
@@ -48,7 +44,6 @@ function parseStorageUrl(rawUrl: string): { bucket: string; path: string } | nul
 }
 
 serve(async (req) => {
-  // Preflight (OPTIONS) isteği anında 200 OK ile cevaplanmalıdır
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders, status: 200 });
   }
@@ -70,7 +65,6 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const isServiceRoleCaller = authHeader?.includes(SUPABASE_SERVICE_ROLE_KEY);
 
-    // Eğer doğrudan service_role ile çağrılmadıysa, oturumu doğrula
     if (!isServiceRoleCaller) {
       if (!authHeader) {
         return new Response(
@@ -146,41 +140,32 @@ serve(async (req) => {
       );
     }
 
-    // 2. AKSİYON: ÇÖP TOPLAYICI (GARBAGE COLLECTION)
+    // 2. AKSİYON: BİRLEŞTİRİLMİŞ ÇÖP TOPLAYICI (GARBAGE COLLECTION)
     if (action === "cleanup-orphans") {
-      const knownBuckets = ["wedding-media", "images", "guest_photos", "audio_wishes"];
       let orphanCount = 0;
-
-      // Hem invitation_settings (content) hem de eski settings (data) tablosunu kontrol et
-      const { data: invitationSettingsRow } = await supabaseAdmin
-        .from("invitation_settings")
-        .select("content")
-        .eq("id", "main")
-        .maybeSingle();
-
-      let siteData = invitationSettingsRow?.content;
-      if (!siteData) {
-        const { data: legacySettingsRow } = await supabaseAdmin
-          .from("settings")
-          .select("data")
-          .maybeSingle();
-        siteData = legacySettingsRow?.data || {};
-      }
-
       const activeUrls = new Set<string>();
 
-      // Settings içerisindeki medyalar
-      if (siteData.invitation?.heroImage) activeUrls.add(siteData.invitation.heroImage);
-      if (siteData.invitation?.heroVideo) activeUrls.add(siteData.invitation.heroVideo);
-      if (siteData.invitation?.musicFile) activeUrls.add(siteData.invitation.musicFile);
-      if (Array.isArray(siteData.invitation?.gallery)) {
-        siteData.invitation.gallery.forEach((g: string) => activeUrls.add(g));
-      }
-      if (Array.isArray(siteData.storyTimeline)) {
-        siteData.storyTimeline.forEach((s: any) => {
-          if (s?.image) activeUrls.add(s.image);
-        });
-      }
+      const collectSiteDataUrls = (siteData: any) => {
+        if (!siteData) return;
+        if (siteData.invitation?.heroImage) activeUrls.add(siteData.invitation.heroImage);
+        if (siteData.invitation?.heroVideo) activeUrls.add(siteData.invitation.heroVideo);
+        if (siteData.invitation?.musicFile) activeUrls.add(siteData.invitation.musicFile);
+        if (Array.isArray(siteData.invitation?.gallery)) {
+          siteData.invitation.gallery.forEach((g: string) => g && activeUrls.add(g));
+        }
+        if (Array.isArray(siteData.storyTimeline)) {
+          siteData.storyTimeline.forEach((s: any) => {
+            if (s?.image) activeUrls.add(s.image);
+          });
+        }
+      };
+
+      // Hem yeni invitation_settings hem de eski settings tablosunu tara
+      const { data: invitationSettingsRows } = await supabaseAdmin.from("invitation_settings").select("content");
+      invitationSettingsRows?.forEach((r: any) => collectSiteDataUrls(r.content));
+
+      const { data: legacySettingsRows } = await supabaseAdmin.from("settings").select("data");
+      legacySettingsRows?.forEach((r: any) => collectSiteDataUrls(r.data));
 
       // Guest photos tablosundaki aktif medyalar
       const { data: guestPhotos } = await supabaseAdmin.from("guest_photos").select("image_url");
@@ -188,30 +173,56 @@ serve(async (req) => {
         if (gp.image_url) activeUrls.add(gp.image_url);
       });
 
-      // Wishes ses dosyaları (audio_url ve audioUrl uyumluluğu)
+      // Wishes ses dosyaları (audio_url ve audioUrl)
       const { data: wishes } = await supabaseAdmin.from("wishes").select("*");
       wishes?.forEach((w: any) => {
         const audio = w.audio_url || w.audioUrl;
         if (audio) activeUrls.add(audio);
       });
 
-      for (const bucket of knownBuckets) {
+      const activeUrlList = Array.from(activeUrls);
+
+      // A) wedding-media alt klasörlerini tara (images, media, music, audio_wishes, video)
+      const subFolders = ["", "images", "media", "music", "audio_wishes", "video"];
+      for (const folder of subFolders) {
+        const { data: files, error: listErr } = await supabaseAdmin.storage
+          .from("wedding-media")
+          .list(folder || undefined);
+        if (listErr || !files) continue;
+
+        const pathsToDelete: string[] = [];
+        for (const file of files) {
+          if (!file.id || file.name === ".emptyFolderPlaceholder") continue;
+          const fullPath = folder ? `${folder}/${file.name}` : file.name;
+          const isUsed = activeUrlList.some((u) => u.includes(file.name));
+          if (!isUsed) {
+            pathsToDelete.push(fullPath);
+          }
+        }
+
+        if (pathsToDelete.length > 0) {
+          const { error: rmErr } = await supabaseAdmin.storage.from("wedding-media").remove(pathsToDelete);
+          if (!rmErr) orphanCount += pathsToDelete.length;
+        }
+      }
+
+      // B) Diğer kök kovaları tara
+      const rootBuckets = ["images", "guest_photos", "audio_wishes"];
+      for (const bucket of rootBuckets) {
         const { data: fileList, error: listError } = await supabaseAdmin.storage.from(bucket).list();
         if (listError || !fileList) continue;
 
         const filesToDelete: string[] = [];
         for (const file of fileList) {
-          if (file.name === ".emptyFolderPlaceholder") continue;
-          const isReferenced = Array.from(activeUrls).some((url) => url.includes(file.name));
+          if (!file.id || file.name === ".emptyFolderPlaceholder") continue;
+          const isReferenced = activeUrlList.some((url) => url.includes(file.name));
           if (!isReferenced) {
             filesToDelete.push(file.name);
           }
         }
 
         if (filesToDelete.length > 0) {
-          const { error: removeError } = await supabaseAdmin.storage
-            .from(bucket)
-            .remove(filesToDelete);
+          const { error: removeError } = await supabaseAdmin.storage.from(bucket).remove(filesToDelete);
           if (!removeError) orphanCount += filesToDelete.length;
         }
       }
@@ -220,7 +231,8 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           count: orphanCount,
-          message: `${orphanCount} adet yetim dosya temizlendi.`,
+          deletedCount: orphanCount,
+          message: `${orphanCount} adet yetim dosya kalıcı olarak temizlendi.`,
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

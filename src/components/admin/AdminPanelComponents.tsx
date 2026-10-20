@@ -2,8 +2,6 @@ import React, { Suspense, lazy, ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import { Spinner } from "../common/UIComponents";
 
-// Sekmeleri (Tabs) asenkron olarak (Lazy Load) yüklüyoruz.
-// TypeScript'in JS exportlarını tanıyabilmesi için ComponentType<any> ile cast ediyoruz.
 const OverviewTab = lazy(() => import("./tabs").then(m => ({ default: m.OverviewTab as ComponentType<any> })));
 const GeneralTab = lazy(() => import("./tabs").then(m => ({ default: m.GeneralTab as ComponentType<any> })));
 const ThemeTab = lazy(() => import("./tabs").then(m => ({ default: m.ThemeTab as ComponentType<any> })));

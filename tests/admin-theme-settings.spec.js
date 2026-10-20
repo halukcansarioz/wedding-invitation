@@ -15,7 +15,6 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
     
-    // 1. Supabase Auth Mock
     await page.route('**/auth/v1/token?grant_type=password', async route => {
       const now = Math.floor(Date.now() / 1000);
       const timestamp = new Date().toISOString();
@@ -32,7 +31,6 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
       });
     });
 
-    // 2. Supabase REST API Mock
     await page.route('**/rest/v1/**', async route => {
       const url = route.request().url();
       if (url.includes('settings')) {
@@ -59,7 +57,6 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
     await page.locator('input[type="password"]').fill('123456');
     await page.locator('button[type="submit"]').click();
     
-    // Giriş formunun kaybolduğunu doğrula
     await expect(emailInput).toBeHidden({ timeout: 15000 });
   });
 
@@ -68,26 +65,20 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
     await themeTabButton.waitFor({ state: 'visible', timeout: 10000 });
     await themeTabButton.click();
 
-    // Dark (Koyu) Tema kartını seç
     const darkThemeCard = page.locator('[data-theme-preview="dark"]');
     await expect(darkThemeCard).toBeVisible({ timeout: 10000 });
     await darkThemeCard.click();
 
-    // Kaydet butonuna bas
     const saveButton = page.locator('button', { hasText: /Kaydet|Save/i }).first();
     await saveButton.click();
 
-    // HTML data-theme niteliğinin güncellendiğini doğrula
     await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-theme'))).toBe('dark');
 
-    // Sage (Yeşil) Tema kartını seç
     const sageThemeCard = page.locator('[data-theme-preview="sage"]');
     await sageThemeCard.click();
 
-    // Tekrar Kaydet butonuna bas
     await saveButton.click();
 
-    // Yeniden doğrulama yap
     await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-theme'))).toBe('sage');
   });
 });

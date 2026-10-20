@@ -4,7 +4,6 @@ import pyautogui
 import pyperclip
 from supabase import create_client, Client
 
-# Supabase Bilgileriniz
 URL = "https://SİZİN_SUPABASE_PROJENİZ.supabase.co"
 KEY = "SİZİN_SERVICE_ROLE_KEY"
 supabase: Client = create_client(URL, KEY)
@@ -42,12 +41,12 @@ def send_whatsapp_broadcast():
         time.sleep(8) 
         
         pyperclip.copy(msg)
-        pyautogui.hotkey("ctrl", "v")  # Mac kullanıyorsanız "command", "v" yapın
+        pyautogui.hotkey("ctrl", "v")  
         time.sleep(1)
         pyautogui.press("enter")
         time.sleep(2)
         
-        pyautogui.hotkey("ctrl", "w")  # Mac kullanıyorsanız "command", "w" yapın
+        pyautogui.hotkey("ctrl", "w")  
         time.sleep(1)
 
 if __name__ == "__main__":

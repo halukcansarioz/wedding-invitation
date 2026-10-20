@@ -5,7 +5,6 @@ test.describe('Düğün Davetiyesi LCV (RSVP) Süreçleri', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
     
-    // Turnstile by-pass
     await page.addInitScript(() => { 
       Object.defineProperty(navigator, 'onLine', { value: false, configurable: true }); 
     });
@@ -20,15 +19,12 @@ test.describe('Düğün Davetiyesi LCV (RSVP) Süreçleri', () => {
   });
 
   test('LCV formu boş gönderilmek istendiğinde doğrulama hataları (Zod) gösterilmeli', async ({ page }) => {
-    // GuestsListSection içindeki güvenlik notunda da "RSVP" kelimesi geçtiği için
-    // strict mode çakışmasını önlemek adına doğrudan .rsvp-card sınıfını hedefliyoruz.
     const rsvpSection = page.locator('.rsvp-card');
     await rsvpSection.scrollIntoViewIfNeeded();
 
     const submitBtn = rsvpSection.locator('button[type="submit"]');
     await submitBtn.click();
 
-    // Metin diline bağlı kalmadan, doğrudan hatayı ifade eden span elementini dinliyoruz.
     const errorMsg = rsvpSection.locator('span').filter({ hasText: /./ }).first();
     await expect(errorMsg).toBeVisible({ timeout: 10000 });
   });

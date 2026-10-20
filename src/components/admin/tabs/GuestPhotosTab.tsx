@@ -31,7 +31,6 @@ export function GuestPhotosTab({ isEn }: GuestPhotosTabProps) {
         </div>
       ) : (
         <>
-          {/* ONAY BEKLEYENLER */}
           <h4 style={{ color: "var(--rose-deep)", marginTop: "10px", marginBottom: "16px" }}>
             {isEn ? `Pending Approval (${pendingPhotos.length})` : `Onay Bekleyenler (${pendingPhotos.length})`}
           </h4>
@@ -53,7 +52,6 @@ export function GuestPhotosTab({ isEn }: GuestPhotosTabProps) {
             ))}
           </div>
 
-          {/* ONAYLANMIŞ OLANLAR */}
           <h4 style={{ color: "var(--text-muted)", marginBottom: "16px", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: "20px" }}>
             {isEn ? `Approved & Published (${approvedPhotos.length})` : `Yayında Olanlar (${approvedPhotos.length})`}
           </h4>

@@ -17,13 +17,10 @@ test.describe('LCV Formu Validasyon ve Hata Yönetimi Testleri', () => {
     const rsvpSection = page.locator('.rsvp-card');
     await rsvpSection.scrollIntoViewIfNeeded();
 
-    // İsim alanını boş bırakıp direkt gönder butonuna tıklıyoruz
     const submitButton = page.locator('.rsvp-card button[type="submit"]');
     
-    // Animasyon kilitlenmesini engelle
     await submitButton.click({ force: true });
 
-    // Formun başarı durumuna geçmediğini ve aynı sayfada kaldığını doğrula
     await expect(rsvpSection).toBeVisible();
   });
 });

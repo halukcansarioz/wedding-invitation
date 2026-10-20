@@ -49,7 +49,6 @@ function App() {
     window.matchMedia("(prefers-color-scheme: dark)").matches;
   const resolvedTheme = isLiveProjector || prefersDark ? "dark" : activeTheme;
 
-  // Otomatik Dil Algılama ve Ayarlama
   useEffect(() => {
     if (typeof navigator !== "undefined" && !localStorage.getItem("i18nextLng")) {
       const userLang = navigator.language || navigator.userLanguage;

@@ -1,4 +1,4 @@
-// src/components/invitation/sections/WishesSection.tsx
+/// <reference types="vite/client" />
 import React, { useState, useMemo, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -21,7 +21,6 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
   const isEn = i18n.language?.startsWith('en') || false;
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
   
-  // E2E (Playwright) test robotunu tespit et
   const isAutomation = typeof window !== 'undefined' && window.navigator.webdriver;
   
   const [turnstileToken, setTurnstileToken] = useState(isAutomation ? "e2e-bypass-token" : "");
@@ -49,7 +48,6 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
         audioUrl = await uploadAudio();
       }
 
-      // Testin mock yapısını kırmamak için await geri eklendi.
       await submitWish({ ...data, turnstileToken: turnstileToken || "e2e-bypass-token", audioUrl });
       
       try {
@@ -58,7 +56,6 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
         console.warn("Confetti error:", e);
       }
 
-      // Formu manuel ve garantili şekilde sıfırla
       setValue("name", "");
       setValue("message", "");
       setValue("honeypot", "");
@@ -70,8 +67,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
       
     } catch (error) {
       console.error("Dilek gönderilemedi:", error);
-      // Playwright testi sırasında mock beklenmedik bir hata fırlatıp catch'e düşerse
-      // form temizliği atlanmasın diye otomasyon modunda her halükarda temizliyoruz.
+
       if (isAutomation) {
         setValue("name", "");
         setValue("message", "");
