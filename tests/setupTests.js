@@ -2,9 +2,36 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import React from 'react';
 
-
 vi.stubEnv('VITE_SUPABASE_URL', 'https://mock.supabase.co');
 vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'mock-key');
+
+// JSDOM window.location nesnesini tüm testlerde (delete ve defineProperty için) esnek hale getir
+const initialLocation = window.location;
+try {
+  delete window.location;
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: {
+      ...initialLocation,
+      href: 'http://localhost:3000/',
+      origin: 'http://localhost:3000',
+      protocol: 'http:',
+      host: 'localhost:3000',
+      hostname: 'localhost',
+      port: '3000',
+      pathname: '/',
+      search: '',
+      hash: '',
+      assign: vi.fn(),
+      replace: vi.fn(),
+      reload: vi.fn(),
+    },
+  });
+} catch {
+  // Ortam zaten yapılandırılmışsa devam et
+}
 
 window.scrollTo = vi.fn();
 window.alert = vi.fn();
@@ -16,7 +43,6 @@ global.ResizeObserver = class {
   unobserve() {}
   disconnect() {}
 };
-
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { AdminSection } from "../../AdminUI";
 import { supabase } from "../../../supabaseClient";
-import { PaymentRecord } from "../../../types";
+import { getActiveTenantId } from "../../../utils/tenant";
 
-export interface PaymentsTabProps {
-  isEn: boolean;
-}
-
-export function PaymentsTab({ isEn }: PaymentsTabProps) {
-  const [payments, setPayments] = useState<PaymentRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+export function PaymentsTab({ isEn }) {
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const fetchPayments = async () => {
     setLoading(true);
     setError("");
     try {
-      const { data, error: fetchError } = await supabase
-        .from('payments')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const tenantId = getActiveTenantId();
+      let query = supabase.from('payments').select('*');
+
+      if (tenantId && typeof query.eq === 'function') {
+        query = query.eq('tenant_id', tenantId);
+      }
+
+      const { data, error: fetchError } = await query.order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setPayments((data as PaymentRecord[]) || []);
-    } catch (err: any) {
-      setError(err.message || "Hata oluştu");
+      setPayments(data || []);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export function PaymentsTab({ isEn }: PaymentsTabProps) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                 <strong style={{ fontSize: "16px" }}>{payment.guest_name}</strong>
                 <strong style={{ color: payment.status === 'completed' ? "#27ae60" : "#f39c12", fontSize: "16px" }}>
-                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: payment.currency || 'TRY' }).format(Number(payment.amount))}
+                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
                 </strong>
               </div>
               

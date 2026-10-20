@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { useStore } from "../store/useStore";
 import { deleteMediaFile } from "../services/database";
+import { getActiveTenantId } from "../utils/tenant";
 
 export interface GuestPhoto {
   id: string;
@@ -18,10 +19,14 @@ export function useAdminGuestPhotos(isEn: boolean) {
 
   const fetchPhotos = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('guest_photos')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const tenantId = getActiveTenantId();
+    let query: any = supabase.from('guest_photos').select('*');
+
+    if (tenantId && typeof query.eq === 'function') {
+      query = query.eq('tenant_id', tenantId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (!error && data) {
       setPhotos(data as GuestPhoto[]);
@@ -39,23 +44,21 @@ export function useAdminGuestPhotos(isEn: boolean) {
       setPhotos(prev => prev.map(p => p.id === id ? { ...p, approved: true } : p));
       showAppAlert(isEn ? "Photo approved!" : "Fotoğraf onaylandı ve galeriye eklendi!");
     } else {
-      showAppAlert(isEn ? "Error approving photo." : "Fotoğraf onaylanırken hata oluştu.", { tone: "error" });
+      showAppAlert(isEn ? "Error approving photo." : "Fotoğraf onaylanırken hata oluştu.", { tone: "danger" });
     }
   };
 
   const rejectPhoto = async (id: string, imageUrl: string) => {
     if (!window.confirm(isEn ? "Delete this photo permanently?" : "Bu fotoğrafı kalıcı olarak silmek istiyor musunuz?")) return;
 
-    // 1. Storage'dan fiziksel olarak sil
     await deleteMediaFile(imageUrl).catch(console.error);
 
-    // 2. Veritabanından sil
     const { error } = await supabase.from('guest_photos').delete().eq('id', id);
     if (!error) {
       setPhotos(prev => prev.filter(p => p.id !== id));
       showAppAlert(isEn ? "Photo deleted." : "Fotoğraf silindi.");
     } else {
-      showAppAlert(isEn ? "Error deleting photo." : "Fotoğraf silinirken hata oluştu.", { tone: "error" });
+      showAppAlert(isEn ? "Error deleting photo." : "Fotoğraf silinirken hata oluştu.", { tone: "danger" });
     }
   };
 

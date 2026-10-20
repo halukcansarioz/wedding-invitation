@@ -4,12 +4,10 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   test: {
-    globals: true,
     environment: 'jsdom',
-    setupFiles: ['./tests/setupTests.js'],
-    isolate: true, 
-    include: ['src/**/*.test.{js,jsx,ts,tsx}'], 
-    exclude: ['tests/**/*.spec.{js,jsx,ts,tsx}', 'node_modules/**/*'], 
-    testTimeout: 30000, 
+    globals: true,
+    setupFiles: ['./tests/setupTests.js', './vitest.setup.js'],
+    pool: 'threads',
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**/*.spec.js'],
   },
 });

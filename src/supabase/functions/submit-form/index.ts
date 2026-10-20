@@ -1,155 +1,122 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore Deno/JSR import'u Supabase Edge Runtime tarafından sağlanır.
+import { serve } from "jsr:@std/http/server";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const BAD_WORDS = ["küfür1", "argo2", "kötükelime", "spam"];
-
-const TURNSTILE_SECRET_KEY = Deno.env.get("TURNSTILE_SECRET_KEY");
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Bellek içi (In-Memory) IP bazlı Rate Limiter (Dakikada maks. 5 istek)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 5;
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+
+  if (!record || now > record.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return true;
+  }
+
+  record.count += 1;
+  return false;
+}
+
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders, status: 200 });
+  }
 
   try {
-    const ip = req.headers.get("x-forwarded-for") || "unknown";
-    const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const clientIp =
+      req.headers.get("cf-connecting-ip") ||
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "unknown-ip";
 
-    const { type, data, turnstileToken } = await req.json();
-    const isOfflineSync = turnstileToken === "OFFLINE_SYNC";
-
-    // Çevrimdışı senkronizasyon istekleri için daha sıkı Rate Limit (Dakikada maks 5, normalde 20)
-    const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc("check_rate_limit", {
-      client_ip: isOfflineSync ? `offline_sync_${ip}` : `submit_form_${ip}`,
-      max_req: isOfflineSync ? 5 : 20,
-      window_seconds: 60,
-    });
-
-    if (isLimited || rateLimitError) {
+    if (isRateLimited(clientIp)) {
       return new Response(
-        JSON.stringify({ success: false, error: "Çok fazla form gönderimi. Lütfen biraz bekleyin." }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 429,
-        }
+        JSON.stringify({
+          success: false,
+          error: "Çok fazla istek gönderdiniz. Lütfen 1 dakika bekleyip tekrar deneyin.",
+        }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const authHeader = req.headers.get("Authorization");
-    let isAdmin = false;
+    const { type, data, turnstileToken, tenantId } = await req.json();
 
-    if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const {
-        data: { user },
-        error,
-      } = await supabaseAdmin.auth.getUser(token);
-      if (!error && user && user.role === "authenticated") {
-        isAdmin = true;
-      }
+    // Honeypot doluysa sessizce reddet
+    if (data?.honeypot) {
+      return new Response(JSON.stringify({ success: false, error: "Spam tespit edildi." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    if (!isOfflineSync && !isAdmin) {
-      if (!turnstileToken || turnstileToken === "MISSING_TOKEN") {
-        throw new Error("Güvenlik doğrulaması (Turnstile) başarısız.");
-      }
-      if (TURNSTILE_SECRET_KEY && turnstileToken !== "e2e-bypass-token") {
-        const formData = new URLSearchParams();
-        formData.append("secret", TURNSTILE_SECRET_KEY);
-        formData.append("response", turnstileToken);
-        const turnstileRes = await fetch(
-          "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-          { method: "POST", body: formData }
+    const TURNSTILE_SECRET_KEY = Deno.env.get("TURNSTILE_SECRET_KEY");
+    const isBypassToken = turnstileToken === "OFFLINE_SYNC" || turnstileToken === "e2e-bypass-token";
+
+    if (TURNSTILE_SECRET_KEY && !isBypassToken) {
+      const formData = new FormData();
+      formData.append("secret", TURNSTILE_SECRET_KEY);
+      formData.append("response", turnstileToken || "");
+      formData.append("remoteip", clientIp);
+
+      const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        method: "POST",
+        body: formData,
+      });
+      const verifyOutcome = await verifyRes.json();
+
+      if (!verifyOutcome.success) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Güvenlik doğrulaması (Turnstile) başarısız." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
-        const turnstileData = await turnstileRes.json();
-        if (!turnstileData.success) throw new Error("Bot doğrulaması geçilemedi.");
       }
     }
 
-    let result;
-    if (type === "guest") {
-      if (isOfflineSync) {
-        data.note = (data.note ? data.note + " " : "") + "[Çevrimdışı Senkronize Edildi]";
-      }
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+    );
 
-      const { data: guestData, error } = await supabaseAdmin
-        .from("guests")
-        .insert([data])
-        .select()
-        .single();
-      if (error) throw error;
-      result = guestData;
-    } else if (type === "wish") {
-      const messageText = (data.message || "").toLowerCase();
-      const containsBadWord = BAD_WORDS.some((word) => messageText.includes(word));
-      if (containsBadWord) {
-        throw new Error("Mesajınız topluluk kurallarına aykırı kelimeler içeriyor.");
-      }
+    const cleanData = { ...data };
+    delete cleanData.honeypot;
+    if (tenantId) cleanData.tenant_id = tenantId;
 
-      // Sesli mesaj URL'sini veritabanı sütun adına (audio_url) normalize et
-      if (data.audioUrl && !data.audio_url) {
-        data.audio_url = data.audioUrl;
-      }
-      delete data.audioUrl;
-
-      let translatedMessage = "";
-      if (OPENAI_API_KEY && data.message) {
-        try {
-          const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${OPENAI_API_KEY}`,
-            },
-            body: JSON.stringify({
-              model: "gpt-4o-mini",
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Sen profesyonel bir çevirmensin. Gelen metin Türkçe ise İngilizce'ye, diğer dillerdeyse Türkçe'ye çevir. Sadece çeviriyi yaz.",
-                },
-                { role: "user", content: data.message },
-              ],
-            }),
-          });
-          const aiData = await aiResponse.json();
-          translatedMessage = aiData.choices?.[0]?.message?.content?.trim() || "";
-        } catch (err) {
-          console.warn("Çeviri yapılamadı", err);
-        }
-      }
-
-      data.message_translated = translatedMessage;
-
-      if (isOfflineSync) {
-        data.approved = false;
-      }
-
-      const { data: wishData, error } = await supabaseAdmin
-        .from("wishes")
-        .insert([data])
-        .select()
-        .single();
-      if (error) throw error;
-      result = wishData;
-    } else {
-      throw new Error("Geçersiz form tipi.");
+    const tableName = type === "guest" ? "guests" : type === "wish" ? "wishes" : null;
+    if (!tableName) {
+      return new Response(JSON.stringify({ success: false, error: "Geçersiz form tipi." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(JSON.stringify({ success: true, data: result }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const { data: inserted, error: dbError } = await supabaseAdmin
+      .from(tableName)
+      .insert([cleanData])
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
+    return new Response(JSON.stringify({ success: true, data: inserted }), {
       status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: any) {
     return new Response(JSON.stringify({ success: false, error: error.message }), {
+      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
     });
   }
 });
