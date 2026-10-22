@@ -7,7 +7,6 @@ vi.mock('focus-trap-react', () => ({
   default: ({ children }) => <div>{children}</div>
 }));
 
-// i18next Mock
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key) => key })
 }));

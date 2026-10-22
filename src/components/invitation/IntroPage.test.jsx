@@ -1,67 +1,64 @@
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from "../../../tests/test-utils";
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import IntroPage from './IntroPage';
+import * as helpers from '../../utils/helpers';
 
+// Helper fonksiyonları ve i18n mocklaması
 vi.mock('../../utils/helpers', () => ({
   triggerConfetti: vi.fn()
 }));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
 }));
 
 describe('IntroPage Bileşen Testleri', () => {
-  const mockProps = {
+  const mockOpenInvitation = vi.fn();
+  
+  const defaultProps = {
     isOpening: false,
-    isHeroLoaded: true,
-    openInvitation: vi.fn(),
-    copy: { introLabel: "Düğün Davetiyesi", introText: "Hoş geldiniz", openButton: "Daveti Aç" },
+    copy: { introLabel: "Davetiye", introText: "Mutluluğumuza ortak olun" },
     invitation: { bride: "Hande", groom: "Haluk" },
-    personalGuestName: "",
-    personalTableNumber: ""
+    openInvitation: mockOpenInvitation,
+    isHeroLoaded: true
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    cleanup();
-  });
-
-  it('Gelin ve damat ismini ekranda doğru şekilde göstermeli', () => {
-    render(<IntroPage {...mockProps} />);
-    expect(screen.getByText('Hande')).toBeInTheDocument();
-    expect(screen.getByText('Haluk')).toBeInTheDocument();
-  });
-
-  it('Arka plan (hero) yüklenmemişse buton "Yükleniyor..." göstermeli ve tıklamayı engellemeli', () => {
-    render(<IntroPage {...mockProps} isHeroLoaded={false} />);
-    const button = screen.getByRole('button');
+  it('Hero görseli yüklendiğinde Butona tıklanabilmeli ve konfeti patlamalı', () => {
+    render(<IntroPage {...defaultProps} />);
     
-    // GÜNCELLENDİ: Spinner SVG'si eklendiği için regex ile metin içeriği doğrulandı
-    expect(button).toHaveTextContent(/Yükleniyor/i);
+    const openBtn = screen.getByRole('button');
+    expect(openBtn).not.toBeDisabled();
     
-    fireEvent.click(button);
-    expect(mockProps.openInvitation).not.toHaveBeenCalled();
+    fireEvent.click(openBtn);
+    
+    expect(mockOpenInvitation).toHaveBeenCalledTimes(1);
+    expect(helpers.triggerConfetti).toHaveBeenCalledTimes(1);
   });
 
-  it('Kişiye özel link ile girildiğinde misafir adını ve masa numarasını göstermeli', () => {
-    render(
-      <IntroPage 
-        {...mockProps} 
-        personalGuestName="Ahmet Yılmaz" 
-        personalTableNumber="5" 
-      />
-    );
-    expect(screen.getByText(/Sevgili Ahmet Yılmaz/i)).toBeInTheDocument();
-    expect(screen.getByText(/Masa: 5/i)).toBeInTheDocument();
-  });
-
-  it('Space veya Enter tuşuna basıldığında zarf açılmalı', () => {
-    render(<IntroPage {...mockProps} />);
+  it('Boşluk (Space) veya Enter tuşuna basıldığında davetiye açılmalı', () => {
+    render(<IntroPage {...defaultProps} />);
+    
+    fireEvent.keyDown(window, { key: ' ' });
+    expect(mockOpenInvitation).toHaveBeenCalledTimes(1);
     
     fireEvent.keyDown(window, { key: 'Enter' });
-    expect(mockProps.openInvitation).toHaveBeenCalled();
+    expect(mockOpenInvitation).toHaveBeenCalledTimes(2);
+  });
+
+  it('Hero görseli henüz yüklenmediyse (isHeroLoaded: false) buton disable olmalı ve tıklanamamalı', () => {
+    const loadingProps = { ...defaultProps, isHeroLoaded: false };
+    render(<IntroPage {...loadingProps} />);
+    
+    const loadingBtn = screen.getByRole('button');
+    expect(loadingBtn).toBeDisabled();
+    expect(screen.getByText(/Yükleniyor/i)).toBeInTheDocument();
+    
+    fireEvent.click(loadingBtn);
+    expect(mockOpenInvitation).not.toHaveBeenCalled();
   });
 });

@@ -10,7 +10,7 @@ export function useAssetPreloader(mediaUrl?: string | null): boolean {
     }
 
     setIsLoaded(false);
-    const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaUrl);
+    const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(mediaUrl);
 
     if (isVideo) {
       const video = document.createElement('video');

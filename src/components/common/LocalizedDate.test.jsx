@@ -30,4 +30,20 @@ describe('LocalizedDate Bileşeni', () => {
     expect(elements.length).toBeGreaterThan(0);
     expect(elements[0]).toBeInTheDocument();
   });
+
+  it('Geçersiz bir tarih (Invalid Date) stringi verildiğinde varsayılan yedek tarihe dönmeli', () => {
+    render(<LocalizedDate dateString="hatali-tarih-formati" />);
+    
+    const fallbackDate = new Date("2026-08-22T19:00:00");
+    const expectedText = new Intl.DateTimeFormat('tr', {
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric'
+    }).format(fallbackDate);
+
+    const elements = screen.getAllByText(expectedText);
+    expect(elements.length).toBeGreaterThan(0);
+    expect(elements[0]).toBeInTheDocument();
+  });
 });

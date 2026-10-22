@@ -5,8 +5,6 @@ import { useAssetPreloader } from './useAssetPreloader';
 describe('useAssetPreloader Hook Testleri', () => {
   beforeEach(() => {
     vi.useFakeTimers(); 
-    
-    // Daha stabil Image mock yapısı (src atanmadan onload tetiklenmemesi için)
     global.Image = class {
       constructor() {
         this._src = '';
@@ -48,6 +46,13 @@ describe('useAssetPreloader Hook Testleri', () => {
 
   it('video (.mp4) gönderildiğinde onloadeddata tetiklenene kadar false, sonra true olmalı', async () => {
     const { result } = renderHook(() => useAssetPreloader('test.mp4'));
+    expect(result.current).toBe(false);
+    act(() => { vi.advanceTimersByTime(20); });
+    expect(result.current).toBe(true);
+  });
+
+  it('video URLsi query parametresi içeriyorsa (örn: .mp4?v=1) yine de video olarak algılanıp yüklenmeli', async () => {
+    const { result } = renderHook(() => useAssetPreloader('test.mp4?token=abc'));
     expect(result.current).toBe(false);
     act(() => { vi.advanceTimersByTime(20); });
     expect(result.current).toBe(true);
