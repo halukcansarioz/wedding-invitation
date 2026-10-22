@@ -5,27 +5,53 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   plugins: [
     react(),
-    VitePWA({ 
+    VitePWA({
       registerType: 'autoUpdate',
-      devOptions: {
-        enabled: true,
-        environment: 'jsdom', 
-        setupFiles: './tests/setupTests.js',
-        suppressWarnings: true
+      injectRegister: 'auto',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
+        maximumFileSizeToCacheInBytes: 10485760
+      },
+      manifest: {
+        name: 'Düğün Davetiyesi',
+        short_name: 'Davetiye',
+        display: 'standalone',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
       }
     })
   ],
-test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './tests/setupTests.js',
-    css: true,
-    poolOptions: {
-      threads: {
-        isolate: false, 
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('@supabase/supabase-js')) {
+              return 'supabase';
+            }
+            if (id.includes('framer-motion') || id.includes('recharts')) {
+              return 'ui';
+            }
+            return 'deps';
+          }
+        }
       }
-    },
-    include: ['src/**/*.test.{js,jsx,ts,tsx}'], 
-    exclude: ['tests/**/*.spec.{js,jsx,ts,tsx}', 'node_modules/**/*'], 
-  },
+    }
+  }
 });

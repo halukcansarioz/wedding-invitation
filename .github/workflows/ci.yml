@@ -12,21 +12,27 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - run: npm ci
 
       - run: npx --yes playwright install --with-deps
         env:
           DEBIAN_FRONTEND: noninteractive
-          CI: true
 
       - run: npm run dev &
         env:
-          CI: true
+          VITE_SUPABASE_URL: 'https://test.supabase.co'
+          VITE_SUPABASE_ANON_KEY: 'test-key'
 
       - run: npx --yes wait-on http://localhost:5173
 
       - run: npm run test
+        env:
+          VITE_SUPABASE_URL: 'https://test.supabase.co'
+          VITE_SUPABASE_ANON_KEY: 'test-key'
 
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: 'https://test.supabase.co'
+          VITE_SUPABASE_ANON_KEY: 'test-key'

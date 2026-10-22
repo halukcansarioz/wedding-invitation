@@ -9,70 +9,25 @@ export const mockMedia = async (page) => {
   });
 };
 
-export const setupE2EMocks = async (page) => {
-  await mockMedia(page);
-
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': '*',
-    'Access-Control-Allow-Headers': '*'
-  };
-
-  await page.route('**/*', async (route, request) => {
-    if (request.method() === 'OPTIONS') {
-      return route.fulfill({ status: 200, headers: corsHeaders });
-    }
-    route.fallback();
-  });
-
-  await page.route('**/auth/v1/**', async route => {
-    if (route.request().method() === 'OPTIONS') return; 
-    const url = route.request().url();
+export async function setupE2EMocks(page) {
+  await page.route('**/*', route => {
+    const type = route.request().resourceType();
     
-    if (url.includes('/token') || url.includes('/recover') || url.includes('/verify')) {
+    if (type === 'image' || type === 'media' || type === 'font') {
+      return route.continue();
+    }
+    
+    if (route.request().url().includes('supabase.co')) {
       return route.fulfill({
         status: 200,
-        headers: corsHeaders,
         contentType: 'application/json',
-        body: JSON.stringify({
-          access_token: 'fake-access-token', token_type: 'bearer', expires_in: 3600,
-          user: { id: '123', aud: 'authenticated', role: 'authenticated', email: 'admin@test.com' }
-        })
+        body: JSON.stringify({ data: [], error: null })
       });
     }
-    
-    if (url.includes('/user') || url.includes('/session')) {
-      return route.fulfill({ status: 200, headers: corsHeaders, contentType: 'application/json', body: JSON.stringify({ session: null }) });
-    }
 
-    return route.fulfill({ status: 200, headers: corsHeaders, body: '{}' });
+    return route.continue();
   });
-
-  await page.route('**/rest/v1/**', async route => {
-    if (route.request().method() === 'OPTIONS') return;
-    const url = route.request().url();
-
-    if (url.includes('settings')) {
-      return route.fulfill({
-        status: 200, headers: corsHeaders, contentType: 'application/json',
-        body: JSON.stringify({
-          invitation: { bride: 'Hande', groom: 'Haluk' },
-          settings: { visibility: { guests: true, wishes: true, countdown: true, location: true }, theme: 'lavanta' },
-          copy: { heroLabel: "Evleniyoruz" }
-        })
-      });
-    }
-    return route.fulfill({ status: 200, headers: corsHeaders, contentType: 'application/json', body: '[]' });
-  });
-
-  await page.route('**/functions/v1/**', async route => {
-    if (route.request().method() === 'OPTIONS') return;
-    return route.fulfill({
-      status: 200, headers: corsHeaders, contentType: 'application/json',
-      body: JSON.stringify({ success: true, count: 1, data: { id: 'mocked-id' } })
-    });
-  });
-};
+}
 
 export const loginAdmin = async (page) => {
   await page.goto('/admin', { waitUntil: 'domcontentloaded' });

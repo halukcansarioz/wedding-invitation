@@ -8,8 +8,9 @@ test.describe('PWA Çevrimdışı (Offline) LCV Senkronizasyonu', () => {
     
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
-    await envelopeSeal.click({ force: true });
-    await expect(page.locator('.intro-page')).toBeHidden();
+    await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });
+    await envelopeSeal.click();
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
   });
 
   test('İnternet kesikken form IndexedDB ye kaydedilmeli ve beklemede (pending) kalmalı', async ({ page, context }) => {
