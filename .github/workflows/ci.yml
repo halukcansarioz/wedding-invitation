@@ -16,7 +16,10 @@ jobs:
 
       - run: npm ci
 
-      - run: npx playwright install --with-deps
+      - run: npx --yes playwright install --with-deps
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          CI: true
 
       - run: npm run dev &
         env:
