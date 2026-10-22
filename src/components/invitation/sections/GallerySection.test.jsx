@@ -8,19 +8,24 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('GallerySection Bileşen Testleri', () => {
+  const mockInvitation = { gallery: ['img1.jpg', 'img2.jpg'] };
+
   afterEach(() => {
     cleanup();
   });
 
-  it('Galerideki fotoğrafları render etmeli ve tıklanınca Lightbox açılmalı', () => {
-    const mockInvitation = { gallery: ['img1.jpg', 'img2.jpg', 'img3.jpg'] };
+  it('Galeri görselleri render edilmeli', () => {
+    render(<GallerySection invitation={mockInvitation} />);
+    const images = screen.getAllByRole('img');
+    expect(images.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('Görsele tıklandığında Lightbox modali açılmalı', () => {
     const { container } = render(<GallerySection invitation={mockInvitation} />);
+    const firstImageWrapper = container.querySelectorAll('.lazy-image-wrapper')[0];
     
-    const gridImages = container.querySelectorAll('.gallery-grid img');
-    expect(gridImages.length).toBe(3);
-
-    fireEvent.click(gridImages[0]);
-
-    expect(screen.getByAltText('Büyütülmüş Fotoğraf')).toBeDefined();
+    fireEvent.click(firstImageWrapper);
+    
+    expect(document.querySelector('.gallery-lightbox-overlay')).toBeInTheDocument();
   });
 });

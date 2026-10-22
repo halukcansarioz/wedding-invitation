@@ -13,12 +13,11 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const ip = req.headers.get('x-real-ip') || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
     const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     
-    // DB tabanlı rate limiting check
     const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
-      client_ip: `face_match_${ip}`,
+      client_ip: `face_match_${ip.trim()}`,
       max_req: 10,
       window_seconds: 60
     });
@@ -32,7 +31,6 @@ serve(async (req) => {
     const { sourceImageUrl } = await req.json();
     if (!sourceImageUrl) throw new Error("Görsel URL'i eksik.");
 
-    // Simülasyon Gecikmesi
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const mockMatches = [

@@ -9,6 +9,20 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
 
+// EKLENDİ: Kritik ödeme hatalarını loglamak için fonksiyon
+async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
+  try {
+    await supabaseAdmin.from('error_logs').insert([{
+      function_name: functionName,
+      error_message: errorMsg,
+      additional_data: additionalData,
+      created_at: new Date().toISOString()
+    }]);
+  } catch (logErr) {
+    console.error("Hata loglanamadı:", logErr);
+  }
+}
+
 serve(async (request) => {
   const signature = request.headers.get('Stripe-Signature');
   const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
@@ -17,9 +31,13 @@ serve(async (request) => {
     return new Response('Webhook secret veya imza eksik.', { status: 400 });
   }
 
+  const supabaseAdmin = createClient(
+    Deno.env.get('SUPABASE_URL') || '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+  );
+
   try {
     const body = await request.text();
-    // Stripe imzasını doğrula (Güvenlik)
     const event = await stripe.webhooks.constructEventAsync(
       body,
       signature,
@@ -28,20 +46,12 @@ serve(async (request) => {
       cryptoProvider
     );
 
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') || '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-    );
-
-    // Sadece başarılı ödeme (checkout tamamlanması) olayını dinliyoruz
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-
       const guestName = session.metadata?.guestName || 'Bilinmeyen Misafir';
       const note = session.metadata?.note || '';
-      const amount = session.amount_total ? session.amount_total / 100 : 0; // Kuruştan TL'ye çevir
+      const amount = session.amount_total ? session.amount_total / 100 : 0; 
 
-      // Veritabanına Başarılı Ödemeyi Kaydet
       const { error } = await supabaseAdmin.from('payments').insert([{
         guest_name: guestName,
         amount: amount,
@@ -51,8 +61,9 @@ serve(async (request) => {
         note: note
       }]);
 
+      // GÜNCELLENDİ: Hata durumunda log servisine kayıt atılıyor
       if (error) {
-        console.error("Ödeme veritabanına kaydedilirken hata:", error);
+        await logErrorToDatabase(supabaseAdmin, 'stripe-webhook', error.message, { session_id: session.id });
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
       }
     }
@@ -60,7 +71,7 @@ serve(async (request) => {
     return new Response(JSON.stringify({ received: true }), { status: 200 });
 
   } catch (err: any) {
-    console.error(`Webhook Error: ${err.message}`);
+    await logErrorToDatabase(supabaseAdmin, 'stripe-webhook-verification', err.message, { signature });
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 });

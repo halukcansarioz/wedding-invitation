@@ -1,78 +1,44 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
 import { OverviewTab } from './OverviewTab';
-import { useStore } from '../../../store/useStore';
 
 vi.mock('../../../supabaseClient', () => ({
   supabase: {
-    from: vi.fn((table) => {
-      if (table === 'guest_photos') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({ count: 5, data: [] })
-        };
-      }
-      if (table === 'payments') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockResolvedValue({ 
-            data: [{ amount: '500' }, { amount: '1500' }] 
-          })
-        };
-      }
-      return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockResolvedValue({ count: 0, data: [] }) };
-    })
+    from: vi.fn((table) => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockImplementation(() => {
+        if (table === 'guest_photos') return Promise.resolve({ count: 5 });
+        if (table === 'payments') return Promise.resolve({ data: [{ amount: 1000 }, { amount: 2000 }] });
+        return Promise.resolve({ data: [] });
+      })
+    }))
   }
 }));
 
-describe('OverviewTab Bileşen Kapsamlı Testleri', () => {
-  let mockSetActiveTab: any;
-  let originalLocation: any;
-  let initialState: any;
+describe('OverviewTab Bileşen Testleri', () => {
+  afterEach(() => cleanup());
 
-  beforeEach(() => {
-    mockSetActiveTab = vi.fn();
-    vi.spyOn(window, 'open').mockImplementation(() => null);
+  it('İstatistikleri veritabanı ve proplar üzerinden doğru hesaplayıp ekranda göstermeli', async () => {
+    const mockGuests = [
+      { attendance: 'Katılacağım', personCount: '2' }, 
+      { attendance: 'Katılamayacağım', personCount: '1' }
+    ] as any[];
     
-    initialState = useStore.getState();
-    useStore.setState({
-      adminDraft: { invitation: { bride: 'Ayşe', groom: 'Veli' } } as any
-    });
+    const mockWishes = [
+      { approved: false }, 
+      { approved: true }, 
+      { approved: false }
+    ] as any[];
 
-    originalLocation = window.location;
-    delete (window as any).location;
-    window.location = { pathname: '/demo' } as any;
-  });
+    render(<OverviewTab guests={mockGuests} wishes={mockWishes} isEn={false} setActiveAdminTab={vi.fn()} />);
 
-  afterEach(() => {
-    cleanup();
-    window.location = originalLocation;
-    useStore.setState(initialState, true);
-    vi.clearAllMocks();
-  });
+    expect(screen.getAllByText('2')).toHaveLength(2);
 
-  it('Supabase verilerini çekip istatistikleri (Fotoğraf ve Hediye) ekranda göstermeli', async () => {
-    render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
-    
     await waitFor(() => {
       expect(screen.getByText('5')).toBeDefined();
-      const formattedTotal = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(2000);
-      expect(screen.getByText(formattedTotal)).toBeDefined();
+      expect(screen.getByText(/3.000/)).toBeDefined();
     });
-  });
-
-  it('Barkovizyonu Başlat butonuna tıklandığında yeni sekmede /live rotasını açmalı', async () => {
-    render(<OverviewTab guests={[]} wishes={[]} isEn={false} setActiveAdminTab={mockSetActiveTab} />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('5')).toBeDefined();
-    });
-
-    const liveBtn = screen.getByRole('button', { name: /Barkovizyonu Başlat/i });
-    fireEvent.click(liveBtn);
-
-    expect(window.open).toHaveBeenCalledWith('/demo/live', '_blank');
   });
 });

@@ -7,13 +7,14 @@ export interface CustomAlertOptions {
   tone?: 'warning' | 'danger' | 'success' | 'info';
 }
 
-export interface CustomModalState {
+// GÜNCELLENDİ: 'any' yerine Generic <T> kullanılarak tam tip güvenliği sağlandı.
+export interface CustomModalState<T = unknown> {
   title: string;
   message?: string;
   label?: string;
   value?: string;
   multiline?: boolean;
-  resolve: (val: any) => void;
+  resolve: (val: T) => void;
 }
 
 export interface UISlice {
@@ -21,14 +22,17 @@ export interface UISlice {
   setOpened: (opened: boolean) => void;
   isOpening: boolean;
   setIsOpening: (isOpening: boolean) => void;
-  customAlert: CustomModalState | null;
-  setCustomAlert: (alert: CustomModalState | null) => void;
+  
+  customAlert: CustomModalState<boolean> | null;
+  setCustomAlert: (alert: CustomModalState<boolean> | null) => void;
   showAppAlert: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
-  customConfirm: CustomModalState | null;
-  setCustomConfirm: (confirm: CustomModalState | null) => void;
+  
+  customConfirm: CustomModalState<boolean> | null;
+  setCustomConfirm: (confirm: CustomModalState<boolean> | null) => void;
   showAppConfirm: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
-  customPrompt: CustomModalState | null;
-  setCustomPrompt: (prompt: CustomModalState | null) => void;
+  
+  customPrompt: CustomModalState<string | null> | null;
+  setCustomPrompt: (prompt: CustomModalState<string | null> | null) => void;
   showAppPrompt: (label: string, defaultValue?: string, options?: CustomAlertOptions) => Promise<string | null>;
 }
 
@@ -50,9 +54,9 @@ export interface AdminDraftSlice {
   setPersonalLinkName: (name: string) => void;
   dataImportText: string;
   setDataImportText: (text: string) => void;
-  updateDraftObject: <K extends keyof SiteData>(group: K, key: string, value: any) => void;
-  updateDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, key: string, value: any) => void;
-  addDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, item: any) => void;
+  updateDraftObject: <K extends keyof SiteData>(group: K, key: string, value: unknown) => void;
+  updateDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, key: string, value: unknown) => void;
+  addDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, item: unknown) => void;
   removeDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number) => void;
   moveDraftArrayItem: <K extends keyof SiteData>(arrayKey: K, index: number, direction: number) => void;
   saveSiteContent: (isEn: boolean) => Promise<void>;

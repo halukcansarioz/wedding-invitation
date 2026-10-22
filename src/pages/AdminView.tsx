@@ -4,7 +4,12 @@ import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
 import { useStore } from "../store/useStore";
 import { ErrorBoundary } from "../components/common/ErrorBoundary";
 
-export default function AdminView(props: any) {
+// EKLENDİ: Tip güvenliği için arayüz tanımlandı
+export interface AdminViewProps {
+  [key: string]: unknown;
+}
+
+export default function AdminView(props: AdminViewProps) {
   const activeAdminTab = useStore(state => state.activeAdminTab);
   
   const adminTabs = [
@@ -18,7 +23,7 @@ export default function AdminView(props: any) {
     { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
     { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
-    { id: "gallery", label: "Görsel / Müzik", description: "Ana görseller, galeri ve müzik" },
+    { id: "gallery", label: "Görsel / Müzik", description: "Ana görrels, galeri ve müzik" },
     { id: "payments", label: "Gelen Hediyeler & Ödemeler", description: "Stripe üzerinden gelen takı ve hediyeler" },
     { id: "guestPhotos", label: "Misafir Fotoğrafları (POV)", description: "Misafirlerin yüklediği kareler" },
     { id: "guests", label: "Katılım (LCV) Kayıtları", description: "Ad, kişi sayısı, çocuk, not" },

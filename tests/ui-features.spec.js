@@ -2,15 +2,21 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Kullanıcı Arayüzü ve Bileşen Etkileşimleri', () => {
 
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => route.abort());
-    await page.goto('/');
+test.beforeEach(async ({ page }) => {
+    await page.route('**/*.{png,jpg,jpeg,webp,mp4}', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'image/png',
+        body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64')
+      });
+    });
+    
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
-    await page.waitForTimeout(1000); 
-    await envelopeSeal.click();
-    await expect(page.locator('.intro-page')).not.toBeVisible({ timeout: 15000 });
+    await envelopeSeal.click({ force: true });
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
   });
 
   test('Galeri resmine tıklandığında Lightbox (Büyük Ekran) açılmalı ve kapanmalı', async ({ page }) => {

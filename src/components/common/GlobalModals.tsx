@@ -1,23 +1,16 @@
 /// <reference types="vite/client" />
 import React, { memo } from "react";
 import "../../styles/modals.css";
-
-export interface ModalData {
-  title: string;
-  message?: string;
-  label?: string;
-  value?: string;
-  multiline?: boolean;
-  resolve: (value: any) => void;
-}
+// GÜNCELLENDİ: storeTypes üzerinden güvenli tipler içeri aktarıldı
+import { CustomModalState } from "../../store/storeTypes";
 
 interface GlobalModalsProps {
-  customAlert: ModalData | null;
-  setCustomAlert: (val: ModalData | null) => void;
-  customConfirm: ModalData | null;
-  setCustomConfirm: (val: ModalData | null) => void;
-  customPrompt: ModalData | null;
-  setCustomPrompt: (val: ModalData | null) => void;
+  customAlert: CustomModalState<boolean> | null;
+  setCustomAlert: (val: CustomModalState<boolean> | null) => void;
+  customConfirm: CustomModalState<boolean> | null;
+  setCustomConfirm: (val: CustomModalState<boolean> | null) => void;
+  customPrompt: CustomModalState<string | null> | null;
+  setCustomPrompt: (val: CustomModalState<string | null> | null) => void;
   t: (key: string) => string;
 }
 
@@ -66,13 +59,13 @@ export const GlobalModals = memo(function GlobalModals({
 
       {customPrompt && (
         <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
-          <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
+          <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value || null); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
             <h3 className="global-modal-title">{customPrompt.title}</h3>
             <p className="global-modal-text">{customPrompt.label}</p>
             {customPrompt.multiline ? (
-              <textarea autoFocus value={customPrompt.value || ""} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input textarea" />
+              <textarea autoFocus value={customPrompt.value || ""} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value, resolve: customPrompt.resolve })} className="global-modal-input textarea" />
             ) : (
-              <input autoFocus value={customPrompt.value || ""} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value })} className="global-modal-input" />
+              <input autoFocus value={customPrompt.value || ""} onChange={e => setCustomPrompt({ ...customPrompt, value: e.target.value, resolve: customPrompt.resolve })} className="global-modal-input" />
             )}
             <div className="global-modal-actions">
               <button type="submit" className="main-button global-modal-btn">{t('ui.save')}</button>

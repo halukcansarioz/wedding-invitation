@@ -20,9 +20,11 @@ export function useAdminGuestPhotos(isEn: boolean) {
   const fetchPhotos = async () => {
     setIsLoading(true);
     const tenantId = getActiveTenantId();
-    let query: any = supabase.from('guest_photos').select('*');
+    
+    // GÜNCELLENDİ: "let query: any" kullanımı kaldırılarak tip güvenliği sağlandı
+    let query = supabase.from('guest_photos').select('*');
 
-    if (tenantId && typeof query.eq === 'function') {
+    if (tenantId) {
       query = query.eq('tenant_id', tenantId);
     }
 

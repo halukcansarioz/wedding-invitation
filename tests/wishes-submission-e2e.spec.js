@@ -1,46 +1,37 @@
 import { test, expect } from '@playwright/test';
-// import { setupE2EMocks } from './utils'; // Projenizde varsa yorum satırını kaldırabilirsiniz
+import { setupE2EMocks } from './utils';
 
 test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
-
-  test('Misafir sadece yazılı mesaj gönderdiğinde arka plana istek atmalı ve form sıfırlanmalı', async ({ page }) => {
+  test.beforeEach(async ({ page }) => {
+    await setupE2EMocks(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     
-    await page.route('**/functions/v1/submit-form', async route => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ 
-          success: true, 
-          data: { 
-            id: 'mock-id', 
-            name: 'Ahmet Yılmaz', 
-            message: 'Tebrikler, çok mutlu olun!' 
-          } 
-        })
-      });
-    });
-
-    await page.goto('/');
-
     const envelopeSeal = page.locator('.envelope-seal');
-    await expect(envelopeSeal).toBeVisible();
-    await envelopeSeal.click();
-
-    const wishForm = page.locator('.wish-form');
-    await wishForm.scrollIntoViewIfNeeded();
-
-    const nameInput = wishForm.locator('input[name="name"]');
-    const messageInput = wishForm.locator('textarea[name="message"]');
-    const submitButton = wishForm.locator('button[type="submit"]');
-
-    await expect(nameInput).toBeVisible();
-    await nameInput.fill('Ahmet Yılmaz');
-    await messageInput.fill('Tebrikler, çok mutlu olun!');
-
-    await submitButton.click();
-
-    await expect(nameInput).toHaveValue('', { timeout: 15000 });
-    await expect(messageInput).toHaveValue('', { timeout: 15000 });
+    await envelopeSeal.click({ force: true });
+    await expect(page.locator('.intro-page')).toBeHidden();
   });
 
+  test('Kullanıcı başarılı bir şekilde anı mesajı gönderebilmeli', async ({ page }) => {
+    const wishesForm = page.locator('form').filter({ has: page.locator('textarea[name="message"]') }).first();
+    await wishesForm.scrollIntoViewIfNeeded();
+
+    const nameInput = wishesForm.locator('input[name="name"]').first();
+    await nameInput.fill('Playwright Test Kullanıcısı');
+
+    const messageInput = wishesForm.locator('textarea[name="message"]').first();
+    await messageInput.fill('Ömür boyu mutluluklar dilerim!');
+
+    const submitRequestPromise = page.waitForRequest(req => req.url().includes('submit-form') && req.method() === 'POST');
+    
+    const submitButton = wishesForm.locator('button[type="submit"]');
+    await submitButton.click();
+
+    const request = await submitRequestPromise;
+    const postData = JSON.parse(request.postData());
+
+    expect(postData.data.name).toBe('Playwright Test Kullanıcısı');
+    expect(postData.data.message || postData.data.text || postData.data.content).toBe('Ömür boyu mutluluklar dilerim!');
+
+    await expect(messageInput).toHaveValue('');
+  });
 });
