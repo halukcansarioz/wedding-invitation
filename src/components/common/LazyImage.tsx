@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import React, { useState, CSSProperties, MouseEvent } from 'react';
 
 export interface LazyImageProps {

@@ -24,8 +24,15 @@ function LiveProjectorContent() {
 
   const displayItems = useMemo(() => {
     const items: any[] = [];
-    wishes?.forEach(w => items.push({ type: 'wish', data: w }));
-    photos?.forEach(p => items.push({ type: 'photo', data: p }));
+
+    if (Array.isArray(wishes)) {
+      wishes.forEach((w) => items.push({ type: 'wish', data: w }));
+    }
+
+    if (Array.isArray(photos)) {
+      photos.forEach((p) => items.push({ type: 'photo', data: p }));
+    }
+
     return items.sort(() => Math.random() - 0.5);
   }, [wishes, photos]);
 

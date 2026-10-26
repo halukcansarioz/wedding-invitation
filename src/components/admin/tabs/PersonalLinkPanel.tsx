@@ -3,7 +3,19 @@ import { useTranslation } from "react-i18next";
 import { AdminSection, AdminField } from "../../AdminUI";
 import { buildPersonalLink } from "../../../utils/helpers";
 
-export function PersonalLinkPanel({ currentShareLink, copyAdminLink, personalLinkName, setPersonalLinkName }) {
+export interface PersonalLinkPanelProps {
+  currentShareLink: string;
+  copyAdminLink: (link: string, message?: string) => void;
+  personalLinkName: string;
+  setPersonalLinkName: (name: string) => void;
+}
+
+export function PersonalLinkPanel({ 
+  currentShareLink, 
+  copyAdminLink, 
+  personalLinkName, 
+  setPersonalLinkName 
+}: PersonalLinkPanelProps) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
   const [tableNumber, setTableNumber] = useState("");

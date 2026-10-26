@@ -3,10 +3,26 @@ import { AdminSection } from "../../AdminUI";
 import { supabase } from "../../../supabaseClient";
 import { getActiveTenantId } from "../../../utils/tenant";
 
-export function PaymentsTab({ isEn }) {
-  const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export interface Payment {
+  id: string | number;
+  guest_name?: string;
+  amount: number | string;
+  currency: string;
+  status: "completed" | "pending" | string;
+  created_at: string;
+  note?: string;
+  tenant_id?: string;
+}
+
+interface PaymentsTabProps {
+  isEn: boolean;
+}
+
+export function PaymentsTab({ isEn }: PaymentsTabProps) {
+  // 2. State'i Payment[] olarak tiplendir:
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -22,9 +38,9 @@ export function PaymentsTab({ isEn }) {
       const { data, error: fetchError } = await query.order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setPayments(data || []);
-    } catch (err) {
-      setError(err.message);
+      setPayments((data as Payment[]) || []);
+    } catch (err: any) {
+      setError(err?.message || "Bilinmeyen hata");
     } finally {
       setLoading(false);
     }
@@ -75,7 +91,7 @@ export function PaymentsTab({ isEn }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                 <strong style={{ fontSize: "16px" }}>{payment.guest_name}</strong>
                 <strong style={{ color: payment.status === 'completed' ? "#27ae60" : "#f39c12", fontSize: "16px" }}>
-                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+                  {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: payment.currency || 'TRY' }).format(Number(payment.amount))}
                 </strong>
               </div>
               
