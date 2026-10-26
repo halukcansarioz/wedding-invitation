@@ -5,8 +5,11 @@ import { useStore } from "./store/useStore";
 import { GlobalModals } from "./components/common/GlobalModals";
 import InvitationController from "./pages/InvitationController";
 const AdminController = lazy(() => import("./pages/AdminController"));
+const LiveProjector = lazy(() => import("./pages/LiveProjector"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { getFaviconUrl, normalizeSiteData } from "./utils/helpers";
+import { getActiveTenantId } from "./utils/tenant";
 import {
   isSupabaseReady,
   loadSettingsFromDatabase,
@@ -17,7 +20,6 @@ import {
 import { SITE_DATA_KEY } from "./config/constants";
 import "./styles/index.css";
 import { LazyMotion, domAnimation } from "framer-motion";
-const LiveProjector = lazy(() => import("./pages/LiveProjector"));
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -37,6 +39,7 @@ function App() {
   const setAdminDraft = useStore((state) => state.setAdminDraft);
 
   const location = useLocation();
+  const activeTenantId = getActiveTenantId();
   const activeTheme = siteData.settings?.theme || "lavanta";
   const invitation = siteData.invitation;
   const isAuthRecovery =
@@ -77,15 +80,16 @@ function App() {
       if (!isSupabaseReady()) return;
       try {
         const [dbSettings, dbWishes, dbPublicGuests] = await Promise.all([
-          loadSettingsFromDatabase(),
-          loadPublishedWishesFromDatabase(),
-          loadPublicGuestsSummaryFromDatabase(),
+          loadSettingsFromDatabase(activeTenantId || "main"),
+          loadPublishedWishesFromDatabase(activeTenantId),
+          loadPublicGuestsSummaryFromDatabase(activeTenantId),
         ]);
 
         const normalizedSettings = dbSettings
           ? normalizeSiteData(dbSettings)
           : normalizeSiteData(null);
-        localStorage.setItem(SITE_DATA_KEY, JSON.stringify(normalizedSettings));
+        const storageKey = activeTenantId ? `${SITE_DATA_KEY}-${activeTenantId}` : SITE_DATA_KEY;
+        localStorage.setItem(storageKey, JSON.stringify(normalizedSettings));
 
         setSiteData(normalizedSettings);
         setAdminDraft(normalizedSettings);
@@ -98,7 +102,7 @@ function App() {
       }
     }
     initDatabaseData();
-  }, [setSiteData, setAdminDraft, setWishes, setGuests]);
+  }, [activeTenantId, setSiteData, setAdminDraft, setWishes, setGuests]);
 
   return (
     <LazyMotion features={domAnimation} strict>
@@ -149,6 +153,14 @@ function App() {
               element={
                 <ErrorBoundary>
                   {isAuthRecovery ? <AdminController /> : <InvitationController />}
+                </ErrorBoundary>
+              }
+            />
+            <Route
+              path="/tanitim"
+              element={
+                <ErrorBoundary>
+                  <LandingPage />
                 </ErrorBoundary>
               }
             />

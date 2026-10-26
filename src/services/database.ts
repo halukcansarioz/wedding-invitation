@@ -3,6 +3,7 @@ import { normalizeSiteData, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 import { optimizeImage } from "../utils/imageOptimizer";
 import { SiteData, Guest, Wish } from "../types";
 import { get, set } from "idb-keyval";
+import { getActiveTenantId } from "../utils/tenant";
 
 export const getSupabaseUrl = (): string =>
   String(import.meta.env?.VITE_SUPABASE_URL || "").trim().replace(/\/$/, "");
@@ -26,8 +27,6 @@ export const getSupabaseSetupMessage = (): string => {
 export const getReadableAuthError = (error: any): string => {
   if (!error) return "Bilinmeyen bir hata oluştu.";
   const status = error?.status || error?.code;
-  // İngilizce hata mesajlarındaki "Invalid" kelimesinin başındaki "I" harfi
-  // toLocaleLowerCase("tr-TR") ile "ı" ("ınvalid") olduğu için standart toLowerCase() kullanıyoruz.
   const message = String(error?.message || error?.name || "").toLowerCase();
   if (status === 400 && message.includes("invalid login")) return "E-posta veya şifre hatalı.";
   if (status === 429) {
@@ -54,52 +53,96 @@ export const fetchWithRetry = async <T>(
   throw new Error("Tüm denemeler başarısız oldu.");
 };
 
-export const loadSettingsFromDatabase = async (): Promise<SiteData | null> => {
+const extractSettingsPayload = (rawData: any): any => {
+  if (!rawData) return null;
+  if (Array.isArray(rawData)) {
+    if (rawData.length === 0) return null;
+    return extractSettingsPayload(rawData[0]);
+  }
+  if (rawData.content && typeof rawData.content === "object") return rawData.content;
+  if (rawData.data && typeof rawData.data === "object" && !Array.isArray(rawData.data)) {
+    return rawData.data;
+  }
+  if (rawData.invitation || rawData.settings) return rawData;
+  return null;
+};
+
+export const loadSettingsFromDatabase = async (
+  explicitTenantId?: string | null
+): Promise<SiteData | null> => {
   if (!isSupabaseReady()) return null;
+  const tenantId =
+    explicitTenantId !== undefined ? explicitTenantId || "main" : getActiveTenantId() || "main";
+
   return fetchWithRetry(async () => {
     const { data, error } = await supabase
       .from("invitation_settings")
       .select("content")
-      .eq("id", "main")
+      .eq("id", tenantId)
       .single();
-    if (error) throw error;
-    return normalizeSiteData(data?.content || null) as SiteData;
+
+    if (error) {
+      if (tenantId !== "main") {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("invitation_settings")
+          .select("content")
+          .eq("id", "main")
+          .single();
+        if (!fallbackError && fallbackData) {
+          return normalizeSiteData(extractSettingsPayload(fallbackData)) as SiteData;
+        }
+      }
+      throw error;
+    }
+    return normalizeSiteData(extractSettingsPayload(data)) as SiteData;
   });
 };
 
-export const saveSettingsToDatabase = async (settings: SiteData): Promise<void> => {
+export const saveSettingsToDatabase = async (
+  settings: SiteData,
+  explicitTenantId?: string | null
+): Promise<void> => {
   if (!isSupabaseReady()) throw new Error("Supabase ayarları eksik.");
+  const tenantId =
+    explicitTenantId !== undefined ? explicitTenantId || "main" : getActiveTenantId() || "main";
+
   const { error } = await supabase.from("invitation_settings").upsert(
-    { id: "main", content: settings as any, updated_at: new Date().toISOString() },
+    { id: tenantId, content: settings as any, updated_at: new Date().toISOString() },
     { onConflict: "id" }
   );
   if (error) throw error;
 };
 
-export const loadGuestsFromDatabase = async (): Promise<Guest[]> => {
+export const loadGuestsFromDatabase = async (
+  explicitTenantId?: string | null
+): Promise<Guest[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase
-    .from("guests")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1000);
-  if (error) return [];
-  return (data || []).map(dbGuestToUi);
+  const tenantId = explicitTenantId !== undefined ? explicitTenantId : getActiveTenantId();
+
+  let query = supabase.from("guests").select("*");
+  if (tenantId && typeof query.eq === "function") {
+    query = query.eq("tenant_id", tenantId);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1000);
+  if (error || !Array.isArray(data)) return [];
+  return data.map(dbGuestToUi);
 };
 
-/**
- * Ziyaretçi (Public) görünümü için misafirlerin özel bilgilerini (isim, telefon, not)
- * sızdırmadan yalnızca katılım istatistikleri için gereken alanları çeker.
- */
-export const loadPublicGuestsSummaryFromDatabase = async (): Promise<Guest[]> => {
+export const loadPublicGuestsSummaryFromDatabase = async (
+  explicitTenantId?: string | null
+): Promise<Guest[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase
-    .from("guests")
-    .select("id, attendance, person_count")
-    .order("created_at", { ascending: false })
-    .limit(1000);
-  if (error) return [];
-  return (data || []).map((g: any) => ({
+  const tenantId = explicitTenantId !== undefined ? explicitTenantId : getActiveTenantId();
+
+  let query = supabase.from("guests").select("id, attendance, person_count");
+  if (tenantId && typeof query.eq === "function") {
+    query = query.eq("tenant_id", tenantId);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1000);
+  if (error || !Array.isArray(data)) return [];
+  return data.map((g: any) => ({
     id: g.id,
     name: "",
     attendance: g.attendance,
@@ -110,27 +153,36 @@ export const loadPublicGuestsSummaryFromDatabase = async (): Promise<Guest[]> =>
   }));
 };
 
-export const loadAllWishesFromDatabase = async (): Promise<Wish[]> => {
+export const loadAllWishesFromDatabase = async (
+  explicitTenantId?: string | null
+): Promise<Wish[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase
-    .from("wishes")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1000);
-  if (error) return [];
-  return (data || []).map(dbWishToUi);
+  const tenantId = explicitTenantId !== undefined ? explicitTenantId : getActiveTenantId();
+
+  let query = supabase.from("wishes").select("*");
+  if (tenantId && typeof query.eq === "function") {
+    query = query.eq("tenant_id", tenantId);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1000);
+  if (error || !Array.isArray(data)) return [];
+  return data.map(dbWishToUi);
 };
 
-export const loadPublishedWishesFromDatabase = async (): Promise<Wish[]> => {
+export const loadPublishedWishesFromDatabase = async (
+  explicitTenantId?: string | null
+): Promise<Wish[]> => {
   if (!isSupabaseReady()) return [];
-  const { data, error } = await supabase
-    .from("wishes")
-    .select("*")
-    .eq("approved", true)
-    .order("created_at", { ascending: false })
-    .limit(1000);
-  if (error) return [];
-  return (data || []).map(dbWishToUi);
+  const tenantId = explicitTenantId !== undefined ? explicitTenantId : getActiveTenantId();
+
+  let query = supabase.from("wishes").select("*").eq("approved", true);
+  if (tenantId && typeof query.eq === "function") {
+    query = query.eq("tenant_id", tenantId);
+  }
+
+  const { data, error } = await query.order("created_at", { ascending: false }).limit(1000);
+  if (error || !Array.isArray(data)) return [];
+  return data.map(dbWishToUi);
 };
 
 export const uploadMediaFile = async (
@@ -149,13 +201,15 @@ export const uploadMediaFile = async (
     }
   }
 
+  const tenantId = getActiveTenantId();
+  const tenantPrefix = tenantId ? `${tenantId}/` : "";
   const fileExt = rawFile.name.split(".").pop() || "file";
   const safeName = rawFile.name
     .replace(/\.[^/.]+$/, "")
     .toLocaleLowerCase("tr-TR")
     .replace(/[^a-z0-9ğüşöçıİĞÜŞÖÇ]+/gi, "-")
     .replace(/^-+|-+$/g, "");
-  const fileName = `${folder}/${Date.now()}-${safeName || "upload"}.${fileExt}`;
+  const fileName = `${folder}/${tenantPrefix}${Date.now()}-${safeName || "upload"}.${fileExt}`;
 
   const { error } = await supabase.storage.from("wedding-media").upload(fileName, fileToUpload, {
     cacheControl: "3600",
@@ -176,13 +230,18 @@ export const uploadAndModerateGuestPhoto = async (
   const url = await uploadMediaFile(rawFile, "guest_photos");
   if (!url) return { url: null, isApproved: false };
 
+  const tenantId = getActiveTenantId();
+  const insertPayload: Record<string, any> = { image_url: url, approved: false };
+  if (tenantId) insertPayload.tenant_id = tenantId;
+
   try {
     const res = await supabase.functions.invoke("moderate-photo", { body: { imageUrl: url } });
     const isSafe = Boolean(res?.data?.isSafe);
-    await supabase.from("guest_photos").insert([{ image_url: url, approved: isSafe }]);
+    insertPayload.approved = isSafe;
+    await supabase.from("guest_photos").insert([insertPayload]);
     return { url, isApproved: isSafe };
   } catch {
-    await supabase.from("guest_photos").insert([{ image_url: url, approved: false }]);
+    await supabase.from("guest_photos").insert([insertPayload]);
     return { url, isApproved: false };
   }
 };
@@ -248,18 +307,32 @@ export const runStorageGarbageCollection = async (): Promise<void> => {
 
 export const restoreBackupToDatabase = async (parsedData: any): Promise<void> => {
   if (!isSupabaseReady()) throw new Error("Supabase bağlantısı kurulamadı.");
-  if (parsedData.siteData) await saveSettingsToDatabase(parsedData.siteData);
+  const tenantId = getActiveTenantId();
+
+  if (parsedData.siteData) await saveSettingsToDatabase(parsedData.siteData, tenantId);
   if (parsedData.guests && parsedData.guests.length > 0) {
-    await supabase.from("guests").delete().not("id", "is", null);
+    let deleteQuery = supabase.from("guests").delete();
+    deleteQuery = tenantId ? deleteQuery.eq("tenant_id", tenantId) : deleteQuery.not("id", "is", null);
+    await deleteQuery;
+
     const guestsToInsert = parsedData.guests.map(
-      ({ id, created_at, updated_at, ...rest }: any) => rest
+      ({ id, created_at, updated_at, ...rest }: any) => ({
+        ...rest,
+        ...(tenantId ? { tenant_id: tenantId } : {}),
+      })
     );
     await supabase.from("guests").insert(guestsToInsert);
   }
   if (parsedData.wishes && parsedData.wishes.length > 0) {
-    await supabase.from("wishes").delete().not("id", "is", null);
+    let deleteQuery = supabase.from("wishes").delete();
+    deleteQuery = tenantId ? deleteQuery.eq("tenant_id", tenantId) : deleteQuery.not("id", "is", null);
+    await deleteQuery;
+
     const wishesToInsert = parsedData.wishes.map(
-      ({ id, created_at, updated_at, ...rest }: any) => rest
+      ({ id, created_at, updated_at, ...rest }: any) => ({
+        ...rest,
+        ...(tenantId ? { tenant_id: tenantId } : {}),
+      })
     );
     await supabase.from("wishes").insert(wishesToInsert);
   }

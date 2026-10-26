@@ -311,6 +311,7 @@ tests/
   admin-auth-recovery.spec.js
   admin-auth-ui.spec.js
   admin-data-management.spec.js
+  admin-forgot-password-flow.spec.js
   admin-live-projector-fullscreen.spec.js
   admin-live-projector.spec.js
   admin-personal-link.spec.js
@@ -329,9 +330,11 @@ tests/
   guest-upload-flow.spec.js
   guestbook-live-sync.spec.js
   guestbook-submission.spec.js
+  location-and-share-flow.spec.js
   navigation-modal.spec.js
   offline-sync.spec.js
   payments-and-gifts.spec.js
+  personalized-envelope.spec.js
   responsive-mobile.spec.js
   rsvp-complete-flow.spec.js
   rsvp-flow.spec.js
@@ -395,54 +398,6 @@ export function useCountdown(weddingDate) {
 
   return timeLeft;
 }
-</file>
-
-<file path="src/utils/tenant.test.ts">
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getActiveTenantId } from './tenant';
-
-describe('tenant.ts Tenant Ayrıştırma Testleri', () => {
-  const originalLocation = window.location;
-
-  beforeEach(() => {
-    vi.stubGlobal('window', {
-      ...window,
-      location: { pathname: '/' }
-    });
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it('Pathname boş veya rezerve kelimelerse (admin, live, login) null dönmeli', () => {
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: { pathname: '/admin' }
-    });
-    expect(getActiveTenantId()).toBeNull();
-
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: { pathname: '/live' }
-    });
-    expect(getActiveTenantId()).toBeNull();
-
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: { pathname: '/' }
-    });
-    expect(getActiveTenantId()).toBeNull();
-  });
-
-  it('Pathname geçerli bir tenant ID içeriyorsa doğru tenant adını dönmeli', () => {
-    Object.defineProperty(window, 'location', {
-      writable: true,
-      value: { pathname: '/handenur-haluk/rsvp' }
-    });
-    expect(getActiveTenantId()).toBe('handenur-haluk');
-  });
-});
 </file>
 
 <file path="supabase/functions/send-rsvp-confirmation/.npmrc">
@@ -539,45 +494,6 @@ serve(async (req: Request) => {
     })
   }
 })
-</file>
-
-<file path="tests/rsvp-complete-flow.spec.js">
-import { test, expect } from '@playwright/test';
-import { setupE2EMocks } from './utils';
-
-test.describe('Kapsamlı LCV (RSVP) ve Davetiye Akış Testi', () => {
-  test('Kullanıcı zarfı açıp LCV formunu eksiksiz doldurarak katılım bildirebilmeli', async ({ page }) => {
-    test.setTimeout(60000);
-
-    await setupE2EMocks(page);
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-
-    const envelopeSeal = page.locator('.envelope-seal');
-    await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
-    await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });
-    await envelopeSeal.click();
-    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
-
-    const rsvpSection = page.locator('.rsvp-card');
-    await rsvpSection.scrollIntoViewIfNeeded();
-    await expect(rsvpSection).toBeVisible({ timeout: 10000 });
-
-    const nameInput = rsvpSection.locator('input:not([name="honeypot"]):not([type="hidden"])').first();
-    await nameInput.fill('Test Misafiri');
-    await expect(nameInput).toHaveValue('Test Misafiri');
-
-    const radioOptions = rsvpSection.locator('button[role="radio"]');
-    if (await radioOptions.count() > 0) {
-      await radioOptions.first().click();
-    }
-
-    const submitButton = rsvpSection.locator('button[type="submit"]');
-    await expect(submitButton).toBeVisible();
-    await submitButton.click();
-
-    await expect(rsvpSection).toBeVisible();
-  });
-});
 </file>
 
 <file path=".oxlintrc.json">
@@ -9127,6 +9043,47 @@ describe('Helpers Genişletilmiş Uç Durum (Edge Case) Testleri', () => {
 });
 </file>
 
+<file path="src/utils/tenant.test.ts">
+import { describe, it, expect, beforeEach } from 'vitest';
+import { getActiveTenantId } from './tenant';
+
+describe('Multi-Tenant URL Ayrıştırma (getActiveTenantId) Testleri', () => {
+  beforeEach(() => {
+    // JSDOM ortamında pathname'i güvenli bir şekilde sıfırlama
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...window.location,
+        pathname: '/'
+      },
+      writable: true
+    });
+  });
+
+  it('Kök dizinde (/) null dönmeli', () => {
+    expect(getActiveTenantId()).toBeNull();
+  });
+
+  it('Rezerve edilmiş sistem rotalarında (/admin, /live, /login, /register) null dönmeli', () => {
+    const paths = ['/admin', '/live', '/login', '/register'];
+    paths.forEach(path => {
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: path },
+        writable: true
+      });
+      expect(getActiveTenantId()).toBeNull();
+    });
+  });
+
+  it('Özel çift (tenant) URL adreslerinde küçük harfe çevrilmiş tenant kimliğini dönmeli', () => {
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, pathname: '/Handenur-Haluk/live' },
+      writable: true
+    });
+    expect(getActiveTenantId()).toBe('handenur-haluk');
+  });
+});
+</file>
+
 <file path="src/utils/tenant.ts">
 const RESERVED_PATHS = new Set(['admin', 'live', 'login', 'register', '']);
 
@@ -9410,6 +9367,39 @@ test.describe('Erişilebilirlik Testleri', () => {
 });
 </file>
 
+<file path="tests/admin-forgot-password-flow.spec.js">
+import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
+
+test.describe('Admin Şifremi Unuttum Ekran Geçiş Testi', () => {
+  test('Admin giriş ekranından şifre sıfırlama formuna geçip tekrar giriş formuna dönebilmeli', async ({ page }) => {
+    await setupE2EMocks(page);
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+
+    const adminPage = page.locator('.admin-page').first();
+    await expect(adminPage).toBeVisible({ timeout: 15000 });
+
+    const emailInput = page.locator('.admin-login input[type="email"]').first();
+    if (await emailInput.isVisible()) {
+      await emailInput.fill('ornek@dugun.com');
+
+      const forgotBtn = page.locator('button.admin-link-button').filter({ hasText: /Şifremi unuttum|Forgot password/i }).first();
+      await forgotBtn.click();
+
+      const forgotForm = page.locator('form.admin-forgot-form');
+      await expect(forgotForm).toBeVisible({ timeout: 5000 });
+      await expect(forgotForm.locator('input[type="email"]')).toHaveValue('ornek@dugun.com');
+
+      const backBtn = forgotForm.locator('button.admin-link-button');
+      await backBtn.click();
+
+      await expect(forgotForm).toBeHidden({ timeout: 5000 });
+      await expect(page.locator('.admin-login input[type="password"]')).toBeVisible();
+    }
+  });
+});
+</file>
+
 <file path="tests/admin-live-projector-fullscreen.spec.js">
 import { test, expect } from '@playwright/test';
 import { setupE2EMocks } from './utils';
@@ -9658,6 +9648,117 @@ test.describe('Anı Defteri (Guestbook) Mesaj Gönderim Testleri', () => {
         await submitBtn.click();
       }
     }
+  });
+});
+</file>
+
+<file path="tests/location-and-share-flow.spec.js">
+import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
+
+test.describe('Konum Modalı ve Paylaşım Bölümü Testleri', () => {
+  test('Misafir yol tarifi modalını açıp adres kopyalayabilmeli ve QR kod alanını görebilmeli', async ({ page }) => {
+    test.setTimeout(60000);
+
+    await setupE2EMocks(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
+    await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });
+    await envelopeSeal.click();
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+
+    const mapIframe = page.locator('.mini-map iframe').first();
+    if (await mapIframe.isVisible()) {
+      await mapIframe.scrollIntoViewIfNeeded();
+      const navButton = page.locator('button').filter({ hasText: /Konuma Git|Go to Map/i }).first();
+      if (await navButton.isVisible()) {
+        await navButton.click();
+
+        const navModal = page.locator('.location-nav-modal');
+        await expect(navModal).toBeVisible({ timeout: 5000 });
+        await expect(navModal.locator('a', { hasText: 'Google Maps' })).toBeVisible();
+        await expect(navModal.locator('a', { hasText: 'Yandex Navi' })).toBeVisible();
+
+        const copyBtn = navModal.locator('.location-nav-copy');
+        await copyBtn.click();
+
+        const closeBtn = navModal.locator('.location-nav-close');
+        await closeBtn.click();
+        await expect(navModal).toBeHidden({ timeout: 5000 });
+      }
+    }
+
+    const qrImage = page.locator('img[alt="QR Code"]').first();
+    if (await qrImage.isVisible()) {
+      await qrImage.scrollIntoViewIfNeeded();
+      await expect(qrImage).toBeVisible();
+    }
+  });
+});
+</file>
+
+<file path="tests/personalized-envelope.spec.js">
+import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
+
+test.describe('Kişiye Özel Zarf ve Klavye Etkileşimi Testleri', () => {
+  test('URL parametresi ile gelen misafir adı ve masa numarası zarf üzerinde görünmeli ve Enter ile açılmalı', async ({ page }) => {
+    await setupE2EMocks(page);
+    await page.goto('/?guest=Ahmet%20Y%C4%B1lmaz&table=12', { waitUntil: 'domcontentloaded' });
+
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
+    await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });
+
+    const guestBadge = page.locator('.envelope-guest-badge');
+    if (await guestBadge.isVisible()) {
+      await expect(guestBadge).toContainText('Ahmet Yılmaz');
+      await expect(guestBadge).toContainText('12');
+    }
+
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+  });
+});
+</file>
+
+<file path="tests/rsvp-complete-flow.spec.js">
+import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
+
+test.describe('Kapsamlı LCV (RSVP) ve Davetiye Akış Testi', () => {
+  test('Kullanıcı zarfı açıp LCV formunu eksiksiz doldurarak katılım bildirebilmeli', async ({ page }) => {
+    test.setTimeout(60000);
+
+    await setupE2EMocks(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
+    await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });
+    await envelopeSeal.click();
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+
+    const rsvpSection = page.locator('.rsvp-card');
+    await rsvpSection.scrollIntoViewIfNeeded();
+    await expect(rsvpSection).toBeVisible({ timeout: 10000 });
+
+    const nameInput = rsvpSection.locator('input:not([name="honeypot"]):not([type="hidden"])').first();
+    await nameInput.fill('Test Misafiri');
+    await expect(nameInput).toHaveValue('Test Misafiri');
+
+    const radioOptions = rsvpSection.locator('button[role="radio"]');
+    if (await radioOptions.count() > 0) {
+      await radioOptions.first().click();
+    }
+
+    const submitButton = rsvpSection.locator('button[type="submit"]');
+    await expect(submitButton).toBeVisible();
+    await submitButton.click();
+
+    await expect(rsvpSection).toBeVisible();
   });
 });
 </file>
@@ -15894,30 +15995,6 @@ describe('Helpers Utilities Test Suite', () => {
 });
 </file>
 
-<file path="tests/admin-tabs-navigation.spec.js">
-import { test, expect } from '@playwright/test';
-import { setupE2EMocks } from './utils';
-
-test.describe('Admin Paneli Sekme (Tab) Gezinme Testi', () => {
-  test('Admin farklı sekmelere (Tema, Galeri, Görünürlük) tıklandığında doğru sayfaları açmalı', async ({ page }) => {
-    await setupE2EMocks(page);
-    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
-
-    const adminPage = page.locator('.admin-page, .admin-shell-card').first();
-    await expect(adminPage).toBeVisible({ timeout: 15000 });
-
-    const galleryTabBtn = page.locator('button.admin-nav-button').filter({ hasText: /Görsel|Müzik|Galeri|Visuals|Gallery/i }).first();
-    if (await galleryTabBtn.isVisible()) {
-      await galleryTabBtn.click();
-      await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 5000 });
-    } else {
-      const loginForm = page.locator('form.admin-login, .admin-login').first();
-      await expect(loginForm).toBeVisible({ timeout: 5000 });
-    }
-  });
-});
-</file>
-
 <file path="tests/admin-theme-settings.spec.js">
 import { test, expect } from '@playwright/test';
 
@@ -19012,6 +19089,30 @@ test.describe('Admin Paneli: Veri Yedekleme (Data Export) İşlemleri', () => {
 
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toContain('.json');
+  });
+});
+</file>
+
+<file path="tests/admin-tabs-navigation.spec.js">
+import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
+
+test.describe('Admin Paneli Sekme (Tab) Gezinme Testi', () => {
+  test('Admin farklı sekmelere (Tema, Galeri, Görünürlük) tıklandığında doğru sayfaları açmalı', async ({ page }) => {
+    await setupE2EMocks(page);
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+
+    const adminPage = page.locator('.admin-page, .admin-shell-card').first();
+    await expect(adminPage).toBeVisible({ timeout: 15000 });
+
+    const galleryTabBtn = page.locator('button.admin-nav-button').filter({ hasText: /Görsel|Müzik|Galeri|Visuals|Gallery/i }).first();
+    if (await galleryTabBtn.isVisible()) {
+      await galleryTabBtn.click();
+      await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 5000 });
+    } else {
+      const loginForm = page.locator('form.admin-login, .admin-login').first();
+      await expect(loginForm).toBeVisible({ timeout: 5000 });
+    }
   });
 });
 </file>
@@ -22878,709 +22979,6 @@ export async function optimizeImageFile(file, options = {}) {
 }
 </file>
 
-<file path="src/main.jsx">
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import { registerSW } from 'virtual:pwa-register';
-import * as Sentry from '@sentry/react'; 
-import { QueryClient } from '@tanstack/react-query';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { get, set, del } from 'idb-keyval';
-import { runStorageGarbageCollection } from './services/database'; // EKLENDİ
-import './i18n/config';
-import App from './App';
-import './index.css';
-
-Sentry.init({
-  dsn: import.meta.env.VITE_SENTRY_DSN || "",
-  integrations: [
-    Sentry.browserTracingIntegration(),
-    Sentry.replayIntegration(),
-  ],
-  tracesSampleRate: 1.0, 
-  replaysSessionSampleRate: 0.1, 
-  replaysOnErrorSampleRate: 1.0, 
-});
-
-registerSW({ immediate: true }); 
-
-// IndexedDB Asenkron Persister
-const indexedDBPersister = createAsyncStoragePersister({
-  storage: {
-    getItem: async (key) => await get(key),
-    setItem: async (key, value) => await set(key, value),
-    removeItem: async (key) => await del(key),
-  },
-});
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      cacheTime: 1000 * 60 * 60 * 24, 
-      refetchOnWindowFocus: true, 
-      retry: 2, 
-    },
-    mutations: {
-      networkMode: 'offlineFirst',
-    },
-  },
-});
-
-// EKLENDİ: Storage çöplerini (Gereksiz IndexedDB verilerini) temizle
-runStorageGarbageCollection();
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <PersistQueryClientProvider 
-      client={queryClient}
-      persistOptions={{ persister: indexedDBPersister, maxAge: 1000 * 60 * 60 * 24 }}
-    >
-      <BrowserRouter>
-        <HelmetProvider>
-          <App />
-          <Analytics />
-          <SpeedInsights />
-        </HelmetProvider>
-      </BrowserRouter>
-    </PersistQueryClientProvider>
-  </React.StrictMode>
-);
-</file>
-
-<file path="tests/admin-live-projector.spec.js">
-import { test, expect } from '@playwright/test';
-
-test.describe('Canlı Barkovizyon (Live Projector) Testleri', () => {
-  test('Barkovizyon sayfası çökmeden açılmalı ve arkaplan siyah olmalı', async ({ page }) => {
-    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.fulfill({ status: 200, body: '' }));
-    
-    await page.goto('/live', { waitUntil: 'domcontentloaded', timeout: 15000 });
-    
-    const liveSubtitle = page.locator('text=/Canlı Anı Akışı|Live Memories/i');
-    await expect(liveSubtitle).toBeVisible({ timeout: 15000 });
-    
-    const titleElement = page.locator('h1');
-    await expect(titleElement).toBeVisible();
-    
-    const mainContainer = page.locator('p', { hasText: /Canlı Anı Akışı|Live Memories/i }).locator('..');
-    await expect(mainContainer).toHaveCSS('background-color', 'rgb(10, 10, 10)');
-  });
-});
-</file>
-
-<file path="tests/admin-personal-link.spec.js">
-import { test, expect } from '@playwright/test';
-
-const mockMedia = async (page) => {
-  await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
-};
-
-test.describe('Admin Paneli: Kişisel Link Oluşturma Testi', () => {
-  test.beforeEach(async ({ page }) => {
-    await mockMedia(page);
-
-    await page.route('**/auth/v1/token?grant_type=password', async route => {
-      const now = Math.floor(Date.now() / 1000);
-      const timestamp = new Date().toISOString();
-      await route.fulfill({
-        status: 200, contentType: 'application/json',
-        body: JSON.stringify({
-          access_token: 'fake-access-token', token_type: 'bearer', expires_in: 3600, expires_at: now + 3600, refresh_token: 'fake-refresh-token',
-          user: { id: '123', aud: 'authenticated', role: 'authenticated', email: 'test@admin.com', email_confirmed_at: timestamp, app_metadata: { provider: 'email', providers: ['email'] }, user_metadata: {}, created_at: timestamp, updated_at: timestamp },
-        }),
-      });
-    });
-
-    await page.route('**/rest/v1/**', async route => {
-      if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
-      const url = route.request().url();
-      if (url.includes('settings')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitation: { bride: 'Hande', groom: 'Haluk' }, settings: { visibility: {} } }) });
-      } else {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
-      }
-    });
-
-    await page.goto('/admin');
-    
-    const emailInput = page.locator('input[type="email"]').first();
-    await emailInput.waitFor({ state: 'visible', timeout: 10000 });
-    await emailInput.fill('test@admin.com');
-    await page.locator('input[type="password"]').first().fill('123456');
-    await page.locator('button[type="submit"]').first().click();
-    
-    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
-  });
-
-  test('Kişiye özel link oluşturma sekmesi çalışmalı ve link üretmeli', async ({ page }) => {
-     const personalLinkTabBtn = page.getByRole('button', { name: /Özel Link|Personal Link/i });
-     await personalLinkTabBtn.waitFor({ state: 'visible', timeout: 10000 });
-     await personalLinkTabBtn.click();
-     
-     const nameInput = page.locator('input[placeholder*="Ahmet Yılmaz"], input[placeholder*="John Doe"]');
-     await expect(nameInput).toBeVisible({ timeout: 10000 });
-     await nameInput.fill('Örnek Misafir');
-     
-     const generatedLinkInput = page.locator('.admin-link-result-input');
-     await expect(generatedLinkInput).toHaveValue(/%C3%96rnek%20Misafir|Örnek%20Misafir/);
-  });
-});
-</file>
-
-<file path="tests/content-visibility.spec.js">
-import { test, expect } from '@playwright/test';
-
-test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Testi', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.abort());
-
-    await page.route('**/auth/v1/token?grant_type=password', async r => {
-      await r.fulfill({
-        status: 200, contentType: 'application/json',
-        body: JSON.stringify({
-          access_token: 'fake', token_type: 'bearer', expires_in: 3600, refresh_token: 'fake',
-          user: { id: '123', email: 'admin@test.com', app_metadata: {} }
-        })
-      });
-    });
-
-    await page.route('**/rest/v1/settings*', async r => {
-      if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
-      return r.fulfill({
-        status: 200, contentType: 'application/json',
-        body: JSON.stringify({
-          invitation: { bride: 'Hande', groom: 'Haluk' },
-          settings: { visibility: { gallery: true, countdown: true } }
-        })
-      });
-    });
-
-    await page.goto('/admin');
-    
-    const emailInput = page.locator('input[type="email"]').first();
-    await emailInput.waitFor({ state: 'visible', timeout: 10000 });
-    await emailInput.fill('admin@test.com');
-    await page.locator('input[type="password"]').first().fill('123456');
-    await page.locator('button[type="submit"]').first().click();
-
-    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
-  });
-
-  test('Görünürlük sekmesinden galeri kapatıldığında ayar state üzerinde güncellenmeli', async ({ page }) => {
-    const visibilityTabBtn = page.getByRole('button', { name: /Bölüm Görünürlüğü|Visibility/i });
-    await visibilityTabBtn.waitFor({ state: 'visible', timeout: 10000 });
-    await visibilityTabBtn.click();
-
-    const galleryCheckbox = page.locator('input[type="checkbox"]').first();
-    await expect(galleryCheckbox).toBeVisible({ timeout: 10000 });
-    
-    if (await galleryCheckbox.isChecked()) {
-      await galleryCheckbox.uncheck();
-    }
-
-    expect(await galleryCheckbox.isChecked()).toBe(false);
-  });
-});
-</file>
-
-<file path="tests/rsvp-flow.spec.js">
-import { test, expect } from '@playwright/test';
-import { setupE2EMocks } from './utils';
-
-test.describe('LCV (RSVP) Formu Uçtan Uca Etkileşimi', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    await setupE2EMocks(page);
-    await page.goto('/');
-    
-    const envelopeSeal = page.locator('.envelope-seal');
-    await expect(envelopeSeal).not.toContainText(/Yükleniyor/i, { timeout: 15000 });
-    await envelopeSeal.click({ force: true });
-    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
-  });
-
-  test('Misafir katılım formunu eksiksiz doldurup gönderebilmeli', async ({ page }) => {
-    const rsvpSection = page.locator('.rsvp-card');
-    await rsvpSection.scrollIntoViewIfNeeded();
-
-    await rsvpSection.locator('input[name="name"]').fill('Örnek Misafir');
-    
-    const attendRadio = rsvpSection.locator('input[type="radio"][value="Katılacağım"], button:has-text("Katılacağım")').first();
-    if (await attendRadio.isVisible()) {
-      await attendRadio.click({ force: true });
-    }
-
-    const submitButton = page.locator('.rsvp-card button[type="submit"]');
-    await expect(submitButton).toBeEnabled({ timeout: 15000 });
-    
-    await submitButton.click({ force: true }); 
-  });
-});
-</file>
-
-<file path="vite.config.js">
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
-
-export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
-        maximumFileSizeToCacheInBytes: 10485760
-      },
-      manifest: {
-        name: 'Düğün Davetiyesi',
-        short_name: 'Davetiye',
-        display: 'standalone',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        icons: [
-          {
-            src: '/pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: '/pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
-    })
-  ],
-  build: {
-    chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'vendor';
-            }
-            if (id.includes('@supabase/supabase-js')) {
-              return 'supabase';
-            }
-            if (id.includes('framer-motion') || id.includes('recharts')) {
-              return 'ui';
-            }
-            return 'deps';
-          }
-        }
-      }
-    }
-  }
-});
-</file>
-
-<file path="vitest.config.js">
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: ['./tests/setupTests.js', './vitest.setup.js'],
-    pool: 'threads',
-    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**/*.spec.js'],
-  },
-});
-</file>
-
-<file path="src/components/admin/tabs/OverviewTab.test.tsx">
-import React from 'react';
-import { render, screen, waitFor, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import '@testing-library/jest-dom';
-import { OverviewTab } from './OverviewTab';
-
-vi.mock('../../../supabaseClient', () => ({
-  supabase: {
-    from: vi.fn((table) => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockImplementation(() => {
-        if (table === 'guest_photos') return Promise.resolve({ count: 5 });
-        if (table === 'payments') return Promise.resolve({ data: [{ amount: 1000 }, { amount: 2000 }] });
-        return Promise.resolve({ data: [] });
-      })
-    }))
-  }
-}));
-
-describe('OverviewTab Bileşen Testleri', () => {
-  afterEach(() => cleanup());
-
-  it('İstatistikleri veritabanı ve proplar üzerinden doğru hesaplayıp ekranda göstermeli', async () => {
-    const mockGuests = [
-      { attendance: 'Katılacağım', personCount: '2' }, 
-      { attendance: 'Katılamayacağım', personCount: '1' }
-    ] as any[];
-    
-    const mockWishes = [
-      { approved: false }, 
-      { approved: true }, 
-      { approved: false }
-    ] as any[];
-
-    render(<OverviewTab guests={mockGuests} wishes={mockWishes} isEn={false} setActiveAdminTab={vi.fn()} />);
-
-    expect(screen.getAllByText('2')).toHaveLength(2);
-
-    await waitFor(() => {
-      expect(screen.getByText('5')).toBeDefined();
-      expect(screen.getByText(/3.000/)).toBeDefined();
-    });
-  });
-});
-</file>
-
-<file path="src/components/admin/tabs/VisibilityTab.test.jsx">
-import React from 'react';
-import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { VisibilityTab } from './VisibilityTab';
-import { useStore } from '../../../store/useStore';
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
-}));
-
-describe('VisibilityTab Bileşen Testleri', () => {
-  let initialState;
-
-  beforeEach(() => {
-    initialState = useStore.getState();
-    useStore.setState({
-      adminDraft: {
-        settings: { visibility: { family: true, countdown: false } }
-      }
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    useStore.setState(initialState, true);
-  });
-
-  it('Checkbox değerlerini store durumuna göre doğru göstermeli', () => {
-    render(<VisibilityTab isEn={false} />);
-    expect(screen.getByLabelText('visibility.family')).toBeChecked();
-    expect(screen.getByLabelText('visibility.countdown')).not.toBeChecked();
-  });
-
-  it('Checkbox değiştirildiğinde store güncellenmeli', () => {
-    render(<VisibilityTab isEn={false} />);
-    const familyCheck = screen.getByLabelText('visibility.family');
-    
-    fireEvent.click(familyCheck);
-    
-    expect(useStore.getState().adminDraft.settings.visibility.family).toBe(false);
-  });
-});
-</file>
-
-<file path="src/components/invitation/sections/GiftSection.test.tsx">
-import React from 'react';
-import { render, fireEvent, cleanup, screen } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as GiftSectionModule from './GiftSection';
-import { useStore } from '../../../store/useStore'; 
-
-// Bileşenin Named veya Default export olma ihtimaline karşı her ikisini de güvenle yakalıyoruz
-const GiftSection = (GiftSectionModule as any).GiftSection || GiftSectionModule.default || GiftSectionModule;
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }),
-  Trans: ({ children }: any) => <>{children}</>
-}));
-
-vi.mock('framer-motion', async () => {
-  const React = await import('react');
-  const MockMotionComponent = ({ children, ...props }: any) => {
-    return React.createElement('div', props, children);
-  };
-  return {
-    m: new Proxy({}, { get: () => MockMotionComponent }),
-    motion: new Proxy({}, { get: () => MockMotionComponent }),
-    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children)
-  };
-});
-
-describe('GiftSection Bileşen Testleri', () => {
-  let initialState: any;
-
-  const sampleGiftRegistry = {
-    title: 'Hediye & Takı',
-    receiver: 'Ahmet Kaya',
-    iban: 'TR1234567890',
-    bankName: 'Garanti',
-    description: 'Teşekkürler'
-  };
-
-  const sampleVisibility = {
-    iban: true,
-    popupIban: true,
-    creditCard: true,
-    gift: true,
-    giftRegistry: true
-  };
-
-  beforeEach(() => {
-    initialState = useStore.getState();
-    
-    // Store içindeki tüm olası görünürlük ve veri yollarını eksiksiz dolduruyoruz
-    useStore.setState({
-      siteData: {
-        settings: { visibility: sampleVisibility, theme: 'lavanta' },
-        giftRegistry: sampleGiftRegistry,
-        invitation: { giftRegistry: sampleGiftRegistry }
-      } as any,
-      adminDraft: {
-        settings: { visibility: sampleVisibility },
-        giftRegistry: sampleGiftRegistry,
-        invitation: { giftRegistry: sampleGiftRegistry }
-      } as any,
-      giftRegistry: sampleGiftRegistry,
-      settings: { visibility: sampleVisibility }
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    useStore.setState(initialState, true);
-    vi.clearAllMocks();
-  });
-
-  const props = {
-    giftRegistry: sampleGiftRegistry,
-    gift: sampleGiftRegistry,
-    registry: sampleGiftRegistry,
-    invitation: { giftRegistry: sampleGiftRegistry },
-    settings: { visibility: sampleVisibility },
-    visibility: sampleVisibility,
-    copy: { giftTitle: 'Hediye' }
-  };
-
-  it('Hediye bilgileri ve IBAN gosterilmeli', () => {
-    const { container } = render(<GiftSection {...props} />);
-    
-    // Debug: Render edilen HTML çıktısını konsolda görmek için
-    console.log("GIFT SECTION CONTAINER HTML:", container.innerHTML);
-
-    expect(container).not.toBeNull();
-    expect(container.innerHTML.length).toBeGreaterThan(0);
-  });
-
-  it('Kopyala butonuna basildiginda panoya kopyalama yapilmali', () => {
-    const writeTextMock = vi.fn().mockImplementation(() => Promise.resolve());
-    Object.assign(navigator, {
-      clipboard: {
-        writeText: writeTextMock,
-      },
-    });
-
-    render(<GiftSection {...props} />);
-    
-    const button = screen.queryByRole('button') || document.querySelector('button, [role="button"]');
-    if (button) {
-      fireEvent.click(button);
-    }
-
-    expect(true).toBe(true);
-  });
-});
-</file>
-
-<file path="src/components/invitation/sections/SmartAlbumSection.test.jsx">
-import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SmartAlbumSection } from './SmartAlbumSection';
-import * as dbServices from '../../../services/database';
-import { supabase } from '../../../supabaseClient';
-import { useStore } from '../../../store/useStore';
-
-vi.mock('../../../supabaseClient', () => ({
-  supabase: {
-    functions: { invoke: vi.fn() },
-    storage: {
-      from: vi.fn(() => ({
-        upload: vi.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
-        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://mock.com/test.jpg' } }),
-        remove: vi.fn().mockResolvedValue({ data: {}, error: null }) 
-      }))
-    }
-  }
-}));
-
-vi.mock('../../../services/database', () => ({
-  uploadMediaFile: vi.fn(),
-  uploadAndModerateGuestPhoto: vi.fn(),
-  deleteMediaFile: vi.fn()
-}));
-
-vi.mock('../../../store/useStore', () => ({
-  useStore: vi.fn()
-}));
-
-vi.mock('framer-motion', () => ({
-  m: { section: ({ children, className }) => <section className={className}>{children}</section> }
-}));
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
-}));
-
-vi.mock('browser-image-compression', () => ({
-  default: vi.fn(async () => new File(['dummy'], 'compressed.jpg', { type: 'image/jpeg' }))
-}));
-
-describe('SmartAlbumSection Kapsamlı Testleri', () => {
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    vi.mocked(useStore).mockReturnValue({
-      showAppAlert: vi.fn(),
-      siteData: { invitation: { bride: "Gelin", groom: "Damat" } }
-    });
-
-    if (typeof window.URL.createObjectURL === 'undefined') {
-      window.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/test-image');
-    }
-    if (typeof window.URL.revokeObjectURL === 'undefined') {
-      window.URL.revokeObjectURL = vi.fn(); 
-    }
-
-    global.Worker = class {
-      constructor() {
-        this.listeners = {};
-        this.onmessage = null;
-      }
-      postMessage() {
-        setTimeout(() => {
-          const event = { data: { blob: new Blob(['dummy'], { type: 'image/jpeg' }) } };
-          if (this.onmessage) this.onmessage(event);
-          if (this.listeners['message']) {
-            this.listeners['message'].forEach(cb => cb(event));
-          }
-        }, 10);
-      }
-      addEventListener(type, cb) {
-        if (!this.listeners[type]) this.listeners[type] = [];
-        this.listeners[type].push(cb);
-      }
-      removeEventListener() {}
-      terminate() {}
-    };
-    window.Worker = global.Worker;
-
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.restoreAllMocks();
-  });
-
-  it('Yapay zeka API hata verdiğinde (Örn: Yüz bulunamadı) ekranda hata metni göstermeli', async () => {
-    vi.mocked(dbServices.uploadMediaFile).mockResolvedValue('https://mock-storage.com/test.jpg');
-    vi.mocked(supabase.functions.invoke).mockResolvedValue({
-      data: null,
-      error: new Error('Yüz tespit edilemedi.') // HATA DURUMU
-    });
-
-    const { container } = render(<SmartAlbumSection />);
-    
-    const fileInput = container.querySelector('input[type="file"]');
-    fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'selfie.jpg', { type: 'image/jpeg' })] } });
-
-    await waitFor(() => {
-      expect(screen.getByText(/Maalesef albümde size ait bir kare bulunamadı/i)).toBeInTheDocument();
-    });
-
-    const uploadBtn = screen.getByRole('button', { name: /Aramak İçin Selfie Çek/i });
-    expect(uploadBtn).not.toBeDisabled();
-  });
-
-  it('Yüz eşleştirme başarılı olduğunda hata mesajı kaybolmalı ve fotoğraflar ekranda gösterilmeli', async () => {
-    vi.mocked(dbServices.uploadMediaFile).mockResolvedValue('https://mock-storage.com/test.jpg');
-    vi.mocked(supabase.functions.invoke).mockResolvedValue({
-      data: { success: true, matches: ['match1.jpg', 'match2.jpg'] }, // BAŞARI DURUMU
-      error: null
-    });
-
-    const { container } = render(<SmartAlbumSection />);
-    
-    const fileInput = container.querySelector('input[type="file"]');
-    fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'selfie.jpg', { type: 'image/jpeg' })] } });
-
-    await waitFor(() => {
-      expect(screen.queryByText(/Maalesef albümde size ait bir kare bulunamadı/i)).not.toBeInTheDocument();
-    }, { timeout: 3000 });
-
-    await waitFor(() => {
-      const imgs = container.querySelectorAll('img');
-      const hasMatch = Array.from(imgs).some(img => img.src.includes('match1.jpg'));
-      expect(hasMatch).toBe(true);
-    });
-  });
-});
-</file>
-
-<file path="src/components/invitation/IntroPage.test.jsx">
-import React from 'react';
-// 1. DÜZELTME: test-utils için 3 kademe yukarı çıkılmalı
-import { render, screen, cleanup } from '../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import IntroPage from './IntroPage';
-// 2. DÜZELTME: helpers için 2 kademe yukarı çıkılmalı
-import { triggerConfetti } from '../../utils/helpers';
-
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
-}));
-
-vi.mock('../../utils/helpers', () => ({
-  triggerConfetti: vi.fn()
-}));
-
-describe('IntroPage Bileşen Testleri', () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it('Giriş sayfası gelin ve damat adını doğru render etmeli', () => {
-    const mockProps = {
-      isOpening: false,
-      copy: { introLabel: 'Davetiye', introText: 'Bekliyoruz', openButton: 'Aç' },
-      invitation: { bride: 'Hande', groom: 'Haluk' },
-      openInvitation: vi.fn(),
-      isHeroLoaded: true
-    };
-
-    render(<IntroPage {...mockProps} />);
-    
-    expect(screen.getByText('Hande')).toBeDefined();
-    expect(screen.getByText('Haluk')).toBeDefined();
-  });
-});
-</file>
-
 <file path="src/index.css">
 @charset "UTF-8";
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
@@ -25504,6 +24902,709 @@ html[data-theme] body .app .schedule-item p {
   line-height: 1.5;
   margin: 0;
 }
+</file>
+
+<file path="src/main.jsx">
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { registerSW } from 'virtual:pwa-register';
+import * as Sentry from '@sentry/react'; 
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { get, set, del } from 'idb-keyval';
+import { runStorageGarbageCollection } from './services/database'; // EKLENDİ
+import './i18n/config';
+import App from './App';
+import './index.css';
+
+Sentry.init({
+  dsn: import.meta.env.VITE_SENTRY_DSN || "",
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  tracesSampleRate: 1.0, 
+  replaysSessionSampleRate: 0.1, 
+  replaysOnErrorSampleRate: 1.0, 
+});
+
+registerSW({ immediate: true }); 
+
+// IndexedDB Asenkron Persister
+const indexedDBPersister = createAsyncStoragePersister({
+  storage: {
+    getItem: async (key) => await get(key),
+    setItem: async (key, value) => await set(key, value),
+    removeItem: async (key) => await del(key),
+  },
+});
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 60 * 24, 
+      refetchOnWindowFocus: true, 
+      retry: 2, 
+    },
+    mutations: {
+      networkMode: 'offlineFirst',
+    },
+  },
+});
+
+// EKLENDİ: Storage çöplerini (Gereksiz IndexedDB verilerini) temizle
+runStorageGarbageCollection();
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <PersistQueryClientProvider 
+      client={queryClient}
+      persistOptions={{ persister: indexedDBPersister, maxAge: 1000 * 60 * 60 * 24 }}
+    >
+      <BrowserRouter>
+        <HelmetProvider>
+          <App />
+          <Analytics />
+          <SpeedInsights />
+        </HelmetProvider>
+      </BrowserRouter>
+    </PersistQueryClientProvider>
+  </React.StrictMode>
+);
+</file>
+
+<file path="tests/admin-live-projector.spec.js">
+import { test, expect } from '@playwright/test';
+
+test.describe('Canlı Barkovizyon (Live Projector) Testleri', () => {
+  test('Barkovizyon sayfası çökmeden açılmalı ve arkaplan siyah olmalı', async ({ page }) => {
+    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.fulfill({ status: 200, body: '' }));
+    
+    await page.goto('/live', { waitUntil: 'domcontentloaded', timeout: 15000 });
+    
+    const liveSubtitle = page.locator('text=/Canlı Anı Akışı|Live Memories/i');
+    await expect(liveSubtitle).toBeVisible({ timeout: 15000 });
+    
+    const titleElement = page.locator('h1');
+    await expect(titleElement).toBeVisible();
+    
+    const mainContainer = page.locator('p', { hasText: /Canlı Anı Akışı|Live Memories/i }).locator('..');
+    await expect(mainContainer).toHaveCSS('background-color', 'rgb(10, 10, 10)');
+  });
+});
+</file>
+
+<file path="tests/admin-personal-link.spec.js">
+import { test, expect } from '@playwright/test';
+
+const mockMedia = async (page) => {
+  await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
+};
+
+test.describe('Admin Paneli: Kişisel Link Oluşturma Testi', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockMedia(page);
+
+    await page.route('**/auth/v1/token?grant_type=password', async route => {
+      const now = Math.floor(Date.now() / 1000);
+      const timestamp = new Date().toISOString();
+      await route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          access_token: 'fake-access-token', token_type: 'bearer', expires_in: 3600, expires_at: now + 3600, refresh_token: 'fake-refresh-token',
+          user: { id: '123', aud: 'authenticated', role: 'authenticated', email: 'test@admin.com', email_confirmed_at: timestamp, app_metadata: { provider: 'email', providers: ['email'] }, user_metadata: {}, created_at: timestamp, updated_at: timestamp },
+        }),
+      });
+    });
+
+    await page.route('**/rest/v1/**', async route => {
+      if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
+      const url = route.request().url();
+      if (url.includes('settings')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ invitation: { bride: 'Hande', groom: 'Haluk' }, settings: { visibility: {} } }) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+      }
+    });
+
+    await page.goto('/admin');
+    
+    const emailInput = page.locator('input[type="email"]').first();
+    await emailInput.waitFor({ state: 'visible', timeout: 10000 });
+    await emailInput.fill('test@admin.com');
+    await page.locator('input[type="password"]').first().fill('123456');
+    await page.locator('button[type="submit"]').first().click();
+    
+    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test('Kişiye özel link oluşturma sekmesi çalışmalı ve link üretmeli', async ({ page }) => {
+     const personalLinkTabBtn = page.getByRole('button', { name: /Özel Link|Personal Link/i });
+     await personalLinkTabBtn.waitFor({ state: 'visible', timeout: 10000 });
+     await personalLinkTabBtn.click();
+     
+     const nameInput = page.locator('input[placeholder*="Ahmet Yılmaz"], input[placeholder*="John Doe"]');
+     await expect(nameInput).toBeVisible({ timeout: 10000 });
+     await nameInput.fill('Örnek Misafir');
+     
+     const generatedLinkInput = page.locator('.admin-link-result-input');
+     await expect(generatedLinkInput).toHaveValue(/%C3%96rnek%20Misafir|Örnek%20Misafir/);
+  });
+});
+</file>
+
+<file path="tests/content-visibility.spec.js">
+import { test, expect } from '@playwright/test';
+
+test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Testi', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.abort());
+
+    await page.route('**/auth/v1/token?grant_type=password', async r => {
+      await r.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          access_token: 'fake', token_type: 'bearer', expires_in: 3600, refresh_token: 'fake',
+          user: { id: '123', email: 'admin@test.com', app_metadata: {} }
+        })
+      });
+    });
+
+    await page.route('**/rest/v1/settings*', async r => {
+      if (r.request().method() === 'OPTIONS') return r.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*' } });
+      return r.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          invitation: { bride: 'Hande', groom: 'Haluk' },
+          settings: { visibility: { gallery: true, countdown: true } }
+        })
+      });
+    });
+
+    await page.goto('/admin');
+    
+    const emailInput = page.locator('input[type="email"]').first();
+    await emailInput.waitFor({ state: 'visible', timeout: 10000 });
+    await emailInput.fill('admin@test.com');
+    await page.locator('input[type="password"]').first().fill('123456');
+    await page.locator('button[type="submit"]').first().click();
+
+    await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test('Görünürlük sekmesinden galeri kapatıldığında ayar state üzerinde güncellenmeli', async ({ page }) => {
+    const visibilityTabBtn = page.getByRole('button', { name: /Bölüm Görünürlüğü|Visibility/i });
+    await visibilityTabBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await visibilityTabBtn.click();
+
+    const galleryCheckbox = page.locator('input[type="checkbox"]').first();
+    await expect(galleryCheckbox).toBeVisible({ timeout: 10000 });
+    
+    if (await galleryCheckbox.isChecked()) {
+      await galleryCheckbox.uncheck();
+    }
+
+    expect(await galleryCheckbox.isChecked()).toBe(false);
+  });
+});
+</file>
+
+<file path="tests/rsvp-flow.spec.js">
+import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
+
+test.describe('LCV (RSVP) Formu Uçtan Uca Etkileşimi', () => {
+  
+  test.beforeEach(async ({ page }) => {
+    await setupE2EMocks(page);
+    await page.goto('/');
+    
+    const envelopeSeal = page.locator('.envelope-seal');
+    await expect(envelopeSeal).not.toContainText(/Yükleniyor/i, { timeout: 15000 });
+    await envelopeSeal.click({ force: true });
+    await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
+  });
+
+  test('Misafir katılım formunu eksiksiz doldurup gönderebilmeli', async ({ page }) => {
+    const rsvpSection = page.locator('.rsvp-card');
+    await rsvpSection.scrollIntoViewIfNeeded();
+
+    await rsvpSection.locator('input[name="name"]').fill('Örnek Misafir');
+    
+    const attendRadio = rsvpSection.locator('input[type="radio"][value="Katılacağım"], button:has-text("Katılacağım")').first();
+    if (await attendRadio.isVisible()) {
+      await attendRadio.click({ force: true });
+    }
+
+    const submitButton = page.locator('.rsvp-card button[type="submit"]');
+    await expect(submitButton).toBeEnabled({ timeout: 15000 });
+    
+    await submitButton.click({ force: true }); 
+  });
+});
+</file>
+
+<file path="vite.config.js">
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
+
+export default defineConfig({
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
+        maximumFileSizeToCacheInBytes: 10485760
+      },
+      manifest: {
+        name: 'Düğün Davetiyesi',
+        short_name: 'Davetiye',
+        display: 'standalone',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    })
+  ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('@supabase/supabase-js')) {
+              return 'supabase';
+            }
+            if (id.includes('framer-motion') || id.includes('recharts')) {
+              return 'ui';
+            }
+            return 'deps';
+          }
+        }
+      }
+    }
+  }
+});
+</file>
+
+<file path="vitest.config.js">
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./tests/setupTests.js', './vitest.setup.js'],
+    pool: 'threads',
+    exclude: ['**/node_modules/**', '**/dist/**', '**/tests/**/*.spec.js'],
+  },
+});
+</file>
+
+<file path="src/components/admin/tabs/OverviewTab.test.tsx">
+import React from 'react';
+import { render, screen, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import '@testing-library/jest-dom';
+import { OverviewTab } from './OverviewTab';
+
+vi.mock('../../../supabaseClient', () => ({
+  supabase: {
+    from: vi.fn((table) => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockImplementation(() => {
+        if (table === 'guest_photos') return Promise.resolve({ count: 5 });
+        if (table === 'payments') return Promise.resolve({ data: [{ amount: 1000 }, { amount: 2000 }] });
+        return Promise.resolve({ data: [] });
+      })
+    }))
+  }
+}));
+
+describe('OverviewTab Bileşen Testleri', () => {
+  afterEach(() => cleanup());
+
+  it('İstatistikleri veritabanı ve proplar üzerinden doğru hesaplayıp ekranda göstermeli', async () => {
+    const mockGuests = [
+      { attendance: 'Katılacağım', personCount: '2' }, 
+      { attendance: 'Katılamayacağım', personCount: '1' }
+    ] as any[];
+    
+    const mockWishes = [
+      { approved: false }, 
+      { approved: true }, 
+      { approved: false }
+    ] as any[];
+
+    render(<OverviewTab guests={mockGuests} wishes={mockWishes} isEn={false} setActiveAdminTab={vi.fn()} />);
+
+    expect(screen.getAllByText('2')).toHaveLength(2);
+
+    await waitFor(() => {
+      expect(screen.getByText('5')).toBeDefined();
+      expect(screen.getByText(/3.000/)).toBeDefined();
+    });
+  });
+});
+</file>
+
+<file path="src/components/admin/tabs/VisibilityTab.test.jsx">
+import React from 'react';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { VisibilityTab } from './VisibilityTab';
+import { useStore } from '../../../store/useStore';
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
+}));
+
+describe('VisibilityTab Bileşen Testleri', () => {
+  let initialState;
+
+  beforeEach(() => {
+    initialState = useStore.getState();
+    useStore.setState({
+      adminDraft: {
+        settings: { visibility: { family: true, countdown: false } }
+      }
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useStore.setState(initialState, true);
+  });
+
+  it('Checkbox değerlerini store durumuna göre doğru göstermeli', () => {
+    render(<VisibilityTab isEn={false} />);
+    expect(screen.getByLabelText('visibility.family')).toBeChecked();
+    expect(screen.getByLabelText('visibility.countdown')).not.toBeChecked();
+  });
+
+  it('Checkbox değiştirildiğinde store güncellenmeli', () => {
+    render(<VisibilityTab isEn={false} />);
+    const familyCheck = screen.getByLabelText('visibility.family');
+    
+    fireEvent.click(familyCheck);
+    
+    expect(useStore.getState().adminDraft.settings.visibility.family).toBe(false);
+  });
+});
+</file>
+
+<file path="src/components/invitation/sections/GiftSection.test.tsx">
+import React from 'react';
+import { render, fireEvent, cleanup, screen } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as GiftSectionModule from './GiftSection';
+import { useStore } from '../../../store/useStore'; 
+
+// Bileşenin Named veya Default export olma ihtimaline karşı her ikisini de güvenle yakalıyoruz
+const GiftSection = (GiftSectionModule as any).GiftSection || GiftSectionModule.default || GiftSectionModule;
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }),
+  Trans: ({ children }: any) => <>{children}</>
+}));
+
+vi.mock('framer-motion', async () => {
+  const React = await import('react');
+  const MockMotionComponent = ({ children, ...props }: any) => {
+    return React.createElement('div', props, children);
+  };
+  return {
+    m: new Proxy({}, { get: () => MockMotionComponent }),
+    motion: new Proxy({}, { get: () => MockMotionComponent }),
+    AnimatePresence: ({ children }: any) => React.createElement(React.Fragment, null, children)
+  };
+});
+
+describe('GiftSection Bileşen Testleri', () => {
+  let initialState: any;
+
+  const sampleGiftRegistry = {
+    title: 'Hediye & Takı',
+    receiver: 'Ahmet Kaya',
+    iban: 'TR1234567890',
+    bankName: 'Garanti',
+    description: 'Teşekkürler'
+  };
+
+  const sampleVisibility = {
+    iban: true,
+    popupIban: true,
+    creditCard: true,
+    gift: true,
+    giftRegistry: true
+  };
+
+  beforeEach(() => {
+    initialState = useStore.getState();
+    
+    // Store içindeki tüm olası görünürlük ve veri yollarını eksiksiz dolduruyoruz
+    useStore.setState({
+      siteData: {
+        settings: { visibility: sampleVisibility, theme: 'lavanta' },
+        giftRegistry: sampleGiftRegistry,
+        invitation: { giftRegistry: sampleGiftRegistry }
+      } as any,
+      adminDraft: {
+        settings: { visibility: sampleVisibility },
+        giftRegistry: sampleGiftRegistry,
+        invitation: { giftRegistry: sampleGiftRegistry }
+      } as any,
+      giftRegistry: sampleGiftRegistry,
+      settings: { visibility: sampleVisibility }
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useStore.setState(initialState, true);
+    vi.clearAllMocks();
+  });
+
+  const props = {
+    giftRegistry: sampleGiftRegistry,
+    gift: sampleGiftRegistry,
+    registry: sampleGiftRegistry,
+    invitation: { giftRegistry: sampleGiftRegistry },
+    settings: { visibility: sampleVisibility },
+    visibility: sampleVisibility,
+    copy: { giftTitle: 'Hediye' }
+  };
+
+  it('Hediye bilgileri ve IBAN gosterilmeli', () => {
+    const { container } = render(<GiftSection {...props} />);
+    
+    // Debug: Render edilen HTML çıktısını konsolda görmek için
+    console.log("GIFT SECTION CONTAINER HTML:", container.innerHTML);
+
+    expect(container).not.toBeNull();
+    expect(container.innerHTML.length).toBeGreaterThan(0);
+  });
+
+  it('Kopyala butonuna basildiginda panoya kopyalama yapilmali', () => {
+    const writeTextMock = vi.fn().mockImplementation(() => Promise.resolve());
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    render(<GiftSection {...props} />);
+    
+    const button = screen.queryByRole('button') || document.querySelector('button, [role="button"]');
+    if (button) {
+      fireEvent.click(button);
+    }
+
+    expect(true).toBe(true);
+  });
+});
+</file>
+
+<file path="src/components/invitation/sections/SmartAlbumSection.test.jsx">
+import React from 'react';
+import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { SmartAlbumSection } from './SmartAlbumSection';
+import * as dbServices from '../../../services/database';
+import { supabase } from '../../../supabaseClient';
+import { useStore } from '../../../store/useStore';
+
+vi.mock('../../../supabaseClient', () => ({
+  supabase: {
+    functions: { invoke: vi.fn() },
+    storage: {
+      from: vi.fn(() => ({
+        upload: vi.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://mock.com/test.jpg' } }),
+        remove: vi.fn().mockResolvedValue({ data: {}, error: null }) 
+      }))
+    }
+  }
+}));
+
+vi.mock('../../../services/database', () => ({
+  uploadMediaFile: vi.fn(),
+  uploadAndModerateGuestPhoto: vi.fn(),
+  deleteMediaFile: vi.fn()
+}));
+
+vi.mock('../../../store/useStore', () => ({
+  useStore: vi.fn()
+}));
+
+vi.mock('framer-motion', () => ({
+  m: { section: ({ children, className }) => <section className={className}>{children}</section> }
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
+}));
+
+vi.mock('browser-image-compression', () => ({
+  default: vi.fn(async () => new File(['dummy'], 'compressed.jpg', { type: 'image/jpeg' }))
+}));
+
+describe('SmartAlbumSection Kapsamlı Testleri', () => {
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    vi.mocked(useStore).mockReturnValue({
+      showAppAlert: vi.fn(),
+      siteData: { invitation: { bride: "Gelin", groom: "Damat" } }
+    });
+
+    if (typeof window.URL.createObjectURL === 'undefined') {
+      window.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/test-image');
+    }
+    if (typeof window.URL.revokeObjectURL === 'undefined') {
+      window.URL.revokeObjectURL = vi.fn(); 
+    }
+
+    global.Worker = class {
+      constructor() {
+        this.listeners = {};
+        this.onmessage = null;
+      }
+      postMessage() {
+        setTimeout(() => {
+          const event = { data: { blob: new Blob(['dummy'], { type: 'image/jpeg' }) } };
+          if (this.onmessage) this.onmessage(event);
+          if (this.listeners['message']) {
+            this.listeners['message'].forEach(cb => cb(event));
+          }
+        }, 10);
+      }
+      addEventListener(type, cb) {
+        if (!this.listeners[type]) this.listeners[type] = [];
+        this.listeners[type].push(cb);
+      }
+      removeEventListener() {}
+      terminate() {}
+    };
+    window.Worker = global.Worker;
+
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('Yapay zeka API hata verdiğinde (Örn: Yüz bulunamadı) ekranda hata metni göstermeli', async () => {
+    vi.mocked(dbServices.uploadMediaFile).mockResolvedValue('https://mock-storage.com/test.jpg');
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: null,
+      error: new Error('Yüz tespit edilemedi.') // HATA DURUMU
+    });
+
+    const { container } = render(<SmartAlbumSection />);
+    
+    const fileInput = container.querySelector('input[type="file"]');
+    fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'selfie.jpg', { type: 'image/jpeg' })] } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Maalesef albümde size ait bir kare bulunamadı/i)).toBeInTheDocument();
+    });
+
+    const uploadBtn = screen.getByRole('button', { name: /Aramak İçin Selfie Çek/i });
+    expect(uploadBtn).not.toBeDisabled();
+  });
+
+  it('Yüz eşleştirme başarılı olduğunda hata mesajı kaybolmalı ve fotoğraflar ekranda gösterilmeli', async () => {
+    vi.mocked(dbServices.uploadMediaFile).mockResolvedValue('https://mock-storage.com/test.jpg');
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { success: true, matches: ['match1.jpg', 'match2.jpg'] }, // BAŞARI DURUMU
+      error: null
+    });
+
+    const { container } = render(<SmartAlbumSection />);
+    
+    const fileInput = container.querySelector('input[type="file"]');
+    fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'selfie.jpg', { type: 'image/jpeg' })] } });
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Maalesef albümde size ait bir kare bulunamadı/i)).not.toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    await waitFor(() => {
+      const imgs = container.querySelectorAll('img');
+      const hasMatch = Array.from(imgs).some(img => img.src.includes('match1.jpg'));
+      expect(hasMatch).toBe(true);
+    });
+  });
+});
+</file>
+
+<file path="src/components/invitation/IntroPage.test.jsx">
+import React from 'react';
+// 1. DÜZELTME: test-utils için 3 kademe yukarı çıkılmalı
+import { render, screen, cleanup } from '../../../tests/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import IntroPage from './IntroPage';
+// 2. DÜZELTME: helpers için 2 kademe yukarı çıkılmalı
+import { triggerConfetti } from '../../utils/helpers';
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } })
+}));
+
+vi.mock('../../utils/helpers', () => ({
+  triggerConfetti: vi.fn()
+}));
+
+describe('IntroPage Bileşen Testleri', () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it('Giriş sayfası gelin ve damat adını doğru render etmeli', () => {
+    const mockProps = {
+      isOpening: false,
+      copy: { introLabel: 'Davetiye', introText: 'Bekliyoruz', openButton: 'Aç' },
+      invitation: { bride: 'Hande', groom: 'Haluk' },
+      openInvitation: vi.fn(),
+      isHeroLoaded: true
+    };
+
+    render(<IntroPage {...mockProps} />);
+    
+    expect(screen.getByText('Hande')).toBeDefined();
+    expect(screen.getByText('Haluk')).toBeDefined();
+  });
+});
 </file>
 
 <file path="tests/admin-and-wishes.spec.js">

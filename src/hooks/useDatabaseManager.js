@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { isSupabaseReady } from "../services/database";
 import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
+import { getActiveTenantId } from "../utils/tenant";
 import { useAdminStore } from "../store/useAdminStore";
 
 export function useDatabaseManager({
@@ -19,19 +20,27 @@ export function useDatabaseManager({
 }) {
   useEffect(() => {
     if (!isSupabaseReady()) return;
+    const activeTenantId = getActiveTenantId();
+
+    const matchesTenant = (record) => {
+      if (!activeTenantId) return true;
+      return !record?.tenant_id || record.tenant_id === activeTenantId;
+    };
 
     const wishesChannel = supabase
-      .channel("public:wishes")
+      .channel(`public:wishes:${activeTenantId || "main"}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "wishes" }, (payload) => {
         const isAdmin = useAdminStore.getState().isAdminUnlocked;
 
         if (payload.eventType === "INSERT") {
+          if (!matchesTenant(payload.new)) return;
           if (payload.new.approved || isAdmin) {
             setWishes((prev) =>
               prev.some((w) => w.id === payload.new.id) ? prev : [dbWishToUi(payload.new), ...prev]
             );
           }
         } else if (payload.eventType === "UPDATE") {
+          if (!matchesTenant(payload.new)) return;
           if (isAdmin) {
             setWishes((prev) =>
               prev.map((w) => (w.id === payload.new.id ? dbWishToUi(payload.new) : w))
@@ -52,16 +61,16 @@ export function useDatabaseManager({
       .subscribe();
 
     const guestsChannel = supabase
-      .channel("public:guests")
+      .channel(`public:guests:${activeTenantId || "main"}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) {
+        if (payload.new && matchesTenant(payload.new)) {
           setGuests((prev) =>
             prev.some((g) => g.id === payload.new.id) ? prev : [dbGuestToUi(payload.new), ...prev]
           );
         }
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guests" }, (payload) => {
-        if (payload.new) {
+        if (payload.new && matchesTenant(payload.new)) {
           setGuests((prev) =>
             prev.map((g) => (g.id === payload.new.id ? dbGuestToUi(payload.new) : g))
           );
@@ -81,6 +90,7 @@ export function useDatabaseManager({
   useEffect(() => {
     const syncOfflineData = async () => {
       if (!navigator.onLine || !isSupabaseReady()) return;
+      const tenantId = getActiveTenantId();
 
       const {
         data: { session },
@@ -90,7 +100,7 @@ export function useDatabaseManager({
       if (offlineGuests.length > 0) {
         for (const guest of offlineGuests) {
           await supabase.functions.invoke("submit-form", {
-            body: { type: "guest", data: guest, turnstileToken: "OFFLINE_SYNC" },
+            body: { type: "guest", data: guest, turnstileToken: "OFFLINE_SYNC", tenantId },
             headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
           });
         }
@@ -101,7 +111,7 @@ export function useDatabaseManager({
       if (offlineWishes.length > 0) {
         for (const wish of offlineWishes) {
           await supabase.functions.invoke("submit-form", {
-            body: { type: "wish", data: wish, turnstileToken: "OFFLINE_SYNC" },
+            body: { type: "wish", data: wish, turnstileToken: "OFFLINE_SYNC", tenantId },
             headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
           });
         }
@@ -128,6 +138,7 @@ export function useDatabaseManager({
     async (formData) => {
       if (formData.honeypot) return null;
 
+      const tenantId = getActiveTenantId();
       const tempId = `temp-${Date.now()}`;
       const optimisticGuest = { id: tempId, ...formData };
       setGuests((prev) => [optimisticGuest, ...prev]);
@@ -151,6 +162,7 @@ export function useDatabaseManager({
             type: "guest",
             data: uiGuestToDb(formData),
             turnstileToken: formData.turnstileToken,
+            tenantId,
           },
         });
 
@@ -178,6 +190,7 @@ export function useDatabaseManager({
   const submitWish = useCallback(
     async (formData) => {
       if (formData.honeypot) return;
+      const tenantId = getActiveTenantId();
       const shouldPublishNow = !settings?.requireWishApproval;
       const tempId = `temp-${Date.now()}`;
 
@@ -213,6 +226,7 @@ export function useDatabaseManager({
             type: "wish",
             data: wishPayload,
             turnstileToken: formData.turnstileToken,
+            tenantId,
           },
         });
 
@@ -304,11 +318,14 @@ export function useDatabaseManager({
     );
     if (!confirmed) return;
 
+    const tenantId = getActiveTenantId();
     const previousGuests = [...guests];
     setGuests([]);
 
     if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from("guests").delete().not("id", "is", null);
+      let query = supabase.from("guests").delete();
+      query = tenantId ? query.eq("tenant_id", tenantId) : query.not("id", "is", null);
+      const { error } = await query;
       if (error) {
         setGuests(previousGuests);
         setAdminSaveMessage?.(isEn ? "Error clearing guests." : "Kayıtlar silinemedi.");
@@ -329,11 +346,14 @@ export function useDatabaseManager({
     );
     if (!confirmed) return;
 
+    const tenantId = getActiveTenantId();
     const previousWishes = [...wishes];
     setWishes([]);
 
     if (navigator.onLine && isSupabaseReady()) {
-      const { error } = await supabase.from("wishes").delete().not("id", "is", null);
+      let query = supabase.from("wishes").delete();
+      query = tenantId ? query.eq("tenant_id", tenantId) : query.not("id", "is", null);
+      const { error } = await query;
       if (error) {
         setWishes(previousWishes);
         setAdminSaveMessage?.(isEn ? "Error clearing wishes." : "Mesajlar silinemedi.");

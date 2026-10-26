@@ -12,7 +12,13 @@ import {
   getCurrentShareLink,
   buildPersonalLink,
 } from "../../../utils/helpers";
-import { NOTE_MAX_LENGTH, ATTENDANCE_OPTIONS } from "../../../config/constants";
+import {
+  NOTE_MAX_LENGTH,
+  ATTENDANCE_OPTIONS,
+  PERSON_COUNT_OPTIONS,
+  SIDE_OPTIONS,
+  CHILD_OPTIONS,
+} from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
 import { subscribeToPushNotifications } from "../../common/PwaInstallBanner";
 
@@ -142,10 +148,22 @@ export const RsvpSection = memo(function RsvpSection({
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(rsvpSchema),
-    defaultValues: { name: "", attendance: "Katılacağım", note: "", honeypot: "" },
+    defaultValues: {
+      name: "",
+      phone: "",
+      attendance: "Katılacağım",
+      personCount: "1",
+      side: "Gelin Tarafı",
+      hasChild: "Hayır",
+      songRequest: "",
+      note: "",
+      honeypot: "",
+    },
   });
 
   const currentNote = watch("note") || "";
+  const currentAttendance = watch("attendance");
+  const isAttendingSelected = currentAttendance === "Katılacağım";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -157,7 +175,10 @@ export const RsvpSection = memo(function RsvpSection({
       setUrlGuestName(guestName);
       setValue("name", guestName);
     }
-    if (countParam) setValue("note", `${countParam} Kişi`);
+    if (countParam) {
+      setValue("personCount", String(countParam));
+      setValue("note", `${countParam} Kişi`);
+    }
   }, [setValue]);
 
   const todayStr = new Date().toLocaleDateString("en-CA");
@@ -168,18 +189,22 @@ export const RsvpSection = memo(function RsvpSection({
     if (!isAutomation && !turnstileToken && navigator.onLine) return;
 
     const isDeclining = data.attendance === "Katılamayacağım";
+    const submissionPayload = {
+      ...data,
+      personCount: isDeclining ? "1" : data.personCount || "1",
+      tableNumber: personalTableNumber || "",
+      turnstileToken: turnstileToken || "e2e-bypass-token",
+    };
+
     let savedGuest = null;
     if (typeof submitGuest === "function") {
-      savedGuest = await submitGuest({
-        ...data,
-        turnstileToken: turnstileToken || "e2e-bypass-token",
-      });
+      savedGuest = await submitGuest(submissionPayload);
     }
 
     if (!isDeclining) {
       triggerConfetti();
       setSubmittedGuest({
-        ...data,
+        ...submissionPayload,
         id: savedGuest?.id || `guest-${Date.now()}`,
       });
 
@@ -239,7 +264,17 @@ export const RsvpSection = memo(function RsvpSection({
 
     ctx.fillStyle = "#55303b";
     ctx.font = "bold 28px sans-serif";
-    ctx.fillText(submittedGuest.name, 200, 300);
+    ctx.fillText(submittedGuest.name, 200, 290);
+
+    ctx.font = "15px sans-serif";
+    ctx.fillStyle = "#6f4451";
+    ctx.fillText(
+      isEn
+        ? `${submittedGuest.personCount || 1} Guest(s)`
+        : `${submittedGuest.personCount || 1} Kişilik Davetiye`,
+      200,
+      320
+    );
 
     if (personalTableNumber) {
       ctx.font = "bold 18px sans-serif";
@@ -247,7 +282,7 @@ export const RsvpSection = memo(function RsvpSection({
       ctx.fillText(
         isEn ? `TABLE: ${personalTableNumber}` : `MASA: ${personalTableNumber}`,
         200,
-        340
+        350
       );
     }
 
@@ -256,7 +291,7 @@ export const RsvpSection = memo(function RsvpSection({
       baseShareLink,
       submittedGuest.name,
       personalTableNumber || "",
-      "",
+      submittedGuest.personCount || "1",
       submittedGuest.id
     );
     const qrUrl = getQrImageUrl(checkInUrl);
@@ -299,7 +334,6 @@ export const RsvpSection = memo(function RsvpSection({
       620
     );
 
-    // İndirme Tetikle
     const link = document.createElement("a");
     link.download = `${submittedGuest.name}-Bilet.png`;
     link.href = canvas.toDataURL("image/png");
@@ -333,6 +367,39 @@ export const RsvpSection = memo(function RsvpSection({
           : opt.label,
       })),
     [isEn, t]
+  );
+
+  const translatedPersonCount = useMemo(
+    () =>
+      PERSON_COUNT_OPTIONS.map((opt) => ({
+        ...opt,
+        label: isEn ? `${opt.value} ${Number(opt.value) > 1 ? "Guests" : "Guest"}` : opt.label,
+      })),
+    [isEn]
+  );
+
+  const translatedSides = useMemo(
+    () =>
+      SIDE_OPTIONS.map((opt) => ({
+        ...opt,
+        label: isEn
+          ? opt.value === "Gelin Tarafı"
+            ? "Bride's Side"
+            : opt.value === "Damat Tarafı"
+            ? "Groom's Side"
+            : "Mutual"
+          : opt.label,
+      })),
+    [isEn]
+  );
+
+  const translatedChildOptions = useMemo(
+    () =>
+      CHILD_OPTIONS.map((opt) => ({
+        ...opt,
+        label: isEn ? (opt.value === "Evet" ? "With Children" : "No Children") : opt.label,
+      })),
+    [isEn]
   );
 
   return (
@@ -385,6 +452,20 @@ export const RsvpSection = memo(function RsvpSection({
               )}
             </div>
 
+            <div style={{ width: "100%" }}>
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="tel"
+                    placeholder={t("form.phonePlaceholder", isEn ? "Phone Number (Optional)" : "Telefon Numaranız (İsteğe Bağlı)")}
+                  />
+                )}
+              />
+            </div>
+
             <Controller
               name="attendance"
               control={control}
@@ -396,6 +477,64 @@ export const RsvpSection = memo(function RsvpSection({
                 />
               )}
             />
+
+            {isAttendingSelected && (
+              <>
+                <Controller
+                  name="personCount"
+                  control={control}
+                  render={({ field }) => (
+                    <OptionGroup
+                      onChange={field.onChange}
+                      options={translatedPersonCount}
+                      value={field.value}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="side"
+                  control={control}
+                  render={({ field }) => (
+                    <OptionGroup
+                      onChange={field.onChange}
+                      options={translatedSides}
+                      value={field.value}
+                    />
+                  )}
+                />
+
+                <Controller
+                  name="hasChild"
+                  control={control}
+                  render={({ field }) => (
+                    <OptionGroup
+                      onChange={field.onChange}
+                      options={translatedChildOptions}
+                      value={field.value}
+                    />
+                  )}
+                />
+
+                <div style={{ width: "100%" }}>
+                  <Controller
+                    name="songRequest"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        maxLength={100}
+                        placeholder={
+                          isEn
+                            ? "Song Request for the Dance Floor 🎵 (Optional)"
+                            : "Düğünde Çalmasını İstediğiniz Şarkı 🎵 (İsteğe Bağlı)"
+                        }
+                      />
+                    )}
+                  />
+                </div>
+              </>
+            )}
 
             <div className="field-with-counter" style={{ marginTop: "12px" }}>
               <Controller
