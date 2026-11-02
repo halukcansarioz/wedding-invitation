@@ -13,6 +13,10 @@
   bottom: 0;
   left: 0;
   z-index: 999999;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background-color: rgba(0, 0, 0, 0.65);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
@@ -81,8 +85,13 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  box-sizing: border-box;
+  overflow: hidden;
+  overscroll-behavior: contain;
   background: rgba(15, 15, 15, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);

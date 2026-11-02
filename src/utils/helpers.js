@@ -173,6 +173,8 @@ export const downloadTextFile = (filename, content, mimeType = "text/plain") => 
   URL.revokeObjectURL(url);
 };
 
+const csvCell = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
 export const createCsv = (items, type = "guests", isEn = false) => {
   if (!items || items.length === 0) return "";
   let headers = [];
@@ -183,22 +185,22 @@ export const createCsv = (items, type = "guests", isEn = false) => {
       ? ["Name", "Attendance", "Phone", "Person Count", "Side", "With Children", "Table No", "Song Request", "Note"]
       : ["Ad Soyad", "Katılım", "Telefon", "Kişi Sayısı", "Taraf", "Çocuk", "Masa No", "Müzik İsteği", "Not"];
     rows = items.map((g) => [
-      `"${g.name || ""}"`,
-      `"${g.attendance || ""}"`,
-      `"${g.phone || ""}"`,
-      `"${g.personCount || 1}"`,
-      `"${g.side || ""}"`,
-      `"${g.hasChild || ""}"`,
-      `"${g.tableNumber || ""}"`,
-      `"${g.songRequest || ""}"`,
-      `"${(g.note || "").replace(/"/g, '""')}"`,
+      csvCell(g.name),
+      csvCell(g.attendance),
+      csvCell(g.phone),
+      csvCell(g.personCount || 1),
+      csvCell(g.side),
+      csvCell(g.hasChild),
+      csvCell(g.tableNumber),
+      csvCell(g.songRequest),
+      csvCell(g.note),
     ]);
   } else {
     headers = isEn ? ["Name", "Message", "Status"] : ["Ad Soyad", "Mesaj", "Durum"];
     rows = items.map((w) => [
-      `"${w.name || ""}"`,
-      `"${(w.message || "").replace(/"/g, '""')}"`,
-      `"${w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")}"`,
+      csvCell(w.name),
+      csvCell(w.message),
+      csvCell(w.approved ? (isEn ? "Published" : "Yayında") : (isEn ? "Pending" : "Onay Bekliyor")),
     ]);
   }
 

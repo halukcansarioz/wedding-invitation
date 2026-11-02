@@ -35,4 +35,33 @@ describe('Multi-Tenant URL Ayrıştırma (getActiveTenantId) Testleri', () => {
     });
     expect(getActiveTenantId()).toBe('handenur-haluk');
   });
+
+  it('Rezerve rotaları büyük harf ve alt yollarla da tanımalı', () => {
+    ['/ADMIN', '/live/projector', '/Login/reset', '/register/invite'].forEach((path) => {
+      Object.defineProperty(window, 'location', {
+        value: { ...window.location, pathname: path },
+        writable: true,
+      });
+
+      expect(getActiveTenantId()).toBeNull();
+    });
+  });
+
+  it('Tenant kimliğini nested rotalarda ilk segmentten almalı', () => {
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, pathname: '/Cift-Ismi/gallery/photo-1' },
+      writable: true,
+    });
+
+    expect(getActiveTenantId()).toBe('cift-ismi');
+  });
+
+  it('Tekrarlanan slash karakterlerini tenant ayrıştırmasını bozmadan işlemeli', () => {
+    Object.defineProperty(window, 'location', {
+      value: { ...window.location, pathname: '//Handenur-Haluk///rsvp' },
+      writable: true,
+    });
+
+    expect(getActiveTenantId()).toBe('handenur-haluk');
+  });
 });

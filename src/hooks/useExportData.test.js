@@ -56,4 +56,30 @@ describe('useExportData Hook Kapsamlı Testleri', () => {
       'application/json'
     );
   });
+
+  it('exportJson boş veya null veriyi de geçerli JSON olarak dışa aktarmalı', () => {
+    const { result } = renderHook(() => useExportData(false));
+
+    result.current.exportJson(null, 'bos.json');
+
+    expect(helpers.downloadTextFile).toHaveBeenCalledWith(
+      'bos.json',
+      'null',
+      'application/json'
+    );
+  });
+
+  it('Dil değiştiğinde export callbackleri güncel dili helperlara aktarmalı', () => {
+    const { result, rerender } = renderHook(({ isEn }) => useExportData(isEn), {
+      initialProps: { isEn: false },
+    });
+    const data = [{ name: 'Ayşe' }];
+
+    result.current.exportCsv(data, 'guests', 'misafirler.csv');
+    rerender({ isEn: true });
+    result.current.exportCsv(data, 'guests', 'guests.csv');
+
+    expect(helpers.createCsv).toHaveBeenNthCalledWith(1, data, 'guests', false);
+    expect(helpers.createCsv).toHaveBeenNthCalledWith(2, data, 'guests', true);
+  });
 });

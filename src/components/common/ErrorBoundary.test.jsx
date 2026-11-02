@@ -2,6 +2,12 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ErrorBoundary } from './ErrorBoundary';
+import * as Sentry from '@sentry/react';
+
+vi.mock('@sentry/react', async () => {
+  const actual = await vi.importActual('@sentry/react');
+  return { ...actual, captureException: vi.fn() };
+});
 
 const Bomb = ({ shouldThrow }) => {
   if (shouldThrow) throw new Error("Güm! Component patladı!");
@@ -50,5 +56,27 @@ describe('ErrorBoundary Kapsamlı Testleri', () => {
 
     fireEvent.click(reloadButton);
     expect(reloadMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('Yakalanan hatayı Sentry ve console üzerinden raporlamalı', () => {
+    const captureException = Sentry.captureException;
+    const error = new Error('Raporlanabilir hata');
+
+    const FailingChild = () => {
+      throw error;
+    };
+
+    render(
+      <ErrorBoundary>
+        <FailingChild />
+      </ErrorBoundary>
+    );
+
+    expect(consoleErrorMock).toHaveBeenCalledWith(
+      'React Error Boundary Yakaladı:',
+      error,
+      expect.any(Object)
+    );
+    expect(captureException).toHaveBeenCalledWith(error, { extra: expect.any(Object) });
   });
 });

@@ -54,6 +54,24 @@ body {
     ),
     linear-gradient(180deg, #fff8fa, #fbeef2);
 }
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  min-width: 0;
+}
 a,
 button,
 input,
@@ -535,6 +553,26 @@ button[aria-disabled="true"]:hover {
 }
 .secondary-button:hover {
   background: #fff0f4;
+}
+
+@media (hover: none) {
+  .open-button:hover,
+  .main-button:hover:not(:disabled),
+  .secondary-button:hover:not(:disabled),
+  .option-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 .timeline {
   position: relative;

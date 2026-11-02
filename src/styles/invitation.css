@@ -1767,3 +1767,14 @@ body .app .glass-dock .dock-btn.music-on {
     transform: none !important;
   }
 }
+
+@media (hover: none) {
+  .btn:hover:not(:disabled),
+  .floating-menu-btn:hover:not(:disabled),
+  button:hover:not(:disabled),
+  .main-button:hover:not(:disabled),
+  .secondary-button:hover:not(:disabled),
+  .option-button:hover:not(:disabled) {
+    transform: none !important;
+  }
+}

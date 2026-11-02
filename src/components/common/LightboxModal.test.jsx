@@ -65,4 +65,52 @@ describe('LightboxModal Bileşen Testleri', () => {
     expect(screen.queryByTitle('ui.next')).not.toBeInTheDocument();
     expect(screen.queryByTitle('ui.prev')).not.toBeInTheDocument();
   });
+
+  it('kapatma butonuna ve overlay alanına tıklanınca kapanmalı', () => {
+    const closeLightbox = vi.fn();
+    render(
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={0}
+        closeLightbox={closeLightbox}
+        prevImage={vi.fn()}
+        nextImage={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByTitle('ui.closeEsc'));
+    fireEvent.click(screen.getByRole('dialog'));
+
+    expect(closeLightbox).toHaveBeenCalledTimes(2);
+  });
+
+  it('fotoğraf alanına tıklanınca overlay kapanmamalı', () => {
+    const closeLightbox = vi.fn();
+    render(
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={1}
+        closeLightbox={closeLightbox}
+        prevImage={vi.fn()}
+        nextImage={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByAltText('Büyütülmüş Fotoğraf'));
+
+    expect(closeLightbox).not.toHaveBeenCalled();
+  });
+
+  it('navigasyon callbackleri yoksa klavye olaylarında hata vermemeli', () => {
+    const closeLightbox = vi.fn();
+    render(
+      <LightboxModal gallery={mockGallery} lightboxIndex={0} closeLightbox={closeLightbox} />,
+    );
+
+    expect(() => {
+      fireEvent.keyDown(window, { key: 'ArrowLeft' });
+      fireEvent.keyDown(window, { key: 'ArrowRight' });
+    }).not.toThrow();
+    expect(closeLightbox).not.toHaveBeenCalled();
+  });
 });
