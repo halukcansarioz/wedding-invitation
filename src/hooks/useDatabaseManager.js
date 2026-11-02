@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import { isSupabaseReady } from "../services/database";
 import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
@@ -19,6 +19,7 @@ export function useDatabaseManager({
   t,
   isEn,
 }) {
+  const activeSubmissionsRef = useRef(new Set());
   useEffect(() => {
     if (!isSupabaseReady()) return;
     const activeTenantId = getActiveTenantId();
@@ -163,6 +164,9 @@ export function useDatabaseManager({
       if (formData.honeypot) return null;
 
       const tenantId = getActiveTenantId();
+      const submissionKey = `guest:${tenantId || "main"}:${String(formData.name || "").trim().toLowerCase()}:${String(formData.phone || "").trim()}`;
+      if (activeSubmissionsRef.current.has(submissionKey)) return null;
+      activeSubmissionsRef.current.add(submissionKey);
       const tempId = `temp-${Date.now()}`;
       const optimisticGuest = { id: tempId, ...formData };
       setGuests((prev) => [optimisticGuest, ...prev]);
@@ -177,6 +181,7 @@ export function useDatabaseManager({
             : "İnternet yok. Bağlantı geldiğinde form otomatik gönderilecek.",
           { title: "Çevrimdışı 📶" }
         );
+        activeSubmissionsRef.current.delete(submissionKey);
         return optimisticGuest;
       }
 
@@ -206,6 +211,8 @@ export function useDatabaseManager({
           title: t("alerts.saveErrorTitle"),
         });
         return null;
+      } finally {
+        activeSubmissionsRef.current.delete(submissionKey);
       }
     },
     [setGuests, showAppAlert, t, isEn]
@@ -216,6 +223,9 @@ export function useDatabaseManager({
       if (formData.honeypot) return;
       const tenantId = getActiveTenantId();
       const shouldPublishNow = !settings?.requireWishApproval;
+      const submissionKey = `wish:${tenantId || "main"}:${String(formData.name || "").trim().toLowerCase()}:${String(formData.message || "").trim()}`;
+      if (activeSubmissionsRef.current.has(submissionKey)) return;
+      activeSubmissionsRef.current.add(submissionKey);
       const tempId = `temp-${Date.now()}`;
 
       if (shouldPublishNow) {
@@ -241,6 +251,7 @@ export function useDatabaseManager({
         const offlineWishes = JSON.parse(localStorage.getItem("offline_wishes") || "[]");
         offlineWishes.push(wishPayload);
         localStorage.setItem("offline_wishes", JSON.stringify(offlineWishes));
+        activeSubmissionsRef.current.delete(submissionKey);
         return;
       }
 
@@ -270,6 +281,8 @@ export function useDatabaseManager({
         await showAppAlert?.(t("alerts.wishError", { message: error.message }), {
           title: t("alerts.saveErrorTitle"),
         });
+      } finally {
+        activeSubmissionsRef.current.delete(submissionKey);
       }
     },
     [setWishes, settings?.requireWishApproval, showAppAlert, t]

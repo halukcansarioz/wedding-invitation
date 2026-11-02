@@ -39,4 +39,38 @@ describe('RsvpSection Koşullu Render (Conditional UI) Testleri', () => {
       (expect(declineBtn) as any).toHaveAttribute('aria-checked', 'true');
     });
   }, 10000);
+
+  it('katılmama gönderiminden sonra IBAN bilgisini doğrudan göstermeli', async () => {
+    const submitGuest = vi.fn().mockResolvedValue({ id: 'guest-1' });
+    const { container } = render(
+      <RsvpSection
+        {...({
+          submitGuest,
+          showIban: true,
+          giftData: {
+            receiver: 'Test Alıcı',
+            bankName: 'Test Bankası',
+            iban: 'TR00 0000 0000 0000',
+          },
+        } as any)}
+      />
+    );
+
+    fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), {
+      target: { value: 'Test Davetli' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: /Katılamayacağım/i }));
+    fireEvent.click(screen.getByTestId('turnstile-btn'));
+    const submitButton = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(submitGuest).toHaveBeenCalled();
+      expect(screen.getByText('TR00 0000 0000 0000')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByPlaceholderText(/Song Request|Düğünde Çalmasını/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Gelin Tarafı|Damat Tarafı|Mutual/i)).not.toBeInTheDocument();
+  }, 10000);
 });

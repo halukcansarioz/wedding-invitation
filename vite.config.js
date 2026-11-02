@@ -3,13 +3,27 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      thresholds: {
+        statements: 50,
+        branches: 40,
+        functions: 50,
+        lines: 50,
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        globPatterns: ['**/*.{js,css,html,ico,svg}'],
+        navigateFallback: '/offline.html',
+        navigateFallbackDenylist: [/^\/api\//, /^\/admin\/auth/],
         runtimeCaching: [
           {
             urlPattern: /\.(?:png|svg|webp|jpg|jpeg)$/i,
@@ -63,13 +77,17 @@ export default defineConfig({
             if (id.includes('html5-qrcode')) return 'qr';
             if (id.includes('heic2any') || id.includes('browser-image-compression')) return 'image-tools';
             if (id.includes('yet-another-react-lightbox') || id.includes('react-photo-album')) return 'gallery';
-            if (id.includes('@sentry/react')) return 'monitoring';
+            if (id.includes('@sentry')) return 'monitoring';
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
               return 'vendor';
             }
             if (id.includes('@supabase/supabase-js')) {
               return 'supabase';
             }
+            if (id.includes('@tanstack')) return 'query';
+            if (id.includes('i18next') || id.includes('react-i18next')) return 'i18n';
+            if (id.includes('react-hook-form') || id.includes('/zod/')) return 'forms';
+            if (id.includes('idb-keyval')) return 'storage';
             if (id.includes('framer-motion')) {
               return 'ui';
             }

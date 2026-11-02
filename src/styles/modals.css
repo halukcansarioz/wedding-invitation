@@ -126,7 +126,7 @@
 
 /* Ortak Buton Stili (Glassmorphism) */
 .lightbox-control-btn {
-  position: absolute;
+  position: fixed;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #ffffff;
@@ -140,42 +140,39 @@
   z-index: 10;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: none;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 /* Kapatma Butonu (Sağ Üst) */
 .lightbox-close {
-  top: 24px;
-  right: 24px;
+  top: max(24px, env(safe-area-inset-top));
+  right: max(24px, env(safe-area-inset-right));
 }
 .lightbox-close:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Önceki Butonu (Sol Orta) */
 .lightbox-prev {
-  left: 24px;
+  left: max(24px, env(safe-area-inset-left));
   top: 50%;
   transform: translateY(-50%);
 }
 .lightbox-prev:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-50%) scale(1.1);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Sonraki Butonu (Sağ Orta) */
 .lightbox-next {
-  right: 24px;
+  right: max(24px, env(safe-area-inset-right));
   top: 50%;
   transform: translateY(-50%);
 }
 .lightbox-next:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-50%) scale(1.1);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
@@ -185,13 +182,13 @@
     height: 42px;
   }
   .lightbox-close {
-    top: 16px;
-    right: 16px;
+    top: max(16px, env(safe-area-inset-top));
+    right: max(16px, env(safe-area-inset-right));
   }
   .lightbox-prev {
-    left: 12px;
+    left: max(12px, env(safe-area-inset-left));
   }
   .lightbox-next {
-    right: 12px;
+    right: max(12px, env(safe-area-inset-right));
   }
 }

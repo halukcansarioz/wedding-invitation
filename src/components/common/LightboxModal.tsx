@@ -31,7 +31,7 @@ export function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage
   return createPortal(
     <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
       <div onClick={closeLightbox} className="gallery-lightbox-overlay" role="dialog" aria-modal="true" aria-label="Fotoğraf Galerisi">
-        <button type="button" onClick={(e) => { e.stopPropagation(); closeLightbox(); }} className="lightbox-control-btn lightbox-close" title={t('ui.closeEsc')}>
+        <button type="button" aria-label={t('ui.closeEsc')} onClick={(e) => { e.stopPropagation(); closeLightbox(); }} className="lightbox-control-btn lightbox-close" title={t('ui.closeEsc')}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -39,7 +39,7 @@ export function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage
         </button>
 
         {gallery.length > 1 && prevImage && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); prevImage(e); }} className="lightbox-control-btn lightbox-prev" title={t('ui.prev')}>
+          <button type="button" aria-label={t('ui.prev')} onClick={(e) => { e.stopPropagation(); prevImage(e); }} className="lightbox-control-btn lightbox-prev" title={t('ui.prev')}>
             &#10094;
           </button>
         )}
@@ -52,7 +52,7 @@ export function LightboxModal({ gallery, lightboxIndex, closeLightbox, prevImage
         </div>
 
         {gallery.length > 1 && nextImage && (
-          <button type="button" onClick={(e) => { e.stopPropagation(); nextImage(e); }} className="lightbox-control-btn lightbox-next" title={t('ui.next')}>
+          <button type="button" aria-label={t('ui.next')} onClick={(e) => { e.stopPropagation(); nextImage(e); }} className="lightbox-control-btn lightbox-next" title={t('ui.next')}>
             &#10095;
           </button>
         )}

@@ -13,11 +13,9 @@ import {
   buildPersonalLink,
 } from "../../../utils/helpers";
 import {
+  DEFAULT_SITE_DATA,
   NOTE_MAX_LENGTH,
   ATTENDANCE_OPTIONS,
-  PERSON_COUNT_OPTIONS,
-  SIDE_OPTIONS,
-  CHILD_OPTIONS,
 } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
 import { subscribeToPushNotifications } from "../../../services/pushNotifications";
@@ -34,7 +32,6 @@ const DeclineModal = memo(
   ({
     isEn,
     copy,
-    showIban,
     giftData,
     showDeclineGift,
     showDeclineModal,
@@ -73,7 +70,7 @@ const DeclineModal = memo(
                 >
                   {t("ui.close")}
                 </button>
-                {showIban && giftData && (
+                {resolvedGiftData && (
                   <button
                     type="button"
                     className="main-button"
@@ -117,12 +114,13 @@ export const RsvpSection = memo(function RsvpSection({
   submitGuest,
   invitation,
   rsvpWhatsappText,
-  showIban,
   giftData,
   personalTableNumber,
 }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith("en") || false;
+  const resolvedGiftData =
+    giftData || invitation?.giftRegistry || DEFAULT_SITE_DATA.giftRegistry;
 
   const isAutomation = typeof window !== "undefined" && Boolean(window.navigator?.webdriver);
 
@@ -162,8 +160,6 @@ export const RsvpSection = memo(function RsvpSection({
   });
 
   const currentNote = watch("note") || "";
-  const currentAttendance = watch("attendance");
-  const isAttendingSelected = currentAttendance === "Katılacağım";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -196,6 +192,11 @@ export const RsvpSection = memo(function RsvpSection({
       turnstileToken: turnstileToken || "e2e-bypass-token",
     };
 
+    if (isDeclining) {
+      setShowDeclineGift(true);
+      setShowDeclineModal(true);
+    }
+
     let savedGuest = null;
     if (typeof submitGuest === "function") {
       savedGuest = await submitGuest(submissionPayload);
@@ -219,8 +220,6 @@ export const RsvpSection = memo(function RsvpSection({
           subscribeToPushNotifications();
         }
       }, 1500);
-    } else {
-      setShowDeclineModal(true);
     }
 
     reset();
@@ -349,12 +348,12 @@ export const RsvpSection = memo(function RsvpSection({
   }, []);
 
   const copyIban = useCallback(() => {
-    if (giftData?.iban) {
-      navigator.clipboard.writeText(giftData.iban);
+    if (resolvedGiftData?.iban) {
+      navigator.clipboard.writeText(resolvedGiftData.iban);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
-  }, [giftData?.iban]);
+  }, [resolvedGiftData?.iban]);
 
   const translatedAttendance = useMemo(
     () =>
@@ -367,39 +366,6 @@ export const RsvpSection = memo(function RsvpSection({
           : opt.label,
       })),
     [isEn, t]
-  );
-
-  const translatedPersonCount = useMemo(
-    () =>
-      PERSON_COUNT_OPTIONS.map((opt) => ({
-        ...opt,
-        label: isEn ? `${opt.value} ${Number(opt.value) > 1 ? "Guests" : "Guest"}` : opt.label,
-      })),
-    [isEn]
-  );
-
-  const translatedSides = useMemo(
-    () =>
-      SIDE_OPTIONS.map((opt) => ({
-        ...opt,
-        label: isEn
-          ? opt.value === "Gelin Tarafı"
-            ? "Bride's Side"
-            : opt.value === "Damat Tarafı"
-            ? "Groom's Side"
-            : "Mutual"
-          : opt.label,
-      })),
-    [isEn]
-  );
-
-  const translatedChildOptions = useMemo(
-    () =>
-      CHILD_OPTIONS.map((opt) => ({
-        ...opt,
-        label: isEn ? (opt.value === "Evet" ? "With Children" : "No Children") : opt.label,
-      })),
-    [isEn]
   );
 
   return (
@@ -477,64 +443,6 @@ export const RsvpSection = memo(function RsvpSection({
                 />
               )}
             />
-
-            {isAttendingSelected && (
-              <>
-                <Controller
-                  name="personCount"
-                  control={control}
-                  render={({ field }) => (
-                    <OptionGroup
-                      onChange={field.onChange}
-                      options={translatedPersonCount}
-                      value={field.value}
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="side"
-                  control={control}
-                  render={({ field }) => (
-                    <OptionGroup
-                      onChange={field.onChange}
-                      options={translatedSides}
-                      value={field.value}
-                    />
-                  )}
-                />
-
-                <Controller
-                  name="hasChild"
-                  control={control}
-                  render={({ field }) => (
-                    <OptionGroup
-                      onChange={field.onChange}
-                      options={translatedChildOptions}
-                      value={field.value}
-                    />
-                  )}
-                />
-
-                <div style={{ width: "100%" }}>
-                  <Controller
-                    name="songRequest"
-                    control={control}
-                    render={({ field }) => (
-                      <input
-                        {...field}
-                        maxLength={100}
-                        placeholder={
-                          isEn
-                            ? "Song Request for the Dance Floor 🎵 (Optional)"
-                            : "Düğünde Çalmasını İstediğiniz Şarkı 🎵 (İsteğe Bağlı)"
-                        }
-                      />
-                    )}
-                  />
-                </div>
-              </>
-            )}
 
             <div className="field-with-counter" style={{ marginTop: "12px" }}>
               <Controller
@@ -623,8 +531,7 @@ export const RsvpSection = memo(function RsvpSection({
       <DeclineModal
         isEn={isEn}
         copy={copy}
-        showIban={showIban}
-        giftData={giftData}
+        giftData={resolvedGiftData}
         showDeclineGift={showDeclineGift}
         showDeclineModal={showDeclineModal}
         resetAndCloseModal={resetAndCloseModal}

@@ -11,8 +11,10 @@ import { get, set, del } from 'idb-keyval'; // npm install idb-keyval
 // @ts-expect-error vite-plugin-pwa provides this virtual module at build time.
 import { registerSW } from 'virtual:pwa-register';
 import App from './App';
+import './monitoring';
 import './index.css';
 import './i18n/config';
+import { PwaUpdateBanner } from './components/common/PwaUpdateBanner';
 
 // IndexedDB Persister (Çevrimdışı verileri tarayıcıda tutmak için)
 const indexedDBPersister = createAsyncStoragePersister({
@@ -40,8 +42,12 @@ const queryClient = new QueryClient({
   },
 });
 
-// PWA Service Worker (Arka plan senkronizasyonu yetkisiyle)
-registerSW({ immediate: true });
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    window.dispatchEvent(new CustomEvent('pwa-update-available', { detail: updateSW }));
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -52,6 +58,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <HelmetProvider>
           <App />
+          <PwaUpdateBanner />
         </HelmetProvider>
       </BrowserRouter>
     </PersistQueryClientProvider>

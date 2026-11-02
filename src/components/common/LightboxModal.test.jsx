@@ -66,6 +66,22 @@ describe('LightboxModal Bileşen Testleri', () => {
     expect(screen.queryByTitle('ui.prev')).not.toBeInTheDocument();
   });
 
+  it('navigasyon butonları erişilebilir etiketlere sahip olmalı', () => {
+    render(
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={0}
+        closeLightbox={vi.fn()}
+        prevImage={vi.fn()}
+        nextImage={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'ui.prev' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ui.next' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'ui.closeEsc' })).toBeInTheDocument();
+  });
+
   it('kapatma butonuna ve overlay alanına tıklanınca kapanmalı', () => {
     const closeLightbox = vi.fn();
     render(

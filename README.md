@@ -16,6 +16,8 @@ npm run lint
 npm run test:unit
 npm run test:e2e
 npm run build
+npm run test:coverage
+npm run audit:performance
 ```
 
 `npm test` unit ve Playwright E2E testlerini sırasıyla çalıştırır.
@@ -37,6 +39,18 @@ Geliştirme ortamında production davetiyesi ve `localhost:5173` / `localhost:41
 - Supabase service-role anahtarı yalnızca Edge Function secrets içinde tutulmalıdır.
 - Vercel deploy’larında temel güvenlik başlıkları `vercel.json` üzerinden uygulanır.
 - CI; push ve pull request olaylarında lint, production dependency audit, unit/E2E test ve build çalıştırır.
+- `npm run audit:performance` çalışır bir Vite sunucusuna karşı mobil kaynak ve görsel metriklerini JSON olarak raporlar.
+
+## Deployment
+
+Vercel için `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` ve isteğe bağlı
+`VITE_SENTRY_DSN` ortam değişkenlerini tanımlayın. Supabase Edge Function secrets
+içinde `ALLOWED_ORIGINS` değerini gerçek production origin'inizle sınırlandırın.
+Service-role anahtarını frontend ortam değişkenlerine kesinlikle koymayın.
+
+Production Supabase şeması için [`src/supabase/supabase-setup.sql`](./src/supabase/supabase-setup.sql)
+dosyasını SQL Editor'da çalıştırın. Migration tenant/RLS politikalarını idempotent
+olarak uygular; mevcut verileri silmez.
 
 ## Bilinen operasyonel gereksinimler
 

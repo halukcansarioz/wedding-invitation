@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /live
+
+Sitemap: https://wedding-invitation-halook.vercel.app/sitemap.xml

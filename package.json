@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test:coverage": "vitest run src/ --coverage",
+    "audit:performance": "node .performance-audit.mjs",
     "lint": "oxlint src tests",
     "preview": "vite preview",
     "test:unit": "vitest run src/",
@@ -57,6 +59,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-legacy": "^8.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/coverage-v8": "^5.0.5",
     "autoprefixer": "^10.5.4",
     "jsdom": "^29.1.1",
     "oxlint": "^1.69.0",

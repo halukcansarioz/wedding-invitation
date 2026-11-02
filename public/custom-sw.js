@@ -21,7 +21,19 @@ self.addEventListener('push', function(event) {
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
+  const requestedUrl = event.notification.data && event.notification.data.url;
+  let targetUrl = self.location.origin + '/';
+
+  try {
+    const parsedUrl = new URL(requestedUrl || '/', self.location.origin);
+    if (parsedUrl.origin === self.location.origin) {
+      targetUrl = parsedUrl.href;
+    }
+  } catch {
+    targetUrl = self.location.origin + '/';
+  }
+
   event.waitUntil(
-    clients.openWindow(event.notification.data.url)
+    clients.openWindow(targetUrl)
   );
 });

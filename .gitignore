@@ -10,6 +10,7 @@ node_modules
 playwright-report/
 test-results/
 repomix-output.xml
+coverage/
 
 dist
 dist-ssr

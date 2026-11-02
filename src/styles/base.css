@@ -1174,3 +1174,27 @@ html[data-theme] body .app .family-grid span {
   letter-spacing: 2px;
   font-weight: 600;
 }
+.pwa-update-banner {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--admin-border-color);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--text-main);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 15%);
+}
+
+.pwa-update-banner button {
+  border: 0;
+  border-radius: 8px;
+  padding: 7px 12px;
+  background: var(--rose-dark);
+  color: #fff;
+  cursor: pointer;
+}

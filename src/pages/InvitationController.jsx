@@ -172,11 +172,32 @@ export default function InvitationController() {
     invitation.message ||
     (isEn ? "You are invited to our wedding." : "Düğün davetiyemize davetlisiniz.");
   const ogImage = invitation.heroImage || invitation.introImage;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: pageTitle,
+    description: pageDescription,
+    url: currentShareLink,
+    image: ogImage ? [ogImage] : undefined,
+    startDate: siteData.eventDetails?.date || undefined,
+    location: siteData.eventDetails?.venue
+      ? {
+          "@type": "Place",
+          name: siteData.eventDetails.venue,
+          address: siteData.eventDetails.address || undefined,
+        }
+      : undefined,
+    organizer: {
+      "@type": "Person",
+      name: coupleName,
+    },
+  };
 
   const renderSEO = () => (
     <Helmet>
       <title>{pageTitle}</title>
       <meta name="description" content={pageDescription} />
+      <link rel="canonical" href={currentShareLink} />
 
       <meta property="og:type" content="website" />
       <meta property="og:url" content={currentShareLink} />
@@ -197,6 +218,9 @@ export default function InvitationController() {
       />
       <meta name="twitter:description" content={pageDescription} />
       <meta name="twitter:image" content={ogImage} />
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
     </Helmet>
   );
 
