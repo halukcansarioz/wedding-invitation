@@ -7,6 +7,15 @@ export function ResponsiveSlideShow({ children }: { children: ReactNode }) {
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const touchStartY = useRef<number>(0);
   const touchEndY = useRef<number>(0);
+  const animationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (animationTimer.current) {
+        clearTimeout(animationTimer.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -40,14 +49,20 @@ export function ResponsiveSlideShow({ children }: { children: ReactNode }) {
     if (isAnimating || currentIndex === sections.length - 1) return;
     setIsAnimating(true);
     setCurrentIndex(prev => prev + 1);
-    setTimeout(() => setIsAnimating(false), 800);
+    animationTimer.current = setTimeout(() => {
+      animationTimer.current = null;
+      setIsAnimating(false);
+    }, 800);
   };
 
   const goPrev = () => {
     if (isAnimating || currentIndex === 0) return;
     setIsAnimating(true);
     setCurrentIndex(prev => prev - 1);
-    setTimeout(() => setIsAnimating(false), 800);
+    animationTimer.current = setTimeout(() => {
+      animationTimer.current = null;
+      setIsAnimating(false);
+    }, 800);
   };
 
   const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {

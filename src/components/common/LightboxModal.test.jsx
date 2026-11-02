@@ -129,4 +129,52 @@ describe('LightboxModal Bileşen Testleri', () => {
     }).not.toThrow();
     expect(closeLightbox).not.toHaveBeenCalled();
   });
+
+  it('sabit navigasyon butonlarına tıklanınca doğru callback çalışmalı', () => {
+    const prevImage = vi.fn();
+    const nextImage = vi.fn();
+    const closeLightbox = vi.fn();
+    render(
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={1}
+        closeLightbox={closeLightbox}
+        prevImage={prevImage}
+        nextImage={nextImage}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'ui.prev' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ui.next' }));
+
+    expect(prevImage).toHaveBeenCalledTimes(1);
+    expect(nextImage).toHaveBeenCalledTimes(1);
+    expect(closeLightbox).not.toHaveBeenCalled();
+  });
+
+  it('lightbox kapandığında klavye listenerını temizlemeli', () => {
+    const closeLightbox = vi.fn();
+    const { rerender } = render(
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={0}
+        closeLightbox={closeLightbox}
+        prevImage={vi.fn()}
+        nextImage={vi.fn()}
+      />
+    );
+
+    rerender(
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={null}
+        closeLightbox={closeLightbox}
+        prevImage={vi.fn()}
+        nextImage={vi.fn()}
+      />
+    );
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(closeLightbox).not.toHaveBeenCalled();
+  });
 });

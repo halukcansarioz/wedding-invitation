@@ -5,9 +5,11 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 
 function getAllowedOrigins(): string[] {
-  const configured = Deno.env.get("ALLOWED_ORIGINS");
+  const configured = (globalThis as typeof globalThis & {
+    Deno?: { env: { get(name: string): string | undefined } };
+  }).Deno?.env.get("ALLOWED_ORIGINS");
   return (configured ? configured.split(",") : DEFAULT_ALLOWED_ORIGINS)
-    .map((origin) => origin.trim())
+    .map((origin: string) => origin.trim())
     .filter(Boolean);
 }
 

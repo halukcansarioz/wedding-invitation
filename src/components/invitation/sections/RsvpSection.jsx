@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef, memo } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -134,6 +134,15 @@ export const RsvpSection = memo(function RsvpSection({
   const [formKey, setFormKey] = useState(0);
 
   const [submittedGuest, setSubmittedGuest] = useState(null);
+  const modalResetTimer = useRef(null);
+  const copiedStateTimer = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (modalResetTimer.current) clearTimeout(modalResetTimer.current);
+      if (copiedStateTimer.current) clearTimeout(copiedStateTimer.current);
+    };
+  }, []);
 
   const rsvpSchema = useMemo(() => getRsvpSchema(t), [t]);
 
@@ -341,7 +350,9 @@ export const RsvpSection = memo(function RsvpSection({
 
   const resetAndCloseModal = useCallback(() => {
     setShowDeclineModal(false);
-    setTimeout(() => {
+    if (modalResetTimer.current) clearTimeout(modalResetTimer.current);
+    modalResetTimer.current = setTimeout(() => {
+      modalResetTimer.current = null;
       setShowDeclineGift(false);
       setCopied(false);
     }, 300);
@@ -351,7 +362,11 @@ export const RsvpSection = memo(function RsvpSection({
     if (resolvedGiftData?.iban) {
       navigator.clipboard.writeText(resolvedGiftData.iban);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+      if (copiedStateTimer.current) clearTimeout(copiedStateTimer.current);
+      copiedStateTimer.current = setTimeout(() => {
+        copiedStateTimer.current = null;
+        setCopied(false);
+      }, 2500);
     }
   }, [resolvedGiftData?.iban]);
 

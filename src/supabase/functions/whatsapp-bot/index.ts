@@ -1,5 +1,11 @@
+/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import {
+  buildSystemPrompt,
+  extractTextMessage,
+  getVerificationResponse,
+} from "./helpers.ts";
 
 const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 const WHATSAPP_VERIFY_TOKEN = Deno.env.get("WHATSAPP_VERIFY_TOKEN");
@@ -11,15 +17,13 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "
 serve(async (req) => {
   if (req.method === "GET") {
     const url = new URL(req.url);
-    if (url.searchParams.get("hub.verify_token") === WHATSAPP_VERIFY_TOKEN) {
-      return new Response(url.searchParams.get("hub.challenge"), { status: 200 });
-    }
-    return new Response("Forbidden", { status: 403 });
+    const verification = getVerificationResponse(url, WHATSAPP_VERIFY_TOKEN);
+    return new Response(verification.body, { status: verification.status });
   }
 
   try {
     const body = await req.json();
-    const message = body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    const message = extractTextMessage(body);
 
     if (message && message.type === "text") {
       const userPhone = message.from;
@@ -42,20 +46,7 @@ serve(async (req) => {
         siteData = legacySettingsRow?.data;
       }
 
-      let systemPrompt =
-        "Sen bir düğün asistanısın. Davetlilerin sorularına nazik, kısa ve samimi bir dille emoji kullanarak cevap ver.";
-
-      if (siteData) {
-        const bride = siteData?.invitation?.bride || "Gelin";
-        const groom = siteData?.invitation?.groom || "Damat";
-        const date = siteData?.invitation?.dateText || "Bilinmeyen Tarih";
-        const time = siteData?.invitation?.timeText || "Bilinmeyen Saat";
-        const venue = siteData?.invitation?.venue || "";
-        const address = siteData?.invitation?.address || "";
-        const iban = siteData?.giftRegistry?.iban || "";
-
-        systemPrompt = `Sen ${bride} ve ${groom}'un düğün asistanısın. Düğün tarihi ${date} saat ${time}'da. Adres: ${venue}, ${address}. Çocuk getirmek yasaktır, sadece yetişkinler. Takı/hediye için IBAN: ${iban}. Davetlilerin sorularına nazik, kısa ve samimi bir dille emoji kullanarak cevap ver.`;
-      }
+      const systemPrompt = buildSystemPrompt(siteData);
 
       // 2. OpenAI İsteğini At
       const openAiRes = await fetch("https://api.openai.com/v1/chat/completions", {

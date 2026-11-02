@@ -20,7 +20,7 @@ async function logErrorToDatabase(supabaseAdmin: any, functionName: string, erro
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req, "POST, OPTIONS");
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
