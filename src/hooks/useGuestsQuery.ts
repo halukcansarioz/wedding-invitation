@@ -10,7 +10,7 @@ export function useGuestsQuery() {
 
   const { data: guests = [], isLoading, isError } = useQuery<Guest[]>({
     queryKey: ['guests'],
-    queryFn: loadGuestsFromDatabase,
+    queryFn: () => loadGuestsFromDatabase(),
   });
 
   useEffect(() => {

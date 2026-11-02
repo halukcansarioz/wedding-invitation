@@ -1699,12 +1699,11 @@ body .app .glass-dock .dock-btn.music-on {
 }
 .btn, .floating-menu-btn, button, .main-button, .secondary-button, .option-button { 
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s !important; 
-  will-change: transform; 
 }
-.btn:hover, button:hover, .main-button:hover, .secondary-button:hover, .option-button:hover { 
+.btn:hover:not(:disabled), .floating-menu-btn:hover:not(:disabled), button:hover:not(:disabled), .main-button:hover:not(:disabled), .secondary-button:hover:not(:disabled), .option-button:hover:not(:disabled) {
   transform: translateY(-5px) !important; 
 }
-.btn:active, button:active, .main-button:active, .secondary-button:active, .option-button:active { 
+.btn:active:not(:disabled), .floating-menu-btn:active:not(:disabled), button:active:not(:disabled), .main-button:active:not(:disabled), .secondary-button:active:not(:disabled), .option-button:active:not(:disabled) {
   transform: translateY(2px) !important; 
 }
 /* Yüzen menü buton animasyonları */
@@ -1743,3 +1742,28 @@ body .app .glass-dock .dock-btn.music-on {
     animation-play-state: paused;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn:hover:not(:disabled),
+  .floating-menu-btn:hover:not(:disabled),
+  button:hover:not(:disabled),
+  .main-button:hover:not(:disabled),
+  .secondary-button:hover:not(:disabled),
+  .option-button:hover:not(:disabled),
+  .btn:active:not(:disabled),
+  .floating-menu-btn:active:not(:disabled),
+  button:active:not(:disabled),
+  .main-button:active:not(:disabled),
+  .secondary-button:active:not(:disabled),
+  .option-button:active:not(:disabled) {
+    transform: none !important;
+  }
+}

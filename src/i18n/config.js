@@ -3,12 +3,23 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Ekstra npm paketi kurmaya gerek kalmadan kendi yazdığımız Lazy Load mekanizması
+const localeModules = import.meta.glob("./locales/*.json");
+export const normalizeLanguage = (language) => language.toLowerCase().split("-")[0];
+
 const lazyLoadBackend = {
   type: 'backend',
   read: (language, namespace, callback) => {
-    import(`./locales/${language}.json`)
+    const normalizedLanguage = normalizeLanguage(language);
+    const localePath = `./locales/${normalizedLanguage}.json`;
+    const loadLocale = localeModules[localePath];
+
+    if (!loadLocale) {
+      callback(new Error(`Desteklenmeyen dil: ${language}`), null);
+      return;
+    }
+
+    loadLocale()
       .then((resources) => {
-        // Dosya başarıyla yüklendiğinde i18next'e bildir
         callback(null, resources.default || resources);
       })
       .catch((error) => {

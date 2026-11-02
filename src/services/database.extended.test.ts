@@ -24,7 +24,7 @@ describe("Database Services Edge Case Testleri", () => {
       })
     });
 
-    let result = [];
+    let result: unknown[] = [];
     const { data, error } = await supabase.from('guests').select('*').order('created_at');
     if (error || !data) {
       result = [];
@@ -42,7 +42,7 @@ describe("Database Services Edge Case Testleri", () => {
       })
     });
 
-    let result = [];
+    let result: unknown[] = [];
     const { data, error } = await supabase.from('guests').select('*').order('created_at');
     if (!error && data) {
       result = data;

@@ -5,7 +5,7 @@ import * as GiftSectionModule from './GiftSection';
 import { useStore } from '../../../store/useStore'; 
 
 // Bileşenin Named veya Default export olma ihtimaline karşı her ikisini de güvenle yakalıyoruz
-const GiftSection = (GiftSectionModule as any).GiftSection || GiftSectionModule.default || GiftSectionModule;
+const GiftSection = (GiftSectionModule as any).GiftSection || (GiftSectionModule as any).default || GiftSectionModule;
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }),
@@ -58,8 +58,6 @@ describe('GiftSection Bileşen Testleri', () => {
         giftRegistry: sampleGiftRegistry,
         invitation: { giftRegistry: sampleGiftRegistry }
       } as any,
-      giftRegistry: sampleGiftRegistry,
-      settings: { visibility: sampleVisibility }
     });
   });
 
@@ -81,9 +79,6 @@ describe('GiftSection Bileşen Testleri', () => {
 
   it('Hediye bilgileri ve IBAN gosterilmeli', () => {
     const { container } = render(<GiftSection {...props} />);
-    
-    // Debug: Render edilen HTML çıktısını konsolda görmek için
-    console.log("GIFT SECTION CONTAINER HTML:", container.innerHTML);
 
     expect(container).not.toBeNull();
     expect(container.innerHTML.length).toBeGreaterThan(0);

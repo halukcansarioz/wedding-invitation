@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import AdminCharts from './AdminCharts';
 
 describe('AdminCharts Bileşen Testleri', () => {

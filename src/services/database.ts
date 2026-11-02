@@ -316,7 +316,7 @@ export const restoreBackupToDatabase = async (parsedData: any): Promise<void> =>
     await deleteQuery;
 
     const guestsToInsert = parsedData.guests.map(
-      ({ id, created_at, updated_at, ...rest }: any) => ({
+      ({ ...rest }: any) => ({
         ...rest,
         ...(tenantId ? { tenant_id: tenantId } : {}),
       })
@@ -329,7 +329,7 @@ export const restoreBackupToDatabase = async (parsedData: any): Promise<void> =>
     await deleteQuery;
 
     const wishesToInsert = parsedData.wishes.map(
-      ({ id, created_at, updated_at, ...rest }: any) => ({
+      ({ ...rest }: any) => ({
         ...rest,
         ...(tenantId ? { tenant_id: tenantId } : {}),
       })

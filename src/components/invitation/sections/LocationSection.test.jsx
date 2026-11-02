@@ -22,4 +22,18 @@ describe('LocationSection Bileşen Testleri', () => {
     fireEvent.click(closeButton);
     expect(screen.queryByText(/Yandex Navi/i)).not.toBeInTheDocument();
   });
+
+  it('modal açıldığında kapatma düğmesine odaklanır ve Escape ile kapanır', () => {
+    render(<LocationSection invitation={mockInvitation} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'ui.goToMap' }));
+
+    const dialog = screen.getByRole('dialog');
+    const closeButton = screen.getByRole('button', { name: 'ui.closeBtn' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(closeButton).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });

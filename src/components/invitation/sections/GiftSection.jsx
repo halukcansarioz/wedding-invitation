@@ -50,7 +50,7 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
       } else {
         throw new Error("Ödeme linki oluşturulamadı.");
       }
-    } catch (error) {
+    } catch {
       alert(isEn ? "Payment system is currently unavailable." : "Ödeme altyapısına şu an ulaşılamıyor. Lütfen IBAN ile devam edin.");
     } finally {
       setIsRedirecting(false);

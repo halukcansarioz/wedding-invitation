@@ -75,7 +75,7 @@ export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDr
       setAdminDraft(cleanedData);
       setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
       setTimeout(() => setAdminSaveMessage(""), 3000);
-    } catch (error) {
+    } catch {
       setAdminSaveMessage(isEn ? `Could not save changes.` : `Değişiklikler kaydedilemedi.`);
     }
   }

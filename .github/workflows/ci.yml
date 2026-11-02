@@ -1,6 +1,12 @@
 name: ci
 
-on: [push]
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -8,15 +14,20 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: '24'
+          cache: npm
 
       - run: npm ci
 
-      - run: npx --yes playwright install --with-deps
+      - run: npm run lint
+
+      - run: npm audit --omit=dev
+
+      - run: npx --yes playwright install --with-deps chromium
         env:
           DEBIAN_FRONTEND: noninteractive
 

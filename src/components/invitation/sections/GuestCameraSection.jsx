@@ -11,7 +11,7 @@ const fadeUp = {
 };
 
 export const GuestCameraSection = memo(function GuestCameraSection() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const showAppAlert = useStore((state) => state.showAppAlert);
   const siteData = useStore((state) => state.siteData);
@@ -101,7 +101,7 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
       } else {
         showAppAlert(isEn ? "Photo received. It will be published after admin review." : "Fotoğraf alındı. Gelin ve damat onayından sonra yayınlanacak.", { tone: "info" });
       }
-    } catch (error) {
+    } catch {
       showAppAlert(isEn ? "Could not process photo." : "Fotoğraf işlenemedi. Lütfen tekrar deneyin.", { tone: "error", title: "Hata" });
     } finally {
       setIsUploading(false);

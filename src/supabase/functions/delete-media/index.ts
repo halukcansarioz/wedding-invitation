@@ -1,12 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Max-Age": "86400",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 interface DeleteMediaPayload {
   action?: "delete" | "cleanup-orphans";
@@ -44,6 +38,7 @@ function parseStorageUrl(rawUrl: string): { bucket: string; path: string } | nul
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, "POST, GET, OPTIONS, PUT, DELETE");
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders, status: 200 });
   }
@@ -63,7 +58,7 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    const isServiceRoleCaller = authHeader?.includes(SUPABASE_SERVICE_ROLE_KEY);
+    const isServiceRoleCaller = authHeader === `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`;
 
     if (!isServiceRoleCaller) {
       if (!authHeader) {
@@ -99,6 +94,12 @@ serve(async (req) => {
       if (Array.isArray(body.urls)) urlsToDelete.push(...body.urls);
 
       if (body.bucket && body.path) {
+        if (body.bucket !== "wedding-media" || body.path.includes("..")) {
+          return new Response(
+            JSON.stringify({ error: "Geçersiz medya yolu." }),
+            { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
         const { error } = await supabaseAdmin.storage.from(body.bucket).remove([body.path]);
         if (error) throw error;
         return new Response(

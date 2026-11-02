@@ -12,7 +12,7 @@ export interface GuestsListSectionProps {
 export const GuestsListSection = memo(function GuestsListSection({ copy, guests, totalPersonCount, notAttendingCount }: GuestsListSectionProps) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  const guestList = Array.isArray(guests) ? guests : [];
+  const guestList = useMemo(() => (Array.isArray(guests) ? guests : []), [guests]);
   
   const { totalResponses, attending, notAttending } = useMemo(() => {
     const total = guestList.length;

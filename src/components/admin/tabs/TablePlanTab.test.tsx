@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
 import { TablePlanTab } from './TablePlanTab';
 

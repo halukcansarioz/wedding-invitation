@@ -61,7 +61,7 @@ describe('useGuestPhotosQuery Hook Testleri', () => {
   });
 
   it('Bileşen unmount olduğunda kanalı kapatmalı', () => {
-    const { result, unmount } = renderHook(() => useGuestPhotosQuery());
+    const { unmount } = renderHook(() => useGuestPhotosQuery());
     unmount();
     
     expect(mockRemoveChannel).toHaveBeenCalled();

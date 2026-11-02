@@ -96,7 +96,7 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
             <h3 style={{ color: "var(--rose-dark)", marginBottom: "16px" }}>{isEn ? `Found ${matchedPhotos.length} Photos!` : `${matchedPhotos.length} Fotoğraf Bulundu!`}</h3>
             <div className="gallery-grid">
               {matchedPhotos.map((photoUrl, index) => (
-                <a href={photoUrl} download target="_blank" rel="noreferrer" key={index} style={{ display: 'block', textDecoration: 'none' }}>
+                <a href={photoUrl} download target="_blank" rel="noopener noreferrer" key={index} style={{ display: 'block', textDecoration: 'none' }}>
                   <LazyImage src={photoUrl} alt={`Sizin fotoğrafınız ${index + 1}`} style={{ borderRadius: "8px" }} />
                   <span style={{ display: 'block', marginTop: '8px', fontSize: '12px', color: 'var(--rose-dark)', fontWeight: 'bold' }}>📥 {isEn ? "Download HD" : "HD İndir"}</span>
                 </a>

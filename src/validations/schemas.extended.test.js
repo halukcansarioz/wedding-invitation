@@ -16,11 +16,6 @@ describe('RSVP Zod Şeması Ek Doğrulama Testleri', () => {
   });
 
   it('İsim alanı 3 karakterden kısa olduğunda RSVP şeması reddetmeli', () => {
-    const shortNameData = { 
-      name: "Ali", 
-      attendance: "Katılacağım" 
-    };
-    const result = rsvpSchema.safeParse(shortNameData);
     const invalidShortName = { name: "Al", attendance: "Katılacağım" };
     expect(getRsvpSchema(mockT).safeParse(invalidShortName).success).toBe(false);
   });

@@ -22,7 +22,6 @@ export function GuestsAdminPanel({
   const showAppAlert = useStore((state) => state.showAppAlert); 
 
   const [isScanning, setIsScanning] = useState(false);
-  const [scannerInstance, setScannerInstance] = useState(null);
 
   useEffect(() => {
     let activeScanner = null;
@@ -33,8 +32,6 @@ export function GuestsAdminPanel({
           const { Html5QrcodeScanner } = await import("html5-qrcode");
           
           activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
-          setScannerInstance(activeScanner);
-
           activeScanner.render(
             (decodedText) => {
               activeScanner.clear();
@@ -48,10 +45,10 @@ export function GuestsAdminPanel({
                  alert(isEn ? "❌ Invalid QR code." : "❌ Geçersiz QR kod.");
               }
             },
-            (error) => { /* Hataları yoksay */ }
+            () => { /* Hataları yoksay */ }
           );
-        } catch (err) {
-          console.error("QR Kütüphanesi yüklenemedi:", err);
+        } catch {
+          console.error("QR Kütüphanesi yüklenemedi.");
           showAppAlert("Kamera başlatılamadı.", { tone: "error" });
           setIsScanning(false);
         }
@@ -62,7 +59,7 @@ export function GuestsAdminPanel({
 
     return () => {
       if (activeScanner) {
-        activeScanner.clear().catch(console.error);
+        activeScanner.clear().catch(() => undefined);
       }
     };
   }, [isScanning, toggleCheckIn, isEn, showAppAlert]);
@@ -90,7 +87,7 @@ export function GuestsAdminPanel({
         
         if (error) throw error;
         showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
-      } catch (err) {
+      } catch {
         showAppAlert(isEn ? "Failed to send messages." : "Mesajlar gönderilirken bir hata oluştu.", { tone: "error" });
       }
     }
@@ -211,7 +208,7 @@ export function GuestsAdminPanel({
                           <a 
                             href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
                             target="_blank" 
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                             className="secondary-button" 
                             style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
                           >

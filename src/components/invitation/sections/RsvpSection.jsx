@@ -20,7 +20,7 @@ import {
   CHILD_OPTIONS,
 } from "../../../config/constants";
 import { getRsvpSchema } from "../../../validations/schemas";
-import { subscribeToPushNotifications } from "../../common/PwaInstallBanner";
+import { subscribeToPushNotifications } from "../../../services/pushNotifications";
 
 const DeadlineBanner = memo(({ isEn, title, text }) => (
   <div className="rsvp-deadline-banner">
@@ -615,7 +615,7 @@ export const RsvpSection = memo(function RsvpSection({
           style={{ width: "fit-content", margin: "0 auto" }}
           href={`https://wa.me/${invitation?.whatsappNumber?.replace(/\D/g, "")}?text=${rsvpWhatsappText}`}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
         >
           {t("form.whatsappRsvp")}
         </a>

@@ -1,12 +1,8 @@
 // @ts-ignore Deno/JSR import'u Supabase Edge Runtime tarafından sağlanır.
 import { serve } from "jsr:@std/http/server";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { buildSubmitPayload } from "./payload.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 // Bellek içi (In-Memory) IP bazlı Rate Limiter (Dakikada maks. 5 istek)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
@@ -31,6 +27,7 @@ function isRateLimited(ip: string): boolean {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, "POST, OPTIONS");
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders, status: 200 });
   }
@@ -62,7 +59,10 @@ serve(async (req) => {
     }
 
     const TURNSTILE_SECRET_KEY = Deno.env.get("TURNSTILE_SECRET_KEY");
-    const isBypassToken = turnstileToken === "OFFLINE_SYNC" || turnstileToken === "e2e-bypass-token";
+    const allowTestBypass = Deno.env.get("ALLOW_TEST_BYPASS") === "true";
+    const isBypassToken =
+      allowTestBypass &&
+      (turnstileToken === "OFFLINE_SYNC" || turnstileToken === "e2e-bypass-token");
 
     if (TURNSTILE_SECRET_KEY && !isBypassToken) {
       const formData = new FormData();
@@ -89,9 +89,12 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
     );
 
-    const cleanData = { ...data };
-    delete cleanData.honeypot;
-    if (tenantId) cleanData.tenant_id = tenantId;
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      return new Response(JSON.stringify({ success: false, error: "Geçersiz veri." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const tableName = type === "guest" ? "guests" : type === "wish" ? "wishes" : null;
     if (!tableName) {
@@ -99,6 +102,19 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    const cleanData = buildSubmitPayload(type, data, tenantId);
+
+    if (tableName === "wishes") {
+      const settingsQuery = supabaseAdmin
+        .from("invitation_settings")
+        .select("content")
+        .eq("id", typeof tenantId === "string" ? tenantId : "main")
+        .maybeSingle();
+      const { data: settingsRow } = await settingsQuery;
+      const requiresApproval = settingsRow?.content?.settings?.requireWishApproval === true;
+      cleanData.approved = !requiresApproval;
     }
 
     const { data: inserted, error: dbError } = await supabaseAdmin

@@ -21,14 +21,6 @@ describe("Stripe Webhook Edge Function Testleri", () => {
   });
 
   it("Geçersiz imza gönderilirse Stripe kütüphanesi hata fırlatmalı", () => {
-    const req = new Request("http://localhost:8000", {
-      method: "POST",
-      body: "fake-payload",
-      headers: new Headers({
-        "Stripe-Signature": "t=123,v1=fake_signature"
-      })
-    });
-
     let errorMessage = "";
     try {
        throw new Error("No signatures found matching the expected signature for payload");

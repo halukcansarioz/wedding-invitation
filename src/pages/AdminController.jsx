@@ -96,7 +96,7 @@ export default function AdminController() {
       setAdminSaveMessage(isEn ? "Backup restored! Please refresh." : "Yedek yüklendi! Lütfen sayfayı yenileyin.");
       setDataImportText("");
       setTimeout(() => window.location.reload(), 2000);
-    } catch (error) {
+    } catch {
       showAppAlert(isEn ? "Invalid JSON." : "Geçersiz JSON formatı.", { title: isEn ? "Error" : "Hata" });
     }
   };

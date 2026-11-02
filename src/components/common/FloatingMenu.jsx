@@ -118,7 +118,6 @@ const FLOATING_MENU_CSS = `
 export const FloatingMenu = memo(function FloatingMenu({
   isEn,
   toggleLanguage,
-  shareText,
   toggleMusic,
   isMusicPlaying,
   showScrollDown,
@@ -136,6 +135,7 @@ export const FloatingMenu = memo(function FloatingMenu({
           target="_blank"
           rel="noopener noreferrer"
           className="admin-btn-clean"
+          aria-label={isEn ? "Open admin panel" : "Yönetici panelini aç"}
           title={isEn ? "Admin Panel" : "Yönetici Paneli"}
         >
           <svg
@@ -160,6 +160,7 @@ export const FloatingMenu = memo(function FloatingMenu({
           type="button"
           className="dock-btn lang-btn"
           onClick={toggleLanguage}
+          aria-label={isEn ? "Switch to Turkish" : "Switch to English"}
           title={isEn ? "Türkçe'ye Çevir" : "Switch to English"}
         >
           <span style={{ fontSize: "14px", fontWeight: "bold" }}>{isEn ? "TR" : "EN"}</span>
@@ -170,6 +171,7 @@ export const FloatingMenu = memo(function FloatingMenu({
           className="dock-btn ctrl-play-btn"
           onClick={toggleMusic}
           aria-pressed={isMusicPlaying}
+          aria-label={isMusicPlaying ? (isEn ? "Mute music" : "Müziği kapat") : isEn ? "Play music" : "Müziği aç"}
           title={isMusicPlaying ? (isEn ? "Mute" : "Sesi Kapat") : isEn ? "Play" : "Sesi Aç"}
         >
           <svg
@@ -201,6 +203,7 @@ export const FloatingMenu = memo(function FloatingMenu({
           type="button"
           className={`dock-btn scroll-up-btn ${!showScrollTop ? "hidden-btn" : ""}`}
           onClick={scrollToPrev}
+          aria-label={isEn ? "Previous section" : "Önceki bölüm"}
           title={isEn ? "Previous Section" : "Önceki Bölüm"}
         >
           <svg
@@ -220,6 +223,7 @@ export const FloatingMenu = memo(function FloatingMenu({
           type="button"
           className={`dock-btn scroll-down-btn ${!showScrollDown ? "hidden-btn" : ""}`}
           onClick={scrollToNext}
+          aria-label={isEn ? "Next section" : "Sonraki bölüm"}
           title={isEn ? "Next Section" : "Sonraki Bölüm"}
         >
           <svg

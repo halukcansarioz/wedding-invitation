@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPersonalLink, normalizeSiteData, normalizeText, formatMessageTemplate, getQrImageUrl, dbWishToUi, uiWishToDb } from './helpers';
+import { buildPersonalLink, normalizeSiteData, normalizeText, formatMessageTemplate, getQrImageUrl, dbWishToUi, uiWishToDb, getNavigationLinks } from './helpers';
 
 describe('Helpers Utilities Test Suite', () => {
   
@@ -36,6 +36,13 @@ describe('Helpers Utilities Test Suite', () => {
     const link = "https://example.com";
     expect(getQrImageUrl(link)).toContain("quickchart.io");
     expect(getQrImageUrl(link)).toContain(encodeURIComponent(link));
+  });
+
+  it('accepts only HTTP(S) custom map links', () => {
+    expect(getNavigationLinks({ mapLink: "javascript:alert(1)", venue: "Salon", address: "Adres" }).google)
+      .toBe("https://www.google.com/maps/search/?api=1&query=Salon%20Adres");
+    expect(getNavigationLinks({ mapLink: "https://maps.example.com/custom" }).google)
+      .toBe("https://maps.example.com/custom");
   });
 
   it('upgrades saved default theme images without rewriting user uploads', () => {

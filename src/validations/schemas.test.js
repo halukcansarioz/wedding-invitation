@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getRsvpSchema, getWishSchema } from './schemas';
-import { NOTE_MAX_LENGTH, WISH_MAX_LENGTH } from '../config/constants';
+import { WISH_MAX_LENGTH } from '../config/constants';
 
 const mockT = (key) => key;
 

@@ -144,8 +144,13 @@ export const handleAddToCalendar = (invitation, googleLink) => {
 
 export const getNavigationLinks = (invitation) => {
   const query = encodeURIComponent(`${invitation?.venue || ""} ${invitation?.address || ""}`);
+  const configuredMapLink = invitation?.mapLink;
+  const safeMapLink = typeof configuredMapLink === "string" && /^https?:\/\//i.test(configuredMapLink)
+    ? configuredMapLink
+    : null;
+
   return {
-    google: invitation?.mapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
+    google: safeMapLink || `https://www.google.com/maps/search/?api=1&query=${query}`,
     apple: `https://maps.apple.com/?q=${query}`,
     yandex: `https://yandex.com.tr/harita/?text=${query}`,
     waze: `https://waze.com/ul?q=${query}&navigate=yes`,

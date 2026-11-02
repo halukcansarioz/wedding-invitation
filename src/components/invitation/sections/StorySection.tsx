@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
 import { StoryTimelineItem } from "../../../types";
@@ -25,8 +25,8 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }: 
       <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
       <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
       
-      <div className="story-timeline-container">
-        <div className="story-line"></div>
+      <div className="story-timeline-container" role="list">
+        <div className="story-line" aria-hidden="true"></div>
         
         {stories.map((story, index) => (
           <m.div 
@@ -35,16 +35,17 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }: 
             transition={{ duration: 0.6, delay: index * 0.2 }} 
             viewport={{ once: true, amount: 0.3 }}
             className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
-            key={index}
+            role="listitem"
+            key={`${story.date}-${story.title}-${index}`}
           >
-            <div className="story-dot"></div>
+            <div className="story-dot" aria-hidden="true"></div>
             
             <div className="story-content-box">
               <span className="story-date">{story.date}</span>
               <h3 className="story-heading">{story.title}</h3>
               <p className="story-desc">{story.description}</p>
               {story.image && (
-                <img src={story.image} alt={story.title} className="story-image" loading="lazy" />
+                <StoryImage src={story.image} alt={story.title} />
               )}
             </div>
           </m.div>
@@ -53,3 +54,20 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }: 
     </m.section>
   );
 });
+
+function StoryImage({ src, alt }: { src: string; alt: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) return null;
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="story-image"
+      loading="lazy"
+      decoding="async"
+      onError={() => setHasError(true)}
+    />
+  );
+}

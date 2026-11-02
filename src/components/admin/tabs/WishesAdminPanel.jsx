@@ -17,7 +17,7 @@ const normalizeTR = (text) => {
 };
 
 export function WishesAdminPanel({ 
-  wishes, filteredWishes, adminWishSearch, setAdminWishSearch, 
+  filteredWishes, adminWishSearch, setAdminWishSearch,
   adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
   exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
 }) {

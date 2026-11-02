@@ -4,6 +4,7 @@ import { isSupabaseReady } from "../services/database";
 import { uiGuestToDb, dbGuestToUi, dbWishToUi } from "../utils/helpers";
 import { getActiveTenantId } from "../utils/tenant";
 import { useAdminStore } from "../store/useAdminStore";
+import { retainFailedItems } from "../utils/offlineQueue";
 
 export function useDatabaseManager({
   guests,
@@ -98,35 +99,58 @@ export function useDatabaseManager({
 
       const offlineGuests = JSON.parse(localStorage.getItem("offline_guests") || "[]");
       if (offlineGuests.length > 0) {
+        const guestFailures = [];
         for (const guest of offlineGuests) {
-          await supabase.functions.invoke("submit-form", {
+          const { error } = await supabase.functions.invoke("submit-form", {
             body: { type: "guest", data: guest, turnstileToken: "OFFLINE_SYNC", tenantId },
             headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
           });
+          guestFailures.push(Boolean(error));
         }
-        localStorage.removeItem("offline_guests");
+        const remainingGuests = retainFailedItems(offlineGuests, guestFailures);
+        if (remainingGuests.length > 0) {
+          localStorage.setItem("offline_guests", JSON.stringify(remainingGuests));
+        } else {
+          localStorage.removeItem("offline_guests");
+        }
       }
 
       const offlineWishes = JSON.parse(localStorage.getItem("offline_wishes") || "[]");
       if (offlineWishes.length > 0) {
+        const wishFailures = [];
         for (const wish of offlineWishes) {
-          await supabase.functions.invoke("submit-form", {
+          const { error } = await supabase.functions.invoke("submit-form", {
             body: { type: "wish", data: wish, turnstileToken: "OFFLINE_SYNC", tenantId },
             headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
           });
+          wishFailures.push(Boolean(error));
         }
-        localStorage.removeItem("offline_wishes");
+        const remainingWishes = retainFailedItems(offlineWishes, wishFailures);
+        if (remainingWishes.length > 0) {
+          localStorage.setItem("offline_wishes", JSON.stringify(remainingWishes));
+        } else {
+          localStorage.removeItem("offline_wishes");
+        }
       }
 
       const offlineCheckins = JSON.parse(localStorage.getItem("offline_checkins") || "[]");
       if (offlineCheckins.length > 0) {
+        const remainingCheckins = [];
         for (const checkin of offlineCheckins) {
-          await supabase.from("guests").update({ has_arrived: checkin.status }).eq("id", checkin.id);
+          const { error } = await supabase
+            .from("guests")
+            .update({ has_arrived: checkin.status })
+            .eq("id", checkin.id);
+          if (error) remainingCheckins.push(checkin);
         }
-        localStorage.removeItem("offline_checkins");
-        setAdminSaveMessage?.(
-          isEn ? "Offline check-ins synced!" : "Çevrimdışı kapı girişleri senkronize edildi!"
-        );
+        if (remainingCheckins.length > 0) {
+          localStorage.setItem("offline_checkins", JSON.stringify(remainingCheckins));
+        } else {
+          localStorage.removeItem("offline_checkins");
+          setAdminSaveMessage?.(
+            isEn ? "Offline check-ins synced!" : "Çevrimdışı kapı girişleri senkronize edildi!"
+          );
+        }
       }
     };
 

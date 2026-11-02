@@ -26,8 +26,7 @@ interface UseAdminSessionProps {
 }
 
 export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
-  const adminStore = useAdminStore();
-  const mainStore = useStore();
+  const isAdminUnlocked = useAdminStore((state) => state.isAdminUnlocked);
 
   useEffect(() => {
     if (!isAdminPage || !isSupabaseReady()) return undefined;
@@ -37,36 +36,36 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
-          adminStore.setAdminError(getReadableAuthError(error));
+          useAdminStore.getState().setAdminError(getReadableAuthError(error));
           return;
         }
 
         if (!session?.user) {
           clearAdminSessionTimestamp();
-          adminStore.setAdminUser(null);
-          adminStore.setIsAdminUnlocked(false);
-          adminStore.setAdminPassword("");
-          adminStore.setAdminError("");
-          adminStore.setAdminLoginNotice(isEn ? "Please log in to access the admin panel." : "Admin paneline girmek için giriş yapmalısın.");
+          useAdminStore.getState().setAdminUser(null);
+          useAdminStore.getState().setIsAdminUnlocked(false);
+          useAdminStore.getState().setAdminPassword("");
+          useAdminStore.getState().setAdminError("");
+          useAdminStore.getState().setAdminLoginNotice(isEn ? "Please log in to access the admin panel." : "Admin paneline girmek için giriş yapmalısın.");
           return;
         }
 
         if (!isAdminSessionFresh()) {
           clearAdminSessionTimestamp();
-          adminStore.setAdminUser(null);
-          adminStore.setIsAdminUnlocked(false);
-          adminStore.setAdminPassword("");
-          adminStore.setAdminError("");
-          adminStore.setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
+          useAdminStore.getState().setAdminUser(null);
+          useAdminStore.getState().setIsAdminUnlocked(false);
+          useAdminStore.getState().setAdminPassword("");
+          useAdminStore.getState().setAdminError("");
+          useAdminStore.getState().setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Güvenlik için oturum süren doldu. Lütfen tekrar giriş yap.");
           return;
         }
 
         touchAdminSession();
-        adminStore.setAdminUser(session.user);
-        adminStore.setAdminPassword("");
-        adminStore.setAdminError("");
-        adminStore.setAdminLoginNotice(isEn ? "Session is active. No need to log in again." : "Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
-        adminStore.setIsAdminUnlocked(true);
+        useAdminStore.getState().setAdminUser(session.user);
+        useAdminStore.getState().setAdminPassword("");
+        useAdminStore.getState().setAdminError("");
+        useAdminStore.getState().setAdminLoginNotice(isEn ? "Session is active. No need to log in again." : "Oturumun devam ediyor. Yeniden giriş yapmana gerek yok.");
+        useAdminStore.getState().setIsAdminUnlocked(true);
 
         const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
           loadSettingsFromDatabase(),
@@ -76,14 +75,14 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
 
         if (databaseSettings) {
           const normalizedSettings = normalizeSiteData(databaseSettings) as SiteData;
-          mainStore.setSiteData(normalizedSettings);
-          mainStore.setAdminDraft(normalizedSettings);
+          useStore.getState().setSiteData(normalizedSettings);
+          useStore.getState().setAdminDraft(normalizedSettings);
         }
 
-        mainStore.setGuests(adminGuests);
-        mainStore.setWishes(adminWishes);
+        useStore.getState().setGuests(adminGuests);
+        useStore.getState().setWishes(adminWishes);
       } catch (error) {
-        adminStore.setAdminError(getReadableAuthError(error));
+        useAdminStore.getState().setAdminError(getReadableAuthError(error));
       }
     };
 
@@ -92,12 +91,12 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         clearAdminSessionTimestamp();
-        adminStore.setAdminUser(null);
-        adminStore.setIsAdminUnlocked(false);
+        useAdminStore.getState().setAdminUser(null);
+        useAdminStore.getState().setIsAdminUnlocked(false);
       } else if (event === 'SIGNED_IN' && session) {
         touchAdminSession();
-        adminStore.setAdminUser(session.user);
-        adminStore.setIsAdminUnlocked(true);
+        useAdminStore.getState().setAdminUser(session.user);
+        useAdminStore.getState().setIsAdminUnlocked(true);
       }
     });
 
@@ -109,7 +108,7 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
   }, [isAdminPage, isEn]);
 
   useEffect(() => {
-    if (!isAdminPage || !adminStore.isAdminUnlocked) return undefined;
+    if (!isAdminPage || !isAdminUnlocked) return undefined;
 
     const markActivity = () => touchAdminSession();
 
@@ -119,12 +118,12 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
       if (isSupabaseReady()) await supabase.auth.signOut();
 
       clearAdminSessionTimestamp();
-      adminStore.clearAdminAuth();
-      mainStore.setActiveAdminTab("general");
-      adminStore.setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
+      useAdminStore.getState().clearAdminAuth();
+      useStore.getState().setActiveAdminTab("general");
+      useAdminStore.getState().setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
       
-      mainStore.setGuests([]);
-      mainStore.setWishes(mainStore.wishes.filter(w => w.approved));
+      useStore.getState().setGuests([]);
+      useStore.getState().setWishes(useStore.getState().wishes.filter(w => w.approved));
     };
 
     markActivity();
@@ -135,7 +134,7 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
       ADMIN_ACTIVITY_EVENTS.forEach((eventName) => window.removeEventListener(eventName, markActivity));
       window.clearInterval(timeoutCheckInterval);
     };
-  }, [isAdminPage, adminStore.isAdminUnlocked, isEn]);
+  }, [isAdminPage, isAdminUnlocked, isEn]);
 
   const submitAdminPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -1,12 +1,34 @@
 import time
 import webbrowser
-import pyautogui
-import pyperclip
+import ctypes
+import tkinter as tk
 from supabase import create_client, Client
 
 URL = "https://SİZİN_SUPABASE_PROJENİZ.supabase.co"
 KEY = "SİZİN_SERVICE_ROLE_KEY"
 supabase: Client = create_client(URL, KEY)
+
+
+def key_combo(*keys):
+    """Send a keyboard shortcut without requiring the pyautogui package."""
+    user32 = ctypes.windll.user32
+    for key in keys:
+        user32.keybd_event(key, 0, 0, 0)
+    for key in reversed(keys):
+        user32.keybd_event(key, 0, 2, 0)
+
+
+def press_key(key):
+    key_combo(key)
+
+
+def copy_to_clipboard(text):
+    root = tk.Tk()
+    root.withdraw()
+    root.clipboard_clear()
+    root.clipboard_append(text)
+    root.update()
+    return root
 
 def fetch_guests():
     response = supabase.table("guests").select("*").eq("attendance", "Katılacağım").execute()
@@ -40,13 +62,14 @@ def send_whatsapp_broadcast():
         webbrowser.open(f"https://web.whatsapp.com/send?phone={phone}")
         time.sleep(8) 
         
-        pyperclip.copy(msg)
-        pyautogui.hotkey("ctrl", "v")  
+        clipboard = copy_to_clipboard(msg)
+        key_combo(0x11, 0x56)  # Ctrl+V
         time.sleep(1)
-        pyautogui.press("enter")
+        press_key(0x0D)  # Enter
         time.sleep(2)
+        clipboard.destroy()
         
-        pyautogui.hotkey("ctrl", "w")  
+        key_combo(0x11, 0x57)  # Ctrl+W
         time.sleep(1)
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { handleAddToCalendar, getNavigationLinks } from "../../../utils/helpers";
 import { m } from "framer-motion";
 
@@ -13,54 +14,93 @@ interface NavigationModalProps {
   invitation: any;
   isOpen: boolean;
   onClose: () => void;
-  t: (key: string, defaultText?: string) => string;
+  t: TFunction;
 }
 
 function NavigationModal({ invitation, isOpen, onClose, t }: NavigationModalProps) {
   const [copied, setCopied] = useState<boolean>(false);
-  
+  const [copyFailed, setCopyFailed] = useState<boolean>(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen || typeof document === "undefined") return undefined;
+
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || typeof document === "undefined") return null;
 
   const links = getNavigationLinks(invitation);
 
-  const copyAddress = () => {
+  const copyAddress = async () => {
     const venueText = invitation?.venue ?? "";
     const addressText = invitation?.address ?? "";
-    navigator.clipboard.writeText(`${venueText} ${addressText}`.trim());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setCopyFailed(false);
+
+    try {
+      await navigator.clipboard.writeText(`${venueText} ${addressText}`.trim());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setCopyFailed(true);
+    }
   };
 
   return createPortal(
-    <div onClick={onClose} className="app-modal-backdrop">
-      <div onClick={(e) => e.stopPropagation()} className="app-modal-card location-nav-modal">
-        <h3 className="location-nav-title">
-          {t('navigation.chooseApp', 'Yol Tarifi Al')}
+    <div onClick={onClose} className="app-modal-backdrop" role="presentation">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="app-modal-card location-nav-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="location-nav-title"
+      >
+        <h3 id="location-nav-title" className="location-nav-title">
+          {t('navigation.chooseApp', { defaultValue: 'Yol Tarifi Al' })}
         </h3>
         <p className="location-nav-address">
           {invitation?.venue} – {invitation?.address}
         </p>
 
         <div className="location-nav-grid">
-          <a href={links.google} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+          <a href={links.google} target="_blank" rel="noopener noreferrer" className="secondary-button location-nav-btn">
             Google Maps 🗺️
           </a>
-          <a href={links.apple} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+          <a href={links.apple} target="_blank" rel="noopener noreferrer" className="secondary-button location-nav-btn">
             Apple Maps 🍏
           </a>
-          <a href={links.yandex} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+          <a href={links.yandex} target="_blank" rel="noopener noreferrer" className="secondary-button location-nav-btn">
             Yandex Navi 🚕
           </a>
-          <a href={links.waze} target="_blank" rel="noreferrer" className="secondary-button location-nav-btn">
+          <a href={links.waze} target="_blank" rel="noopener noreferrer" className="secondary-button location-nav-btn">
             Waze 🚙
           </a>
         </div>
 
         <button type="button" className="main-button location-nav-copy" onClick={copyAddress}>
-          {copied ? t('navigation.addressCopied', 'Adres Kopyalandı') : t('navigation.copyAddress', 'Adresi Kopyala')}
+          {copied
+            ? t('navigation.addressCopied', { defaultValue: 'Adres Kopyalandı' })
+            : t('navigation.copyAddress', { defaultValue: 'Adresi Kopyala' })}
         </button>
-        <button type="button" className="secondary-button location-nav-close" onClick={onClose}>
-          {t('ui.closeBtn', 'Kapat')}
+        {copyFailed && (
+          <p role="alert">
+            {t('navigation.copyFailed', { defaultValue: 'Adres kopyalanamadı. Lütfen tekrar deneyin.' })}
+          </p>
+        )}
+        <button
+          ref={closeButtonRef}
+          type="button"
+          className="secondary-button location-nav-close"
+          onClick={onClose}
+        >
+          {t('ui.closeBtn', { defaultValue: 'Kapat' })}
         </button>
       </div>
     </div>,
@@ -96,7 +136,7 @@ export function LocationSection({ copy, invitation, googleCalendarLink }: Locati
       </div>
       <div className="mini-map">
         <iframe 
-          title="Map" 
+          title={t('navigation.mapPreview', { defaultValue: 'Düğün mekanı harita önizlemesi' })}
           src={mapIframeSrc} 
           loading="lazy" 
           allowFullScreen 

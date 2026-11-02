@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, cleanup } from '../../../../tests/test-utils';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { PaymentsTab } from './PaymentsTab';
 
 const mockSupabaseSelect = vi.fn();

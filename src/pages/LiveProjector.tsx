@@ -10,7 +10,7 @@ import { LazyImage } from '../components/common/LazyImage';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 
 function LiveProjectorContent() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   
   const siteData = useStore(state => state.siteData);

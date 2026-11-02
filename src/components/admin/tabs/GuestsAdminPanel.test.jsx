@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, cleanup } from '../../../../tests/test-utils';
+import { render, screen, fireEvent, cleanup } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GuestsAdminPanel } from './GuestsAdminPanel';
 import { useStore } from '../../../store/useStore';

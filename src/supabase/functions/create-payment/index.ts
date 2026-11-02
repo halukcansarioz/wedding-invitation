@@ -1,16 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.14.0';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
   httpClient: Stripe.createFetchHttpClient(),
 });
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const MAX_PAYMENT_AMOUNT = 1_000_000;
+const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+function getSafeOrigin(requestOrigin: string | null): string {
+  return requestOrigin && allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : allowedOrigins[0];
+}
 
 // YENİ: Veritabanına Hata Loglama Fonksiyonu
 async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
@@ -27,6 +35,7 @@ async function logErrorToDatabase(supabaseAdmin: any, functionName: string, erro
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req, "POST, OPTIONS");
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   let supabaseAdmin: any;
@@ -55,7 +64,17 @@ serve(async (req) => {
     }
 
     const { amount, guestName, note } = await req.json();
-    const origin = req.headers.get('origin') || 'http://localhost:5173';
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount < 1 || numericAmount > MAX_PAYMENT_AMOUNT) {
+      return new Response(JSON.stringify({ success: false, error: "Geçersiz ödeme tutarı." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    const safeGuestName = typeof guestName === 'string' ? guestName.trim().slice(0, 120) : '';
+    const safeNote = typeof note === 'string' ? note.trim().slice(0, 500) : '';
+    const origin = getSafeOrigin(req.headers.get('origin'));
 
     if (!Deno.env.get('STRIPE_SECRET_KEY')) {
        throw new Error("Stripe Secret Key ortam değişkenlerinde eksik.");
@@ -69,9 +88,9 @@ serve(async (req) => {
             currency: 'try',
             product_data: {
               name: 'Düğün Hediyesi',
-              description: `${guestName} tarafından gönderilen hediye. Not: ${note}`,
+              description: `${safeGuestName || 'Bilinmeyen misafir'} tarafından gönderilen hediye. Not: ${safeNote}`,
             },
-            unit_amount: amount * 100,
+            unit_amount: Math.round(numericAmount * 100),
           },
           quantity: 1,
         },
@@ -80,8 +99,8 @@ serve(async (req) => {
       success_url: `${origin}/?payment=success`,
       cancel_url: `${origin}/?payment=cancel`,
       metadata: {
-        guestName: guestName || 'Bilinmeyen Misafir',
-        note: note || ''
+        guestName: safeGuestName || 'Bilinmeyen Misafir',
+        note: safeNote
       }
     });
 

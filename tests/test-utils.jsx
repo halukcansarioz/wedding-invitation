@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render as rtlRender, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -24,8 +24,8 @@ export function renderWithProviders(ui, options = {}) {
     </QueryClientProvider>
   );
 
-  return render(ui, { wrapper: Wrapper, ...options });
+  return rtlRender(ui, { wrapper: Wrapper, ...options });
 }
 
-export * from '@testing-library/react';
+export { screen, fireEvent, cleanup, waitFor, act };
 export { renderWithProviders as render };

@@ -63,6 +63,16 @@ textarea {
 button {
   cursor: pointer;
 }
+button:disabled,
+button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--rose-dark) 72%, white);
+  outline-offset: 3px;
+}
 #root {
   max-width: none;
   text-align: initial;
@@ -485,6 +495,7 @@ button {
 .main-button,
 .secondary-button {
   display: inline-block;
+  min-height: 48px;
   padding: 16px 36px;
   border-radius: 999px;
   text-decoration: none;
@@ -516,6 +527,11 @@ button {
 .main-button:hover,
 .secondary-button:hover {
   transform: translateY(-4px);
+}
+.main-button:disabled:hover,
+.secondary-button:disabled:hover,
+button[aria-disabled="true"]:hover {
+  transform: none;
 }
 .secondary-button:hover {
   background: #fff0f4;
@@ -1092,7 +1108,6 @@ button {
 }
 .floating-actions > *:not(.main-button) {
   animation: floatingBounce 2.5s ease-in-out infinite;
-  will-change: transform;
   transition: background-color 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s !important;
 }
 .floating-actions > .main-button {
