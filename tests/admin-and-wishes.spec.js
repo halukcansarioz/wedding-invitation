@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { setupE2EMocks } from './utils';
 
 test.describe('Anı Defteri ve Admin Süreçleri', () => {
   test.beforeEach(async ({ page }) => {
+    await setupE2EMocks(page);
     await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', r => r.abort());
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const envelopeSeal = page.locator('.envelope-seal');
@@ -18,6 +20,9 @@ test.describe('Anı Defteri ve Admin Süreçleri', () => {
      await page.locator('.wish-form textarea[name="message"]').fill('Bu bir test mesajıdır, mutluluklar!');
 
      const submitBtn = page.locator('.wish-form button[type="submit"]');
-     await submitBtn.click();
+     await submitBtn.click({ force: true });
+
+     await expect(page.locator('.wish-form input[name="name"]')).toHaveValue('');
+     await expect(page.locator('.wish-form textarea[name="message"]')).toHaveValue('');
   });
 });
