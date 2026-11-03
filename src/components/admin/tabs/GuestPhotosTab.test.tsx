@@ -24,7 +24,7 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
     });
 
     render(<GuestPhotosTab isEn={false} />);
-    
+
     expect(screen.getByText(/Fotoğraflar yükleniyor/i)).toBeDefined();
   });
 
@@ -38,7 +38,7 @@ describe('GuestPhotosTab Admin Bileşen Testleri', () => {
     });
 
     render(<GuestPhotosTab isEn={false} />);
-    
+
     expect(screen.getByText('Onay Bekleyenler (1)')).toBeDefined();
     expect(screen.getByText('Yayında Olanlar (1)')).toBeDefined();
 

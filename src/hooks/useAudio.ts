@@ -56,12 +56,12 @@ export function useAudio(musicFile?: string | null) {
     }
   }, [isMusicPlaying, stopMusic, startMusic]);
 
-  return { 
-    audioRef, 
-    isMusicPlaying, 
-    setIsMusicPlaying, 
-    startMusic, 
-    stopMusic, 
-    toggleMusic 
+  return {
+    audioRef,
+    isMusicPlaying,
+    setIsMusicPlaying,
+    startMusic,
+    stopMusic,
+    toggleMusic
   };
 }

@@ -26,7 +26,7 @@ test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Test
     });
 
     await page.goto('/admin');
-    
+
     const emailInput = page.locator('input[type="email"]').first();
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
     await emailInput.fill('admin@test.com');
@@ -43,7 +43,7 @@ test.describe('Admin Paneli & Davetiye: Bölüm Görünürlük (Visibility) Test
 
     const galleryCheckbox = page.locator('input[type="checkbox"]').first();
     await expect(galleryCheckbox).toBeVisible({ timeout: 10000 });
-    
+
     if (await galleryCheckbox.isChecked()) {
       await galleryCheckbox.uncheck();
     }

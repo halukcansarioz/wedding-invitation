@@ -1,4 +1,3 @@
-// src/hooks/useAudioRecorder.js
 import { useState, useRef } from 'react';
 import { uploadMediaFile } from '../services/database';
 
@@ -24,7 +23,7 @@ export function useAudioRecorder() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+
       mimeTypeRef.current = getSupportedMimeType();
       mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: mimeTypeRef.current });
       const chunks = [];
@@ -64,16 +63,16 @@ export function useAudioRecorder() {
     if (!audioBlob) return null;
     const ext = mimeTypeRef.current.split('/')[1] || 'webm';
     const file = new File([audioBlob], `wish_audio_${Date.now()}.${ext}`, { type: mimeTypeRef.current });
-    return await uploadMediaFile(file, 'audio_wishes'); 
+    return await uploadMediaFile(file, 'audio_wishes');
   };
 
-  return { 
-    isRecording, 
-    recordingTime, 
-    startRecording, 
-    stopRecording, 
-    clearRecording, 
-    audioBlob, 
-    uploadAudio 
+  return {
+    isRecording,
+    recordingTime,
+    startRecording,
+    stopRecording,
+    clearRecording,
+    audioBlob,
+    uploadAudio
   };
 }

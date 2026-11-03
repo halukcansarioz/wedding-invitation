@@ -34,9 +34,18 @@ describe('VisibilityTab Bileşen Testleri', () => {
   it('Checkbox değiştirildiğinde store güncellenmeli', () => {
     render(<VisibilityTab isEn={false} />);
     const familyCheck = screen.getByLabelText('visibility.family');
-    
+
     fireEvent.click(familyCheck);
-    
+
     expect(useStore.getState().adminDraft.settings.visibility.family).toBe(false);
+  });
+
+  it('Dijital bilet görünürlüğünü admin panelinden değiştirebilmeli', () => {
+    render(<VisibilityTab isEn={false} />);
+    const ticketCheck = screen.getByLabelText('Katılım Sonrası Dijital Bilet');
+
+    fireEvent.click(ticketCheck);
+
+    expect(useStore.getState().adminDraft.settings.visibility.ticket).toBe(false);
   });
 });

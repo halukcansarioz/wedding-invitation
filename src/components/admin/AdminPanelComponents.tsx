@@ -24,6 +24,7 @@ const TablePlanTab = lazy(() => import("./tabs").then(m => ({ default: m.TablePl
 const GuestPhotosTab = lazy(() => import("./tabs").then(m => ({ default: m.GuestPhotosTab as ComponentType<any> })));
 const PaymentsTab = lazy(() => import("./tabs").then(m => ({ default: m.PaymentsTab as ComponentType<any> })));
 const NotificationsTab = lazy(() => import("./tabs").then(m => ({ default: m.NotificationsTab as ComponentType<any> })));
+const SystemChecksTab = lazy(() => import("./tabs").then(m => ({ default: m.SystemChecksTab as ComponentType<any> })));
 
 interface AdminPanelContentProps {
   activeAdminTab: string;
@@ -54,10 +55,11 @@ export function AdminPanelContent(props: AdminPanelContentProps) {
       case "qr": return <QrTab {...props} isEn={isEn} />;
       case "data": return <DataTab {...props} isEn={isEn} />;
       case "gift": return <GiftTab {...props} isEn={isEn} />;
-      case "story": return <StoryTab {...props} isEn={isEn} />; 
+      case "story": return <StoryTab {...props} isEn={isEn} />;
       case "guestPhotos": return <GuestPhotosTab {...props} isEn={isEn} />;
       case "payments": return <PaymentsTab {...props} isEn={isEn} />;
       case "notifications": return <NotificationsTab {...props} isEn={isEn} />;
+      case "systemChecks": return <SystemChecksTab {...props} isEn={isEn} />;
       case "overview": return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
       default: return <OverviewTab {...props} isEn={isEn} setActiveAdminTab={props.setActiveAdminTab} />;
     }

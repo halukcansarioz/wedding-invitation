@@ -11,7 +11,7 @@ describe("Stripe Webhook Edge Function Testleri", () => {
     });
 
     const signature = req.headers.get('Stripe-Signature');
-    
+
     let status = 200;
     if (!signature) {
       status = 400;

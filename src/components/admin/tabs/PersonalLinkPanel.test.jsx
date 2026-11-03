@@ -19,13 +19,13 @@ describe('PersonalLinkPanel Bileşen Testleri', () => {
 
   it('Davetli adı yoksa WhatsApp paylaşım butonu uyarısı çalışmalı', () => {
     vi.spyOn(window, 'alert').mockImplementation(() => {});
-    
+
     render(
-      <PersonalLinkPanel 
-        currentShareLink="https://test.com" 
-        copyAdminLink={mockCopyAdminLink} 
-        personalLinkName="" 
-        setPersonalLinkName={mockSetPersonalLinkName} 
+      <PersonalLinkPanel
+        currentShareLink="https://test.com"
+        copyAdminLink={mockCopyAdminLink}
+        personalLinkName=""
+        setPersonalLinkName={mockSetPersonalLinkName}
       />
     );
 

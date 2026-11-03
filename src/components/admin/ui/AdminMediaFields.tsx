@@ -31,14 +31,14 @@ export function AdminImageField({ label, value, onFileSelect, onClear, isUploadi
       )}
 
       <label className={`admin-upload-button ${isUploading ? 'disabled' : ''}`}>
-        {isUploading 
-          ? (isEn ? "Uploading... ⏳" : "Yükleniyor... ⏳") 
+        {isUploading
+          ? (isEn ? "Uploading... ⏳" : "Yükleniyor... ⏳")
           : (isEn ? "Select Image from PC 🖼️" : "Bilgisayardan Görsel Seç 🖼️")}
-        <input 
-          type="file" 
-          accept="image/*" 
+        <input
+          type="file"
+          accept="image/*"
           disabled={isUploading}
-          onChange={(e) => { onFileSelect(e); e.target.value = ""; }} 
+          onChange={(e) => { onFileSelect(e); e.target.value = ""; }}
         />
       </label>
     </div>
@@ -76,8 +76,8 @@ export function AdminMusicField({ value, fileName, onFileSelect, onClear }: Admi
         </div>
       ) : (
         <div className="admin-image-empty">
-          {isEn 
-            ? "No custom music selected. Default wedding music will play." 
+          {isEn
+            ? "No custom music selected. Default wedding music will play."
             : "Henüz özel müzik seçilmedi. Müzik seçmezsen varsayılan evlilik müziği çalar."}
         </div>
       )}
@@ -87,8 +87,8 @@ export function AdminMusicField({ value, fileName, onFileSelect, onClear }: Admi
         <input type="file" accept="audio/*" onChange={(e) => { onFileSelect(e); e.target.value = ""; }} />
       </label>
       <small>
-        {isEn 
-          ? "Select a short MP3/M4A file under 4 MB. It will play automatically on the invitation." 
+        {isEn
+          ? "Select a short MP3/M4A file under 4 MB. It will play automatically on the invitation."
           : "MP3/M4A gibi kısa ve 4 MB altı bir dosya seç. Kaydettikten sonra davetiyede bu müzik çalar."}
       </small>
     </div>

@@ -16,9 +16,9 @@ export function AdminSection({ title, children, onSave }: AdminSectionProps) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
         <h3 style={{ margin: 0 }}>{title}</h3>
         {onSave && (
-          <button 
-            type="button" 
-            className="secondary-button small-admin-button" 
+          <button
+            type="button"
+            className="secondary-button small-admin-button"
             onClick={onSave}
           >
             {isEn ? "Save 💾" : "Kaydet 💾"}

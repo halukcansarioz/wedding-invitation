@@ -5,7 +5,7 @@ import { useStore } from "../../../store/useStore";
 
 export function VisibilityTab({ isEn }: { isEn: boolean }) {
   const { t } = useTranslation();
-  
+
   const visibility = useStore((state) => state.adminDraft.settings.visibility);
   const updateDraftObject = useStore((state) => state.updateDraftObject);
   const saveSiteContent = useStore((state) => state.saveSiteContent);
@@ -30,6 +30,7 @@ export function VisibilityTab({ isEn }: { isEn: boolean }) {
         <AdminCheckbox checked={visibility.iban ?? true} label={t('visibility.iban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...visibility, iban: v })} />
         <AdminCheckbox checked={visibility.popupIban ?? true} label={t('visibility.popupIban')} onChange={(v) => updateDraftObject("settings", "visibility", { ...visibility, popupIban: v })} />
         <AdminCheckbox checked={visibility.creditCard ?? false} label={isEn ? "Credit Card Button" : "Kredi Kartı Butonu"} onChange={(v) => updateDraftObject("settings", "visibility", { ...visibility, creditCard: v })} />
+        <AdminCheckbox checked={visibility.ticket ?? true} label={isEn ? "Digital Ticket After RSVP" : "Katılım Sonrası Dijital Bilet"} onChange={(v) => updateDraftObject("settings", "visibility", { ...visibility, ticket: v })} />
       </div>
     </AdminSection>
   );

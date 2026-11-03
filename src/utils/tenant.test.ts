@@ -3,7 +3,6 @@ import { getActiveTenantId } from './tenant';
 
 describe('Multi-Tenant URL Ayrıştırma (getActiveTenantId) Testleri', () => {
   beforeEach(() => {
-    // JSDOM ortamında pathname'i güvenli bir şekilde sıfırlama
     Object.defineProperty(window, 'location', {
       value: {
         ...window.location,

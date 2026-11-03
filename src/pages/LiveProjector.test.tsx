@@ -17,9 +17,7 @@ vi.mock('../supabaseClient', () => ({
 
 describe('LiveProjector İleri Seviye Zamanlayıcı Testleri', () => {
   beforeEach(() => {
-    vi.useFakeTimers(); 
-    
-    // DÜZELTİLDİ: Zustand sızıntısını engellemek için setState kullanıldı
+    vi.useFakeTimers();
     useStore.setState({
       siteData: { invitation: { bride: 'Hande', groom: 'Haluk' } }
     } as any);

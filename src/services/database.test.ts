@@ -15,7 +15,6 @@ describe('Database service functions', () => {
     const failingRequest = vi.fn().mockRejectedValue(new Error('Network Error'));
 
     const promise = fetchWithRetry(failingRequest, 2, 100);
-    // Attach catch handler immediately to avoid unhandled rejection warning
     const assertion = expect(promise).rejects.toThrow('Network Error');
 
     await vi.runAllTimersAsync();

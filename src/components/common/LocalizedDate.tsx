@@ -8,15 +8,15 @@ export interface LocalizedDateProps {
 export const LocalizedDate = ({ dateString = "2026-08-22T19:00:00" }: LocalizedDateProps) => {
   const { i18n } = useTranslation();
   const parsedDate = new Date(dateString);
-  
-  const safeDate = Number.isNaN(parsedDate.getTime()) 
-    ? new Date("2026-08-22T19:00:00") 
+
+  const safeDate = Number.isNaN(parsedDate.getTime())
+    ? new Date("2026-08-22T19:00:00")
     : parsedDate;
-  
+
   const formattedDate = new Intl.DateTimeFormat(i18n.language, {
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
     day: 'numeric'
   }).format(safeDate);
 

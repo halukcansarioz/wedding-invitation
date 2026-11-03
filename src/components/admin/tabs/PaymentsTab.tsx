@@ -19,7 +19,6 @@ interface PaymentsTabProps {
 }
 
 export function PaymentsTab({ isEn }: PaymentsTabProps) {
-  // 2. State'i Payment[] olarak tiplendir:
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -57,8 +56,8 @@ export function PaymentsTab({ isEn }: PaymentsTabProps) {
   return (
     <AdminSection title={isEn ? "Received Gifts & Payments" : "Gelen Hediyeler ve Ödemeler"}>
       <p className="admin-help-text">
-        {isEn 
-          ? "Gifts and payments sent by your guests via credit card (Stripe) are listed here." 
+        {isEn
+          ? "Gifts and payments sent by your guests via credit card (Stripe) are listed here."
           : "Misafirlerinizin kredi kartı (Stripe) aracılığıyla gönderdiği takı ve hediyeler burada listelenir."}
       </p>
 
@@ -94,15 +93,15 @@ export function PaymentsTab({ isEn }: PaymentsTabProps) {
                   {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: payment.currency || 'TRY' }).format(Number(payment.amount))}
                 </strong>
               </div>
-              
+
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", color: "var(--text-muted)" }}>
                 <span>{new Date(payment.created_at).toLocaleString('tr-TR')}</span>
-                <span style={{ 
-                  padding: "4px 8px", 
-                  borderRadius: "8px", 
-                  background: payment.status === 'completed' ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)", 
-                  color: payment.status === 'completed' ? "#27ae60" : "#d35400", 
-                  fontWeight: "bold" 
+                <span style={{
+                  padding: "4px 8px",
+                  borderRadius: "8px",
+                  background: payment.status === 'completed' ? "rgba(46, 204, 113, 0.15)" : "rgba(241, 196, 15, 0.2)",
+                  color: payment.status === 'completed' ? "#27ae60" : "#d35400",
+                  fontWeight: "bold"
                 }}>
                   {payment.status === 'completed' ? (isEn ? "Completed" : "Başarılı") : (isEn ? "Pending" : "Bekliyor")}
                 </span>

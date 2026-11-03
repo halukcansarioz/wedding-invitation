@@ -12,7 +12,7 @@ const fadeUp = {
 export const SmartAlbumSection = memo(function SmartAlbumSection() {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  
+
   const [isScanning, setIsScanning] = useState(false);
   const [matchedPhotos, setMatchedPhotos] = useState([]);
   const [searched, setSearched] = useState(false);
@@ -25,14 +25,14 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
     setIsScanning(true);
     setSearched(true);
     let uploadedPath = null;
-    
+
     try {
       const fileName = `temp_selfies/${Date.now()}_selfie.jpg`;
       const { data: uploadData, error: uploadError } = await supabase.storage.from("wedding-media").upload(fileName, file);
-      
+
       if (uploadError) throw uploadError;
       uploadedPath = uploadData.path;
-      
+
       const { data: publicUrlData } = supabase.storage.from("wedding-media").getPublicUrl(uploadedPath);
 
       const res = await supabase.functions.invoke('face-match', {
@@ -42,12 +42,11 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
       if (res.data?.matches) {
         setMatchedPhotos(res.data.matches);
       }
-      
+
     } catch (error) {
       console.error("Yüz tanıma hatası:", error);
       alert(isEn ? "Could not scan photos. Please try again." : "Fotoğraflar taranamadı. Lütfen tekrar deneyin.");
     } finally {
-      // GC: Hata alınsa da alınmasa da yüklenen geçici dosyayı temizle
       if (uploadedPath) {
         await supabase.storage.from("wedding-media").remove([uploadedPath]).catch(err => console.error("Çöp toplama hatası:", err));
       }
@@ -63,25 +62,25 @@ export const SmartAlbumSection = memo(function SmartAlbumSection() {
           {isEn ? "Find Your Photos" : "Kendi Fotoğraflarını Bul"}
         </h2>
         <p style={{ marginBottom: "24px", fontSize: "15px" }}>
-          {isEn 
-            ? "Take a quick selfie, and our AI will instantly find all professional photos you appear in from the wedding night!" 
+          {isEn
+            ? "Take a quick selfie, and our AI will instantly find all professional photos you appear in from the wedding night!"
             : "Hemen bir selfie çek, yapay zeka düğün gecesine ait binlerce profesyonel kare arasından sadece senin olduğun fotoğrafları bulup getirsin!"}
         </p>
 
         {!searched || matchedPhotos.length === 0 ? (
           <>
-            <input 
-              type="file" 
-              accept="image/*" 
-              capture="user" 
-              ref={fileInputRef} 
-              style={{ display: "none" }} 
-              onChange={handleSelfieSelect} 
+            <input
+              type="file"
+              accept="image/*"
+              capture="user"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleSelfieSelect}
             />
-            <button 
-              type="button" 
-              className="main-button" 
-              onClick={() => fileInputRef.current?.click()} 
+            <button
+              type="button"
+              className="main-button"
+              onClick={() => fileInputRef.current?.click()}
               disabled={isScanning}
               style={{ padding: "16px 32px", fontSize: "16px" }}
             >

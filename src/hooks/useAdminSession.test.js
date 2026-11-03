@@ -15,8 +15,6 @@ vi.mock('../supabaseClient', () => ({
     }
   }
 }));
-
-// HATA DÜZELTİLDİ: ESM importlarında vi.spyOn çalışmadığı için helpers doğrudan mocklandı.
 vi.mock('../utils/helpers', async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -31,8 +29,6 @@ describe('useAdminSession Oturum Yönetimi Kapsamlı Testleri', () => {
     vi.clearAllMocks();
     useAdminStore.getState().clearAdminAuth();
     useStore.setState({ guests: [{ id: 1 }], wishes: [{ id: 1, approved: false }] });
-    
-    // Varsayılan olarak Supabase ortamını hazır varsayıyoruz
     helpers.isAdminSessionFresh.mockReturnValue(true);
   });
 
@@ -47,9 +43,8 @@ describe('useAdminSession Oturum Yönetimi Kapsamlı Testleri', () => {
   });
 
   it('Oturum zaman aşımına uğradığında verileri temizleyip admin panelini kilitlemeli', async () => {
-    // Session bayatlamış gibi davran
     helpers.isAdminSessionFresh.mockReturnValue(false);
-    
+
     useAdminStore.setState({ isAdminUnlocked: true });
 
     renderHook(() => useAdminSession({ isAdminPage: true, isEn: false }));
@@ -62,10 +57,10 @@ describe('useAdminSession Oturum Yönetimi Kapsamlı Testleri', () => {
     const mainState = useStore.getState();
 
     expect(adminState.isAdminUnlocked).toBe(false);
-    
+
     expect(mainState.guests).toHaveLength(0);
     expect(mainState.wishes).toHaveLength(0);
-    
+
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
 });

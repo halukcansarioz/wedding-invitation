@@ -109,6 +109,7 @@ export default function InvitationView(props) {
           showIban={v.popupIban ?? true}
           giftData={giftRegistry}
           personalTableNumber={props.personalTableNumber}
+          showTicket={v.ticket ?? true}
         />
       )}
 

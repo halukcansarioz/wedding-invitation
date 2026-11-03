@@ -15,15 +15,15 @@ export function usePaymentFeedback(): void {
 
     if (paymentStatus === 'success') {
       showAppAlert(
-        isEn 
-          ? "Your gift has been successfully received. Thank you so much for your support! 💖" 
-          : "Hediyeniz başarıyla ulaştı. Desteğiniz için sonsuz teşekkürler! 💖", 
+        isEn
+          ? "Your gift has been successfully received. Thank you so much for your support! 💖"
+          : "Hediyeniz başarıyla ulaştı. Desteğiniz için sonsuz teşekkürler! 💖",
         { tone: "success", title: isEn ? "Success 🎉" : "Başarılı 🎉" }
       );
       window.history.replaceState(null, "", window.location.pathname);
     } else if (paymentStatus === 'cancel') {
       showAppAlert(
-        isEn ? "Payment process was cancelled." : "Ödeme işlemi iptal edildi.", 
+        isEn ? "Payment process was cancelled." : "Ödeme işlemi iptal edildi.",
         { tone: "info", title: isEn ? "Information" : "Bilgi" }
       );
       window.history.replaceState(null, "", window.location.pathname);

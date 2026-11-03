@@ -93,7 +93,8 @@
     "wishes": "Guestbook",
     "iban": "Gift / IBAN Section",
     "guests": "Guest List",
-    "popupIban": "Gift Button for Non-Attending (Modal)"
+    "popupIban": "Gift Button for Non-Attending (Modal)",
+    "ticket": "Digital Ticket After RSVP"
   },
   "alerts": {
     "successTitle": "Information ℹ️",

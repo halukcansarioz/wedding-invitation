@@ -18,7 +18,7 @@ describe('useStore Zustand Birleştirilmiş Mimari Dayanıklılık Testleri', ()
 
   it('updateDraftObject var olmayan bir gruba müdahale etmeye çalıştığında çökmemeli', () => {
     const { updateDraftObject } = useStore.getState();
-    
+
     expect(() => {
       updateDraftObject("nonExistentGroup", "anyKey", "value");
     }).not.toThrow();
@@ -29,7 +29,7 @@ describe('useStore Zustand Birleştirilmiş Mimari Dayanıklılık Testleri', ()
     const initialScheduleLength = adminDraft.scheduleItems.length;
 
     moveDraftArrayItem("scheduleItems", 0, -1);
-    
+
     const afterState = useStore.getState().adminDraft;
     expect(afterState.scheduleItems.length).toBe(initialScheduleLength);
   });
@@ -43,12 +43,12 @@ describe('useStore Zustand Birleştirilmiş Mimari Dayanıklılık Testleri', ()
     });
 
     const { removeDraftArrayItem } = useStore.getState();
-    
+
     removeDraftArrayItem("scheduleItems", 0);
     removeDraftArrayItem("scheduleItems", 0);
-    
+
     const { adminDraft } = useStore.getState();
-    
+
     expect(Array.isArray(adminDraft.scheduleItems)).toBe(true);
     expect(adminDraft.scheduleItems).toHaveLength(0);
   });

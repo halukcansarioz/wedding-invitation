@@ -22,13 +22,13 @@ describe('OverviewTab Bileşen Testleri', () => {
 
   it('İstatistikleri veritabanı ve proplar üzerinden doğru hesaplayıp ekranda göstermeli', async () => {
     const mockGuests = [
-      { attendance: 'Katılacağım', personCount: '2' }, 
+      { attendance: 'Katılacağım', personCount: '2' },
       { attendance: 'Katılamayacağım', personCount: '1' }
     ] as any[];
-    
+
     const mockWishes = [
-      { approved: false }, 
-      { approved: true }, 
+      { approved: false },
+      { approved: true },
       { approved: false }
     ] as any[];
 

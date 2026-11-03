@@ -28,17 +28,17 @@ describe('MessagesTab Admin Bileşen Testleri', () => {
 
   it('Kayıtlı mesaj şablonlarını doğru şekilde inputlara yerleştirmeli', () => {
     render(<MessagesTab isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('Merhaba {guest}, düğünümüze bekleriz.')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Davetiyemiz: {link}')).toBeInTheDocument();
   });
 
   it('Metin değiştirildiğinde store güncellenmeli', () => {
     render(<MessagesTab isEn={false} />);
-    
+
     const greetingTextarea = screen.getByDisplayValue('Merhaba {guest}, düğünümüze bekleriz.');
     fireEvent.change(greetingTextarea, { target: { value: 'Selam {guest}!' } });
-    
+
     expect(useStore.getState().adminDraft.messages.guestGreeting).toBe('Selam {guest}!');
   });
 });

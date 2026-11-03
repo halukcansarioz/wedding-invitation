@@ -71,6 +71,7 @@ export interface SiteVisibility {
   iban?: boolean;
   popupIban?: boolean;
   creditCard?: boolean;
+  ticket?: boolean;
   [key: string]: boolean | undefined;
 }
 

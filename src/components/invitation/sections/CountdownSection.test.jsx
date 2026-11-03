@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '../../../../tests/test-utils'; 
+import { render, screen } from '../../../../tests/test-utils';
 import { describe, it, expect, vi } from 'vitest';
 import { CountdownSection } from './CountdownSection';
 
@@ -18,11 +18,11 @@ describe('CountdownSection Bileşeni', () => {
 
   it('zaman varken sayacı doğru şekilde render etmeli', () => {
     const mockTimeLeft = { days: 10, hours: 5, minutes: 30, seconds: 15 };
-    
+
     render(<CountdownSection copy={mockCopy} timeLeft={mockTimeLeft} />);
-    
-    expect(screen.getByText('10')).toBeInTheDocument(); 
-    expect(screen.getByText('5')).toBeInTheDocument();  
+
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('Düğünümüze Kalan Süre')).toBeInTheDocument();
   });
 
@@ -34,9 +34,9 @@ describe('CountdownSection Bileşeni', () => {
 
   it('zaman dolduğunda kutlama mesajını göstermeli', () => {
     const mockFinishedTime = { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    
+
     render(<CountdownSection copy={mockCopy} timeLeft={mockFinishedTime} />);
-    
+
     expect(screen.getByText('Bugün En Mutlu Günümüz!')).toBeInTheDocument();
   });
 });

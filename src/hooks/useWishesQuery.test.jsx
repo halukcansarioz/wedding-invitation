@@ -3,12 +3,10 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useWishesQuery } from './useWishesQuery';
-
-// Supabase ve Database servislerini taklit ediyoruz (Gerçek ağ isteği atmamak için)
 vi.mock('../supabaseClient', () => ({
   supabase: {
-    functions: { 
-      invoke: vi.fn().mockResolvedValue({ data: { success: true, data: { id: '2' } }, error: null }) 
+    functions: {
+      invoke: vi.fn().mockResolvedValue({ data: { success: true, data: { id: '2' } }, error: null })
     }
   }
 }));
@@ -23,8 +21,6 @@ describe('useWishesQuery (React Query) Testleri', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  // Testler için taze bir QueryClient sağlıyoruz
   const createTestQueryClient = () => new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -38,11 +34,7 @@ describe('useWishesQuery (React Query) Testleri', () => {
     );
 
     const { result } = renderHook(() => useWishesQuery(), { wrapper });
-
-    // Başlangıçta yükleniyor durumu (isLoading)
     expect(result.current.isLoading).toBe(true);
-
-    // Veri geldiğinde (Promise çözüldüğünde) kontrol et
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
@@ -61,16 +53,12 @@ describe('useWishesQuery (React Query) Testleri', () => {
     );
 
     const { result } = renderHook(() => useWishesQuery(), { wrapper });
-
-    // Mutasyonu tetikle
     await result.current.addWish({
       name: 'Burak',
       message: 'Tebrikler!',
       approved: false,
       turnstileToken: 'fake-token'
     });
-
-    // Mocklanan Supabase fonksiyonunun çağrıldığından emin oluyoruz
     const { supabase } = await import('../supabaseClient');
     expect(supabase.functions.invoke).toHaveBeenCalledWith('submit-form', expect.any(Object));
   });

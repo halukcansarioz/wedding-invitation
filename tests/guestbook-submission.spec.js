@@ -17,7 +17,7 @@ test.describe('Anı Defteri (Guestbook) Mesaj Gönderim Testleri', () => {
     const nameInput = page.locator('input[placeholder*="Ad"], input[name*="name"], input[type="text"]').first();
     if (await nameInput.isVisible()) {
       await nameInput.fill('Test Misafir');
-      
+
       const messageInput = page.locator('textarea, input[placeholder*="Mesaj"], input[name*="message"]').first();
       if (await messageInput.isVisible()) {
         await messageInput.fill('Ömür boyu mutluluklar dileriz!');

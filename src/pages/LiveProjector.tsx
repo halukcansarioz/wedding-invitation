@@ -12,14 +12,14 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 function LiveProjectorContent() {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  
+
   const siteData = useStore(state => state.siteData);
   const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
-  
+
   const { wishes } = useWishesQuery();
   const { photos } = useGuestPhotosQuery();
   const queryClient = useQueryClient();
-  
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const displayItems = useMemo(() => {
@@ -51,8 +51,8 @@ function LiveProjectorContent() {
     };
 
     setupChannel();
-    
-    return () => { 
+
+    return () => {
       isMounted = false;
       if (channel) supabase.removeChannel(channel).catch(console.error);
     };
@@ -60,17 +60,17 @@ function LiveProjectorContent() {
 
   useEffect(() => {
     if (!displayItems || displayItems.length === 0) return;
-    const interval = setInterval(() => { 
-        setCurrentIndex((prev) => (prev + 1) % displayItems.length); 
-    }, 8000); 
+    const interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % displayItems.length);
+    }, 8000);
     return () => clearInterval(interval);
   }, [displayItems]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    
-    return () => { 
+
+    return () => {
       document.body.style.overflow = previousOverflow;
     };
   }, []);
@@ -132,7 +132,7 @@ function LiveProjectorContent() {
           )}
         </AnimatePresence>
       </div>
-      
+
       <div style={{ position: 'absolute', bottom: '40px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', zIndex: 10 }}>
         {isEn ? "Scan the QR code to send a message or photo!" : "Ekrana mesaj veya fotoğraf göndermek için davetiyedeki formu kullanın!"}
       </div>

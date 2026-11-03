@@ -21,7 +21,6 @@ test.describe('Admin Paneli: Anı Defteri (Wishes) Moderasyon Akışı', () => {
          if (r.request().method() === 'GET') {
            return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ id: 'msg-1', name: 'Zeynep', message: 'Tebrikler!', approved: false }]) });
          }
-         // Güncelleme (PATCH/POST) isteklerini başarılı olarak simüle et
          return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) });
       }
       if (url.includes('settings')) {
@@ -31,7 +30,7 @@ test.describe('Admin Paneli: Anı Defteri (Wishes) Moderasyon Akışı', () => {
     });
 
     await page.goto('/admin');
-    
+
     const emailInput = page.locator('input[type="email"]').first();
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
     await emailInput.fill('admin@test.com');

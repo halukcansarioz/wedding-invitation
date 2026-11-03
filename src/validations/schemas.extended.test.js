@@ -7,9 +7,9 @@ describe('RSVP Zod Şeması Ek Doğrulama Testleri', () => {
   const rsvpSchema = getRsvpSchema(mockT);
 
   it('İsim alanı boş bırakıldığında RSVP şeması doğrulama hatası vermeli', () => {
-    const invalidData = { 
-      name: "", 
-      attendance: "Katılacağım" 
+    const invalidData = {
+      name: "",
+      attendance: "Katılacağım"
     };
     const result = rsvpSchema.safeParse(invalidData);
     expect(result.success).toBe(false);

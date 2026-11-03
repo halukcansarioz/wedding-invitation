@@ -27,7 +27,7 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
 
   it('Store verisine göre kayıtlı etkinlikleri ekranda göstermeli', () => {
     render(<CeremonyTab isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('Kına Gecesi')).toBeInTheDocument();
     expect(screen.getByDisplayValue('18:00')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Bahçe')).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
 
   it('Girdiler değiştiğinde array öğesini güncellemeli', () => {
     render(<CeremonyTab isEn={false} />);
-    
+
     const timeInput = screen.getByDisplayValue('18:00');
     fireEvent.change(timeInput, { target: { value: '19:30' } });
 
@@ -45,7 +45,7 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
 
   it('Yeni etkinlik ekle butonuna tıklandığında varsayılan değerlerle listeye eleman eklemeli', () => {
     render(<CeremonyTab isEn={false} />);
-    
+
     const addBtn = screen.getByRole('button', { name: /Yeni Etkinlik Ekle/i });
     fireEvent.click(addBtn);
 
@@ -57,7 +57,7 @@ describe('CeremonyTab Admin Bileşen Testleri', () => {
 
   it('Etkinlik sil butonuna basıldığında listeyi güncellemeli', () => {
     render(<CeremonyTab isEn={false} />);
-    
+
     const deleteBtn = screen.getByRole('button', { name: /Sil 🗑️/i });
     fireEvent.click(deleteBtn);
 

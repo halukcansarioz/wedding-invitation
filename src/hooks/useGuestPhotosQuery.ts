@@ -1,4 +1,3 @@
-// src/hooks/useGuestPhotosQuery.ts
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
@@ -20,11 +19,9 @@ export function useGuestPhotosQuery() {
     };
 
     fetchPhotos();
-
-    // Sadece Canlı ekran (Barkovizyon) veya Admin paneli ise Socket aç
-    const isPrivilegedView = typeof window !== 'undefined' && 
+    const isPrivilegedView = typeof window !== 'undefined' &&
       (window.location.pathname.includes('/live') || window.location.pathname.includes('/admin'));
-      
+
     let channel: ReturnType<typeof supabase.channel>;
 
     if (isPrivilegedView) {
@@ -36,9 +33,9 @@ export function useGuestPhotosQuery() {
         .subscribe();
     }
 
-    return () => { 
+    return () => {
       isMounted = false;
-      if (channel) supabase.removeChannel(channel).catch(console.error); 
+      if (channel) supabase.removeChannel(channel).catch(console.error);
     };
   }, []);
 

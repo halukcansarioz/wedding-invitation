@@ -7,8 +7,6 @@ import { useAdminStore } from "../store/useAdminStore";
 function AdminDashboard(props) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-
-  // Zustand
   const { isAdminUnlocked, adminSaveMessage } = useAdminStore();
   const { activeAdminTab, setActiveAdminTab, saveSiteContent } = useStore();
 
@@ -28,8 +26,6 @@ function AdminDashboard(props) {
       if (tab.id === "theme") {
         tabs.push({ id: "visibility", label: isEn ? "Section Visibility" : "Bölüm Görünürlüğü", description: isEn ? "Toggle sections on page" : "Sayfadaki alanları aç/kapat" });
         tabs.push({ id: "gift", label: isEn ? "IBAN & Gift" : "IBAN & Hediye", description: isEn ? "Account and bank details" : "Hesap ve banka bilgileri" });
-        // Eğer GuestPhotosTab eklediysen onu da buraya dahil edebilirsin:
-        // tabs.push({ id: "guestPhotos", label: isEn ? "Guest Uploads (POV)" : "Misafir Fotoğrafları (POV)", description: isEn ? "Manage guest photos" : "Misafirlerin yüklediği fotoğrafları yönet" });
       }
     });
     return tabs;
@@ -41,8 +37,8 @@ function AdminDashboard(props) {
     <main className="admin-page">
       <section className="card admin-card admin-page-card admin-shell-card">
         <div className="admin-page-header">
-          
-          {/* HEADER ALANI: YENİ EKLENEN BARKOVİZYON BUTONU İLE BİRLİKTE */}
+
+
           <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr auto', alignItems: 'center', marginBottom: '28px', paddingTop: '24px', width: '100%', gap: '16px' }}>
             <div />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -50,22 +46,22 @@ function AdminDashboard(props) {
                 {isEn ? "Back to Invitation 🏠" : "Davetiyeye Dön 🏠"}
               </button>
             </div>
-            
+
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px' }}>
-              {/* YENİ EKLENEN: Canlı Barkovizyon Butonu */}
-              <button 
-                type="button" 
-                className="main-button" 
-                style={{ margin: 0, minHeight: '48px', padding: '0 20px', background: 'linear-gradient(135deg, #2c3e50, #000000)', borderColor: '#000' }} 
+
+              <button
+                type="button"
+                className="main-button"
+                style={{ margin: 0, minHeight: '48px', padding: '0 20px', background: 'linear-gradient(135deg, #2c3e50, #000000)', borderColor: '#000' }}
                 onClick={() => window.open(`/${window.location.pathname.split('/')[1]}/live`, '_blank')}
               >
                 {isEn ? "Live Projector 🎬" : "Barkovizyonu Aç 🎬"}
               </button>
-              
+
               <button type="button" className="secondary-button" style={{ margin: 0, minHeight: '48px', padding: '0 24px' }} onClick={toggleLanguage}>
                 {isEn ? "EN" : "TR"}
               </button>
-              
+
               {toggleMusic && (
                 <button
                   type="button"
@@ -100,11 +96,11 @@ function AdminDashboard(props) {
         </div>
 
         {!isAdminUnlocked ? (
-          <AdminLogin 
-            isEn={isEn} 
-            submitAdminPassword={submitAdminPassword} 
-            completePasswordRecovery={completePasswordRecovery} 
-            sendPasswordResetEmail={sendPasswordResetEmail} 
+          <AdminLogin
+            isEn={isEn}
+            submitAdminPassword={submitAdminPassword}
+            completePasswordRecovery={completePasswordRecovery}
+            sendPasswordResetEmail={sendPasswordResetEmail}
           />
         ) : (
           <div className="admin-layout">
@@ -135,7 +131,7 @@ function AdminDashboard(props) {
                     <strong>{currentTabInfo?.label}</strong>
                     <span>{currentTabInfo?.description}</span>
                   </div>
-                  
+
                   <div className="admin-actions-btn-group">
                     <button type="button" className="main-button" onClick={() => saveSiteContent(isEn)}>
                       {isEn ? "Save Changes 💾" : "Değişiklikleri Kaydet 💾"}

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 :root {
-  
+
   --amp-color: var(--rose-dark);
   --amp-glow: color-mix(in srgb, var(--rose-dark) 36%, transparent);
   --sakura-flower: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='14' fill='black'/%3E%3Cg stroke='black' stroke-width='7.5' fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3Cg transform='rotate(72 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(144 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(216 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3Cg transform='rotate(288 50 50)'%3E%3Cpath d='M 40 38 C 15 -5, 85 -5, 60 38' /%3E%3Cline x1='50' y1='36' x2='50' y2='8' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -10,14 +10,14 @@
   --paper-soft: #fff7f9;
   --text-main: #55303b;
   --text-soft: #6f4451;
-  
+
   --admin-bg: rgba(255, 250, 251, 0.96);
   --admin-border: rgba(159, 79, 104, 0.34);
   --admin-text: #3f1f2c;
   --admin-input-bg: #fff9fb;
   --admin-nav-bg: rgba(255, 250, 251, 0.9);
   --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 8%, var(--paper));
-  
+
   --admin-bg-primary: rgba(255, 250, 251, 0.96);
   --admin-bg-secondary: rgba(255, 250, 251, 0.9);
   --admin-border-color: rgba(159, 79, 104, 0.34);
@@ -37,7 +37,7 @@
 [data-theme="minimal"] { --amp-color: #7c6f64; --amp-glow: rgba(124, 111, 100, 0.38); }
 [data-theme="lavanta"] { --amp-color: #8f7fb8; --amp-glow: rgba(143, 127, 184, 0.42); }
 [data-theme="dark"] {
-  --amp-color: #e3b6c7; 
+  --amp-color: #e3b6c7;
   --amp-glow: rgba(227, 182, 199, 0.46);
   --paper: #1c141a;
   --paper-soft: #241a21;
@@ -50,13 +50,13 @@
   --admin-input-bg: rgba(18, 13, 17, 0.92);
   --admin-nav-bg: rgba(255, 255, 255, 0.06);
   --admin-nav-hover-bg: color-mix(in srgb, var(--amp-color) 10%, transparent);
-  
+
   --admin-bg-primary: rgba(36, 26, 33, 0.92);
   --admin-bg-secondary: rgba(255, 255, 255, 0.06);
   --admin-border-color: rgba(255, 255, 255, 0.14);
   --admin-text-main: #fff4f8;
   --admin-text-muted: #ead0da;
-  
+
   --btn-primary-bg: linear-gradient(135deg, #d36a86, #7a203b);
   --btn-danger-bg: linear-gradient(135deg, #d36a86, #7a203b);
   --btn-danger-color: #fff7f9;
@@ -74,9 +74,7 @@ html[data-theme] body .app-modal-card::after {
   background: transparent;
 }
 
-/* =================================================================
-   LAVANTA TEMASINA ÖZEL UÇAN KELEBEKLER
-   ================================================================= */
+
 html[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
 html[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
   content: "";
@@ -122,9 +120,7 @@ html[data-theme="lavanta"] body .app .invitation-page .hero-section .hero-conten
   100% { transform: translate(-220px, -420px) rotate(15deg) scale(0.85); opacity: 0; }
 }
 
-/* =========================================================
-   FINAL TEMA SİSTEMİ - DİNAMİK YAPI (!important KULLANMADAN)
-   ========================================================= */
+
 
 html[data-theme="rose"] {
   --theme-rgb: 159, 79, 104;
@@ -272,7 +268,7 @@ html[data-theme="lavanta"] {
   --text: #393545;
   --text-soft: #635d73;
   --shadow: 0 20px 48px rgba(122, 107, 163, 0.13);
-  
+
   --theme-rgb: 122, 107, 163;
   --theme-strong-rgb: 76, 63, 112;
   --theme-soft-rgb: 220, 214, 235;
@@ -355,7 +351,7 @@ html[data-theme] body .app .hero-section {
     var(--hero-image) center/cover no-repeat;
 }
 
-/* KARTLAR VE İÇERİK KUTULARI YÜKSEK SPESİFİKLİK İLE */
+
 html[data-theme] body .app .intro-card,
 html[data-theme] body .app .card,
 html[data-theme] body .app .countdown-section,
@@ -402,7 +398,7 @@ html[data-theme] body .app .admin-shell-card {
     linear-gradient(145deg, var(--theme-surface), var(--theme-surface-soft));
 }
 
-/* BAŞLIKLAR VE GÜÇLÜ METİNLER */
+
 html[data-theme] body .app .section-label,
 html[data-theme] body .app .card h2,
 html[data-theme] body .app .countdown-section h2,
@@ -432,7 +428,7 @@ html[data-theme] body .app .theme-option-card strong {
   color: var(--rose-deep);
 }
 
-/* ZAYIF METİNLER (MUTED TEXT) */
+
 html[data-theme] body .app .card p,
 html[data-theme] body .app .countdown-section p,
 html[data-theme] body .app .intro-text,
@@ -458,7 +454,7 @@ html[data-theme] body .app .admin-save-message {
   color: var(--theme-text-muted);
 }
 
-/* KAHRAMAN BÖLÜMÜ / ÖZEL GÖLGE METİNLERİ */
+
 html[data-theme] body .app .intro-small,
 html[data-theme] body .app .hero-section .small-title,
 html[data-theme] body .app .hero-section .couple-title,
@@ -478,7 +474,7 @@ html[data-theme] body .app .intro-page .couple-title em {
   color: var(--gold);
 }
 
-/* BUTONLAR VE İKİNCİL RENKLER */
+
 html[data-theme] body .app .hero-date,
 html[data-theme] body .app .floating-actions .share-button,
 html[data-theme] body .app .floating-actions .music-toggle-button,
@@ -496,7 +492,7 @@ html[data-theme="dark"] body .app .secondary-button {
   color: var(--rose-deep);
 }
 
-/* BİRİNCİL BUTONLAR (MAIN BUTTON) */
+
 html[data-theme] body .app .open-button,
 html[data-theme] body .app .main-button,
 html[data-theme] body .app .admin-upload-button,
@@ -516,7 +512,7 @@ html[data-theme="dark"] body .app .option-button.active {
   color: #241a21;
 }
 
-/* GİRDİ ELEMANLARI (INPUT / TEXTAREA) */
+
 html[data-theme] body .app input,
 html[data-theme] body .app textarea,
 html[data-theme] body .app select,
@@ -542,14 +538,14 @@ html[data-theme] body .app textarea::placeholder {
   opacity: 0.82;
 }
 
-/* HOVER (ÜZERİNE GELME) EFEKTLERİ */
+
 html[data-theme] body .app .option-button:hover,
 html[data-theme] body .app .admin-nav-button:hover,
 html[data-theme] body .app .secondary-button:hover,
 html[data-theme] body .app .theme-option-card:hover {
   border-color: rgba(var(--theme-rgb), 0.68);
   background: var(--theme-surface-soft);
-  color: var(--rose-dark); /* EKLENDİ: Üzerine gelindiğinde yazının beyaz olup kaybolmasını engeller */
+  color: var(--rose-dark);
 }
 
 html[data-theme="dark"] body .app .option-button:hover,
@@ -571,7 +567,7 @@ html[data-theme="dark"] body .app .admin-upload-button:hover {
   color: #241a21;
 }
 
-/* ÖZEL EFEKTLER (BEFORE/AFTER) */
+
 html[data-theme] body .app .card::before,
 html[data-theme] body .app .countdown-section::before {
   background: rgba(var(--theme-soft-rgb), 0.22);
@@ -628,15 +624,15 @@ html[data-theme="dark"] body .app .gallery-grid img {
 }
 
 html[data-theme] body .app .count-box span {
-  font-family: var(--font-heading); /* Playfair Display ile daha asil bir görünüm */
-  font-style: italic; /* İtalik yaparak biraz hareket katıyoruz */
+  font-family: var(--font-heading);
+  font-style: italic;
   font-size: 1.1rem;
   letter-spacing: 1.5px;
   margin-top: 8px;
   color: var(--rose-dark);
 }
 
-/* 2. Nikah ve Eğlence Kartlarının İçindeki "NİKAH TÖRENİ", "DÜĞÜN & EĞLENCE" Başlıkları */
+
 html[data-theme] body .app .ceremony-item span {
   font-family: var(--font-heading);
   font-weight: 600;
@@ -645,24 +641,24 @@ html[data-theme] body .app .ceremony-item span {
   margin-bottom: 10px;
 }
 
-/* 3. Düğün Akışı / Program Kartlarındaki Etkinlik İsimleri ("Misafir Karşılama", "Nikah Töreni" vs.) */
+
 html[data-theme] body .app .schedule-item span {
-  font-family: var(--font-script); /* Buraya Great Vibes ekleyerek çok daha zarif ve el yazısı efekti veriyoruz */
-  font-size: 2.2rem; /* El yazısı olduğu için boyutunu büyütüyoruz */
+  font-family: var(--font-script);
+  font-size: 2.2rem;
   line-height: 1.2;
   color: var(--rose-dark);
   margin-bottom: 4px;
 }
 
-/* Düğün Akışı / Program Kartlarındaki Saatler */
+
 html[data-theme] body .app .schedule-item > strong {
   font-family: var(--font-heading);
   font-size: 1.4rem;
   margin-bottom: 5px;
 }
 
-/* 4. Zarif Karşılama Ekranı (Intro/Hero) Ayarlamaları */
-/* "Düğün Davetiyesi" veya üstte yazan ufak "Biz Evleniyoruz" etiketi */
+
+
 html[data-theme] body .app .intro-small,
 html[data-theme] body .app .hero-section .small-title {
   font-family: var(--font-script);
@@ -671,10 +667,10 @@ html[data-theme] body .app .hero-section .small-title {
   opacity: 0.9;
 }
 
-/* Karşılama ekranındaki "Sevgiyle başlayan hikayemizin..." gibi uzun mesajlar */
+
 html[data-theme] body .app .intro-text {
   font-family: var(--font-heading);
-  font-style: italic; /* Şiirsel bir hava katar */
+  font-style: italic;
   font-size: 1.2rem;
   line-height: 1.6;
   letter-spacing: 0.5px;

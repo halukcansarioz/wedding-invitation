@@ -5,8 +5,6 @@ const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-// YENİ: Veritabanına Hata Loglama Fonksiyonu
 async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
   try {
     await supabaseAdmin.from('error_logs').insert([{
@@ -29,7 +27,7 @@ Deno.serve(async (req: Request) => {
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
     supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    
+
     const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
       client_ip: `ai_thank_you_${ip}`,
       max_req: 5,
@@ -39,9 +37,9 @@ Deno.serve(async (req: Request) => {
     if (isLimited || rateLimitError) {
       const errMsg = rateLimitError ? rateLimitError.message : "Rate limit aşıldı.";
       await logErrorToDatabase(supabaseAdmin, 'ai-thank-you', errMsg, { ip });
-      
-      return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+
+      return new Response(JSON.stringify({ success: false, error: "Çok fazla istek gönderildi. Lütfen 1 dakika bekleyin." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429
       });
     }
 
@@ -51,7 +49,7 @@ Deno.serve(async (req: Request) => {
     const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: { headers: { Authorization: authHeader } }
     });
-    
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
 
@@ -84,17 +82,17 @@ Deno.serve(async (req: Request) => {
     const aiData = await openAiResponse.json();
     const text = aiData.choices[0].message.content.trim();
 
-    return new Response(JSON.stringify({ success: true, text }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    return new Response(JSON.stringify({ success: true, text }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200
     });
 
   } catch (error: any) {
     if (supabaseAdmin) {
        await logErrorToDatabase(supabaseAdmin, 'ai-thank-you', error.message, { stack: error.stack });
     }
-    
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
+
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: corsHeaders, status: 400
     });
   }
 });

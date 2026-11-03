@@ -54,7 +54,7 @@ describe('useGuestPhotosQuery Hook Testleri', () => {
     });
 
     expect(result.current.photos[0].image_url).toBe('test.jpg');
-    
+
     const { supabase } = await import('../supabaseClient');
     expect(supabase.from).toHaveBeenCalledWith('guest_photos');
     expect(supabase.channel).toHaveBeenCalled();
@@ -63,7 +63,7 @@ describe('useGuestPhotosQuery Hook Testleri', () => {
   it('Bileşen unmount olduğunda kanalı kapatmalı', () => {
     const { unmount } = renderHook(() => useGuestPhotosQuery());
     unmount();
-    
+
     expect(mockRemoveChannel).toHaveBeenCalled();
   });
 });

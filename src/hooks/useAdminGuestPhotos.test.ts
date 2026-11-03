@@ -33,7 +33,7 @@ describe('useAdminGuestPhotos Hook Testleri', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(window, 'confirm').mockImplementation(() => true);
-    
+
     vi.spyOn(useStore.getState(), 'showAppAlert').mockResolvedValue(true);
   });
 

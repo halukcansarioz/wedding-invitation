@@ -9,7 +9,7 @@ test.describe('Admin Paneli: QR Check-in ve Karşılama Testleri', () => {
     const qrTab = page.locator('button:has-text("QR"), button:has-text("Check-in"), [data-tab="qr"]').first();
     if (await qrTab.isVisible()) {
       await qrTab.click();
-      
+
       const scanInput = page.locator('input[placeholder*="QR"], input[name="qrCode"]').first();
       if (await scanInput.isVisible()) {
         await scanInput.fill('GUEST-TEST-123');

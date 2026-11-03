@@ -24,7 +24,7 @@ import {
 } from './helpers';
 
 describe('Helpers Genişletilmiş Uç Durum (Edge Case) Testleri', () => {
-  
+
   it('normalizeText undefined veya boş gönderildiğinde çökmemeli ve boş string dönmeli', () => {
     expect(normalizeText(undefined)).toBe("");
     expect(normalizeText()).toBe("");
@@ -33,7 +33,6 @@ describe('Helpers Genişletilmiş Uç Durum (Edge Case) Testleri', () => {
   it('buildPersonalLink özel karakter içeren isim ve masa numaralarını doğru encode etmeli', () => {
     const base = "https://wedding.com/";
     const url = buildPersonalLink(base, "Fatma Şahin", "5");
-    // Büyük Ş harfi encodeURIComponent ile %C5%9E olarak kodlanır
     expect(url).toBe("https://wedding.com/?guest=Fatma%20%C5%9Eahin&table=5");
   });
 

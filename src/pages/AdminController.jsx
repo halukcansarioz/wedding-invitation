@@ -7,8 +7,8 @@ import { useAdminSession } from '../hooks/useAdminSession';
 import { useDatabaseManager } from '../hooks/useDatabaseManager';
 import { useExportData } from '../hooks/useExportData';
 import { normalizeText, buildPersonalLink, getQrImageUrl } from '../utils/helpers';
-import { restoreBackupToDatabase } from '../services/database'; 
-import { useAudio } from '../hooks/useAudio'; 
+import { restoreBackupToDatabase } from '../services/database';
+import { useAudio } from '../hooks/useAudio';
 import '../styles/admin.css';
 
 const AdminView = lazy(() => import('./AdminView'));
@@ -23,18 +23,18 @@ export default function AdminController() {
   const setGuests = useStore((state) => state.setGuests);
   const wishes = useStore((state) => state.wishes);
   const setWishes = useStore((state) => state.setWishes);
-  
+
   const showAppConfirm = useStore((state) => state.showAppConfirm);
   const showAppPrompt = useStore((state) => state.showAppPrompt);
   const showAppAlert = useStore((state) => state.showAppAlert);
-  
+
   const adminDraft = useStore((state) => state.adminDraft);
-  const setAdminDraft = useStore((state) => state.setAdminDraft); 
+  const setAdminDraft = useStore((state) => state.setAdminDraft);
   const personalLinkName = useStore((state) => state.personalLinkName);
   const setPersonalLinkName = useStore((state) => state.setPersonalLinkName);
   const dataImportText = useStore((state) => state.dataImportText);
   const setDataImportText = useStore((state) => state.setDataImportText);
-  
+
   const setAdminSaveMessage = useAdminStore((state) => state.setAdminSaveMessage);
 
   const [adminGuestSearch, setAdminGuestSearch] = useState("");
@@ -55,7 +55,7 @@ export default function AdminController() {
   });
 
   const { exportExcel, exportCsv, exportJson } = useExportData(isEn);
-  
+
   const { isMusicPlaying, toggleMusic } = useAudio(adminDraft.invitation?.musicFile);
 
   const closeAdminPage = useCallback(() => {
@@ -65,15 +65,15 @@ export default function AdminController() {
 
   const resetSiteContent = useCallback(async () => {
     const confirmed = await showAppConfirm(
-      isEn 
-        ? "Discard all unsaved changes and revert to the latest saved version?" 
+      isEn
+        ? "Discard all unsaved changes and revert to the latest saved version?"
         : "Kaydedilmemiş tüm değişiklikleri iptal edip son kaydedilen sürüme dönmek istiyor musunuz?",
       { title: isEn ? "Discard Changes" : "Değişiklikleri İptal Et", tone: "warning" }
     );
-    
+
     if (confirmed) {
-      setAdminDraft(siteData); 
-      document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta"); 
+      setAdminDraft(siteData);
+      document.documentElement.setAttribute('data-theme', siteData.settings?.theme || "lavanta");
       setAdminSaveMessage(isEn ? "Changes discarded." : "Tüm değişiklikler iptal edildi.");
       setTimeout(() => setAdminSaveMessage(""), 3000);
     }
@@ -122,17 +122,17 @@ export default function AdminController() {
   return (
     <Suspense fallback={<div className="app-loading">Yükleniyor...</div>}>
       <AdminView
-        submitAdminPassword={submitAdminPassword} 
+        submitAdminPassword={submitAdminPassword}
         completePasswordRecovery={completePasswordRecovery}
-        sendPasswordResetEmail={sendPasswordResetEmail} 
-        changeAdminPassword={changeAdminPassword} 
-        logoutAdmin={logoutAdmin} 
-        
-        closeAdminPage={closeAdminPage} 
-        resetSiteContent={resetSiteContent} 
+        sendPasswordResetEmail={sendPasswordResetEmail}
+        changeAdminPassword={changeAdminPassword}
+        logoutAdmin={logoutAdmin}
+
+        closeAdminPage={closeAdminPage}
+        resetSiteContent={resetSiteContent}
         isMusicPlaying={isMusicPlaying} // EKLENDİ
         toggleMusic={toggleMusic} // EKLENDİ
-        
+
         guests={guests} adminGuestSearch={adminGuestSearch} setAdminGuestSearch={setAdminGuestSearch}
         adminGuestAttendanceFilter={adminGuestAttendanceFilter} setAdminGuestAttendanceFilter={setAdminGuestAttendanceFilter}
         adminGuestSideFilter={adminGuestSideFilter} setAdminGuestSideFilter={setAdminGuestSideFilter} adminGuestChildFilter={adminGuestChildFilter}
@@ -142,11 +142,11 @@ export default function AdminController() {
         toggleWishApproval={toggleWishApproval} editWish={editWish} deleteWish={deleteWish} clearWishes={clearWishes}
         qrImageUrl={qrImageUrl} downloadQrCode={downloadQrCode} copyAdminLink={copyAdminLink} currentShareLink={currentShareLink}
         personalLinkName={personalLinkName} setPersonalLinkName={setPersonalLinkName} personalGuestLink={personalGuestLink}
-        
-        exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")} 
+
+        exportAllDataJson={() => exportJson({ siteData, guests, wishes }, "yedek.json")}
         dataImportText={dataImportText} setDataImportText={setDataImportText} importAllDataJson={importAllDataJson}
-        exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")} 
-        exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")} 
+        exportGuestsExcel={() => exportExcel(filteredGuests, "guests", "misafirler.xls")} exportGuestsCsv={() => exportCsv(filteredGuests, "guests", "misafirler.csv")}
+        exportWishesExcel={() => exportExcel(filteredWishes, "wishes", "mesajlar.xls")} exportWishesCsv={() => exportCsv(filteredWishes, "wishes", "mesajlar.csv")}
         toggleCheckIn={toggleCheckIn} assignTable={assignTable}
       />
     </Suspense>

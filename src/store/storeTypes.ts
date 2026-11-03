@@ -6,8 +6,6 @@ export interface CustomAlertOptions {
   confirmText?: string;
   tone?: 'warning' | 'danger' | 'success' | 'info';
 }
-
-// GÜNCELLENDİ: 'any' yerine Generic <T> kullanılarak tam tip güvenliği sağlandı.
 export interface CustomModalState<T = unknown> {
   title: string;
   message?: string;
@@ -22,15 +20,15 @@ export interface UISlice {
   setOpened: (opened: boolean) => void;
   isOpening: boolean;
   setIsOpening: (isOpening: boolean) => void;
-  
+
   customAlert: CustomModalState<boolean> | null;
   setCustomAlert: (alert: CustomModalState<boolean> | null) => void;
   showAppAlert: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
-  
+
   customConfirm: CustomModalState<boolean> | null;
   setCustomConfirm: (confirm: CustomModalState<boolean> | null) => void;
   showAppConfirm: (message: string, options?: CustomAlertOptions) => Promise<boolean>;
-  
+
   customPrompt: CustomModalState<string | null> | null;
   setCustomPrompt: (prompt: CustomModalState<string | null> | null) => void;
   showAppPrompt: (label: string, defaultValue?: string, options?: CustomAlertOptions) => Promise<string | null>;

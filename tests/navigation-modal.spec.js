@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupE2EMocks } from './utils';
 
 test.describe('Navigasyon ve Harita (Location) Modal Akışı', () => {
-  
+
   test.beforeEach(async ({ page }) => {
     await setupE2EMocks(page);
     await page.goto('/');
@@ -14,10 +14,11 @@ test.describe('Navigasyon ve Harita (Location) Modal Akışı', () => {
   });
 
   test('Konuma Git butonuna tıklandığında harita seçeneklerini göstermeli ve kapatılabilmeli', async ({ page }) => {
-    const goToMapBtn = page.locator('button', { hasText: /Konuma Git|Go to Map/i }).first();
-    
+    const goToMapBtn = page.getByTestId('location-nav-trigger');
+    await expect(goToMapBtn).toBeVisible({ timeout: 15000 });
+
     await goToMapBtn.scrollIntoViewIfNeeded();
-    await goToMapBtn.click({ force: true }); 
+    await goToMapBtn.click({ force: true });
 
     const modal = page.locator('.location-nav-modal');
     await expect(modal).toBeVisible();

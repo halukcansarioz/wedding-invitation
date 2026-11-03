@@ -86,8 +86,6 @@ serve(async (req) => {
 
     const body: DeleteMediaPayload = await req.json().catch(() => ({}));
     const action = body.action || "delete";
-
-    // 1. AKSİYON: BELİRLİ DOSYALARI SİLME
     if (action === "delete") {
       const urlsToDelete: string[] = [];
       if (body.url) urlsToDelete.push(body.url);
@@ -140,8 +138,6 @@ serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // 2. AKSİYON: BİRLEŞTİRİLMİŞ ÇÖP TOPLAYICI (GARBAGE COLLECTION)
     if (action === "cleanup-orphans") {
       let orphanCount = 0;
       const activeUrls = new Set<string>();
@@ -160,21 +156,15 @@ serve(async (req) => {
           });
         }
       };
-
-      // Hem yeni invitation_settings hem de eski settings tablosunu tara
       const { data: invitationSettingsRows } = await supabaseAdmin.from("invitation_settings").select("content");
       invitationSettingsRows?.forEach((r: any) => collectSiteDataUrls(r.content));
 
       const { data: legacySettingsRows } = await supabaseAdmin.from("settings").select("data");
       legacySettingsRows?.forEach((r: any) => collectSiteDataUrls(r.data));
-
-      // Guest photos tablosundaki aktif medyalar
       const { data: guestPhotos } = await supabaseAdmin.from("guest_photos").select("image_url");
       guestPhotos?.forEach((gp: any) => {
         if (gp.image_url) activeUrls.add(gp.image_url);
       });
-
-      // Wishes ses dosyaları (audio_url ve audioUrl)
       const { data: wishes } = await supabaseAdmin.from("wishes").select("*");
       wishes?.forEach((w: any) => {
         const audio = w.audio_url || w.audioUrl;
@@ -182,8 +172,6 @@ serve(async (req) => {
       });
 
       const activeUrlList = Array.from(activeUrls);
-
-      // A) wedding-media alt klasörlerini tara (images, media, music, audio_wishes, video)
       const subFolders = ["", "images", "media", "music", "audio_wishes", "video"];
       for (const folder of subFolders) {
         const { data: files, error: listErr } = await supabaseAdmin.storage
@@ -206,8 +194,6 @@ serve(async (req) => {
           if (!rmErr) orphanCount += pathsToDelete.length;
         }
       }
-
-      // B) Diğer kök kovaları tara
       const rootBuckets = ["images", "guest_photos", "audio_wishes"];
       for (const bucket of rootBuckets) {
         const { data: fileList, error: listError } = await supabaseAdmin.storage.from(bucket).list();

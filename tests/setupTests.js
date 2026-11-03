@@ -4,8 +4,6 @@ import React from 'react';
 
 vi.stubEnv('VITE_SUPABASE_URL', 'https://mock.supabase.co');
 vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'mock-key');
-
-// JSDOM window.location nesnesini tüm testlerde (delete ve defineProperty için) esnek hale getir
 const initialLocation = window.location;
 try {
   delete window.location;
@@ -30,7 +28,6 @@ try {
     },
   });
 } catch {
-  // Ortam zaten yapılandırılmışsa devam et
 }
 
 window.scrollTo = vi.fn();

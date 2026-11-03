@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Düğün Davetiyesi LCV (RSVP) Süreçleri', () => {
-  
+
   test.beforeEach(async ({ page }) => {
     await page.route('**/*.{png,jpg,jpeg,webp,gif,mp4,webm,ogg,mp3,wav}', route => route.abort());
-    
-    await page.addInitScript(() => { 
-      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true }); 
+
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
     });
-    
+
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
+
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
     await envelopeSeal.waitFor({ state: 'visible' });

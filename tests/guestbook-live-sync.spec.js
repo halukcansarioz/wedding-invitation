@@ -6,14 +6,14 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
 
     await context.route('**/*supabase.co/**', async (route, request) => {
       const url = request.url();
-      
+
       if (request.method() === 'OPTIONS') {
         return route.fulfill({ status: 200, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*' } });
       }
 
       if (url.includes('/functions/v1/submit-form')) {
         return route.fulfill({
-          status: 200, 
+          status: 200,
           contentType: 'application/json',
           headers: { 'Access-Control-Allow-Origin': '*' },
           body: JSON.stringify({ success: true, data: { id: 'mocked-wish' } })
@@ -22,7 +22,7 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
 
       if (url.includes('/rest/v1/settings')) {
         return route.fulfill({
-          status: 200, 
+          status: 200,
           contentType: 'application/json',
           headers: { 'Access-Control-Allow-Origin': '*' },
           body: JSON.stringify([{ data: { invitation: { bride: 'Canan', groom: 'Ali' }, settings: { visibility: { wishes: true } } } }])
@@ -31,7 +31,7 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
 
       if (url.includes('/rest/v1/')) {
         return route.fulfill({
-          status: 200, 
+          status: 200,
           contentType: 'application/json',
           headers: { 'Access-Control-Allow-Origin': '*' },
           body: JSON.stringify([])
@@ -49,9 +49,9 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
     const page2 = await context.newPage();
 
     await page2.goto('/live', { waitUntil: 'domcontentloaded' });
-    
+
     await page1.goto('/', { waitUntil: 'domcontentloaded' });
-    
+
     const envelopeSeal = page1.locator('.envelope-seal');
     await expect(envelopeSeal).toBeVisible();
     await envelopeSeal.click();
@@ -68,7 +68,7 @@ test.describe('Realtime Senkronizasyon: Anı Defteri ve Barkovizyon', () => {
 
     await nameInput.fill('Gözde & Berk');
     await messageInput.fill('Ömür boyu mutluluklar!');
-    
+
     await submitButton.click({ force: true });
 
     await page2.evaluate(() => {

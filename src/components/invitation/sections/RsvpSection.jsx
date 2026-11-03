@@ -46,8 +46,8 @@ const DeclineModal = memo(
 
     return createPortal(
       <FocusTrap focusTrapOptions={{ initialFocus: false, clickOutsideDeactivates: true }}>
-        <div onClick={handleClose} className="app-modal-backdrop" role="dialog" aria-modal="true">
-          <div onClick={(e) => e.stopPropagation()} className="app-modal-card">
+        <div onClick={handleClose} className="app-modal-backdrop invitation-modal-backdrop" role="dialog" aria-modal="true">
+          <div onClick={(e) => e.stopPropagation()} className="app-modal-card invitation-modal-card">
             <div className="app-modal-content">
               <h3>
                 {isEn
@@ -82,7 +82,7 @@ const DeclineModal = memo(
               </div>
             ) : (
               <div className="app-modal-content">
-                <div className="modal-gift-card">
+                <div className="modal-gift-card invitation-modal-gift-card">
                   <strong className="modal-gift-receiver">{giftData.receiver}</strong>
                   <span className="modal-gift-bank">{giftData.bankName}</span>
                   <code className="modal-gift-iban">{giftData.iban}</code>
@@ -116,6 +116,7 @@ export const RsvpSection = memo(function RsvpSection({
   rsvpWhatsappText,
   giftData,
   personalTableNumber,
+  showTicket = true,
 }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith("en") || false;
@@ -240,57 +241,72 @@ export const RsvpSection = memo(function RsvpSection({
     if (!submittedGuest) return;
 
     const canvas = document.createElement("canvas");
-    canvas.width = 400;
-    canvas.height = 700;
+    canvas.width = 1000;
+    canvas.height = 560;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    ctx.fillStyle = "#fffafb";
-    ctx.fillRect(0, 0, 400, 700);
+    const roundRect = (x, y, width, height, radius) => {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+    };
 
-    ctx.fillStyle = "#9f4f68";
-    ctx.fillRect(0, 0, 400, 110);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 24px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText(isEn ? "VIP WEDDING PASS" : "VIP DAVETİYE KARTI", 200, 65);
+    const gradient = ctx.createLinearGradient(0, 0, 1000, 560);
+    gradient.addColorStop(0, "#4c3f70");
+    gradient.addColorStop(1, "#9f4f68");
+    ctx.fillStyle = "#f8f4fb";
+    ctx.fillRect(0, 0, 1000, 560);
+    roundRect(24, 24, 952, 512, 28);
+    ctx.fillStyle = gradient;
+    ctx.fill();
 
-    ctx.fillStyle = "#55303b";
-    ctx.font = "bold 20px serif";
-    ctx.fillText(`${invitation?.bride || "Gelin"} & ${invitation?.groom || "Damat"}`, 200, 160);
-
-    ctx.font = "16px sans-serif";
-    ctx.fillStyle = "#6f4451";
-    ctx.fillText(`${invitation?.dateText || ""} - ${invitation?.timeText || ""}`, 200, 190);
-
-    ctx.setLineDash([8, 8]);
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
     ctx.beginPath();
-    ctx.moveTo(20, 240);
-    ctx.lineTo(380, 240);
-    ctx.strokeStyle = "#d98ca1";
+    ctx.arc(820, 80, 190, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 20px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(isEn ? "WEDDING ADMISSION" : "DÜĞÜN GİRİŞ BİLETİ", 64, 82);
+    ctx.font = "700 34px serif";
+    ctx.fillText(`${invitation?.bride || "Gelin"} & ${invitation?.groom || "Damat"}`, 64, 136);
+
+    ctx.font = "500 18px sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.86)";
+    ctx.fillText(`${invitation?.dateText || ""}  •  ${invitation?.timeText || ""}`, 64, 174);
+    ctx.fillText(invitation?.venue || "", 64, 204);
+    ctx.fillText(invitation?.address || "", 64, 232);
+
+    ctx.setLineDash([8, 10]);
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.beginPath();
+    ctx.moveTo(64, 278);
+    ctx.lineTo(650, 278);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = "#55303b";
-    ctx.font = "bold 28px sans-serif";
-    ctx.fillText(submittedGuest.name, 200, 290);
-
-    ctx.font = "15px sans-serif";
-    ctx.fillStyle = "#6f4451";
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "700 34px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(submittedGuest.name, 350, 348);
+    ctx.font = "500 18px sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.86)";
     ctx.fillText(
       isEn
         ? `${submittedGuest.personCount || 1} Guest(s)`
         : `${submittedGuest.personCount || 1} Kişilik Davetiye`,
-      200,
-      320
+      350,
+      382
     );
 
     if (personalTableNumber) {
-      ctx.font = "bold 18px sans-serif";
-      ctx.fillStyle = "#27ae60";
+      ctx.font = "700 18px sans-serif";
+      ctx.fillStyle = "#f8d7df";
       ctx.fillText(
         isEn ? `TABLE: ${personalTableNumber}` : `MASA: ${personalTableNumber}`,
-        200,
-        350
+        350,
+        420
       );
     }
 
@@ -305,13 +321,12 @@ export const RsvpSection = memo(function RsvpSection({
     const qrUrl = getQrImageUrl(checkInUrl);
 
     const drawFallbackQr = () => {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(125, 380, 150, 150);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(755, 145, 170, 170);
       ctx.fillStyle = "#fff";
-      ctx.fillRect(135, 390, 130, 130);
       ctx.fillStyle = "#000";
       ctx.font = "12px monospace";
-      ctx.fillText(`ID: ${submittedGuest.id}`, 200, 460);
+      ctx.fillText(`ID: ${submittedGuest.id}`, 840, 235);
     };
 
     try {
@@ -319,7 +334,9 @@ export const RsvpSection = memo(function RsvpSection({
         const qrImg = new Image();
         qrImg.crossOrigin = "anonymous";
         qrImg.onload = () => {
-          ctx.drawImage(qrImg, 115, 370, 170, 170);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(755, 145, 170, 170);
+          ctx.drawImage(qrImg, 765, 155, 150, 150);
           resolve(true);
         };
         qrImg.onerror = () => {
@@ -332,15 +349,18 @@ export const RsvpSection = memo(function RsvpSection({
       drawFallbackQr();
     }
 
-    ctx.fillStyle = "#6f4451";
-    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    ctx.font = "500 14px sans-serif";
     ctx.fillText(
       isEn
         ? "Save this to your Photos / Wallet"
         : "Girişte göstermek için galerinize kaydedin.",
-      200,
-      620
+      500,
+      490
     );
+    ctx.textAlign = "left";
+    ctx.font = "500 13px monospace";
+    ctx.fillText(`ID: ${submittedGuest.id}`, 64, 490);
 
     const link = document.createElement("a");
     link.download = `${submittedGuest.name}-Bilet.png`;
@@ -495,32 +515,17 @@ export const RsvpSection = memo(function RsvpSection({
             </button>
           </form>
 
-          {submittedGuest && (
-            <div
-              style={{
-                marginTop: "24px",
-                padding: "16px",
-                background: "rgba(46, 204, 113, 0.1)",
-                border: "1px solid #2ecc71",
-                borderRadius: "12px",
-                textAlign: "center",
-              }}
-            >
-              <p style={{ color: "#27ae60", fontWeight: "bold", marginBottom: "12px" }}>
+          {submittedGuest && showTicket && (
+            <div className="rsvp-ticket-confirmation">
+              <span className="rsvp-ticket-kicker">{isEn ? "YOUR DIGITAL PASS" : "DİJİTAL DAVETİYENİZ"}</span>
+              <p className="rsvp-ticket-title">
                 {isEn ? "RSVP Confirmed!" : "Katılım Onaylandı!"}
               </p>
+              <p className="rsvp-ticket-name">{submittedGuest.name}</p>
               <button
                 type="button"
                 onClick={downloadDigitalTicket}
-                className="main-button"
-                style={{
-                  background: "#27ae60",
-                  borderColor: "#27ae60",
-                  margin: "0 auto",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
+                className="main-button rsvp-ticket-button"
               >
                 🎟️ {isEn ? "Add to Apple/Google Wallet" : "Cüzdana/Galeriye Ekle"}
               </button>

@@ -8,8 +8,6 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
 });
 
 const cryptoProvider = Stripe.createSubtleCryptoProvider();
-
-// EKLENDİ: Kritik ödeme hatalarını loglamak için fonksiyon
 async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
   try {
     await supabaseAdmin.from('error_logs').insert([{
@@ -50,7 +48,7 @@ serve(async (request) => {
       const session = event.data.object;
       const guestName = session.metadata?.guestName || 'Bilinmeyen Misafir';
       const note = session.metadata?.note || '';
-      const amount = session.amount_total ? session.amount_total / 100 : 0; 
+      const amount = session.amount_total ? session.amount_total / 100 : 0;
 
       const { error } = await supabaseAdmin.from('payments').insert([{
         guest_name: guestName,
@@ -60,8 +58,6 @@ serve(async (request) => {
         status: 'completed',
         note: note
       }]);
-
-      // GÜNCELLENDİ: Hata durumunda log servisine kayıt atılıyor
       if (error) {
         await logErrorToDatabase(supabaseAdmin, 'stripe-webhook', error.message, { session_id: session.id });
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });

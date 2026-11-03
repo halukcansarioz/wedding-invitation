@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupE2EMocks } from './utils';
 
 test.describe('Sesli Mesaj ve Etkileşim Testleri', () => {
-  
+
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       if (!navigator.mediaDevices) {
@@ -42,7 +42,7 @@ test.describe('Sesli Mesaj ve Etkileşim Testleri', () => {
 
     await setupE2EMocks(page);
     await page.goto('/');
-    
+
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).not.toContainText(/Yükleniyor/i, { timeout: 15000 });
     await envelopeSeal.click({ force: true });
@@ -59,7 +59,7 @@ test.describe('Sesli Mesaj ve Etkileşim Testleri', () => {
 
     const stopButton = page.locator('button', { hasText: /Durdur|Stop|⏹/i }).first();
     await expect(stopButton).toBeVisible({ timeout: 10000 });
-    
+
     await stopButton.click({ force: true });
   });
 });

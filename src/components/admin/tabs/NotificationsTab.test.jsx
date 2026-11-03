@@ -36,7 +36,7 @@ describe('NotificationsTab Kapsamlı Bileşen Testleri', () => {
 
   it('Bildirim gönderilirken buton metni "İletiliyor..." olarak değişmeli ve disable olmalı', async () => {
     mockInvoke.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve({ data: { count: 10 }, error: null }), 500)));
-    
+
     render(<NotificationsTab isEn={false} />);
 
     fireEvent.change(screen.getByPlaceholderText(/Örn: Nikah Töreni Başlıyor!/i), { target: { value: 'Test' } });

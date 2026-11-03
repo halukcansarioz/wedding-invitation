@@ -31,8 +31,8 @@ export function useGuestsQuery() {
     };
 
     setupSubscription();
-      
-    return () => { 
+
+    return () => {
       isMounted = false;
       if (channel) {
         supabase.removeChannel(channel).catch((err) => console.warn("Kanal temizlenirken hata:", err));
@@ -43,7 +43,7 @@ export function useGuestsQuery() {
   const addGuestMutation = useMutation({
     mutationFn: async (newGuestData: any) => {
       const token = navigator.onLine ? newGuestData.turnstileToken : "OFFLINE_SYNC";
-      
+
       const { data, error } = await supabase.functions.invoke('submit-form', {
         body: { type: 'guest', data: uiGuestToDb(newGuestData), turnstileToken: token }
       });
@@ -56,11 +56,11 @@ export function useGuestsQuery() {
     onMutate: async (newGuest: any) => {
       await queryClient.cancelQueries({ queryKey: ['guests'] });
       const previousGuests = queryClient.getQueryData<Guest[]>(['guests']);
-      
+
       queryClient.setQueryData<Guest[]>(['guests'], (old = []) => [
-        { 
-          id: `temp-${Date.now()}`, 
-          name: newGuest.name, 
+        {
+          id: `temp-${Date.now()}`,
+          name: newGuest.name,
           attendance: newGuest.attendance,
           phone: newGuest.phone || "",
           personCount: String(newGuest.personCount || 1),
@@ -69,7 +69,7 @@ export function useGuestsQuery() {
           note: newGuest.note || "",
           has_arrived: false,
           createdAt: new Date().toISOString()
-        } as Guest, 
+        } as Guest,
         ...old
       ]);
 

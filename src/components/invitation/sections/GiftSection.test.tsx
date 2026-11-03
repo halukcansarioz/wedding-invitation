@@ -2,9 +2,7 @@ import React from 'react';
 import { render, fireEvent, cleanup, screen } from '../../../../tests/test-utils';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as GiftSectionModule from './GiftSection';
-import { useStore } from '../../../store/useStore'; 
-
-// Bileşenin Named veya Default export olma ihtimaline karşı her ikisini de güvenle yakalıyoruz
+import { useStore } from '../../../store/useStore';
 const GiftSection = (GiftSectionModule as any).GiftSection || (GiftSectionModule as any).default || GiftSectionModule;
 
 vi.mock('react-i18next', () => ({
@@ -45,8 +43,6 @@ describe('GiftSection Bileşen Testleri', () => {
 
   beforeEach(() => {
     initialState = useStore.getState();
-    
-    // Store içindeki tüm olası görünürlük ve veri yollarını eksiksiz dolduruyoruz
     useStore.setState({
       siteData: {
         settings: { visibility: sampleVisibility, theme: 'lavanta' },
@@ -93,7 +89,7 @@ describe('GiftSection Bileşen Testleri', () => {
     });
 
     render(<GiftSection {...props} />);
-    
+
     const button = screen.queryByRole('button') || document.querySelector('button, [role="button"]');
     if (button) {
       fireEvent.click(button);

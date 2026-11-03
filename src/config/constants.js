@@ -19,7 +19,7 @@ export const DEFAULT_SITE_DATA = {
     dateText: "07 Ağustos 2027",
     timeText: "19:00",
     weddingDate: "2027-07-07T19:00:00",
-    rsvpDeadline: "2027-07-01", 
+    rsvpDeadline: "2027-07-01",
     venue: "Fenerbahçe Orduevi Plaj Düğün Salonu",
     address: "Kadıköy / İstanbul",
     mapLink: "https://maps.app.goo.gl/qSDZRfkyqyNGj8kEA",
@@ -127,7 +127,7 @@ export const DEFAULT_SITE_DATA = {
     theme: "lavanta",
     defaultTheme: "lavanta",
     requireWishApproval: true,
-    isPostWedding: false, 
+    isPostWedding: false,
     visibility: {
       countdown: true,
       family: true,
@@ -140,7 +140,8 @@ export const DEFAULT_SITE_DATA = {
       wishes: true,
       iban: true,
       popupIban: true,
-      creditCard: false
+      creditCard: false,
+      ticket: true
     },
   },
   messages: {
@@ -170,7 +171,7 @@ export const THEMES = [
 export const THEME_DEFAULT_IMAGES = {
   rose: {
     introImage: "/images/themes/rose/1.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4", 
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Rose.mp4",
     gallery: [
       "/images/themes/rose/anton-mislawsky-d-eWwb40Bdg-unsplash.jpg",
       "/images/themes/rose/brigitte-tohm-buUFEtmNnjc-unsplash.jpg",
@@ -180,7 +181,7 @@ export const THEME_DEFAULT_IMAGES = {
   },
   sage: {
     introImage: "/images/themes/sage/3.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4", 
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Sage.mp4",
     gallery: [
       "/images/themes/sage/amith-nair-l4OzvWgMEkw-unsplash.jpg",
       "/images/themes/sage/lawrence-kayku-ZVKr8wADhpc-unsplash.jpg",
@@ -190,7 +191,7 @@ export const THEME_DEFAULT_IMAGES = {
   },
   gold: {
     introImage: "/images/themes/gold/5.jpg",
-    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4", 
+    heroVideo: "https://duschqflahimxgbokyuc.supabase.co/storage/v1/object/public/wedding-media/media/Gold.mp4",
     gallery: [
       "/images/themes/gold/akhmad-jazuli-UO17MJcba-w-unsplash.jpg",
       "/images/themes/gold/american-heritage-chocolate-Bkm6wO6pHOY-unsplash.jpg",

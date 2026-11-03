@@ -23,9 +23,9 @@ describe('GallerySection Bileşen Testleri', () => {
   it('Görsele tıklandığında Lightbox modali açılmalı', () => {
     const { container } = render(<GallerySection invitation={mockInvitation} />);
     const firstImageWrapper = container.querySelectorAll('.lazy-image-wrapper')[0];
-    
+
     fireEvent.click(firstImageWrapper);
-    
+
     expect(document.querySelector('.gallery-lightbox-overlay')).toBeInTheDocument();
   });
 });

@@ -6,12 +6,12 @@ import { LazyImage } from './LazyImage';
 describe('LazyImage Bileşeni', () => {
   it('görsel yüklenmeden önce skeleton göstermeli, yüklenince skeleton kaybolmalı', async () => {
     const { container } = render(<LazyImage src="test.jpg" alt="Test Görseli" />);
-    
+
     const skeleton = container.querySelector('.image-skeleton');
     expect(skeleton).toBeInTheDocument();
 
     const img = screen.getByAltText('Test Görseli');
-    expect(img).toHaveStyle('opacity: 0'); 
+    expect(img).toHaveStyle('opacity: 0');
 
     fireEvent.load(img);
 

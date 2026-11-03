@@ -27,10 +27,10 @@ export function CeremonyTab({ isEn }: CeremonyTabProps) {
   return (
     <AdminSection title={isEn ? "Ceremony / Wedding Details" : "Nikah / Düğün Bilgileri"} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-theme-check-row" style={{ marginBottom: "16px" }}>
-        <AdminCheckbox 
-          checked={adminDraft.settings.visibility?.ceremony ?? true} 
-          label={isEn ? "Show Ceremony Section" : "Nikah bölümünü göster"} 
-          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })} 
+        <AdminCheckbox
+          checked={adminDraft.settings.visibility?.ceremony ?? true}
+          label={isEn ? "Show Ceremony Section" : "Nikah bölümünü göster"}
+          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, ceremony: v })}
         />
       </div>
       <div className="admin-repeat-list">
@@ -38,12 +38,12 @@ export function CeremonyTab({ isEn }: CeremonyTabProps) {
           <div key={index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Event ${index + 1}` : `Etkinlik ${index + 1}`}</strong>
-              <AdminActionButtons 
+              <AdminActionButtons
                 onMoveUp={index > 0 ? () => moveDraftArrayItem("eventDetails", index, -1) : null}
                 onMoveDown={index < (adminDraft.eventDetails?.length || 0) - 1 ? () => moveDraftArrayItem("eventDetails", index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} 
-                onDelete={() => removeDraftArrayItem("eventDetails", index)} 
-                isEn={isEn} 
+                onSave={() => saveSiteContent(isEn)}
+                onDelete={() => removeDraftArrayItem("eventDetails", index)}
+                isEn={isEn}
               />
             </div>
             <div className="admin-edit-grid">
@@ -54,9 +54,9 @@ export function CeremonyTab({ isEn }: CeremonyTabProps) {
             </div>
           </div>
         ))}
-        <button 
-          type="button" 
-          className="admin-add-button" 
+        <button
+          type="button"
+          className="admin-add-button"
           onClick={() => addDraftArrayItem("eventDetails", { label: "Yeni Etkinlik", time: "20:00", location: "", description: "" })}
         >
           {isEn ? "Add New Event" : "Yeni Etkinlik Ekle"}

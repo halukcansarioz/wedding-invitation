@@ -7,7 +7,7 @@ describe('useStore Zustand Durum Yönetimi', () => {
 
   beforeEach(() => {
     initialState = useStore.getState();
-    
+
     useStore.setState({
       opened: false,
       adminDraft: JSON.parse(JSON.stringify(DEFAULT_SITE_DATA)),
@@ -29,9 +29,9 @@ describe('useStore Zustand Durum Yönetimi', () => {
   it('updateDraftObject ile iç içe geçmiş objeler başarıyla güncellenmeli', () => {
     const { updateDraftObject } = useStore.getState();
     expect(useStore.getState().adminDraft.invitation.bride).toBe("Handenur");
-    
+
     updateDraftObject("invitation", "bride", "Ayşe");
-    
+
     expect(useStore.getState().adminDraft.invitation.bride).toBe("Ayşe");
     expect(useStore.getState().adminDraft.invitation.groom).toBe("Haluk Can");
   });
@@ -39,10 +39,10 @@ describe('useStore Zustand Durum Yönetimi', () => {
   it('addDraftArrayItem ile diziye yeni bir eleman eklenebilmeli', () => {
     const { addDraftArrayItem } = useStore.getState();
     const initialLength = useStore.getState().adminDraft.scheduleItems.length;
-    
+
     const newItem = { time: "23:00", title: "After Party", description: "Gece devam ediyor" };
     addDraftArrayItem("scheduleItems", newItem);
-    
+
     const newItems = useStore.getState().adminDraft.scheduleItems;
     expect(newItems.length).toBe(initialLength + 1);
     expect(newItems[newItems.length - 1].title).toBe("After Party");

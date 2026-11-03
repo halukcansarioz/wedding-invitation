@@ -10,18 +10,18 @@ export interface PersonalLinkPanelProps {
   setPersonalLinkName: (name: string) => void;
 }
 
-export function PersonalLinkPanel({ 
-  currentShareLink, 
-  copyAdminLink, 
-  personalLinkName, 
-  setPersonalLinkName 
+export function PersonalLinkPanel({
+  currentShareLink,
+  copyAdminLink,
+  personalLinkName,
+  setPersonalLinkName
 }: PersonalLinkPanelProps) {
   const { i18n } = useTranslation();
   const isEn = i18n.language.startsWith("en");
   const [tableNumber, setTableNumber] = useState("");
-  
+
   const generatedLink = buildPersonalLink(currentShareLink, personalLinkName, tableNumber);
-  
+
   const openWhatsAppShare = () => {
     if (!personalLinkName.trim()) return;
     const tableMsg = tableNumber.trim() ? (isEn ? `\n🍽️ Your Reserved Table: ${tableNumber}` : `\n🍽️ Sizin İçin Ayrılan Masa: ${tableNumber}`) : "";
@@ -51,10 +51,10 @@ export function PersonalLinkPanel({
           <button type="button" className="main-button admin-button-flex" onClick={() => copyAdminLink(generatedLink, isEn ? "Link copied!" : "Akıllı davetiye linki kopyalandı!")}>
             {isEn ? "🔗 Copy Link" : "🔗 Linki Kopyala"}
           </button>
-          <button 
-            type="button" 
-            className="secondary-button admin-button-flex admin-whatsapp-btn" 
-            onClick={() => { if (!personalLinkName.trim()) { alert(isEn ? "Please enter a name first!" : "Lütfen önce bir davetli adı yazın!"); return; } openWhatsAppShare(); }} 
+          <button
+            type="button"
+            className="secondary-button admin-button-flex admin-whatsapp-btn"
+            onClick={() => { if (!personalLinkName.trim()) { alert(isEn ? "Please enter a name first!" : "Lütfen önce bir davetli adı yazın!"); return; } openWhatsAppShare(); }}
             style={{ opacity: personalLinkName.trim() ? 1 : 0.6, cursor: personalLinkName.trim() ? "pointer" : "not-allowed" }}
           >
             {isEn ? "💬 Send via WhatsApp" : "💬 WhatsApp ile Gönder"}

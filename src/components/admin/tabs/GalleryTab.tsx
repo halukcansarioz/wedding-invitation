@@ -26,7 +26,7 @@ export function GalleryTab({ isEn }: { isEn: boolean }) {
       setUploadingStates(prev => ({ ...prev, [key]: false }));
     }
   };
-  
+
   const handleMusicUpload = async (file?: File | null) => {
     if (!file) return;
     setUploadingStates(prev => ({ ...prev, musicFile: true }));
@@ -66,9 +66,9 @@ export function GalleryTab({ isEn }: { isEn: boolean }) {
   const removeGalleryItem = async (index: number) => {
     const newGallery = [...(adminDraft.invitation?.gallery || [])];
     const oldUrl = newGallery[index];
-    
+
     if (oldUrl) await deleteMediaFile(oldUrl).catch(() => {});
-    
+
     newGallery.splice(index, 1);
     updateDraftObject("invitation", "gallery", newGallery);
   };
@@ -95,27 +95,27 @@ export function GalleryTab({ isEn }: { isEn: boolean }) {
         <AdminCheckbox checked={adminDraft.settings.visibility?.gallery ?? true} label={isEn ? "Show Gallery Section" : "Galeri bölümünü göster"} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, gallery: v })} />
       </div>
       <div className="admin-edit-grid">
-        <AdminImageField 
-          label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli"} 
-          value={adminDraft.invitation?.heroImage} 
+        <AdminImageField
+          label={isEn ? "Hero Main Image" : "Ana Karşılama Görseli"}
+          value={adminDraft.invitation?.heroImage}
           isUploading={uploadingStates["heroImage"]}
-          onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleMediaUpload("invitation", "heroImage", e.target.files?.[0], "images")} 
-          onClear={() => clearSingleMedia("invitation", "heroImage")} 
+          onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleMediaUpload("invitation", "heroImage", e.target.files?.[0], "images")}
+          onClear={() => clearSingleMedia("invitation", "heroImage")}
         />
-        <AdminVideoField 
-          label={isEn ? "Hero Background Video" : "Karşılama Arka Plan Videosu"} 
-          value={adminDraft.invitation?.heroVideo} 
+        <AdminVideoField
+          label={isEn ? "Hero Background Video" : "Karşılama Arka Plan Videosu"}
+          value={adminDraft.invitation?.heroVideo}
           isUploading={uploadingStates["heroVideo"]}
-          onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleMediaUpload("invitation", "heroVideo", e.target.files?.[0], "video")} 
-          onClear={() => clearSingleMedia("invitation", "heroVideo")} 
+          onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleMediaUpload("invitation", "heroVideo", e.target.files?.[0], "video")}
+          onClear={() => clearSingleMedia("invitation", "heroVideo")}
         />
-        <AdminMusicField 
-          label={isEn ? "Music File" : "Müzik dosyası"} 
-          value={adminDraft.invitation?.musicFile} 
-          fileName={adminDraft.invitation?.musicName} 
+        <AdminMusicField
+          label={isEn ? "Music File" : "Müzik dosyası"}
+          value={adminDraft.invitation?.musicFile}
+          fileName={adminDraft.invitation?.musicName}
           isUploading={uploadingStates["musicFile"]}
-          onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleMusicUpload(e.target.files?.[0])} 
-          onClear={() => clearSingleMedia("invitation", "musicFile")} 
+          onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleMusicUpload(e.target.files?.[0])}
+          onClear={() => clearSingleMedia("invitation", "musicFile")}
         />
       </div>
       <div style={{ marginTop: "32px" }}>
@@ -123,17 +123,17 @@ export function GalleryTab({ isEn }: { isEn: boolean }) {
         <div className="admin-gallery-list">
           {(adminDraft.invitation?.gallery || []).map((imgUrl: string, index: number) => (
             <div key={index} className="admin-gallery-upload-row">
-              <AdminImageField 
-                label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`} 
-                value={imgUrl} 
+              <AdminImageField
+                label={`${isEn ? "Photo" : "Fotoğraf"} ${index + 1}`}
+                value={imgUrl}
                 isUploading={uploadingStates[`gallery_${index}`]}
-                onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleGalleryUpload(index, e.target.files?.[0])} 
-                onClear={() => removeGalleryItem(index)} 
+                onFileSelect={(e: ChangeEvent<HTMLInputElement>) => handleGalleryUpload(index, e.target.files?.[0])}
+                onClear={() => removeGalleryItem(index)}
               />
-              <AdminActionButtons 
+              <AdminActionButtons
                 onMoveUp={index > 0 ? () => moveGalleryItem(index, -1) : null}
                 onMoveDown={index < (adminDraft.invitation?.gallery?.length || 0) - 1 ? () => moveGalleryItem(index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} onDelete={() => removeGalleryItem(index)} isEn={isEn} 
+                onSave={() => saveSiteContent(isEn)} onDelete={() => removeGalleryItem(index)} isEn={isEn}
               />
             </div>
           ))}

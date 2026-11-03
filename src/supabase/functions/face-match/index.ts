@@ -38,8 +38,6 @@ serve(async (req) => {
 
     const { sourceImageUrl, tenantId } = await req.json();
     if (!sourceImageUrl) throw new Error("Görsel URL'i eksik.");
-
-    // 1. Veritabanındaki onaylı düğün fotoğraflarını çek
     let photoQuery = supabaseAdmin
       .from("guest_photos")
       .select("image_url")
@@ -55,8 +53,6 @@ serve(async (req) => {
     const candidateUrls: string[] = (candidatePhotos || [])
       .map((p: any) => p.image_url)
       .filter(Boolean);
-
-    // Eğer hiç onaylı fotoğraf yoksa veya OpenAI anahtarı tanımlı değilse demo/aday listesini dön
     if (!OPENAI_API_KEY || candidateUrls.length === 0) {
       const fallbackMatches =
         candidateUrls.length > 0
@@ -71,8 +67,6 @@ serve(async (req) => {
         status: 200,
       });
     }
-
-    // 2. OpenAI Vision (gpt-4o-mini) ile referans selfie ve aday fotoğrafları karşılaştır
     const visionContent: any[] = [
       {
         type: "text",

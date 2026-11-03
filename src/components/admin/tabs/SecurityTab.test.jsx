@@ -19,7 +19,7 @@ describe('SecurityTab Admin Bileşen Testleri', () => {
       adminNewPasswordAgain: 'yeni',
       adminPasswordMessage: 'Şifreler uyuşmuyor!'
     });
-    
+
     vi.spyOn(useStore.getState(), 'saveSiteContent').mockResolvedValue(true);
   });
 
@@ -33,10 +33,10 @@ describe('SecurityTab Admin Bileşen Testleri', () => {
   it('Form inputlarını ve hata mesajlarını doğru şekilde render etmeli', () => {
     const mockChangePassword = vi.fn();
     render(<SecurityTab changeAdminPassword={mockChangePassword} isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('eski')).toBeInTheDocument();
     expect(screen.getAllByDisplayValue('yeni')).toHaveLength(2);
-    
+
     expect(screen.getByText('Şifreler uyuşmuyor!')).toBeInTheDocument();
 
     const btn = screen.getByRole('button', { name: /Şifreyi Değiştir/i });

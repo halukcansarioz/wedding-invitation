@@ -50,8 +50,6 @@ export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDr
     if (!arrayTarget) return;
     const newIndex = index + direction;
     if (newIndex < 0 || newIndex >= arrayTarget.length) return;
-    
-    // Immer ile yer değiştirme işlemi
     const temp = arrayTarget[index];
     arrayTarget[index] = arrayTarget[newIndex];
     arrayTarget[newIndex] = temp;
@@ -60,18 +58,18 @@ export const createAdminDraftSlice: StateCreator<MainStoreState, [], [], AdminDr
   saveSiteContent: async (isEn) => {
     const { adminDraft, setSiteData, setAdminDraft } = get();
     const { setAdminSaveMessage } = useAdminStore.getState();
-    const cleanedData = normalizeSiteData({ 
-      ...adminDraft, 
-      invitation: { 
-        ...adminDraft.invitation, 
-        gallery: ((adminDraft.invitation.gallery as string[]) || []).map((img) => String(img || "").trim()).filter(Boolean) 
-      } 
+    const cleanedData = normalizeSiteData({
+      ...adminDraft,
+      invitation: {
+        ...adminDraft.invitation,
+        gallery: ((adminDraft.invitation.gallery as string[]) || []).map((img) => String(img || "").trim()).filter(Boolean)
+      }
     }) as SiteData;
-    
+
     try {
       await saveSettingsToDatabase(cleanedData);
       localStorage.setItem("wedding-site-data", JSON.stringify(cleanedData));
-      setSiteData(cleanedData); 
+      setSiteData(cleanedData);
       setAdminDraft(cleanedData);
       setAdminSaveMessage(isEn ? "Saved successfully." : "Başarıyla kaydedildi.");
       setTimeout(() => setAdminSaveMessage(""), 3000);

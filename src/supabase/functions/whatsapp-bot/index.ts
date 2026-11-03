@@ -1,4 +1,3 @@
-/// <reference lib="deno.ns" />
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import {
@@ -28,8 +27,6 @@ serve(async (req) => {
     if (message && message.type === "text") {
       const userPhone = message.from;
       const userText = message.text.body;
-
-      // 1. Dinamik Verileri Çek (invitation_settings.content ve eski settings.data uyumlu)
       const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       const { data: invitationSettingsRow } = await supabaseAdmin
         .from("invitation_settings")
@@ -47,8 +44,6 @@ serve(async (req) => {
       }
 
       const systemPrompt = buildSystemPrompt(siteData);
-
-      // 2. OpenAI İsteğini At
       const openAiRes = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -68,8 +63,6 @@ serve(async (req) => {
 
       const aiData = await openAiRes.json();
       const replyText = aiData.choices?.[0]?.message?.content?.trim() || "";
-
-      // 3. Kullanıcıya Whatsapp Üzerinden Yanıtla
       const fbRes = await fetch(`https://graph.facebook.com/v17.0/${PHONE_NUMBER_ID}/messages`, {
         method: "POST",
         headers: {

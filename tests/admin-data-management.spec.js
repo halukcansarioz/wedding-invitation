@@ -24,7 +24,7 @@ test.describe('Admin Paneli: Veri Yedekleme (Data Export) İşlemleri', () => {
     });
 
     await page.goto('/admin');
-    
+
     const emailInput = page.locator('input[type="email"]').first();
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
     await emailInput.fill('admin@test.com');

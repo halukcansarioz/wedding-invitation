@@ -31,40 +31,40 @@ describe('GeneralTab Admin Bileşen Testleri', () => {
 
   it('Gelin veya Damat ismi değiştirildiğinde store güncellenmeli', () => {
     render(<GeneralTab isEn={false} />);
-    
+
     const brideInput = screen.getByDisplayValue('Zeynep');
     fireEvent.change(brideInput, { target: { value: 'Zeynep Yılmaz' } });
-    
+
     expect(useStore.getState().adminDraft.invitation.bride).toBe('Zeynep Yılmaz');
   });
 
   it('Adres alanı değiştirildiğinde store güncellenmeli', () => {
     render(<GeneralTab isEn={false} />);
-    
+
     const addressInput = screen.getByDisplayValue('İstanbul');
     fireEvent.change(addressInput, { target: { value: 'Ankara' } });
-    
+
     expect(useStore.getState().adminDraft.invitation.address).toBe('Ankara');
   });
 
   it('Görünürlük (Visibility) checkboxlarına tıklandığında ayarları güncellemeli', () => {
     render(<GeneralTab isEn={false} />);
-    
+
     const countdownCheckbox = screen.getByLabelText('admin.general.showCountdown');
     expect(countdownCheckbox).toBeChecked();
-    
+
     fireEvent.click(countdownCheckbox);
-    
+
     expect(useStore.getState().adminDraft.settings.visibility.countdown).toBe(false);
     expect(useStore.getState().adminDraft.settings.visibility.location).toBe(true);
   });
 
   it('Kaydet butonuna basıldığında saveSiteContent çağrılmalı', () => {
     render(<GeneralTab isEn={false} />);
-    
+
     const saveButton = screen.getByRole('button', { name: /Kaydet/i });
     fireEvent.click(saveButton);
-    
+
     expect(saveSpy).toHaveBeenCalledWith(false);
   });
 });

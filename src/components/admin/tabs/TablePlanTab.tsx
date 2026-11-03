@@ -1,4 +1,3 @@
-/// <reference types="vite/client" />
 import React, { useMemo } from "react";
 import { AdminSection } from "../../AdminUI";
 import { DndContext, useDraggable, useDroppable, DragEndEvent } from "@dnd-kit/core";
@@ -13,14 +12,14 @@ interface DraggableGuestProps {
 
 function DraggableGuest({ guest, isEn }: DraggableGuestProps) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: guest.id });
-  const style = transform 
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 999, position: 'relative' as const } 
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 999, position: 'relative' as const }
     : undefined;
 
   return (
     <div ref={setNodeRef} style={{...style, padding: "12px", background: "var(--paper)", border: "1px solid var(--admin-border-color)", borderRadius: "8px", cursor: "grab", marginBottom: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }} {...listeners} {...attributes} className="draggable-guest-item">
       <div>
-        <strong style={{ color: "var(--admin-text-main)", display: "block" }}>{guest.name}</strong> 
+        <strong style={{ color: "var(--admin-text-main)", display: "block" }}>{guest.name}</strong>
         <small style={{ color: "var(--admin-text-muted)" }}>{guest.personCount} {isEn ? "Person" : "Kişi"} - {guest.side}</small>
       </div>
       <span style={{ fontSize: "18px", opacity: 0.5 }}>⋮⋮</span>
@@ -37,15 +36,15 @@ interface DroppableTableProps {
 
 function DroppableTable({ tableNum, guests, isEn, assignTable }: DroppableTableProps) {
   const { isOver, setNodeRef } = useDroppable({ id: `table-${tableNum}` });
-  
+
   const tableTotal = useMemo(() => {
     return guests.reduce((acc, g) => acc + Number(g.personCount || 1), 0);
   }, [guests]);
-  
+
   const style = {
     background: isOver ? "color-mix(in srgb, var(--amp-color) 15%, transparent)" : "var(--paper-soft)",
     border: isOver ? "2px dashed var(--amp-color)" : "2px solid color-mix(in srgb, var(--amp-color) 30%, transparent)",
-    minHeight: "200px", padding: "16px", borderRadius: "16px", 
+    minHeight: "200px", padding: "16px", borderRadius: "16px",
     display: "flex", flexDirection: "column" as const,
     transition: "all 0.2s ease"
   };

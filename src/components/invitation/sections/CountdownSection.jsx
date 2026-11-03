@@ -12,24 +12,24 @@ const fadeUp = {
 export const CountdownSection = memo(function CountdownSection({ copy, timeLeft: propTimeLeft, invitation }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  
+
   const storeWeddingDate = useStore(state => state.siteData?.invitation?.weddingDate);
   const targetDate = invitation?.weddingDate || storeWeddingDate;
-  
+
   const calculatedTimeLeft = useCountdown(targetDate);
   const timeLeft = propTimeLeft || calculatedTimeLeft;
 
-  const isFinished = 
-    (timeLeft?.days || 0) === 0 && 
-    (timeLeft?.hours || 0) === 0 && 
-    (timeLeft?.minutes || 0) === 0 && 
+  const isFinished =
+    (timeLeft?.days || 0) === 0 &&
+    (timeLeft?.hours || 0) === 0 &&
+    (timeLeft?.minutes || 0) === 0 &&
     (timeLeft?.seconds || 0) === 0;
 
   return (
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="countdown-section">
       <p className="section-label">{isEn ? t('invitation.countdownLabel') : copy?.countdownLabel}</p>
       <h2>{isEn ? t('invitation.countdownTitle') : copy?.countdownTitle}</h2>
-      
+
       {isFinished ? (
         <div className="countdown-finished-box" style={{
           display: 'flex',

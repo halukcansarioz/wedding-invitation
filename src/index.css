@@ -1,8 +1,8 @@
 @charset "UTF-8";
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
-/* ===== GLOBAL MOBILE SCROLL FIX ===== */
-/* Mobilde normal kaydırmayı zorla */
+
+
 @media (max-width: 650px) {
   html, body, #root, .app, .invitation-page {
     height: auto !important;
@@ -11,7 +11,7 @@
     overflow-y: auto !important;
     overflow-x: hidden !important;
   }
-  
+
   .invitation-page > * {
     height: auto !important;
     max-height: none !important;
@@ -30,7 +30,7 @@
   pointer-events: auto;
 }
 
-/* Admin butonunu mobilde gizle */
+
 @media (max-width: 650px) {
   #root .app .admin-panel-trigger {
     display: none !important;
@@ -66,7 +66,7 @@
 }
   html body .app .card,
   html body .app .countdown-section {
-    padding-bottom: 72px; 
+    padding-bottom: 72px;
     height: auto;
     max-height: none;
   }
@@ -83,9 +83,7 @@
   }
 }
 
-/* =================================================================
-   2. GENEL SIFIRLAMALAR & DEĞİŞKENLER
-   ================================================================= */
+
 html, body {
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
@@ -99,8 +97,8 @@ html, body {
 }
 
 button, input, select, textarea, .option-button, a {
-  -webkit-appearance: none; 
-  appearance: none; 
+  -webkit-appearance: none;
+  appearance: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
 }
@@ -157,7 +155,7 @@ h1 { font-size: 3.5rem; margin: 2rem 0; }
 h2 { font-size: 1.5rem; line-height: 118%; margin: 0 0 0.5rem; }
 p { margin: 0; }
 
-/* KÖŞE SIFIRLAMA */
+
 html body .app .card, html body .app .countdown-section,
 html body .app .intro-card, html body .app .hero-section,
 html body .app .info-list, html body .app .mini-map,
@@ -175,23 +173,21 @@ html body .app .floating-actions .wa-btn {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
-  position: absolute !important; 
-  width: 0 !important; 
-  height: 0 !important; 
-  margin: 0 !important; 
-  padding: 0 !important; 
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   overflow: hidden !important;
 }
 
-/* =================================================================
-   3. YÖNETİCİ BUTONU (TEMİZ VE HALKASIZ)
-   ================================================================= */
+
 html body .app .admin-panel-trigger {
   display: block !important;
   position: fixed !important;
   top: 20px !important;
   left: 20px !important;
-  z-index: 999999 !important; /* Tüm sayfa elementlerinin üzerinde durmasını garantiler */
+  z-index: 999999 !important;
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
@@ -225,14 +221,12 @@ html body .app .admin-btn-clean:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* =================================================================
-   4. YÜZEN DOCK MENÜ (SAĞ YAN - MASAÜSTÜ)
-   ================================================================= */
-html body .app .glass-dock, 
+
+html body .app .glass-dock,
 html body .app .floating-actions {
-  background: transparent; 
+  background: transparent;
   border: none;
-  box-shadow: none; 
+  box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   position: fixed;
@@ -244,94 +238,90 @@ html body .app .floating-actions {
   z-index: 99998;
 }
 
-html body .app .glass-dock .dock-btn, 
+html body .app .glass-dock .dock-btn,
 html body .app .floating-actions .dock-btn {
-  background: var(--paper, rgba(255, 255, 255, 0.95)); /* Temaya özel arka plan */
-  color: var(--rose-dark, #9f4f68); /* Temaya özel vurgu rengi */
+  background: var(--paper, rgba(255, 255, 255, 0.95));
+  color: var(--rose-dark, #9f4f68);
   border: 1px solid rgba(159, 79, 104, 0.25);  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   opacity: 1;
   visibility: visible;
   overflow: hidden;
   transform: scale(1);
-  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important; 
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   animation: floatBounce 2.5s infinite ease-in-out;
 }
 
-html body .app .glass-dock .dock-btn:hover, 
+html body .app .glass-dock .dock-btn:hover,
 html body .app .floating-actions .dock-btn:hover {
-  transform: scale(1.1) translateY(-2px) !important; 
-  background: var(--rose-dark, #9f4f68) !important; 
-  color: #ffffff !important; 
+  transform: scale(1.1) translateY(-2px) !important;
+  background: var(--rose-dark, #9f4f68) !important;
+  color: #ffffff !important;
   box-shadow: 0 8px 20px rgba(159, 79, 104, 0.35) !important;
 }
 
 [data-theme="dark"] html body .app .glass-dock .dock-btn,
 [data-theme="dark"] html body .app .floating-actions .dock-btn {
-  background: rgba(40, 40, 40, 0.95); 
+  background: rgba(40, 40, 40, 0.95);
   color: var(--rose-light, #e3b6c7);
   border: 1px solid rgba(227, 182, 199, 0.25);
 }
 
 [data-theme="dark"] html body .app .glass-dock .dock-btn:hover,
 [data-theme="dark"] html body .app .floating-actions .dock-btn:hover {
-  transform: scale(1.1) translateY(-2px) !important; 
+  transform: scale(1.1) translateY(-2px) !important;
   background: var(--rose-light, #e3b6c7) !important;
   color: #1a1a1a !important;
   box-shadow: 0 8px 20px color-mix(in srgb, var(--rose-light) 25%, transparent) !important;
 }
 
-html body .app .glass-dock .hidden-btn, 
+html body .app .glass-dock .hidden-btn,
 html body .app .floating-actions .hidden-btn {
-  opacity: 0 !important; 
+  opacity: 0 !important;
   pointer-events: none !important;
-  transform: scale(0) !important; 
-  margin-bottom: -58px !important; 
+  transform: scale(0) !important;
+  margin-bottom: -58px !important;
   transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  
-  /* DİKKAT: animation: none komutunu SİLDİK! 
-     Böylece buton görünmez olsa da arka planda diğerleriyle aynı ritimde zıplamaya devam eder.
-     Ekrana geri geldiğinde ise milisaniyesi milisaniyesine diğerlerine uyum sağlar. */
+
+
 }
 
-/* Floating actions positioned consistently across all breakpoints */
 
-/* =================================================================
-   5. BİZİM HİKAYEMİZ & TABLOLAR
-   ================================================================= */
+
+
 html body .app .info-list, html body .app .mini-map {
-  overflow: hidden; 
+  overflow: hidden;
   -webkit-mask-image: radial-gradient(white, black);
-  mask-image: radial-gradient(white, black); 
-  transform: translateZ(0); 
+  mask-image: radial-gradient(white, black);
+  transform: translateZ(0);
   border: 1.5px solid rgba(159, 79, 104, 0.25);
 }
 
-html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item { 
-  overflow: hidden; 
-  transform: translateZ(0); 
+html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item {
+  overflow: hidden;
+  transform: translateZ(0);
 }
 
-html body .app .card .story-timeline-container { 
-  position: relative; width: 100%; max-width: 860px; margin: 40px auto 0; padding: 0; display: block; box-sizing: border-box; 
+html body .app .card .story-timeline-container {
+  position: relative; width: 100%; max-width: 860px; margin: 40px auto 0; padding: 0; display: block; box-sizing: border-box;
 }
-html body .app .card .story-line { 
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; 
-  background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.4), var(--rose-dark), rgba(159, 79, 104, 0.4), transparent); 
-  transform: translateX(-50%); z-index: 1; display: block; 
+html body .app .card .story-line {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(to bottom, transparent, rgba(159, 79, 104, 0.4), var(--rose-dark), rgba(159, 79, 104, 0.4), transparent);
+  transform: translateX(-50%); z-index: 1; display: block;
 }
-html body .app .card .story-node { 
-  position: relative; width: 50%; display: block; box-sizing: border-box; margin: 0 0 40px 0; 
+html body .app .card .story-node {
+  position: relative; width: 50%; display: block; box-sizing: border-box; margin: 0 0 40px 0;
 }
 html body .app .card .story-node.left { left: 0; padding: 0 40px 0 0; }
 html body .app .card .story-node.right { left: 50%; padding: 0 0 0 40px; }
-html body .app .card .story-content-box { 
-  width: 100%; max-width: 100%; padding: 32px 24px; background: var(--paper-soft); 
-  border: 1px solid rgba(217, 140, 161, 0.4); box-shadow: 0 14px 30px rgba(111, 47, 67, 0.06); 
-  text-align: center; position: relative; z-index: 10; box-sizing: border-box; margin: 0; 
+html body .app .card .story-content-box {
+  width: 100%; max-width: 100%; padding: 32px 24px; background: var(--paper-soft);
+  border: 1px solid rgba(217, 140, 161, 0.4); box-shadow: 0 14px 30px rgba(111, 47, 67, 0.06);
+  text-align: center; position: relative; z-index: 10; box-sizing: border-box; margin: 0;
 }
-html body .app .card .story-node .story-dot { 
-  position: absolute; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; 
-  background: var(--paper); border: 4px solid var(--rose-dark); z-index: 20; margin: 0; padding: 0; 
+html body .app .card .story-node .story-dot {
+  position: absolute; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%;
+  background: var(--paper); border: 4px solid var(--rose-dark); z-index: 20; margin: 0; padding: 0;
 }
 html body .app .card .story-node.left .story-dot { right: -10px; left: auto; }
 html body .app .card .story-node.right .story-dot { left: -10px; right: auto; }
@@ -345,9 +335,7 @@ html body .app .card .story-node > div:not(.story-content-box):not(.story-dot) {
 html body .app .hero-section, html body .app .intro-card, html body .app .card, html body .app .countdown-section, html body .app .footer, html body .app .mini-map, html body .app .guest-stats div, html body .app .wish-item, html body .app .guest-item, html body .app .app-modal-card, html body .app .story-content-box, html body .app .info-list { border-radius: 36px; }
 html body .app .hero-section::before { border-radius: 24px; }
 
-/* =================================================================
-   6. TAM EKRAN SLAYT MOBİL UYUM (KUSURSUZ KAYDIRMA & ANİMASYON)
-   ================================================================= */
+
 
 @keyframes elegantPulse {
   0% { transform: translateY(0); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
@@ -365,10 +353,10 @@ html body .app .hero-section::before { border-radius: 24px; }
     overflow-x: hidden;
   }
 
-  html body .app .glass-dock .hidden-btn, 
+  html body .app .glass-dock .hidden-btn,
   html body .app .floating-actions .hidden-btn {
-    margin-bottom: 0 !important; 
-    margin-right: -72px !important; 
+    margin-bottom: 0 !important;
+    margin-right: -72px !important;
   }
 
   .invitation-page {
@@ -379,9 +367,9 @@ html body .app .hero-section::before { border-radius: 24px; }
     display: block;
     scroll-snap-type: y proximity;
   }
-  
+
   .invitation-page::-webkit-scrollbar { display: none; }
-  
+
   .invitation-page > section,
   .invitation-page > footer {
     height: auto;
@@ -417,7 +405,7 @@ html body .app .hero-section::before { border-radius: 24px; }
   html body .app .rsvp-form textarea, html body .app .wish-form textarea { min-height: 100px; padding: 16px 20px; }
   html body .app .option-group { flex-direction: column; gap: 8px; }
   html body .app .option-button { width: 100%; min-height: 56px; cursor: pointer; }
-  
+
   html body .app .mini-map { height: 260px; min-height: 200px; width: 100%; border-radius: 20px; margin-top: 16px; }
   html body .app .guest-stats { display: grid; grid-template-columns: 1fr; gap: 12px; }
   html body .app .guest-item, html body .app .wish-item { flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; }
@@ -428,7 +416,7 @@ html body .app .hero-section::before { border-radius: 24px; }
     padding: max(env(safe-area-inset-top), 0px) 0 0 max(env(safe-area-inset-left), 0px) !important;
   }
 
-  html body .app .glass-dock, 
+  html body .app .glass-dock,
   html body .app .floating-actions {
     position: fixed;
     bottom: max(26px, calc(env(safe-area-inset-bottom) + 16px));
@@ -441,9 +429,9 @@ html body .app .hero-section::before { border-radius: 24px; }
     width: max-content;
     max-width: 90vw;
     padding: 0;
-    background: transparent; 
+    background: transparent;
     -webkit-backdrop-filter: none;
-    backdrop-filter: none;    
+    backdrop-filter: none;
     border: none;
     box-shadow: none;
     z-index: 99999;
@@ -456,14 +444,14 @@ html body .app .hero-section::before { border-radius: 24px; }
     max-width: 64px;
     min-height: 64px;
     max-height: 64px;
-    border-radius: 50%; 
+    border-radius: 50%;
     background: rgba(255, 255, 255, 0.98);
     color: var(--amp-color, #9f4f68);
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0; 
+    padding: 0;
     margin: 0;
     box-sizing: border-box;
     animation: elegantPulse 2.5s infinite ease-in-out;
@@ -486,19 +474,19 @@ html body .app .hero-section::before { border-radius: 24px; }
   }
 
   html body .app .scroll-indicator {
-    bottom: calc(40px + max(env(safe-area-inset-bottom), 0px)); 
+    bottom: calc(40px + max(env(safe-area-inset-bottom), 0px));
   }
 
-  .app-modal-backdrop { 
+  .app-modal-backdrop {
     padding: calc(16px + max(env(safe-area-inset-top), 0px)) 16px calc(16px + max(env(safe-area-inset-bottom), 0px)) 16px;
     max-height: 100vh;
     overflow-y: auto;
   }
-  .app-modal-card { 
-    width: 100%; 
+  .app-modal-card {
+    width: 100%;
     max-width: calc(100vw - 32px);
-    padding: 24px 20px; 
-    border-radius: 24px; 
+    padding: 24px 20px;
+    border-radius: 24px;
     box-sizing: border-box;
     max-height: 90vh;
     overflow-y: auto;
@@ -511,19 +499,17 @@ html body .app .hero-section::before { border-radius: 24px; }
   50% { transform: translateY(-8px); }
 }
 
-/* =================================================================
-   TÜM CİHAZLARDA (MOBİL VE MASAÜSTÜ) EŞİT GÖRÜNÜM ZORLAMASI
-   ================================================================= */
 
-/* Floating actions consistent positioning */
 
-html body .app .glass-dock .hidden-btn, 
+
+
+html body .app .glass-dock .hidden-btn,
 html body .app .floating-actions .hidden-btn {
-  margin-bottom: -58px !important; 
-  margin-right: 0 !important; 
+  margin-bottom: -58px !important;
+  margin-right: 0 !important;
 }
 
-/* 2. SAYFA YAPISINI MOBİLDE DE MASAÜSTÜ GİBİ KART KART YAP (TikTok görünümünü iptal et) */
+
 @media (max-width: 650px) {
   html, body, #root, .app {
     position: relative !important;
@@ -536,7 +522,7 @@ html body .app .floating-actions .hidden-btn {
     -webkit-user-select: none;
     user-select: none;
   }
-  
+
   .invitation-page {
     position: relative !important;
     width: 100% !important;
@@ -547,8 +533,8 @@ html body .app .floating-actions .hidden-btn {
     display: block !important;
     padding: max(env(safe-area-inset-left), 0px) max(env(safe-area-inset-right), 0px) max(env(safe-area-inset-bottom), 0px) max(env(safe-area-inset-left), 0px);
   }
-  
-  /* Bölümleri (kartları) tıpkı bilgisayardaki gibi boşluklu hale getirir - mobilde kaydırılabilir */
+
+
   .invitation-page > section,
   .invitation-page > footer {
     height: auto !important;
@@ -561,24 +547,22 @@ html body .app .floating-actions .hidden-btn {
     border-radius: 36px !important;
     overflow: visible !important;
   }
-  
-  /* Her bölümün altına ekstra padding ekle - sayfanın sonu */
+
+
   .invitation-page > footer {
     margin-bottom: 60px !important;
     padding-bottom: 48px !important;
   }
-  
-  /* Ana giriş resmi mobilde yine ekranı kaplasın ama kart gibi dursun */
+
+
   html body .app .hero-section {
     min-height: 90vh !important;
     border-radius: 0 0 36px 36px !important;
   }
-  
+
 }
 
-/* =================================================================
-   ZARF BUTONU ("DAVETİ AÇ") KESİN BEYAZ YAZI
-   ================================================================= */
+
 body #root .app .intro-page .envelope-seal span {
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
@@ -590,18 +574,18 @@ body #root .app .intro-page .envelope-seal span {
   text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6) !important;
 }
 
-/* Butonun ve içindeki yazının alttaki renkle karışmasını (blend) kesin olarak engeller */
+
 body #root .app .intro-page .envelope-seal,
 body #root .app .intro-page .envelope-seal span {
   mix-blend-mode: normal !important;
 }
 
-/* --- MOBİL GÖRÜNÜM (RESPONSIVE) DÜZELTMELERİ --- */
+
 @media (max-width: 768px) {
   .floating-actions {
     display: none !important;
   }
-  /* 1. Admin Paneli: İstatistikleri 4 yerine 2 sütuna indir */
+
   .admin-stats-inside {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
@@ -611,9 +595,9 @@ body #root .app .intro-page .envelope-seal span {
     font-size: 11px !important;
   }
 
-  /* 2. PWA Banner: Kayan menü/müzik player ile çakışmayı önle */
+
   div[style*="bottom: 24px"] {
-    bottom: 85px !important; /* Menünün hemen üstünde durması için */
+    bottom: 85px !important;
     padding: 8px 12px !important;
     width: 85vw !important;
   }
@@ -621,7 +605,7 @@ body #root .app .intro-page .envelope-seal span {
     font-size: 12px !important;
   }
 
-  /* 3. Modal Ekranı: Taşmayı engelle ve kaydırılabilir yap */
+
   .app-modal-card {
     width: 90vw !important;
     max-height: calc(85vh - max(env(safe-area-inset-top), 0px) - max(env(safe-area-inset-bottom), 0px)) !important;
@@ -630,53 +614,53 @@ body #root .app .intro-page .envelope-seal span {
     box-sizing: border-box;
   }
 
-  /* 4. Form Elemanları: Yatay (horizontal) kaymayı engelle */
-  .rsvp-form input, 
-  .rsvp-form textarea, 
-  .wish-form input, 
+
+  .rsvp-form input,
+  .rsvp-form textarea,
+  .wish-form input,
   .wish-form textarea {
     width: 100% !important;
     box-sizing: border-box !important;
-    font-size: 16px !important; /* iOS Safari'de otomatik zoom'u engeller */
+    font-size: 16px !important;
     min-height: 48px !important;
     padding: 12px 16px !important;
     -webkit-appearance: none;
     appearance: none;
   }
 
-  /* 5. Admin Liste Satırları: Sağ-sol boşluklarını daralt */
+
   .admin-row {
     margin: 0 0 12px 0 !important;
     padding: 12px !important;
   }
 }
 
-/* --- MOBİL KAYDIRMA (SCROLL) VE BEYAZ BOŞLUK ÇÖZÜMÜ --- */
 
-/* 1. Tüm ana kapsayıcıları serbest bırak ve dikey kaydırmaya izin ver */
+
+
 html, body, #root {
   height: auto;
   min-height: 100vh;
-  overflow-x: hidden; /* Sadece yatay kaymayı engelle */
-  overflow-y: auto !important;   /* Dikey kaydırmayı (scroll) ZORUNLU KIL */
-  background-color: var(--paper, #fdfbf7); /* Olası boşlukların rengini temaya uydur */
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  background-color: var(--paper, #fdfbf7);
 }
 
-/* 2. React ana bileşeninin (InvitationController) tam boy kısıtlamasını ez */
+
 #root > div {
   height: auto;
   min-height: 100vh;
 }
 
-/* 3. Açılış ekranını (Hero) iOS Safari adres çubuğuna tam uyumlu yap - SADECE INTRO SAYFASINDA */
+
 .intro-page .hero-section {
-  height: 100dvh !important; /* Dinamik viewport yüksekliği */
+  height: 100dvh !important;
   min-height: 100vh !important;
   position: relative;
   overflow: hidden;
 }
 
-/* Davetiye sayfasındaki hero section - MOBILDE TAM EKRAN */
+
 .invitation-page .hero-section {
   height: auto !important;
   min-height: 100vh !important;
@@ -691,24 +675,24 @@ html, body, #root {
     height: 100vh !important;
     max-height: none !important;
   }
-  
+
   .app .hero-section {
     min-height: 100vh !important;
     max-height: none !important;
   }
 }
 
-/* Ana uygulama sarmalayıcısını serbest bırak */
+
 .app {
   min-height: 100vh;
-  height: auto; /* Sabit 100vh veya 100% değerini ezer */
+  height: auto;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  overflow-y: auto; /* Dikey kaydırmaya izin ver */
+  overflow-y: auto;
 }
 
-/* Sayfa seviyesindeki tüm kapsayıcıların esnemesini sağla */
+
 .app > div,
 #root > div {
   min-height: 100vh;
@@ -717,7 +701,7 @@ html, body, #root {
 }
 
 @media screen and (max-width: 768px) {
-  /* 1. Tüm ana iskeleti zorla serbest bırak */
+
   html, body, #root, .app {
     height: auto !important;
     min-height: 100vh !important;
@@ -725,8 +709,8 @@ html, body, #root {
     position: relative !important;
   }
 
-  /* 2. React Router ve framer-motion sarmalayıcılarını akışa dahil et */
-  .app > div, 
+
+  .app > div,
   #root > div {
     position: relative !important;
     height: auto !important;
@@ -736,22 +720,20 @@ html, body, #root {
     flex-direction: column !important;
   }
 
-  /* 3. Açılış ekranının (Hero) tüm sayfayı yutmasını engelle */
+
   .hero-section,
   .hero-container {
     position: relative !important;
-    height: 100dvh !important; /* Sadece ilk ekrana tam sığdır */
+    height: 100dvh !important;
     min-height: 100vh !important;
     flex-shrink: 0 !important;
     padding: max(env(safe-area-inset-top), 0px) max(env(safe-area-inset-right), 20px) max(env(safe-area-inset-bottom), 0px) max(env(safe-area-inset-left), 20px) !important;
   }
 }
 
-/* =================================================================
-   7. MOBIL OPTİMİZASYON - INPUT & FORM ELEMANLAR
-   ================================================================= */
 
-/* Input focus states optimize for mobile */
+
+
 input:focus,
 textarea:focus,
 select:focus {
@@ -759,10 +741,10 @@ select:focus {
   outline-offset: 2px;
   -webkit-appearance: none;
   appearance: none;
-  font-size: 16px; /* iOS auto-zoom prevent */
+  font-size: 16px;
 }
 
-/* Disable double-tap zoom on buttons */
+
 button,
 a,
 [role="button"] {
@@ -770,23 +752,23 @@ a,
   user-select: none;
 }
 
-/* Admin stats responsive enhancement */
+
 @media (max-width: 480px) {
   .admin-stats-inside {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
-  
+
   .admin-stats-inside > div {
     padding: 8px !important;
     text-align: center;
   }
-  
+
   .admin-stats-inside div strong {
     font-size: 18px !important;
     display: block;
   }
-  
+
   .admin-stats-inside div span {
     font-size: 10px !important;
     display: block;
@@ -794,7 +776,7 @@ a,
   }
 }
 
-/* PWA Banner safe area adjustment */
+
 .pwa-install-banner {
   bottom: max(24px, env(safe-area-inset-bottom)) !important;
   left: max(16px, env(safe-area-inset-left)) !important;
@@ -802,24 +784,24 @@ a,
   max-width: calc(100vw - max(32px, 2 * env(safe-area-inset-left), 2 * env(safe-area-inset-right))) !important;
 }
 
-/* Scroll smooth performance optimization */
+
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
 }
 
-/* Touch feedback optimization */
+
 @media (hover: none) and (pointer: coarse) {
-  /* Mobile only - remove hover effects */
+
   button:hover,
   a:hover,
   .dock-btn:hover,
   .option-button:hover {
     transform: none !important;
   }
-  
-  /* Active states for touch */
+
+
   button:active,
   a:active,
   .dock-btn:active,
@@ -829,7 +811,7 @@ a,
   }
 }
 
-/* Prevent text selection on interactive elements */
+
 .dock-btn,
 .admin-btn-clean,
 .admin-panel-trigger,
@@ -840,7 +822,7 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Image optimization for mobile */
+
 img {
   -webkit-user-drag: none;
   -webkit-user-select: none;
@@ -848,7 +830,7 @@ img {
   pointer-events: none;
 }
 
-/* Loading skeleton performance */
+
 @media (prefers-reduced-motion: reduce) {
   @keyframes skeleton-loading {
     0%, 100% { opacity: 1; }
@@ -856,12 +838,12 @@ img {
   }
 }
 
-/* Modal animation optimization for mobile */
+
 @media (max-width: 650px) {
   .app-modal-backdrop {
     animation: fadeIn 0.2s ease-out;
   }
-  
+
   .app-modal-card {
     animation: slideUp 0.3s ease-out;
   }
@@ -883,34 +865,32 @@ img {
   }
 }
 
-/* =================================================================
-   8. UNIVERSAL PHONE SUPPORT - TÜM TELEFONLAR İÇİN
-   ================================================================= */
 
-/* Ultra-small phones (iPhone SE, SE 2, SE 3) - 320px-375px */
+
+
 @media (max-width: 375px) {
   :root {
     font-size: 14px;
   }
-  
+
   h1 {
     font-size: 2.5rem;
     margin: 1rem 0;
   }
-  
+
   h2 {
     font-size: 1.25rem;
   }
-  
+
   html body .app .couple-title {
     font-size: clamp(36px, 12vw, 48px) !important;
   }
-  
+
   html body .app .card,
   html body .app .countdown-section {
     padding: 20px 16px !important;
   }
-  
+
   html body .app .main-button,
   html body .app .secondary-button,
   html body .app .option-button {
@@ -918,170 +898,170 @@ img {
     font-size: 14px !important;
     padding: 0 16px !important;
   }
-  
+
   html body .app .glass-dock .dock-btn {
     width: 56px !important;
     height: 56px !important;
     min-width: 56px !important;
     max-width: 56px !important;
   }
-  
+
   html body .app .countdown-grid {
     gap: 8px !important;
   }
-  
+
   html body .app .count-box {
     padding: 12px 6px !important;
   }
-  
+
   html body .app .count-box strong {
     font-size: 24px !important;
   }
-  
+
   html body .app .count-box span {
     font-size: 10px !important;
   }
-  
+
   .app-modal-card {
     padding: 16px 12px !important;
   }
-  
+
   .admin-stats-inside {
     gap: 6px !important;
     padding: 6px !important;
   }
-  
+
   .admin-stats-inside div strong {
     font-size: 14px !important;
   }
-  
+
   .admin-stats-inside div span {
     font-size: 9px !important;
   }
 }
 
-/* Small phones (iPhone 6/7/8, SE 2) - 375px-414px */
+
 @media (min-width: 376px) and (max-width: 414px) {
   :root {
     font-size: 15px;
   }
-  
+
   html body .app .couple-title {
     font-size: clamp(40px, 13vw, 56px) !important;
   }
-  
+
   html body .app .card,
   html body .app .countdown-section {
     padding: 24px 18px !important;
   }
-  
+
   html body .app .glass-dock .dock-btn {
     width: 60px !important;
     height: 60px !important;
     min-width: 60px !important;
     max-width: 60px !important;
   }
-  
+
   html body .app .count-box strong {
     font-size: 28px !important;
   }
 }
 
-/* Medium phones (iPhone 11/12/13, Pixel 4/5) - 414px-480px */
+
 @media (min-width: 415px) and (max-width: 480px) {
   :root {
     font-size: 16px;
   }
-  
+
   html body .app .couple-title {
     font-size: clamp(42px, 14vw, 60px) !important;
   }
-  
+
   html body .app .card,
   html body .app .countdown-section {
     padding: 28px 20px !important;
   }
-  
+
   html body .app .glass-dock,
   html body .app .floating-actions {
     gap: 14px !important;
   }
 }
 
-/* Large phones (iPhone 12/13/14/15 Pro Max, Pixel 5/6/7) - 480px-600px */
+
 @media (min-width: 481px) and (max-width: 600px) {
   :root {
     font-size: 16px;
   }
-  
+
   html body .app .couple-title {
     font-size: clamp(44px, 15vw, 64px) !important;
   }
-  
+
   html body .app .card,
   html body .app .countdown-section {
     padding: 32px 24px !important;
   }
 }
 
-/* Landscape orientation support - Mobile */
+
 @media (max-width: 768px) and (orientation: landscape) {
   html, body, #root, .app {
     min-height: 100dvh !important;
   }
-  
+
   .hero-section {
     height: 100dvh !important;
     min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
   }
-  
+
   html body .app .hero-content {
     padding-bottom: 40px !important;
   }
-  
+
   html body .app .couple-title {
     font-size: clamp(32px, 12vh, 48px) !important;
     margin: 8px 0 !important;
   }
-  
+
   html body .app .hero-date {
     font-size: 14px !important;
     padding: 4px 16px !important;
   }
-  
+
   html body .app .card h2 {
     font-size: 20px !important;
     margin-bottom: 12px !important;
   }
-  
+
   html body .app .card p {
     font-size: 14px !important;
     line-height: 1.4 !important;
   }
-  
+
   html body .app .countdown-grid {
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 8px !important;
     margin-top: 12px !important;
   }
-  
+
   html body .app .count-box {
     padding: 12px 4px !important;
   }
-  
+
   html body .app .count-box strong {
     font-size: 20px !important;
   }
-  
+
   html body .app .count-box span {
     font-size: 10px !important;
   }
-  
+
   html body .app .button-group {
     flex-direction: row !important;
     gap: 10px !important;
   }
-  
+
   html body .app .main-button,
   html body .app .secondary-button {
     flex: 1 !important;
@@ -1089,7 +1069,7 @@ img {
     font-size: 14px !important;
     padding: 0 12px !important;
   }
-  
+
   html body .app .glass-dock,
   html body .app .floating-actions {
     top: auto !important;
@@ -1100,7 +1080,7 @@ img {
     flex-direction: row !important;
     gap: 12px !important;
   }
-  
+
   html body .app .glass-dock .dock-btn,
   html body .app .floating-actions .dock-btn {
     width: 48px !important;
@@ -1108,22 +1088,22 @@ img {
     min-width: 48px !important;
     max-width: 48px !important;
   }
-  
+
   html body .app .scroll-indicator {
     display: none !important;
   }
-  
+
   .app-modal-backdrop {
     padding: calc(8px + max(env(safe-area-inset-top), 0px)) 8px calc(8px + max(env(safe-area-inset-bottom), 0px)) 8px !important;
   }
-  
+
   .app-modal-card {
     max-width: calc(100vw - 16px) !important;
     padding: 16px 12px !important;
   }
 }
 
-/* Tablet support (600px-1024px) */
+
 @media (min-width: 601px) and (max-width: 1024px) {
   html, body, #root, .app, .invitation-page {
     position: relative;
@@ -1132,27 +1112,27 @@ img {
     overflow-y: auto;
     overflow-x: hidden;
   }
-  
+
   html body .app .card,
   html body .app .countdown-section {
     padding: 36px 32px !important;
   }
-  
+
   html body .app .couple-title {
     font-size: clamp(48px, 12vw, 72px) !important;
   }
-  
+
   html body .app .main-button,
   html body .app .secondary-button,
   html body .app .option-button {
     min-height: 52px !important;
   }
-  
+
   html body .app .countdown-grid {
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 16px !important;
   }
-  
+
   html body .app .glass-dock,
   html body .app .floating-actions {
     position: fixed;
@@ -1164,7 +1144,7 @@ img {
     flex-direction: column !important;
     gap: 16px !important;
   }
-  
+
   html body .app .glass-dock .dock-btn,
   html body .app .floating-actions .dock-btn {
     width: 60px !important;
@@ -1172,7 +1152,7 @@ img {
   }
 }
 
-/* Desktop (1024px+) */
+
 @media (min-width: 1025px) {
   html, body, #root, .app, .invitation-page {
     position: relative;
@@ -1183,37 +1163,37 @@ img {
   }
 }
 
-/* iOS-specific fixes */
+
 @supports (-webkit-touch-callout: none) {
-  /* iOS Safari */
+
   input,
   textarea,
   select {
     font-size: 16px !important;
     padding: 12px 16px !important;
   }
-  
+
   body {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
   }
-  
+
   a, button, input[type="button"], input[type="submit"] {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
   }
-  
-  /* Fix iOS fixed positioning issues */
+
+
   .glass-dock,
   .floating-actions,
   .admin-panel-trigger {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
   }
-  
-  /* iOS keyboard handling */
+
+
   input:focus,
   textarea:focus {
     font-size: 16px !important;
@@ -1221,7 +1201,7 @@ img {
   }
 }
 
-/* Android-specific fixes */
+
 @-webkit-keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
@@ -1232,7 +1212,7 @@ img {
   50% { transform: translateY(-8px); }
 }
 
-/* Chrome/Edge on Android */
+
 @supports (-webkit-appearance: none) {
   input[type="search"],
   input[type="text"],
@@ -1241,7 +1221,7 @@ img {
     -webkit-appearance: none;
     appearance: none;
   }
-  
+
   button {
     -webkit-appearance: none;
     appearance: none;
@@ -1249,54 +1229,54 @@ img {
   }
 }
 
-/* Mobile browser fixes */
+
 @media (max-width: 768px) {
   input,
   textarea,
   select {
     font-size: 16px;
   }
-  
+
   button {
     cursor: pointer;
   }
 }
 
-/* Samsung Internet fix */
+
 @media (-webkit-min-device-pixel-ratio: 2) {
   body {
     -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Low bandwidth / Slow 3G optimization */
+
 @media (prefers-reduced-data: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   img {
     max-width: 100%;
     height: auto;
   }
 }
 
-/* High DPI / Retina displays */
+
 @media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 3dppx) {
   html body .app .card,
   html body .app .countdown-section {
     border-width: 0.5px;
   }
-  
+
   html body .app .glass-dock .dock-btn,
   html body .app .floating-actions .dock-btn {
     border-width: 0.5px;
   }
 }
 
-/* Dark mode optimizations */
+
 @media (prefers-color-scheme: dark) {
   input,
   textarea,
@@ -1305,7 +1285,7 @@ img {
     color: var(--text, #9ca3af);
     border-color: var(--border, #2e303a);
   }
-  
+
   input:focus,
   textarea:focus,
   select:focus {
@@ -1313,7 +1293,7 @@ img {
   }
 }
 
-/* Support for devices with notches (all modern phones) */
+
 @media (orientation: portrait) {
   body {
     padding-top: max(0px, env(safe-area-inset-top));
@@ -1415,7 +1395,7 @@ h1, h2, h3, h4, h5, h6, .section-label {
     height: auto;
     min-height: 0;
   }
-  
+
   .glass-dock,
   .floating-actions,
   .admin-panel-trigger,
@@ -1429,11 +1409,11 @@ h1, h2, h3, h4, h5, h6, .section-label {
   .floating-actions {
     bottom: 26px;
   }
-  
+
   .invitation-page {
     padding: 0;
   }
-  
+
   .hero-section {
     padding: 0;
   }
@@ -1445,7 +1425,7 @@ h1, h2, h3, h4, h5, h6, .section-label {
       position: fixed;
       width: 100%;
     }
-    
+
     html, body, #root, .app {
       height: 100vh;
       height: 100dvh;
@@ -1458,21 +1438,21 @@ h1, h2, h3, h4, h5, h6, .section-label {
     font-size: clamp(28px, 10vw, 40px) !important;
     margin: 8px 0 !important;
   }
-  
+
   html body .app .card,
   html body .app .countdown-section {
     padding: 16px 12px !important;
   }
-  
+
   html body .app .countdown-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
   }
-  
+
   html body .app .count-box strong {
     font-size: 18px !important;
   }
-  
+
   html body .app .glass-dock .dock-btn {
     width: 48px !important;
     height: 48px !important;
@@ -1483,7 +1463,7 @@ h1, h2, h3, h4, h5, h6, .section-label {
   html body .app .hero-section {
     min-height: 80vh !important;
   }
-  
+
   html body .app .card {
     padding: 24px 18px !important;
   }
@@ -1495,15 +1475,15 @@ h1, h2, h3, h4, h5, h6, .section-label {
     max-width: 60%;
     margin: 0 auto;
   }
-  
+
   html body .app .countdown-grid {
     grid-template-columns: repeat(6, 1fr) !important;
   }
-  
+
   html body .app .button-group {
     flex-direction: row !important;
   }
-  
+
   html body .app .glass-dock,
   html body .app .floating-actions {
     position: fixed;
@@ -1691,7 +1671,7 @@ h1, h2, h3, h4, h5, h6, .section-label {
     width: 64px !important;
     height: 64px !important;
   }
-  
+
   html body .app .button-group {
     flex-wrap: wrap;
     gap: 10px;
@@ -1705,7 +1685,7 @@ h1, h2, h3, h4, h5, h6, .section-label {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  
+
   [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::before,
   [data-theme="lavanta"] body .app .invitation-page .hero-section .hero-content::after {
     display: none !important;
@@ -1772,7 +1752,7 @@ h1, h2, h3, h4, h5, h6, .section-label {
   body {
     border-width: 2px;
   }
-  
+
   button,
   input,
   textarea,
@@ -1841,7 +1821,7 @@ body[data-uc-browser] {
     -webkit-touch-callout: none;
     cursor: pointer;
   }
-  
+
 }
 
 @supports (display: grid) {

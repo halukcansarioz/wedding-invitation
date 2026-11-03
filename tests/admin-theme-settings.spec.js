@@ -1,6 +1,4 @@
 import { test, expect } from '@playwright/test';
-
-// Medyaları yüklemekle vakit kaybetmemek için mock fonksiyonu
 const mockMedia = async (page) => {
   await page.route('**/*.{png,jpg,jpeg,webp,gif}', route => {
     route.fulfill({ status: 200, contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64') });
@@ -11,20 +9,20 @@ const mockMedia = async (page) => {
 };
 
 test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
-  
+
   test.beforeEach(async ({ page }) => {
     await mockMedia(page);
-    
+
     await page.route('**/auth/v1/token?grant_type=password', async route => {
       const now = Math.floor(Date.now() / 1000);
       const timestamp = new Date().toISOString();
       await route.fulfill({
         status: 200, contentType: 'application/json',
         body: JSON.stringify({
-          access_token: 'fake-access-token', 
-          token_type: 'bearer', 
-          expires_in: 3600, 
-          expires_at: now + 3600, 
+          access_token: 'fake-access-token',
+          token_type: 'bearer',
+          expires_in: 3600,
+          expires_at: now + 3600,
           refresh_token: 'fake-refresh-token',
           user: { id: '123', aud: 'authenticated', role: 'authenticated', email: 'admin@test.com', created_at: timestamp },
         }),
@@ -36,9 +34,9 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
       if (url.includes('settings')) {
         await route.fulfill({
           status: 200, contentType: 'application/json',
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             content: {
-              invitation: { bride: 'Hande', groom: 'Haluk' }, 
+              invitation: { bride: 'Hande', groom: 'Haluk' },
               settings: { visibility: {}, theme: 'lavanta' }
             }
           })
@@ -49,14 +47,14 @@ test.describe('Admin Paneli: Tema ve Ayarlar Etkileşimi', () => {
     });
 
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
-    
+
     const emailInput = page.locator('input[type="email"]');
-    
+
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
     await emailInput.fill('admin@test.com');
     await page.locator('input[type="password"]').fill('123456');
     await page.locator('button[type="submit"]').click();
-    
+
     await expect(emailInput).toBeHidden({ timeout: 15000 });
   });
 

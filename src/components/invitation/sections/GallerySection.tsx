@@ -2,7 +2,7 @@ import React, { useState, useCallback, memo, MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { m } from "framer-motion";
 import { LazyImage } from "../../common/LazyImage";
-import { LightboxModal } from "../../common/LightboxModal"; 
+import { LightboxModal } from "../../common/LightboxModal";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 45 },
@@ -18,17 +18,17 @@ export const GallerySection = memo(function GallerySection({ copy, invitation }:
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
   const gallery = Array.isArray(invitation?.gallery) ? invitation.gallery : [];
-  
+
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const openLightbox = (index: number) => setLightboxIndex(index);
   const closeLightbox = useCallback(() => setLightboxIndex(null), []);
-  
+
   const prevImage = useCallback((e?: MouseEvent<HTMLButtonElement>) => {
     if (e && e.stopPropagation) e.stopPropagation();
     setLightboxIndex((prev) => (prev === null || prev === 0 ? gallery.length - 1 : prev - 1));
   }, [gallery.length]);
-  
+
   const nextImage = useCallback((e?: MouseEvent<HTMLButtonElement>) => {
     if (e && e.stopPropagation) e.stopPropagation();
     setLightboxIndex((prev) => (prev === null || prev === gallery.length - 1 ? 0 : prev + 1));
@@ -38,13 +38,13 @@ export const GallerySection = memo(function GallerySection({ copy, invitation }:
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card">
       <p className="section-label">{isEn ? t('invitation.galleryLabel') : copy?.galleryLabel}</p>
       <h2>{isEn ? t('invitation.galleryTitle') : copy?.galleryTitle}</h2>
-      
+
       <div className="gallery-grid">
         {gallery.map((image, index) => (
-          <LazyImage 
-            key={`gallery-img-${index}`} 
-            src={image} 
-            alt={`Galeri ${index + 1}`} 
+          <LazyImage
+            key={`gallery-img-${index}`}
+            src={image}
+            alt={`Galeri ${index + 1}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -57,12 +57,12 @@ export const GallerySection = memo(function GallerySection({ copy, invitation }:
       </div>
 
       {lightboxIndex !== null && (
-        <LightboxModal 
-          gallery={gallery} 
-          lightboxIndex={lightboxIndex} 
-          closeLightbox={closeLightbox} 
-          prevImage={prevImage} 
-          nextImage={nextImage} 
+        <LightboxModal
+          gallery={gallery}
+          lightboxIndex={lightboxIndex}
+          closeLightbox={closeLightbox}
+          prevImage={prevImage}
+          nextImage={nextImage}
         />
       )}
     </m.section>

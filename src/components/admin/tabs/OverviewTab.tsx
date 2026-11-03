@@ -22,14 +22,14 @@ export function OverviewTab({ guests = [], wishes = [], isEn, setActiveAdminTab 
         .from('guest_photos')
         .select('*', { count: 'exact', head: true })
         .eq('approved', false);
-      
+
       setPendingPhotos(photoCount || 0);
 
       const { data: payments } = await supabase
         .from('payments')
         .select('amount')
         .eq('status', 'completed');
-        
+
       const sum = (payments || []).reduce((acc: number, curr: { amount: number | string }) => acc + Number(curr.amount), 0);
       setTotalPayments(sum);
     };
@@ -49,7 +49,7 @@ export function OverviewTab({ guests = [], wishes = [], isEn, setActiveAdminTab 
       </h3>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "32px" }}>
-        
+
         <div className="card" style={{ padding: "20px", textAlign: "center", cursor: "pointer" }} onClick={() => setActiveAdminTab("guests")}>
           <span style={{ fontSize: "32px", display: "block", marginBottom: "8px" }}>👥</span>
           <strong style={{ fontSize: "28px", color: "var(--rose-dark)", display: "block" }}>{attendingCount}</strong>
@@ -85,9 +85,9 @@ export function OverviewTab({ guests = [], wishes = [], isEn, setActiveAdminTab 
             {isEn ? "Open the live stream to show approved photos and wishes on the big screen." : "Düğün gecesi onaylı fotoğrafları ve mesajları dev ekrana yansıtmak için akışı başlatın."}
           </p>
         </div>
-        <button 
-          type="button" 
-          className="main-button" 
+        <button
+          type="button"
+          className="main-button"
           onClick={() => window.open(`/${window.location.pathname.split('/')[1]}/live`, '_blank')}
           style={{ margin: 0, background: "linear-gradient(135deg, #2c3e50, #000000)", borderColor: "#000" }}
         >

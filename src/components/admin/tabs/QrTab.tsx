@@ -26,11 +26,11 @@ export function QrTab({ saveSiteContent, qrImageUrl, downloadQrCode, currentShar
   return (
     <AdminSection title={isEn ? "QR Code and Share" : "QR Kod ve Paylaşım"} onSave={() => saveSiteContent(isEn)}>
       <p className="admin-help-text">
-        {isEn 
-          ? "Download your general QR code or generate printable QR cards for each table." 
+        {isEn
+          ? "Download your general QR code or generate printable QR cards for each table."
           : "Genel QR kodunuzu indirebilir veya masalara koymak için toplu QR kartları yazdırabilirsiniz."}
       </p>
-      
+
       <div className="admin-qr-panel admin-panel-grid" style={{ marginBottom: "32px" }}>
         <div className="admin-qr-box">
           <img src={qrImageUrl} alt="QR Code" className="admin-qr-image" />
@@ -54,17 +54,17 @@ export function QrTab({ saveSiteContent, qrImageUrl, downloadQrCode, currentShar
           {isEn ? "Print Table QR Cards" : "Masa QR Kartlarını Yazdır"}
         </h4>
         <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "20px" }}>
-          {isEn 
-            ? "Generate a beautiful PDF with table-specific QR codes. Guests who scan these will automatically have their table number filled in." 
+          {isEn
+            ? "Generate a beautiful PDF with table-specific QR codes. Guests who scan these will automatically have their table number filled in."
             : "Misafirlerinizin masalarındaki QR kodları okutarak doğrudan barkovizyona (canlı ekrana) fotoğraf atabilmesi için masa kartları oluşturun."}
         </p>
         <div style={{ display: "flex", gap: "16px", alignItems: "flex-end", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: "200px" }}>
-            <AdminField 
-              type="number" 
-              label={isEn ? "Number of Tables" : "Toplam Masa Sayısı"} 
-              value={tableCount.toString()} 
-              onChange={handleTableCountChange} 
+            <AdminField
+              type="number"
+              label={isEn ? "Number of Tables" : "Toplam Masa Sayısı"}
+              value={tableCount.toString()}
+              onChange={handleTableCountChange}
             />
           </div>
           <button type="button" className="main-button" onClick={printTableCards} style={{ marginBottom: "14px" }}>

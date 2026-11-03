@@ -5,8 +5,8 @@ import { GuestCameraSection } from './GuestCameraSection';
 import { useStore } from '../../../store/useStore';
 
 vi.mock('../../../store/useStore');
-vi.mock('../../../services/database', () => ({ 
-  uploadAndModerateGuestPhoto: vi.fn().mockRejectedValue(new Error('Yükleme hatası')) 
+vi.mock('../../../services/database', () => ({
+  uploadAndModerateGuestPhoto: vi.fn().mockRejectedValue(new Error('Yükleme hatası'))
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'tr' } }) }));
 
@@ -45,13 +45,13 @@ describe('GuestCameraSection Hata Yönetimi Testi', () => {
 
   it('Fotoğraf yüklenirken bir hata oluşursa error uyarısı göstermeli ve butonu serbest bırakmalı', async () => {
     render(<GuestCameraSection />);
-    
+
     const fileInput = screen.getByTestId('camera-input');
     fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'photo.jpg', { type: 'image/jpeg' })] } });
 
     await waitFor(() => {
       expect(mockShowAppAlert).toHaveBeenCalledWith(
-        expect.stringContaining('Fotoğraf işlenemedi'), 
+        expect.stringContaining('Fotoğraf işlenemedi'),
         expect.objectContaining({ tone: 'error', title: 'Hata' })
       );
     });

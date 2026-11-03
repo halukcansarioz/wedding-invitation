@@ -27,14 +27,14 @@ describe('ScheduleTab Admin Bileşen Testleri', () => {
 
   it('Mevcut programı doğru bir şekilde listelemeli', () => {
     render(<ScheduleTab isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('18:00')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Karşılama')).toBeInTheDocument();
   });
 
   it('Program başlığı değiştirildiğinde store tetiklenmeli', () => {
     render(<ScheduleTab isEn={false} />);
-    
+
     const titleInput = screen.getByDisplayValue('Karşılama');
     fireEvent.change(titleInput, { target: { value: 'Kokteyl' } });
 
@@ -43,7 +43,7 @@ describe('ScheduleTab Admin Bileşen Testleri', () => {
 
   it('Yeni Program Ekle butonuna tıklandığında listeye boş eleman eklenmeli', () => {
     render(<ScheduleTab isEn={false} />);
-    
+
     const addBtn = screen.getByRole('button', { name: /Yeni Program Ekle/i });
     fireEvent.click(addBtn);
 
@@ -54,7 +54,7 @@ describe('ScheduleTab Admin Bileşen Testleri', () => {
 
   it('Düğün Takvimi görünürlük checkboxı çalıştığında state güncellenmeli', () => {
     render(<ScheduleTab isEn={false} />);
-    
+
     const visibilityCheckbox = screen.getByLabelText(/Düğün Takvimi bölümünü göster/i);
     fireEvent.click(visibilityCheckbox);
 

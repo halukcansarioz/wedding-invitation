@@ -811,6 +811,25 @@ body .app .invitation-page .option-group.disabled .option-button.active {
   position: fixed !important;
   z-index: 10000000 !important;
   transition: none !important;
+  margin: 0 !important;
+}
+.gallery-lightbox-overlay .lightbox-control-btn:hover,
+.gallery-lightbox-overlay .lightbox-control-btn:active,
+.gallery-lightbox-overlay .lightbox-control-btn:focus-visible {
+  position: fixed !important;
+}
+.gallery-lightbox-overlay .lightbox-close:hover,
+.gallery-lightbox-overlay .lightbox-close:active,
+.gallery-lightbox-overlay .lightbox-close:focus-visible {
+  transform: none !important;
+}
+.gallery-lightbox-overlay .lightbox-prev:hover,
+.gallery-lightbox-overlay .lightbox-prev:active,
+.gallery-lightbox-overlay .lightbox-prev:focus-visible,
+.gallery-lightbox-overlay .lightbox-next:hover,
+.gallery-lightbox-overlay .lightbox-next:active,
+.gallery-lightbox-overlay .lightbox-next:focus-visible {
+  transform: translateY(-50%) !important;
 }
 .gallery-lightbox-content {
   position: relative !important;
@@ -1375,8 +1394,8 @@ body .app .glass-dock .dock-btn.music-on {
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    width: 100% !important; /* Formun kendisi kartı tam doldursun */
-    gap: 12px !important;   /* Elemanlar arası dengeli boşluk */
+    width: 100% !important;
+    gap: 12px !important;
   }
   .rsvp-form > div,
   .wish-form > div,
@@ -1396,10 +1415,10 @@ body .app .glass-dock .dock-btn.music-on {
     max-width: 100% !important;
     min-width: 100% !important;
     box-sizing: border-box !important;
-    border-radius: 16px !important; /* Tüm alanlar aynı zarif köşe ovalliğine sahip olsun */
+    border-radius: 16px !important;
     margin: 0 !important;
-    min-height: 54px !important;    /* Tüm form elemanları aynı yükseklikte olsun */
-    padding: 14px 16px !important;  /* Aynı iç boşluk */
+    min-height: 54px !important;
+    padding: 14px 16px !important;
     font-size: 15px !important;
   }
   .option-group {
@@ -1452,10 +1471,10 @@ body .app .glass-dock .dock-btn.music-on {
   }
   .guest-stats {
     display: flex;
-    justify-content: center; /* Kutuları yatayda ortalar */
+    justify-content: center;
     align-items: center;
-    gap: 16px; /* Kutular arası boşluğu ayarlar (tasarımınıza göre değiştirebilirsiniz) */
-    flex-wrap: wrap; /* Mobil cihazlarda ekrana sığmadığında alt alta geçmesini sağlar */
+    gap: 16px;
+    flex-wrap: wrap;
     width: 100%;
   }
   .guest-stats div {
@@ -1703,25 +1722,83 @@ body .app .glass-dock .dock-btn.music-on {
   position: relative;
   z-index: 2;
 }
-.btn, .floating-menu-btn, button, .main-button, .secondary-button, .option-button { 
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s !important; 
+.rsvp-ticket-confirmation {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-top: 24px;
+  padding: 26px 20px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 22px;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(125deg, #4c3f70, #7a5a92 58%, #b56c83);
+  box-shadow: 0 18px 34px rgba(76, 63, 112, 0.2);
+}
+.rsvp-ticket-confirmation::before,
+.rsvp-ticket-confirmation::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 120px;
+  height: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+}
+.rsvp-ticket-confirmation::before {
+  top: -72px;
+  right: -34px;
+}
+.rsvp-ticket-confirmation::after {
+  bottom: -82px;
+  left: -42px;
+}
+.rsvp-ticket-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  opacity: 0.78;
+}
+.rsvp-ticket-title {
+  margin: 8px 0 4px;
+  color: #fff !important;
+  font-size: 24px;
+  font-weight: 800;
+}
+.rsvp-ticket-name {
+  margin: 0 0 18px;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 16px;
+}
+.rsvp-ticket-button {
+  margin: 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff !important;
+  border-color: #fff !important;
+  color: #4c3f70 !important;
+}
+.btn, .floating-menu-btn, button, .main-button, .secondary-button, .option-button {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s !important;
 }
 .btn:hover:not(:disabled), .floating-menu-btn:hover:not(:disabled), button:hover:not(:disabled), .main-button:hover:not(:disabled), .secondary-button:hover:not(:disabled), .option-button:hover:not(:disabled) {
-  transform: translateY(-5px) !important; 
+  transform: translateY(-5px) !important;
 }
 .btn:active:not(:disabled), .floating-menu-btn:active:not(:disabled), button:active:not(:disabled), .main-button:active:not(:disabled), .secondary-button:active:not(:disabled), .option-button:active:not(:disabled) {
-  transform: translateY(2px) !important; 
+  transform: translateY(2px) !important;
 }
-/* Yüzen menü buton animasyonları */
+
 .floating-actions button,
 .floating-actions a,
 .glass-dock button,
 .glass-dock a {
-  /* floatAnim isimli kendi süzülme animasyonunun adını buraya yazmalısın */
+
   animation: floatAnim 3s ease-in-out infinite;
 }
 
-/* Butonların aynı anda değil, dalgalı şekilde hareket etmesi için ufak gecikmeler */
+
 .floating-actions button:nth-child(1),
 .glass-dock button:nth-child(1) { animation-delay: 0s; }
 
@@ -1731,7 +1808,7 @@ body .app .glass-dock .dock-btn.music-on {
 .floating-actions button:nth-child(3),
 .glass-dock button:nth-child(3) { animation-delay: 0.8s; }
 
-/* SADECE fare ile üzerine gelinen butonu durdurur */
+
 .floating-actions button:hover,
 .floating-actions a:hover,
 .glass-dock button:hover,
@@ -1742,7 +1819,7 @@ body .app .glass-dock .dock-btn.music-on {
     animation: floatAnim 3s ease-in-out infinite;
 }
 
-/* Sadece üzerine gelinen veya tıklanan buton durur, diğerleri zıplamaya devam eder */
+
 .floating-button:hover,
 .floating-button:active {
     animation-play-state: paused;

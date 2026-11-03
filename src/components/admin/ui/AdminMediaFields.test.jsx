@@ -12,7 +12,7 @@ describe('AdminMediaFields - Video Alanı Testleri', () => {
 
   it('Video değeri yoksa boş state (Henüz video seçilmedi) görünmeli', () => {
     render(<AdminVideoField label="Arka Plan Videosu" value="" onFileSelect={vi.fn()} onClear={vi.fn()} />);
-    
+
     expect(screen.getByText('Henüz video seçilmedi.')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Videoyu Kaldır/i })).not.toBeInTheDocument();
   });
@@ -22,13 +22,9 @@ describe('AdminMediaFields - Video Alanı Testleri', () => {
     const { container } = render(
       <AdminVideoField label="Arka Plan Videosu" value="test-video.mp4" onFileSelect={vi.fn()} onClear={mockOnClear} />
     );
-    
-    // Video elementini kontrol et
     const videoEl = container.querySelector('video');
     expect(videoEl).toBeInTheDocument();
     expect(videoEl).toHaveAttribute('src', 'test-video.mp4');
-
-    // Kaldır butonuna tıkla
     const clearBtn = screen.getByRole('button', { name: /Videoyu Kaldır/i });
     fireEvent.click(clearBtn);
     expect(mockOnClear).toHaveBeenCalledTimes(1);

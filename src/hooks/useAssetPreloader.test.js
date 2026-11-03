@@ -4,7 +4,7 @@ import { useAssetPreloader } from './useAssetPreloader';
 
 describe('useAssetPreloader Hook Testleri', () => {
   beforeEach(() => {
-    vi.useFakeTimers(); 
+    vi.useFakeTimers();
     global.Image = class {
       constructor() {
         this._src = '';
@@ -27,9 +27,9 @@ describe('useAssetPreloader Hook Testleri', () => {
     });
   });
 
-  afterEach(() => { 
+  afterEach(() => {
     vi.useRealTimers();
-    vi.restoreAllMocks(); 
+    vi.restoreAllMocks();
   });
 
   it('medya URLsi boş ise anında yüklendi (true) kabul etmeli', () => {

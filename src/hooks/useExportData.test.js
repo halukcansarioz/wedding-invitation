@@ -17,11 +17,11 @@ describe('useExportData Hook Kapsamlı Testleri', () => {
   it('exportExcel çağrıldığında HTML tablosu üretip doğru MIME tipiyle indirmeli', () => {
     const { result } = renderHook(() => useExportData(false));
     const mockData = [{ name: "Ahmet" }];
-    
+
     result.current.exportExcel(mockData, 'guests', 'misafirler.xls');
 
     expect(helpers.createExcelTable).toHaveBeenCalledWith(mockData, 'guests', false);
-    
+
     expect(helpers.downloadTextFile).toHaveBeenCalledWith(
       'misafirler.xls',
       '<table>mock-excel</table>',
@@ -32,11 +32,11 @@ describe('useExportData Hook Kapsamlı Testleri', () => {
   it('exportCsv çağrıldığında virgülle ayrılmış veriyi utf-8 kodlamasıyla indirmeli', () => {
     const { result } = renderHook(() => useExportData(true));
     const mockData = [{ name: "John" }];
-    
+
     result.current.exportCsv(mockData, 'wishes', 'wishes.csv');
 
     expect(helpers.createCsv).toHaveBeenCalledWith(mockData, 'wishes', true);
-    
+
     expect(helpers.downloadTextFile).toHaveBeenCalledWith(
       'wishes.csv',
       'mock,csv,data',
@@ -47,7 +47,7 @@ describe('useExportData Hook Kapsamlı Testleri', () => {
   it('exportJson çağrıldığında veriyi JSON formatında indirmeli', () => {
     const { result } = renderHook(() => useExportData(false));
     const mockData = { guests: [{ name: "Ahmet" }] };
-    
+
     result.current.exportJson(mockData, 'yedek.json');
 
     expect(helpers.downloadTextFile).toHaveBeenCalledWith(

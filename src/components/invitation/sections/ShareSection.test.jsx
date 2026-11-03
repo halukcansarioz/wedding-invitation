@@ -26,7 +26,7 @@ describe('ShareSection Bileşen Testleri', () => {
     delete navigator.share;
 
     render(<ShareSection copyInvitationLink={mockCopyLink} shareText="Davetiye" />);
-    
+
     const shareButton = screen.getByRole('button', { name: /Davetiyeyi Paylaş/i });
     fireEvent.click(shareButton);
 
@@ -37,7 +37,7 @@ describe('ShareSection Bileşen Testleri', () => {
     navigator.share = vi.fn().mockResolvedValue(true);
 
     render(<ShareSection copyInvitationLink={mockCopyLink} copy={{ shareTitle: "Düğün", shareDescription: "Bekleriz" }} />);
-    
+
     const shareButton = screen.getByRole('button', { name: /Davetiyeyi Paylaş/i });
     fireEvent.click(shareButton);
 
@@ -45,7 +45,7 @@ describe('ShareSection Bileşen Testleri', () => {
       title: "Düğün",
       text: "Bekleriz"
     }));
-    
+
     expect(mockCopyLink).not.toHaveBeenCalled();
   });
 });

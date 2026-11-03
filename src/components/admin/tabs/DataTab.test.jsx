@@ -15,7 +15,7 @@ describe('DataTab Admin Bileşen Kapsamlı Testleri', () => {
     mockExportAll = vi.fn();
     mockImportAll = vi.fn();
     mockSetImportText = vi.fn();
-    vi.clearAllMocks(); 
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -24,45 +24,45 @@ describe('DataTab Admin Bileşen Kapsamlı Testleri', () => {
 
   it('İçe Aktar (Import) textarea alanına veri girildiğinde state güncellenmeli', () => {
     render(
-      <DataTab 
-        isEn={false} 
-        exportAllDataJson={mockExportAll} 
-        importAllDataJson={mockImportAll} 
-        dataImportText="" 
-        setDataImportText={mockSetImportText} 
-        saveSiteContent={vi.fn()} 
+      <DataTab
+        isEn={false}
+        exportAllDataJson={mockExportAll}
+        importAllDataJson={mockImportAll}
+        dataImportText=""
+        setDataImportText={mockSetImportText}
+        saveSiteContent={vi.fn()}
       />
     );
-    
+
     const textarea = screen.getByPlaceholderText(/JSON içeriğini buraya yapıştırın/i);
     fireEvent.change(textarea, { target: { value: '{"test": "data"}' } });
-    
+
     expect(mockSetImportText).toHaveBeenCalledWith('{"test": "data"}');
   });
 
   it('JSON İndir butonuna tıklandığında export fonksiyonu tetiklenmeli', () => {
     render(
-      <DataTab 
-        isEn={false} 
-        exportAllDataJson={mockExportAll} 
-        importAllDataJson={mockImportAll} 
+      <DataTab
+        isEn={false}
+        exportAllDataJson={mockExportAll}
+        importAllDataJson={mockImportAll}
       />
     );
-    
+
     const exportBtn = screen.getByRole('button', { name: /JSON İndir ⬇️/i });
     fireEvent.click(exportBtn);
-    
+
     expect(mockExportAll).toHaveBeenCalledTimes(1);
   });
 
   it('Depolama Temizliği (Garbage Collection) hataya düşerse hata mesajı vermeli', async () => {
     dbServices.syncFailedDeletes.mockRejectedValue(new Error('Network Error'));
-    
+
     render(<DataTab isEn={false} />);
-    
+
     const cleanBtn = screen.getByRole('button', { name: /Depolama Temizliğini Başlat/i });
     fireEvent.click(cleanBtn);
-    
+
     await waitFor(() => {
       expect(screen.getByText('Temizlik sırasında bir hata oluştu.')).toBeInTheDocument();
     });

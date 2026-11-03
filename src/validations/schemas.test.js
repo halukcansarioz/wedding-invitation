@@ -8,9 +8,9 @@ describe('RSVP Zod Şeması İleri Seviye Sınır (Boundary) Testleri', () => {
   const rsvpSchema = getRsvpSchema(mockT);
 
   it('Telefon, kişi sayısı, yakınlık ve çocuk durumu alanları boş geçilse bile kabul etmeli (Opsiyonel alanlar)', () => {
-    const minimalData = { 
-      name: "Ali Veli", 
-      attendance: "Katılacağım" 
+    const minimalData = {
+      name: "Ali Veli",
+      attendance: "Katılacağım"
     };
     const result = rsvpSchema.safeParse(minimalData);
     expect(result.success).toBe(true);
@@ -19,7 +19,7 @@ describe('RSVP Zod Şeması İleri Seviye Sınır (Boundary) Testleri', () => {
   it('Şarkı isteği (songRequest) 100 karakteri geçerse reddetmeli', () => {
     const longSong = "a".repeat(101);
     const invalidData = { name: "Ali", attendance: "Katılacağım", songRequest: longSong };
-    
+
     const result = rsvpSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
   });
@@ -27,7 +27,7 @@ describe('RSVP Zod Şeması İleri Seviye Sınır (Boundary) Testleri', () => {
   it('Honeypot alanı dolu olduğunda geçişe izin vermeli (Bot tespiti component seviyesinde yapılır, schema kabul eder)', () => {
     const honeypotData = { name: "Bot", attendance: "Katılacağım", honeypot: "spam-data" };
     const result = rsvpSchema.safeParse(honeypotData);
-    
+
     expect(result.success).toBe(true);
   });
 });

@@ -31,7 +31,7 @@ describe('FamilyTab Admin Bileşen Testleri', () => {
 
   it('Zustand store üzerindeki aile bilgilerini inputlarda göstermeli', () => {
     render(<FamilyTab isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('Yılmaz Ailesi')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Demir Ailesi')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Sizleri aramızda görmekten mutluluk duyarız.')).toBeInTheDocument();
@@ -39,7 +39,7 @@ describe('FamilyTab Admin Bileşen Testleri', () => {
 
   it('Gelin ailesi ismi güncellendiğinde store güncellenmeli', () => {
     render(<FamilyTab isEn={false} />);
-    
+
     const brideFamilyInput = screen.getByDisplayValue('Yılmaz Ailesi');
     fireEvent.change(brideFamilyInput, { target: { value: 'Yılmaz & Kaya Ailesi' } });
 

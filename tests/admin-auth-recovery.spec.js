@@ -4,7 +4,7 @@ import { setupE2EMocks } from './utils';
 test.describe('Admin Paneli: Şifremi Unuttum (Recovery) Akışı', () => {
 
   test.beforeEach(async ({ page }) => {
-    await setupE2EMocks(page); 
+    await setupE2EMocks(page);
     await page.goto('/admin', { waitUntil: 'domcontentloaded' });
   });
 
@@ -17,7 +17,7 @@ test.describe('Admin Paneli: Şifremi Unuttum (Recovery) Akışı', () => {
 
     const recoveryEmailInput = page.locator('.admin-forgot-form input[type="email"]');
     await expect(recoveryEmailInput).toHaveValue('kurtarma@test.com');
-    
+
     const resetFormButton = page.locator('button[type="submit"]', { hasText: /Sıfırlama Linki|Send Reset Link/i });
     await expect(resetFormButton).toBeEnabled();
     await resetFormButton.click();
@@ -28,7 +28,7 @@ test.describe('Admin Paneli: Şifremi Unuttum (Recovery) Akışı', () => {
 
   test('Geçersiz (boş) e-posta ile şifre sıfırlama talep edilememeli', async ({ page }) => {
     await page.locator('.admin-login input[type="email"]').first().fill('');
-    
+
     const forgotPasswordLink = page.locator('button', { hasText: /Şifremi unuttum|Forgot password/i });
     await forgotPasswordLink.click();
 

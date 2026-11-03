@@ -197,7 +197,6 @@ export const uploadMediaFile = async (
     try {
       fileToUpload = (await optimizeImage(rawFile)) as File | Blob;
     } catch {
-      // Keep the original file when image optimization is unavailable.
     }
   }
 

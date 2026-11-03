@@ -93,7 +93,8 @@
     "wishes": "Anı Defteri",
     "iban": "Hediye / IBAN Bölümü",
     "guests": "Misafir Listesi",
-    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)"
+    "popupIban": "Katılmayanlar İçin Hediye Butonu (Modal)",
+    "ticket": "Katılım Sonrası Dijital Bilet"
   },
   "alerts": {
     "successTitle": "Bilgi ℹ️",

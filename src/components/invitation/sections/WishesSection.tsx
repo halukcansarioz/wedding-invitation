@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+
 import React, { useState, useMemo, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -20,11 +21,11 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   const wishes = Array.isArray(approvedWishes) ? approvedWishes : [];
-  
+
   const isAutomation = typeof window !== 'undefined' && window.navigator.webdriver;
-  
+
   const [turnstileToken, setTurnstileToken] = useState(isAutomation ? "e2e-bypass-token" : "");
-  const [formKey, setFormKey] = useState(0); 
+  const [formKey, setFormKey] = useState(0);
 
   const { isRecording, recordingTime, startRecording, stopRecording, clearRecording, audioBlob, uploadAudio } = useAudioRecorder();
 
@@ -49,7 +50,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
       }
 
       await submitWish({ ...data, turnstileToken: turnstileToken || "e2e-bypass-token", audioUrl });
-      
+
       try {
         if (typeof triggerConfetti === 'function') triggerConfetti();
       } catch (e) {
@@ -60,11 +61,11 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
       setValue("message", "");
       setValue("honeypot", "");
       reset({ name: "", message: "", honeypot: "" });
-      
+
       clearRecording();
       setTurnstileToken(isAutomation ? "e2e-bypass-token" : "");
       setFormKey(prev => prev + 1);
-      
+
     } catch (error) {
       console.error("Dilek gönderilemedi:", error);
 
@@ -87,7 +88,7 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
     <section className="card">
       <p className="section-label">{isEn ? t('invitation.wishesLabel') : copy?.wishesLabel}</p>
       <h2>{isEn ? t('invitation.wishesTitle') : copy?.wishesTitle}</h2>
-      
+
       <form className="wish-form" onSubmit={handleSubmit(onSubmit)} noValidate>
         <input type="text" {...control.register("honeypot")} style={{ display: "none", opacity: 0, position: "absolute", zIndex: -1 }} tabIndex={-1} autoComplete="off" />
 
@@ -95,26 +96,26 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
           <Controller name="name" control={control} render={({ field }) => <input {...field} placeholder={t('form.namePlaceholder')} />} />
           {errors.name && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.name?.message as string}</span>}
         </div>
-        
+
         <div className="field-with-counter">
           <Controller name="message" control={control} render={({ field }) => <textarea {...field} placeholder={t('form.messagePlaceholder')} maxLength={WISH_MAX_LENGTH}></textarea>} />
           <span>{currentMessage.length}/{WISH_MAX_LENGTH}</span>
           {errors.message && <span style={{ color: 'red', fontSize: '13px', display: 'block', marginTop: '6px' }}>{errors.message?.message as string}</span>}
         </div>
 
-        {/* SESLİ MESAJ ALANI */}
+
         <div style={{ width: '100%', background: 'var(--paper-soft)', padding: '16px', borderRadius: '12px', marginTop: '12px', border: '1px solid rgba(var(--theme-rgb), 0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
             {isEn ? "Or leave a voice message! 🎤" : "Veya sesli bir anı bırakın! 🎤"}
           </span>
-          
+
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             {!isRecording && !audioBlob && (
               <button type="button" onClick={startRecording} className="secondary-button" style={{ margin: 0, borderRadius: '50px', padding: '8px 24px', borderColor: '#e74c3c', color: '#e74c3c' }}>
                 🎙️ {isEn ? "Record" : "Kaydet"}
               </button>
             )}
-            
+
             {isRecording && (
               <button type="button" onClick={stopRecording} className="main-button" style={{ margin: 0, borderRadius: '50px', padding: '8px 24px', background: '#e74c3c', borderColor: '#e74c3c', animation: 'pulse 1.5s infinite' }}>
                 ⏹ {isEn ? "Stop" : "Durdur"} ({formatTime(recordingTime)})
@@ -134,21 +135,21 @@ export const WishesSection = memo(function WishesSection({ copy, submitWish, app
 
         <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
           {!isAutomation && (
-            <Turnstile 
+            <Turnstile
               key={`turnstile-${formKey}`}
-              siteKey={TURNSTILE_SITE_KEY || "1x00000000000000000000AA"} 
-              onSuccess={(token) => setTurnstileToken(token)} 
-              onExpire={() => setTurnstileToken("")} 
+              siteKey={TURNSTILE_SITE_KEY || "1x00000000000000000000AA"}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken("")}
               options={{ appearance: "interaction-only" }}
             />
           )}
         </div>
-        
+
         <button type="submit" className="main-button form-button" disabled={isSubmitting || (!isAutomation && !turnstileToken && navigator.onLine)}>
           {isSubmitting ? "..." : t('form.submitWish')}
         </button>
       </form>
-      
+
       <div className="wish-list">
         {wishes.length === 0 ? (
           <p className="empty-text">{t('ui.noWishes')}</p>

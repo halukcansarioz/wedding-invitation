@@ -68,7 +68,7 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz", i
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listboxId = useId();
-  
+
   const selectedOption = options.find((opt) => opt.value === value) || options[0];
 
   useEffect(() => {
@@ -108,9 +108,9 @@ export function Dropdown({ value, options, onChange, placeholder = "Seçiniz", i
   const activeDescendantId = focusedIndex >= 0 ? `${listboxId}-opt-${focusedIndex}` : undefined;
 
   return (
-    <div 
+    <div
       id={id}
-      className={`admin-custom-select ${isOpen ? "open" : ""}`} 
+      className={`admin-custom-select ${isOpen ? "open" : ""}`}
       ref={dropdownRef}
       onKeyDown={handleKeyDown}
       tabIndex={0}

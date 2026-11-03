@@ -19,8 +19,6 @@ function getSafeOrigin(requestOrigin: string | null): string {
     ? requestOrigin
     : allowedOrigins[0];
 }
-
-// YENİ: Veritabanına Hata Loglama Fonksiyonu
 async function logErrorToDatabase(supabaseAdmin: any, functionName: string, errorMsg: string, additionalData: any = {}) {
   try {
     await supabaseAdmin.from('error_logs').insert([{
@@ -44,7 +42,7 @@ serve(async (req) => {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
+
     if(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
         supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
         const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
@@ -56,9 +54,9 @@ serve(async (req) => {
         if (isLimited || rateLimitError) {
           const errMsg = rateLimitError ? rateLimitError.message : "Rate limit aşıldı.";
           await logErrorToDatabase(supabaseAdmin, 'create-payment', errMsg, { ip });
-          
-          return new Response(JSON.stringify({ success: false, error: "Çok fazla ödeme isteği oluşturuldu. Lütfen 1 dakika bekleyin." }), { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+
+          return new Response(JSON.stringify({ success: false, error: "Çok fazla ödeme isteği oluşturuldu. Lütfen 1 dakika bekleyin." }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429
           });
         }
     }
@@ -104,17 +102,17 @@ serve(async (req) => {
       }
     });
 
-    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 
+    return new Response(JSON.stringify({ success: true, paymentUrl: session.url }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200
     });
 
   } catch (error: any) {
     if (supabaseAdmin) {
       await logErrorToDatabase(supabaseAdmin, 'create-payment', error.message, { stack: error.stack });
     }
-    
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
+
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: corsHeaders, status: 400
     });
   }
 });

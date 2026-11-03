@@ -33,7 +33,7 @@ describe('StoryTab Admin Bileşen Testleri', () => {
 
   it('Yeni anı ekle butonuna basıldığında boş bir anı objesi eklemeli', () => {
     render(<StoryTab isEn={false} />);
-    
+
     const addBtn = screen.getByRole('button', { name: /Yeni Anı Ekle/i });
     fireEvent.click(addBtn);
 
@@ -44,12 +44,12 @@ describe('StoryTab Admin Bileşen Testleri', () => {
 
   it('Görsel kaldırıldığında deleteMediaFile çağrılmalı ve state güncellenmeli', async () => {
     render(<StoryTab isEn={false} />);
-    
+
     const removeImgBtn = screen.getByRole('button', { name: /Görseli Kaldır/i });
     fireEvent.click(removeImgBtn);
 
     expect(dbServices.deleteMediaFile).toHaveBeenCalledWith('old-image.jpg');
-    
+
     await waitFor(() => {
       expect(useStore.getState().adminDraft.storyTimeline[0].image).toBe('');
     });
@@ -57,7 +57,7 @@ describe('StoryTab Admin Bileşen Testleri', () => {
 
   it('Anı tümden silindiğinde içindeki görsel de storage üzerinden silinmeli', async () => {
     render(<StoryTab isEn={false} />);
-    
+
     const deleteMemoryBtn = screen.getByRole('button', { name: /Sil 🗑️/i });
     fireEvent.click(deleteMemoryBtn);
 

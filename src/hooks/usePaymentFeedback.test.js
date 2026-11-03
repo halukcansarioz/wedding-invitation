@@ -15,8 +15,6 @@ describe('usePaymentFeedback Hook Testleri', () => {
   beforeEach(() => {
     mockShowAppAlert = vi.fn();
     useStore.mockReturnValue(mockShowAppAlert);
-
-    // DÜZELTME: JSDOM window.location güvenli mocklaması
     originalLocation = window.location;
     delete window.location;
     window.location = { search: '', pathname: '/' };

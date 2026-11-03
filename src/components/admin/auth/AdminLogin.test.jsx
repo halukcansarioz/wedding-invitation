@@ -11,8 +11,6 @@ describe('AdminLogin Bileşen Testleri', () => {
 
   beforeEach(() => {
     initialAdminState = useAdminStore.getState();
-    
-    // Verileri sıfırla ama store fonksiyonlarını YAKMA
     useAdminStore.setState({
       isPasswordRecovery: false,
       showForgotPassword: false,
@@ -21,8 +19,6 @@ describe('AdminLogin Bileşen Testleri', () => {
       adminAuthLoading: false,
       adminError: ''
     });
-
-    // İzlenmesi gerekenleri spyOn ile bağla
     mockSetShowForgotPassword = vi.spyOn(useAdminStore.getState(), 'setShowForgotPassword');
     mockSetAdminError = vi.spyOn(useAdminStore.getState(), 'setAdminError');
   });
@@ -35,7 +31,7 @@ describe('AdminLogin Bileşen Testleri', () => {
 
   it('Varsayılan durumda standart giriş (Login) formunu göstermeli', () => {
     render(<AdminLogin isEn={false} submitAdminPassword={vi.fn()} />);
-    
+
     expect(screen.getByPlaceholderText('Admin e-posta')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Admin şifresi')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Giriş Yap/i })).toBeInTheDocument();
@@ -43,7 +39,7 @@ describe('AdminLogin Bileşen Testleri', () => {
 
   it('Şifremi unuttum linkine tıklandığında store durumunu güncellemeli', () => {
     render(<AdminLogin isEn={false} submitAdminPassword={vi.fn()} />);
-    
+
     const forgotBtn = screen.getByRole('button', { name: /Şifremi unuttum/i });
     fireEvent.click(forgotBtn);
 
@@ -53,9 +49,9 @@ describe('AdminLogin Bileşen Testleri', () => {
 
   it('showForgotPassword true olduğunda Kurtarma E-postası formunu göstermeli', () => {
     useAdminStore.setState({ showForgotPassword: true });
-    
+
     render(<AdminLogin isEn={false} sendPasswordResetEmail={vi.fn()} />);
-    
+
     expect(screen.queryByPlaceholderText('Admin şifresi')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Sıfırlama Linki Gönder/i })).toBeInTheDocument();
   });

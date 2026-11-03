@@ -31,13 +31,13 @@ test.describe('Admin Paneli: Kişisel Link Oluşturma Testi', () => {
     });
 
     await page.goto('/admin');
-    
+
     const emailInput = page.locator('input[type="email"]').first();
     await emailInput.waitFor({ state: 'visible', timeout: 10000 });
     await emailInput.fill('test@admin.com');
     await page.locator('input[type="password"]').first().fill('123456');
     await page.locator('button[type="submit"]').first().click();
-    
+
     await expect(page.locator('.admin-editor-section').first()).toBeVisible({ timeout: 15000 });
   });
 
@@ -45,11 +45,11 @@ test.describe('Admin Paneli: Kişisel Link Oluşturma Testi', () => {
      const personalLinkTabBtn = page.getByRole('button', { name: /Özel Link|Personal Link/i });
      await personalLinkTabBtn.waitFor({ state: 'visible', timeout: 10000 });
      await personalLinkTabBtn.click();
-     
+
      const nameInput = page.locator('input[placeholder*="Ahmet Yılmaz"], input[placeholder*="John Doe"]');
      await expect(nameInput).toBeVisible({ timeout: 10000 });
      await nameInput.fill('Örnek Misafir');
-     
+
      const generatedLinkInput = page.locator('.admin-link-result-input');
      await expect(generatedLinkInput).toHaveValue(/%C3%96rnek%20Misafir|Örnek%20Misafir/);
   });

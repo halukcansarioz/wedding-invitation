@@ -6,21 +6,21 @@ function fallbackOptimize(file, resolve) {
     const canvas = document.createElement("canvas");
     let { width, height } = img;
     const maxDim = MAX_IMAGE_DIMENSION || 1400;
-    
+
     if (width > maxDim || height > maxDim) {
-      if (width > height) { 
-        height = Math.round((height * maxDim) / width); 
-        width = maxDim; 
-      } else { 
-        width = Math.round((width * maxDim) / height); 
-        height = maxDim; 
+      if (width > height) {
+        height = Math.round((height * maxDim) / width);
+        width = maxDim;
+      } else {
+        width = Math.round((width * maxDim) / height);
+        height = maxDim;
       }
     }
-    
-    canvas.width = width; 
+
+    canvas.width = width;
     canvas.height = height;
     canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-    
+
     canvas.toBlob((blob) => {
       resolve(blob ? new File([blob], file.name.replace(/\.[^/.]+$/, ".webp"), { type: "image/webp" }) : file);
     }, "image/webp", IMAGE_QUALITY || 0.8);
@@ -31,15 +31,12 @@ function fallbackOptimize(file, resolve) {
 
 export async function optimizeImage(file) {
   if (!file) return file;
-
-  // Geçersiz dosya formatları direkt bypass ediliyor
   if (!file.type.startsWith("image/") && !file.name.toLowerCase().endsWith('.heic')) return file;
   if (file.type === "image/svg+xml" || file.type === "image/gif") return file;
 
   return new Promise((resolve) => {
-    // Worker modül olarak başlatılıyor ki import fonksiyonlarını tanısın
     const worker = new Worker(new URL('./imageWorker.js', import.meta.url), { type: 'module' });
-    
+
     worker.onmessage = (e) => {
       if (e.data.blob) {
         const cleanName = file.name.replace(/\.[^/.]+$/, "");
@@ -49,9 +46,9 @@ export async function optimizeImage(file) {
         });
         resolve(optimizedFile);
       } else if (e.data.error === "OffscreenCanvas not supported") {
-        fallbackOptimize(e.data.file, resolve); 
+        fallbackOptimize(e.data.file, resolve);
       } else {
-        resolve(e.data.file); 
+        resolve(e.data.file);
       }
       worker.terminate();
     };
@@ -61,28 +58,22 @@ export async function optimizeImage(file) {
       worker.terminate();
     };
 
-    worker.postMessage({ 
-      file: file, 
-      maxDim: MAX_IMAGE_DIMENSION || 1400, 
-      quality: IMAGE_QUALITY || 0.8 
+    worker.postMessage({
+      file: file,
+      maxDim: MAX_IMAGE_DIMENSION || 1400,
+      quality: IMAGE_QUALITY || 0.8
     });
   });
 }
 
 export async function optimizeImageFile(file, options = {}) {
   const { maxWidth = 1920, quality = 0.8 } = options;
-
-  // Görsel değilse veya zaten küçük bir WebP/SVG ise doğrudan döndür
   if (!file || !file.type?.startsWith('image/') || file.type === 'image/svg+xml') {
     return file;
   }
-
-  // Test ortamında (JSDOM / Webdriver) işlemi hızlandırmak için doğrudan döndür
   if (typeof window === 'undefined' || window.navigator?.webdriver) {
     return file;
   }
-
-  // 1. Önce Web Worker ile arka planda sıkıştırmayı dene
   if (typeof Worker !== 'undefined' && typeof OffscreenCanvas !== 'undefined') {
     try {
       const workerResult = await new Promise((resolve) => {
@@ -112,11 +103,8 @@ export async function optimizeImageFile(file, options = {}) {
         return new File([workerResult.blob], `${baseName}.webp`, { type: 'image/webp' });
       }
     } catch {
-      // Hata durumunda Canvas fallback'e geç
     }
   }
-
-  // 2. Canvas Fallback (Safari / Eski Tarayıcılar)
   return new Promise((resolve) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);

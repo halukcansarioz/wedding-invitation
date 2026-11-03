@@ -24,10 +24,10 @@ export function ScheduleTab({ isEn }: { isEn: boolean }) {
           <div key={index} className="admin-repeat-item">
             <div className="admin-repeat-title">
               <strong>{isEn ? `Program ${index + 1}` : `Program ${index + 1}`}</strong>
-              <AdminActionButtons 
+              <AdminActionButtons
                 onMoveUp={index > 0 ? () => moveDraftArrayItem("scheduleItems", index, -1) : null}
                 onMoveDown={index < (adminDraft.scheduleItems?.length || 0) - 1 ? () => moveDraftArrayItem("scheduleItems", index, 1) : null}
-                onSave={() => saveSiteContent(isEn)} onDelete={() => removeDraftArrayItem("scheduleItems", index)} isEn={isEn} 
+                onSave={() => saveSiteContent(isEn)} onDelete={() => removeDraftArrayItem("scheduleItems", index)} isEn={isEn}
               />
             </div>
             <div className="admin-edit-grid">

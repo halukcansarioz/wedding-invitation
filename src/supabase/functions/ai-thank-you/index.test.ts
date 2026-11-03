@@ -12,7 +12,7 @@ describe("AI Thank You Edge Function Testleri", () => {
 
     const authHeader = req.headers.get('Authorization');
     let hasError = false;
-    
+
     if (!authHeader) {
       hasError = true;
     }
@@ -22,7 +22,7 @@ describe("AI Thank You Edge Function Testleri", () => {
 
   it("Geçerli verilerle çağrıldığında AI metni dönmeli", async () => {
     const mockAiResponse = "Gelişiniz için teşekkürler! Harika bir gündü 🥂";
-    
+
     const responseBody = {
       success: true,
       text: mockAiResponse

@@ -20,7 +20,7 @@ describe('HeroSection Bileşen Testleri', () => {
 
   it('Gelin ve damat ismini, tarihi ve etiketi doğru formatta göstermeli', () => {
     render(<HeroSection {...mockProps} />);
-    
+
     expect(screen.getByText('Evleniyoruz!')).toBeInTheDocument();
     expect(screen.getByText('Hande')).toBeInTheDocument();
     expect(screen.getByText('Haluk')).toBeInTheDocument();

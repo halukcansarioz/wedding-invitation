@@ -1,10 +1,8 @@
-// @ts-ignore Deno/JSR import'u Supabase Edge Runtime tarafından sağlanır.
+// @ts-ignore The Supabase Edge Runtime provides the Deno/JSR module at deployment time.
 import { serve } from "jsr:@std/http/server";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { buildSubmitPayload } from "./payload.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
-
-// Bellek içi (In-Memory) IP bazlı Rate Limiter (Dakikada maks. 5 istek)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 5;
@@ -49,8 +47,6 @@ serve(async (req) => {
     }
 
     const { type, data, turnstileToken, tenantId } = await req.json();
-
-    // Honeypot doluysa sessizce reddet
     if (data?.honeypot) {
       return new Response(JSON.stringify({ success: false, error: "Spam tespit edildi." }), {
         status: 400,

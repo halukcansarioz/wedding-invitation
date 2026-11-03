@@ -12,8 +12,6 @@ const mockGuests: Guest[] = [
 describe('useAdminTablePlan Hook Testleri', () => {
   it('sadece katılacakları filtrelemeli ve varsayılan arama kriteri boş olmalı', () => {
     const { result } = renderHook(() => useAdminTablePlan(mockGuests, false));
-    
-    // Toplam 3 misafir var ama sadece Ali ve Ayşe "Katılacağım" dedi
     expect(result.current.attendingGuests).toHaveLength(2);
     expect(result.current.attendingGuests.map(g => g.name)).toContain("Ali Yılmaz");
     expect(result.current.attendingGuests.map(g => g.name)).not.toContain("Veli Demir");
@@ -21,7 +19,7 @@ describe('useAdminTablePlan Hook Testleri', () => {
 
   it('arama (search) yapıldığında misafir listesi dinamik olarak filtrelenmeli', () => {
     const { result } = renderHook(() => useAdminTablePlan(mockGuests, false));
-    
+
     act(() => {
       result.current.setSearch('Ayşe');
     });
@@ -32,8 +30,6 @@ describe('useAdminTablePlan Hook Testleri', () => {
 
   it('henüz hiçbir masaya atanmamış (unassigned) misafirleri doğru bulmalı', () => {
     const { result } = renderHook(() => useAdminTablePlan(mockGuests, false));
-    
-    // Ayşe Masa 3'e atanmış, Veli katılmıyor, Ali katılacak ama atanmamış
     expect(result.current.unassigned).toHaveLength(1);
     expect(result.current.unassigned[0].name).toBe('Ali Yılmaz');
   });

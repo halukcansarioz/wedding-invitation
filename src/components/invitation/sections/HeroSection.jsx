@@ -11,18 +11,18 @@ export const HeroSection = memo(function HeroSection({ invitation, copy, guestGr
   const { t, i18n } = useTranslation();
   const isEn = i18n.language?.startsWith('en') || false;
   const isPostWedding = settings?.isPostWedding;
-  
+
   return (
-    <m.section 
+    <m.section
       initial="hidden" animate="visible" variants={fadeUp}
-      className="hero-section" 
+      className="hero-section"
     >
       {invitation?.heroVideo ? (
         <video key={invitation.heroVideo} className="hero-video-bg" autoPlay loop muted playsInline poster={invitation.heroVideo ? "" : invitation.heroImage}>
           <source src={invitation.heroVideo} type="video/mp4" />
         </video>
       ) : null}
-      
+
       <div className="hero-content">
         <p className="small-title" style={{ color: "#fff", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
           {isPostWedding ? (isEn ? "Thank You For Being With Us" : "Yanımızda Olduğunuz İçin Teşekkürler") : (isEn ? t('invitation.heroLabel') : copy?.heroLabel)}
@@ -33,7 +33,7 @@ export const HeroSection = memo(function HeroSection({ invitation, copy, guestGr
           <em style={{ color: "var(--gold)", margin: "0 10px" }}>&</em>
           <span>{invitation?.groom}</span>
         </h1>
-        
+
         {isPostWedding ? (
           <p className="hero-date" style={{ color: "#fff", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.2)" }}>
             {isEn ? "Memories of Our Happiest Day" : "En Mutlu Günümüzün Anıları"}
@@ -55,7 +55,7 @@ export const HeroSection = memo(function HeroSection({ invitation, copy, guestGr
           </div>
           <span>{t('ui.scroll')}</span>
         </div>
-        
+
         {guestGreeting && <p className="hero-guest-greeting">{guestGreeting}</p>}
         {personalTableNumber && (
           <div style={{ marginTop: '14px' }}>

@@ -23,21 +23,21 @@ describe('QrTab Admin Bileşen Testleri', () => {
 
   it('Genel davetiye linki kopyalama butonunu tetiklemeli', () => {
     const { container } = render(
-      <QrTab 
-        isEn={false} 
-        saveSiteContent={vi.fn()} 
-        qrImageUrl="test-qr.png" 
-        downloadQrCode={mockDownloadQrCode} 
-        currentShareLink="https://test.com" 
-        copyAdminLink={mockCopyAdminLink} 
+      <QrTab
+        isEn={false}
+        saveSiteContent={vi.fn()}
+        qrImageUrl="test-qr.png"
+        downloadQrCode={mockDownloadQrCode}
+        currentShareLink="https://test.com"
+        copyAdminLink={mockCopyAdminLink}
       />
     );
 
     const copyBtn = container.querySelector('.admin-link-copy-btn');
-    
+
     expect(copyBtn).toBeDefined();
     expect(copyBtn).not.toBeNull();
-    
+
     fireEvent.click(copyBtn!);
 
     expect(mockCopyAdminLink).toHaveBeenCalledWith('https://test.com', 'Davetiye linki kopyalandı!');

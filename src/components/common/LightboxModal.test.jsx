@@ -16,7 +16,7 @@ describe('LightboxModal Bileşen Testleri', () => {
 
   afterEach(() => {
     cleanup();
-    document.body.innerHTML = ''; 
+    document.body.innerHTML = '';
     vi.clearAllMocks();
   });
 
@@ -33,12 +33,12 @@ describe('LightboxModal Bileşen Testleri', () => {
     const mockCloseLightbox = vi.fn();
 
     render(
-      <LightboxModal 
-        gallery={mockGallery} 
-        lightboxIndex={1} 
-        closeLightbox={mockCloseLightbox} 
-        prevImage={mockPrevImage} 
-        nextImage={mockNextImage} 
+      <LightboxModal
+        gallery={mockGallery}
+        lightboxIndex={1}
+        closeLightbox={mockCloseLightbox}
+        prevImage={mockPrevImage}
+        nextImage={mockNextImage}
       />
     );
 
@@ -55,10 +55,10 @@ describe('LightboxModal Bileşen Testleri', () => {
   it('Galeride sadece 1 fotoğraf varsa İleri/Geri butonlarını GİZLEMELİ', () => {
     const singleImageGallery = ['tek-resim.jpg'];
     render(
-      <LightboxModal 
-        gallery={singleImageGallery} 
-        lightboxIndex={0} 
-        closeLightbox={vi.fn()} 
+      <LightboxModal
+        gallery={singleImageGallery}
+        lightboxIndex={0}
+        closeLightbox={vi.fn()}
       />
     );
 

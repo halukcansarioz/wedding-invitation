@@ -25,7 +25,7 @@ export const CeremonySection = memo(function CeremonySection({ copy, eventDetail
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={fadeUp} className="card ceremony-card">
       <p className="section-label">{isEn ? t('invitation.ceremonyLabel') : copy?.ceremonyLabel}</p>
       <h2>{isEn ? t('invitation.ceremonyTitle') : copy?.ceremonyTitle}</h2>
-      
+
       <div className="ceremony-date" style={{ textAlign: "center", marginBottom: "20px", fontWeight: "bold" }}>
         <LocalizedDate dateString={weddingDate} />
       </div>

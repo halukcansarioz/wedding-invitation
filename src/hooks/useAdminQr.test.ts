@@ -10,7 +10,7 @@ describe('useAdminQr Hook Testleri', () => {
   beforeEach(() => {
     mockDocumentWrite = vi.fn();
     mockDocumentClose = vi.fn();
-    
+
     mockWindowOpen = vi.spyOn(window, 'open').mockReturnValue({
       document: {
         write: mockDocumentWrite,
@@ -38,7 +38,7 @@ describe('useAdminQr Hook Testleri', () => {
 
   it('printTableCards çağrıldığında yeni sekme açmalı ve HTML yazdırmalı', () => {
     const { result } = renderHook(() => useAdminQr('https://test.com', false));
-    
+
     act(() => {
       result.current.setTableCount(2);
     });
@@ -50,7 +50,7 @@ describe('useAdminQr Hook Testleri', () => {
     expect(mockWindowOpen).toHaveBeenCalledWith('', '_blank');
     expect(mockDocumentWrite).toHaveBeenCalled();
     expect(mockDocumentClose).toHaveBeenCalled();
-    
+
     const writtenHtml = mockDocumentWrite.mock.calls[0][0];
     expect(writtenHtml).toContain('Masa 1');
     expect(writtenHtml).toContain('Masa 2');

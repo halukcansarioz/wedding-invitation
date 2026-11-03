@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import webpush from "npm:web-push@3.6.7"; 
+import webpush from "npm:web-push@3.6.7";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
@@ -17,20 +17,20 @@ serve(async (req) => {
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: authHeader } }
     });
-    
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
 
     const { title, body, url } = await req.json();
 
     webpush.setVapidDetails(
-      'mailto:sizin-emailiniz@gmail.com', 
-      Deno.env.get('VAPID_PUBLIC_KEY')!, 
+      'mailto:sizin-emailiniz@gmail.com',
+      Deno.env.get('VAPID_PUBLIC_KEY')!,
       Deno.env.get('VAPID_PRIVATE_KEY')!
     );
 
     const supabaseAdmin = createClient(
-      SUPABASE_URL, 
+      SUPABASE_URL,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
@@ -42,7 +42,7 @@ serve(async (req) => {
 
     const payload = JSON.stringify({ title, body, url });
 
-    const sendPromises = subscriptions.map((sub) => 
+    const sendPromises = subscriptions.map((sub) =>
       webpush.sendNotification(sub.sub_data, payload).catch(error => {
         console.error("Bir aboneye bildirim gitmedi (belki abonelikten çıktı):", error);
       })

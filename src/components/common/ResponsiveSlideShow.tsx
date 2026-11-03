@@ -24,7 +24,7 @@ export function ResponsiveSlideShow({ children }: { children: ReactNode }) {
       ).matches;
       setIsMobile(window.innerWidth <= 768 || compactLandscapePhone);
     };
-    checkMobile(); 
+    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -74,8 +74,8 @@ export function ResponsiveSlideShow({ children }: { children: ReactNode }) {
     const swipeDistance = touchStartY.current - touchEndY.current;
     const minSwipeDistance = 50;
 
-    if (swipeDistance > minSwipeDistance) goNext(); 
-    else if (swipeDistance < -minSwipeDistance) goPrev(); 
+    if (swipeDistance > minSwipeDistance) goNext();
+    else if (swipeDistance < -minSwipeDistance) goPrev();
   };
 
   if (!isMobile) {
@@ -83,7 +83,7 @@ export function ResponsiveSlideShow({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div 
+    <div
       className="slideshow-container"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -102,26 +102,26 @@ export function ResponsiveSlideShow({ children }: { children: ReactNode }) {
       </AnimatePresence>
 
       <div className="slide-progress-bar">
-        <div 
-          className="slide-progress-fill" 
-          style={{ width: `${((currentIndex + 1) / sections.length) * 100}%` }} 
+        <div
+          className="slide-progress-fill"
+          style={{ width: `${((currentIndex + 1) / sections.length) * 100}%` }}
         />
       </div>
 
       <div className="slide-controls">
-        <button 
-          type="button" 
-          className="secondary-button slide-btn" 
-          onClick={goPrev} 
+        <button
+          type="button"
+          className="secondary-button slide-btn"
+          onClick={goPrev}
           disabled={currentIndex === 0 || isAnimating}
           style={{ opacity: currentIndex === 0 ? 0.3 : 1 }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
         </button>
-        <button 
-          type="button" 
-          className="main-button slide-btn" 
-          onClick={goNext} 
+        <button
+          type="button"
+          className="main-button slide-btn"
+          onClick={goNext}
           disabled={currentIndex === sections.length - 1 || isAnimating}
           style={{ opacity: currentIndex === sections.length - 1 ? 0.3 : 1 }}
         >

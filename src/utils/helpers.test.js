@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { buildPersonalLink, normalizeSiteData, normalizeText, formatMessageTemplate, getQrImageUrl, dbWishToUi, uiWishToDb, getNavigationLinks } from './helpers';
 
 describe('Helpers Utilities Test Suite', () => {
-  
+
   it('normalizeText removes accents, trims and converts to lowercase', () => {
-    expect(normalizeText("  Özlem & Çağatay  ")).toBe("özlem & çağatay"); 
+    expect(normalizeText("  Özlem & Çağatay  ")).toBe("özlem & çağatay");
     expect(normalizeText("IŞIK")).toBe("ışık");
   });
 

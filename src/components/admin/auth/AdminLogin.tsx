@@ -9,9 +9,9 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({
-  isEn, 
-  submitAdminPassword, 
-  completePasswordRecovery, 
+  isEn,
+  submitAdminPassword,
+  completePasswordRecovery,
   sendPasswordResetEmail
 }: AdminLoginProps) {
   const {

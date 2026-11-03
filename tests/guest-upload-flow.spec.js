@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupE2EMocks } from './utils';
 
 test.describe('Misafir Fotoğraf Yükleme (AR Photobooth) E2E Testi', () => {
-  
+
   test.beforeEach(async ({ page }) => {
     await setupE2EMocks(page);
 
@@ -15,7 +15,7 @@ test.describe('Misafir Fotoğraf Yükleme (AR Photobooth) E2E Testi', () => {
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     const envelopeSeal = page.locator('.envelope-seal');
-    
+
     await expect(envelopeSeal).not.toContainText(/Yükleniyor|Loading/i, { timeout: 15000 });
     await envelopeSeal.click({ force: true });
     await expect(page.locator('.intro-page')).toBeHidden({ timeout: 15000 });
@@ -26,7 +26,7 @@ test.describe('Misafir Fotoğraf Yükleme (AR Photobooth) E2E Testi', () => {
     await photoboothSection.scrollIntoViewIfNeeded();
 
     const fileInput = photoboothSection.locator('input[type="file"]');
-    
+
     const validPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64');
     await fileInput.setInputFiles({
       name: 'selfie.png',
@@ -35,7 +35,7 @@ test.describe('Misafir Fotoğraf Yükleme (AR Photobooth) E2E Testi', () => {
     });
 
     const uploadBtn = photoboothSection.locator('button');
-    
+
     await expect(uploadBtn).toHaveText(/Kamera \/ Galeri Aç|Open Camera/i, { timeout: 15000 });
   });
 });

@@ -22,10 +22,10 @@ export function useAdminQr(currentShareLink: string, isEn: boolean, initialTable
             body { font-family: 'Montserrat', sans-serif; text-align: center; background: #fff; margin: 0; padding: 20px; }
             h2 { color: #9f4f68; margin: 0 0 10px 0; font-size: 32px; font-family: 'Playfair Display', serif; }
             .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; }
-            .card { 
-              border: 3px solid #9f4f68; 
-              padding: 30px; 
-              border-radius: 20px; 
+            .card {
+              border: 3px solid #9f4f68;
+              padding: 30px;
+              border-radius: 20px;
               page-break-inside: avoid;
               background: #fffafb;
             }
@@ -62,7 +62,7 @@ export function useAdminQr(currentShareLink: string, isEn: boolean, initialTable
         </body>
       </html>
     `;
-    
+
     printWindow.document.write(html);
     printWindow.document.close();
   };

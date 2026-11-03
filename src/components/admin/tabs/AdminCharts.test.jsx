@@ -22,12 +22,12 @@ describe('AdminCharts Bileşen Testleri', () => {
     const { rerender } = render(
       <AdminCharts sideData={mockSideData} checkInData={mockCheckInData} isEn={false} />
     );
-    
+
     expect(screen.getByText('Misafir Dağılımı')).toBeInTheDocument();
     expect(screen.getByText('Kapı Giriş Durumu')).toBeInTheDocument();
 
     rerender(<AdminCharts sideData={mockSideData} checkInData={mockCheckInData} isEn={true} />);
-    
+
     expect(screen.getByText('Guest Distribution')).toBeInTheDocument();
     expect(screen.getByText('Check-in Status')).toBeInTheDocument();
   });
@@ -36,7 +36,7 @@ describe('AdminCharts Bileşen Testleri', () => {
     const { container } = render(
       <AdminCharts sideData={[]} checkInData={[]} isEn={false} />
     );
-    
+
     const containers = container.querySelectorAll('.recharts-responsive-container');
     expect(containers).toHaveLength(2);
     expect(container).toBeInTheDocument();

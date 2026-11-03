@@ -8,8 +8,8 @@ import { supabase } from "../../../supabaseClient";
 
 const AdminCharts = lazy(() => import('./AdminCharts'));
 
-export function GuestsAdminPanel({ 
-  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv, 
+export function GuestsAdminPanel({
+  guests, adminGuestSearch, setAdminGuestSearch, exportGuestsExcel, exportGuestsCsv,
   filteredGuests, editGuest, deleteGuest, clearGuests,
   adminGuestAttendanceFilter, setAdminGuestAttendanceFilter,
   toggleCheckIn
@@ -19,7 +19,7 @@ export function GuestsAdminPanel({
 
   const adminDraft = useStore((state) => state.adminDraft);
   const updateDraftObject = useStore((state) => state.updateDraftObject);
-  const showAppAlert = useStore((state) => state.showAppAlert); 
+  const showAppAlert = useStore((state) => state.showAppAlert);
 
   const [isScanning, setIsScanning] = useState(false);
 
@@ -30,7 +30,7 @@ export function GuestsAdminPanel({
       if (isScanning) {
         try {
           const { Html5QrcodeScanner } = await import("html5-qrcode");
-          
+
           activeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
           activeScanner.render(
             (decodedText) => {
@@ -39,13 +39,13 @@ export function GuestsAdminPanel({
               const urlParams = new URLSearchParams(decodedText.split('?')[1]);
               const guestId = urlParams.get('id');
               if (guestId) {
-                 toggleCheckIn(guestId, false); 
+                 toggleCheckIn(guestId, false);
                  alert(isEn ? "✅ Guest check-in successful!" : "✅ Misafir başarıyla onaylandı!");
               } else {
                  alert(isEn ? "❌ Invalid QR code." : "❌ Geçersiz QR kod.");
               }
             },
-            () => { /* Hataları yoksay */ }
+            () => {}
           );
         } catch {
           console.error("QR Kütüphanesi yüklenemedi.");
@@ -71,20 +71,20 @@ export function GuestsAdminPanel({
       return;
     }
 
-    const defaultMsg = isEn 
-      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall." 
+    const defaultMsg = isEn
+      ? "Dear guest, due to weather conditions, our wedding has been moved to the indoor hall."
       : "Değerli misafirimiz, hava muhalefeti nedeniyle nikahımız kapalı salona alınmıştır.";
 
     const msg = prompt(isEn ? "Enter your mass WhatsApp message:" : "Toplu WhatsApp duyurunuzu girin (İsimler otomatik eklenecektir):", defaultMsg);
-    
+
     if (msg) {
       showAppAlert(isEn ? "Sending messages..." : "Mesajlar arka planda gönderiliyor...", { title: "Bilgi ℹ️" });
-      
+
       try {
         const { error } = await supabase.functions.invoke('broadcast-whatsapp', {
           body: { guests: attendingGuests, message: msg }
         });
-        
+
         if (error) throw error;
         showAppAlert(isEn ? "All messages sent!" : "Tüm mesajlar başarıyla iletildi!", { tone: "success" });
       } catch {
@@ -113,7 +113,7 @@ export function GuestsAdminPanel({
       alert(isEn ? "Failed to generate AI message." : "AI mesajı oluşturulamadı. Edge Function ayarlarını kontrol edin.");
     }
   };
-  
+
   if (!adminDraft?.settings) return null;
 
   const attendingGuests = guests.filter(g => g.attendance === "Katılacağım");
@@ -141,7 +141,7 @@ export function GuestsAdminPanel({
         <AdminCheckbox checked={adminDraft.settings.visibility?.rsvp ?? true} label={t('visibility.rsvp')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, rsvp: v })} />
         <AdminCheckbox checked={adminDraft.settings.visibility?.guests ?? true} label={t('visibility.guests')} onChange={(v) => updateDraftObject("settings", "visibility", { ...adminDraft.settings.visibility, guests: v })} />
       </div>
-      
+
       <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <button type="button" className="main-button" onClick={() => setIsScanning(!isScanning)}>
           {isScanning ? (isEn ? "📷 Close Camera" : "📷 Kamerayı Kapat") : (isEn ? "📷 QR Check-in" : "📷 QR ile Kapı Kontrolü")}
@@ -186,9 +186,9 @@ export function GuestsAdminPanel({
             data={filteredGuests}
             itemContent={(index, guest) => {
               const isAttending = guest.attendance === "Katılacağım";
-              
+
               const whatsappMsg = encodeURIComponent(
-                isEn 
+                isEn
                 ? `Hello ${guest.name},\n\nYour RSVP for ${bride} & ${groom}'s wedding has been confirmed. ✅\n\n${guest.tableNumber ? `🍽️ Reserved Table: ${guest.tableNumber}\n\n` : ''}📍 Location:\n${mapLink}\n\nWe can't wait to celebrate with you! 🎉`
                 : `Merhaba ${guest.name},\n\n${bride} & ${groom} düğün davetiyemize LCV (katılım) kaydınız başarıyla alınmıştır. ✅\n\n${guest.tableNumber ? `🍽️ Sizin İçin Ayrılan Masa: ${guest.tableNumber}\n\n` : ''}📍 Konum ve Yol Tarifi:\n${mapLink}\n\nSizi aramızda görmek için sabırsızlanıyoruz! 🎉`
               );
@@ -199,24 +199,24 @@ export function GuestsAdminPanel({
                     <strong>{guest.name}</strong>
                   </div>
                   <span>{isEn ? (isAttending ? "Attending" : "Not Attending") : guest.attendance}</span>
-                  
+
                   {guest.phone && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
                       <span>📞 {guest.phone}</span>
                       {isAttending && (
                         <>
-                          <a 
-                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`} 
-                            target="_blank" 
+                          <a
+                            href={`https://wa.me/${guest.phone.replace(/\D/g, "")}?text=${whatsappMsg}`}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            className="secondary-button" 
+                            className="secondary-button"
                             style={{ padding: '2px 8px', fontSize: '12px', minHeight: 'auto', margin: 0, color: '#25D366', borderColor: '#25D366', fontWeight: 'bold' }}
                           >
                             {isEn ? "Send Confirmation" : "WhatsApp Onay At"}
                           </a>
-                          
+
                           {adminDraft.settings.isPostWedding && (
-                            <button 
+                            <button
                               type="button"
                               onClick={() => generateAiThankYou(guest.name)}
                               className="secondary-button"
@@ -232,10 +232,10 @@ export function GuestsAdminPanel({
 
                   {guest.songRequest && <span className="admin-guest-song">🎵 İstek: {guest.songRequest}</span>}
                   {guest.note && <em>Not: {guest.note}</em>}
-                  
+
                   <div className="admin-row-actions admin-guest-actions">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className={`secondary-button small-admin-button ${guest.has_arrived ? 'danger-button' : ''}`}
                       onClick={() => toggleCheckIn(guest.id, guest.has_arrived)}
                     >

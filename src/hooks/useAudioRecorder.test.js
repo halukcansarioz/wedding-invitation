@@ -34,10 +34,10 @@ class MockMediaRecorder {
 describe('useAudioRecorder Hook Testleri', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    
+
     global.MediaRecorder = MockMediaRecorder;
     global.MediaRecorder.isTypeSupported = vi.fn(() => true);
-    
+
     Object.defineProperty(global.navigator, 'mediaDevices', {
       value: {
         getUserMedia: vi.fn().mockResolvedValue({
@@ -88,14 +88,14 @@ describe('useAudioRecorder Hook Testleri', () => {
   it('clearRecording çağrıldığında durumu sıfırlamalı', async () => {
     const { result } = renderHook(() => useAudioRecorder());
 
-    await act(async () => { 
-      await result.current.startRecording(); 
+    await act(async () => {
+      await result.current.startRecording();
     });
-    
-    act(() => { 
-      result.current.stopRecording(); 
+
+    act(() => {
+      result.current.stopRecording();
     });
-    
+
     expect(result.current.audioBlob).not.toBeNull();
 
     act(() => {

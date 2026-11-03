@@ -36,7 +36,7 @@ describe('LandingPage Bileşen Testleri', () => {
 
   it('Tanıtım metinlerini ve özellikleri doğru render etmeli', () => {
     render(<LandingPage />);
-    
+
     expect(screen.getByText('Davetiyem.AI')).toBeInTheDocument();
     expect(screen.getByText(/En Mutlu Gününüz İçin/i)).toBeInTheDocument();
     expect(screen.getByText('Gelişmiş LCV (RSVP)')).toBeInTheDocument();
@@ -45,19 +45,19 @@ describe('LandingPage Bileşen Testleri', () => {
 
   it('Demo İncele butonlarına tıklandığında yönlendirme (navigate) yapmalı', () => {
     render(<LandingPage />);
-    
+
     const demoButtons = screen.getAllByRole('button', { name: /Demo İncele|Hemen Ücretsiz Dene/i });
-    
+
     fireEvent.click(demoButtons[0]);
     expect(mockNavigate).toHaveBeenCalledWith('/demo-cift');
   });
 
   it('Admin Girişi butonuna tıklandığında admin paneline yönlendirmeli', () => {
     render(<LandingPage />);
-    
+
     const adminBtns = screen.getAllByRole('button', { name: /Admin Girişi/i });
     fireEvent.click(adminBtns[0]);
-    
+
     expect(mockNavigate).toHaveBeenCalledWith('/demo-cift/admin');
   });
 });

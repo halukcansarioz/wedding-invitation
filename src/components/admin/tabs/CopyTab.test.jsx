@@ -29,7 +29,7 @@ describe('CopyTab Admin Bileşen Testleri', () => {
 
   it('Taslak metinleri ilgili inputlara doğru şekilde yerleştirmeli', () => {
     render(<CopyTab isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('Evleniyoruz')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Davetlisiniz')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Katıldığınız için teşekkürler.')).toBeInTheDocument();
@@ -37,19 +37,19 @@ describe('CopyTab Admin Bileşen Testleri', () => {
 
   it('Bir başlık değiştirildiğinde store doğru şekilde güncellenmeli', () => {
     render(<CopyTab isEn={false} />);
-    
+
     const heroInput = screen.getByDisplayValue('Evleniyoruz');
     fireEvent.change(heroInput, { target: { value: 'Düğünümüze Hoş Geldiniz' } });
-    
+
     expect(useStore.getState().adminDraft.copy.heroLabel).toBe('Düğünümüze Hoş Geldiniz');
   });
 
   it('Taslakta copy objesi yoksa bileşen çökmek yerine boş dönmeli', () => {
     useStore.setState({ adminDraft: {} });
     const { container } = render(<CopyTab isEn={false} />);
-    
+
     expect(container.firstChild).toBeEmptyDOMElement();
-    
+
     expect(screen.queryByText(/Başlıklar ve Sayfa Metinleri/i)).not.toBeInTheDocument();
   });
 });

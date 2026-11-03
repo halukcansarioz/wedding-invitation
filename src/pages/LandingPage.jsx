@@ -17,13 +17,13 @@ export default function LandingPage() {
       </header>
 
       <section style={{ padding: '100px 24px', textAlign: 'center', maxWidth: '900px', margin: '0 auto' }}>
-        <m.h2 
+        <m.h2
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
           style={{ fontSize: '48px', color: 'var(--rose-dark)', marginBottom: '24px', lineHeight: 1.2 }}
         >
           En Mutlu Gününüz İçin<br />Akıllı Dijital Davetiye
         </m.h2>
-        <m.p 
+        <m.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
           style={{ fontSize: '20px', color: 'var(--text-muted)', marginBottom: '40px', fontFamily: 'sans-serif' }}
         >
@@ -38,7 +38,7 @@ export default function LandingPage() {
 
       <section style={{ padding: '60px 24px', backgroundColor: 'var(--paper-soft)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '32px' }}>
-          
+
           <div className="card" style={{ textAlign: 'center', padding: '32px' }}>
             <span style={{ fontSize: '40px', display: 'block', marginBottom: '16px' }}>📊</span>
             <h3 style={{ fontSize: '22px', color: 'var(--rose-deep)', marginBottom: '12px' }}>Gelişmiş LCV (RSVP)</h3>
@@ -59,7 +59,7 @@ export default function LandingPage() {
 
         </div>
       </section>
-      
+
     </div>
   );
 }

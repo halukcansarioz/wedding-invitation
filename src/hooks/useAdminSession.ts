@@ -1,19 +1,19 @@
 import { useEffect, FormEvent } from "react";
 import { supabase } from "../supabaseClient";
-import { 
-  getReadableAuthError, 
-  getSupabaseSetupMessage, 
-  isSupabaseReady, 
-  loadSettingsFromDatabase, 
-  loadGuestsFromDatabase, 
-  loadAllWishesFromDatabase 
+import {
+  getReadableAuthError,
+  getSupabaseSetupMessage,
+  isSupabaseReady,
+  loadSettingsFromDatabase,
+  loadGuestsFromDatabase,
+  loadAllWishesFromDatabase
 } from "../services/database";
-import { 
-  normalizeSiteData, 
-  touchAdminSession, 
-  clearAdminSessionTimestamp, 
-  isAdminSessionFresh, 
-  getAdminRedirectUrl 
+import {
+  normalizeSiteData,
+  touchAdminSession,
+  clearAdminSessionTimestamp,
+  isAdminSessionFresh,
+  getAdminRedirectUrl
 } from "../utils/helpers";
 import { ADMIN_ACTIVITY_EVENTS, SITE_DATA_KEY } from "../config/constants";
 import { useStore } from "../store/useStore";
@@ -121,7 +121,7 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
       useAdminStore.getState().clearAdminAuth();
       useStore.getState().setActiveAdminTab("general");
       useAdminStore.getState().setAdminLoginNotice(isEn ? "Session expired for security. Please log in again." : "Oturum süren doldu. Güvenlik için tekrar giriş yapmalısın.");
-      
+
       useStore.getState().setGuests([]);
       useStore.getState().setWishes(useStore.getState().wishes.filter(w => w.approved));
     };
@@ -138,18 +138,18 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
 
   const submitAdminPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { 
-      setAdminError, 
-      setAdminLoginNotice, 
-      setAdminAuthLoading, 
-      setAdminUser, 
-      setIsAdminUnlocked, 
-      setIsPasswordRecovery, 
-      setShowForgotPassword, 
-      setForgotPasswordMessage, 
-      setAdminPassword, 
-      adminEmail, 
-      adminPassword 
+    const {
+      setAdminError,
+      setAdminLoginNotice,
+      setAdminAuthLoading,
+      setAdminUser,
+      setIsAdminUnlocked,
+      setIsPasswordRecovery,
+      setShowForgotPassword,
+      setForgotPasswordMessage,
+      setAdminPassword,
+      adminEmail,
+      adminPassword
     } = useAdminStore.getState();
     const { setSiteData, setAdminDraft, setGuests, setWishes, setActiveAdminTab, siteData } = useStore.getState();
 
@@ -174,8 +174,8 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
       setAdminPassword("");
 
       const [databaseSettings, adminGuests, adminWishes] = await Promise.all([
-        loadSettingsFromDatabase(), 
-        loadGuestsFromDatabase(), 
+        loadSettingsFromDatabase(),
+        loadGuestsFromDatabase(),
         loadAllWishesFromDatabase()
       ]);
 
@@ -198,7 +198,6 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
 
   const sendPasswordResetEmail = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // HATA DÜZELTİLDİ: Kurtarma formundaki giriş alanı adminEmail yerine forgotPasswordEmail okumalıdır.
     const { forgotPasswordEmail, setForgotPasswordMessage, setAdminError, setForgotPasswordLoading } = useAdminStore.getState();
     setForgotPasswordMessage("");
     setAdminError("");
@@ -222,15 +221,15 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
 
   const completePasswordRecovery = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { 
-      recoveryPassword, 
-      recoveryPasswordAgain, 
-      adminEmail, 
-      setRecoveryMessage, 
-      setRecoveryLoading, 
-      setAdminEmail, 
-      clearAdminAuth, 
-      setAdminLoginNotice 
+    const {
+      recoveryPassword,
+      recoveryPasswordAgain,
+      adminEmail,
+      setRecoveryMessage,
+      setRecoveryLoading,
+      setAdminEmail,
+      clearAdminAuth,
+      setAdminLoginNotice
     } = useAdminStore.getState();
     setRecoveryMessage("");
     setRecoveryLoading(true);
@@ -274,15 +273,15 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
 
   const changeAdminPassword = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { 
-      adminUser, 
-      adminEmail, 
-      adminCurrentPassword, 
-      adminNewPassword, 
-      adminNewPasswordAgain, 
-      setAdminPasswordMessage, 
-      clearAdminAuth, 
-      setAdminLoginNotice 
+    const {
+      adminUser,
+      adminEmail,
+      adminCurrentPassword,
+      adminNewPassword,
+      adminNewPasswordAgain,
+      setAdminPasswordMessage,
+      clearAdminAuth,
+      setAdminLoginNotice
     } = useAdminStore.getState();
     setAdminPasswordMessage("");
 
@@ -315,7 +314,7 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
     const { clearAdminAuth, setAdminLoginNotice, setAdminSaveMessage } = useAdminStore.getState();
 
     const confirmed = await showAppConfirm(
-      isEn ? "Are you sure you want to log out of the admin panel?" : "Admin panelden çıkış yapmak istiyor musun?", 
+      isEn ? "Are you sure you want to log out of the admin panel?" : "Admin panelden çıkış yapmak istiyor musun?",
       { title: isEn ? "Log Out" : "Çıkış yap", confirmText: isEn ? "Log Out" : "Çıkış Yap", tone: "warning" }
     );
     if (!confirmed) return;
@@ -329,9 +328,9 @@ export function useAdminSession({ isAdminPage, isEn }: UseAdminSessionProps) {
     clearAdminSessionTimestamp();
     clearAdminAuth();
     setActiveAdminTab("general");
-    
-    setGuests([]); 
-    setWishes(wishes.filter(w => w.approved)); 
+
+    setGuests([]);
+    setWishes(wishes.filter(w => w.approved));
 
     setAdminLoginNotice(isEn ? "Logged out. Please log in again to access the admin panel." : "Çıkış yapıldı. Admin paneline girmek için tekrar giriş yapmalısın.");
   };

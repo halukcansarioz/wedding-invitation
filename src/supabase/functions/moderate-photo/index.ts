@@ -29,7 +29,7 @@ serve(async (req) => {
   try {
     const ip = req.headers.get('x-forwarded-for') || 'unknown';
     supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-    
+
     const { data: isLimited, error: rateLimitError } = await supabaseAdmin.rpc('check_rate_limit', {
       client_ip: `moderate_photo_${ip}`,
       max_req: 10,
@@ -38,8 +38,8 @@ serve(async (req) => {
 
     if (isLimited || rateLimitError) {
       await logErrorToDatabase(supabaseAdmin, 'moderate-photo', rateLimitError?.message || "Rate limit", { ip });
-      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 
+      return new Response(JSON.stringify({ success: false, error: "Hız sınırına ulaşıldı." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429
       });
     }
 
@@ -49,7 +49,7 @@ serve(async (req) => {
     const supabaseClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: { headers: { Authorization: authHeader } }
     });
-    
+
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
     if (authError || !user) throw new Error("Geçersiz veya süresi dolmuş oturum.");
 
@@ -84,16 +84,16 @@ serve(async (req) => {
     const judgment = aiData.choices[0].message.content.trim().toUpperCase();
     const isSafe = judgment === 'SAFE';
 
-    return new Response(JSON.stringify({ success: true, isSafe, judgment }), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ success: true, isSafe, judgment }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error: any) {
     if (supabaseAdmin) {
        await logErrorToDatabase(supabaseAdmin, 'moderate-photo', error.message, { stack: error.stack });
     }
-    return new Response(JSON.stringify({ success: false, error: error.message }), { 
-      headers: corsHeaders, status: 400 
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: corsHeaders, status: 400
     });
   }
 });

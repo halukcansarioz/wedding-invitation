@@ -12,12 +12,12 @@ describe('LocationSection Bileşen Testleri', () => {
 
   it('Konuma Git butonuna tıklandığında Navigasyon Modalı açılmalı ve kapatılabilmeli', () => {
     render(<LocationSection invitation={mockInvitation} />);
-    
+
     const mapButtons = screen.getAllByRole('button', { name: 'ui.goToMap' });
     fireEvent.click(mapButtons[0]);
 
     expect(screen.getByText(/Yandex Navi/i)).toBeInTheDocument();
-    
+
     const closeButton = screen.getByRole('button', { name: 'ui.closeBtn' });
     fireEvent.click(closeButton);
     expect(screen.queryByText(/Yandex Navi/i)).not.toBeInTheDocument();

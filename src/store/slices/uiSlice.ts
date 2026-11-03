@@ -14,6 +14,13 @@ export const createUISlice: StateCreator<MainStoreState, [], [], UISlice> = (set
     const isError = options.title?.includes("Hata") || options.title?.includes("Error") || message.includes("hata");
     if (isError) toast.error(message);
     else toast.success(message);
+    set({
+      customAlert: {
+        message,
+        title: options.title || (isError ? "Hata" : "Bilgi"),
+        resolve,
+      },
+    });
     resolve(true);
   }),
 

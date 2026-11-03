@@ -3,24 +3,22 @@ import AdminDashboard from "../components/AdminDashboard";
 import { AdminPanelContent } from "../components/admin/AdminPanelComponents";
 import { useStore } from "../store/useStore";
 import { ErrorBoundary } from "../components/common/ErrorBoundary";
-
-// EKLENDİ: Tip güvenliği için arayüz tanımlandı
 export interface AdminViewProps {
   [key: string]: unknown;
 }
 
 export default function AdminView(props: AdminViewProps) {
   const activeAdminTab = useStore(state => state.activeAdminTab);
-  
+
   const adminTabs = [
-    { id: "overview", label: "Sistem Özeti", description: "İstatistikler ve bekleyen onaylar" }, 
+    { id: "overview", label: "Sistem Özeti", description: "İstatistikler ve bekleyen onaylar" },
     { id: "general", label: "Genel Bilgiler", description: "İsim, tarih, mekan, linkler" },
     { id: "theme", label: "Tema", description: "Renk teması ve yayın ayarları" },
     { id: "security", label: "Admin Şifresi", description: "Panel giriş şifresi değiştirme" },
     { id: "messages", label: "WhatsApp Mesajları", description: "Paylaşım ve katılım metinleri" },
     { id: "copy", label: "Başlıklar", description: "Sayfadaki yazı ve başlıklar" },
     { id: "family", label: "Aile Bilgileri", description: "Gelin ve damat aileleri" },
-    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" }, 
+    { id: "story", label: "Bizim Hikayemiz", description: "Tanışma ve teklif anıları" },
     { id: "ceremony", label: "Nikah / Düğün", description: "Nikah ve eğlence ayrımı" },
     { id: "schedule", label: "Düğün Takvimi", description: "Saat saat düğün akışı" },
     { id: "gallery", label: "Görsel / Müzik", description: "Ana görrels, galeri ve müzik" },
@@ -33,6 +31,7 @@ export default function AdminView(props: AdminViewProps) {
     { id: "personalLink", label: "Özel Link Üret", description: "Davetliye özel isimli link" },
     { id: "data", label: "Veri Yedeği", description: "Yedek alma ve yükleme (JSON)" },
     { id: "notifications", label: "Anlık Bildirimler", description: "PWA kullanıcılarına Push bildirim yolla" }
+    ,{ id: "systemChecks", label: "Sistem Testleri", description: "Tarayıcı ve PWA sağlık kontrolleri" }
   ];
 
   const activeTabInfo = adminTabs.find((tab) => tab.id === activeAdminTab) || adminTabs[0];

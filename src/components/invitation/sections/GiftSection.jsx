@@ -12,7 +12,7 @@ const fadeUp = {
 export const GiftSection = memo(function GiftSection({ giftData }) {
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
-  
+
   const settings = useStore((state) => state.siteData?.settings);
   const showCreditCard = settings?.visibility?.creditCard ?? false;
 
@@ -29,7 +29,7 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
 
   const handleCreditCardPayment = async () => {
     const userAmount = window.prompt(
-      isEn ? "Enter the amount you want to send (TL):" : "Göndermek istediğiniz tutarı girin (TL):", 
+      isEn ? "Enter the amount you want to send (TL):" : "Göndermek istediğiniz tutarı girin (TL):",
       "1000"
     );
 
@@ -38,13 +38,13 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
     setIsRedirecting(true);
     try {
       const res = await supabase.functions.invoke('create-payment', {
-        body: { 
-          amount: Number(userAmount), 
-          guestName: "Düğün Misafiri", 
-          note: "Davetiye Üzerinden Online Hediye" 
+        body: {
+          amount: Number(userAmount),
+          guestName: "Düğün Misafiri",
+          note: "Davetiye Üzerinden Online Hediye"
         }
       });
-      
+
       if (res.data?.paymentUrl) {
         window.location.href = res.data.paymentUrl;
       } else {
@@ -66,15 +66,15 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
       <p className="gift-description">
         {isEn ? t('ui.giftDescription') : giftData.description}
       </p>
-      
-      <div className="gift-card" style={{ 
-        background: 'var(--paper-soft)', 
-        padding: '20px 16px', 
-        borderRadius: '12px', 
-        margin: '16px auto 24px auto', 
+
+      <div className="gift-card" style={{
+        background: 'var(--paper-soft)',
+        padding: '20px 16px',
+        borderRadius: '12px',
+        margin: '16px auto 24px auto',
         maxWidth: '450px',
-        textAlign: 'center', 
-        border: '1px solid rgba(var(--theme-rgb), 0.15)' 
+        textAlign: 'center',
+        border: '1px solid rgba(var(--theme-rgb), 0.15)'
       }}>
         <strong className="gift-card-receiver" style={{ display: 'block', fontSize: '16px', color: 'var(--rose-dark)', fontWeight: '700', marginBottom: '4px' }}>
           {giftData.receiver}
@@ -86,7 +86,7 @@ export const GiftSection = memo(function GiftSection({ giftData }) {
           {giftData.iban}
         </code>
       </div>
-      
+
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', flexWrap: 'wrap', width: '100%', maxWidth: '500px', margin: '0 auto' }}>
         <button type="button" className="secondary-button gift-copy-button" onClick={copyIban} style={{ margin: 0, flex: '1 1 auto', minWidth: '200px' }}>
           {copied ? t('ui.copied') : t('ui.copyIban')}

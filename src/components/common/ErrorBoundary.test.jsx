@@ -20,7 +20,7 @@ describe('ErrorBoundary Kapsamlı Testleri', () => {
 
   beforeEach(() => {
     consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     reloadMock = vi.fn();
     Object.defineProperty(window, 'location', {
       value: { reload: reloadMock },
@@ -50,7 +50,7 @@ describe('ErrorBoundary Kapsamlı Testleri', () => {
     );
 
     expect(screen.getByText(/Opps! Beklenmeyen bir hata oluştu/i)).toBeInTheDocument();
-    
+
     const reloadButton = screen.getByRole('button', { name: /Sayfayı Yenile/i });
     expect(reloadButton).toBeInTheDocument();
 

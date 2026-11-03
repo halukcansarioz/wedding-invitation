@@ -12,14 +12,14 @@ export const PwaInstallBanner = () => {
   if (isIos) {
     return (
       <div className="pwa-install-banner ios-banner" style={{
-        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
+        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
         background: 'var(--paper)', padding: '12px 24px', borderRadius: '12px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 9999, textAlign: 'center',
         border: '1px solid var(--admin-border-color)'
       }}>
         <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-main)', fontWeight: 'bold' }}>
-          {isEn 
-            ? "📱 Tap 'Share' then 'Add to Home Screen' for the best experience!" 
+          {isEn
+            ? "📱 Tap 'Share' then 'Add to Home Screen' for the best experience!"
             : "📱 Kolay Erişim İçin: 'Paylaş' ikonuna basıp 'Ana Ekrana Ekle'yi seçin!"}
         </p>
       </div>
@@ -28,7 +28,7 @@ export const PwaInstallBanner = () => {
 
   return (
     <div className="pwa-install-banner" style={{
-        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', 
+        position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
         background: 'var(--paper)', padding: '12px 24px', borderRadius: '12px', display: 'flex',
         alignItems: 'center', gap: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 9999,
         border: '1px solid var(--admin-border-color)'

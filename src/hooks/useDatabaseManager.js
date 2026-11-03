@@ -206,6 +206,23 @@ export function useDatabaseManager({
         }
         return savedGuest;
       } catch (error) {
+        const errorMessage = String(error?.message || "");
+        const isTransportFailure =
+          /failed to send a request|failed to fetch|network error|fetch failed/i.test(errorMessage);
+
+        if (isTransportFailure) {
+          const offlineGuests = JSON.parse(localStorage.getItem("offline_guests") || "[]");
+          offlineGuests.push(uiGuestToDb(formData));
+          localStorage.setItem("offline_guests", JSON.stringify(offlineGuests));
+          await showAppAlert?.(
+            isEn
+              ? "Connection to the submission service failed. Your response was saved and will sync automatically."
+              : "Gönderim servisine ulaşılamadı. Yanıtınız kaydedildi; bağlantı düzelince otomatik gönderilecek.",
+            { title: isEn ? "Pending sync 📶" : "Bekleyen senkronizasyon 📶" }
+          );
+          return optimisticGuest;
+        }
+
         setGuests((prev) => prev.filter((g) => g.id !== tempId));
         await showAppAlert?.(t("alerts.rsvpError", { message: error.message }), {
           title: t("alerts.saveErrorTitle"),

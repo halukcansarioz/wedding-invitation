@@ -20,3 +20,4 @@ export { GuestPhotosTab } from './GuestPhotosTab';
 export { PaymentsTab } from './PaymentsTab';
 export { NotificationsTab } from './NotificationsTab';
 export { OverviewTab } from './OverviewTab';
+export { SystemChecksTab } from './SystemChecksTab';

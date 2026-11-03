@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { setupE2EMocks } from './utils';
 
 test.describe('Admin Paneli Arayüz Etkileşimleri', () => {
-  
+
   test.beforeEach(async ({ page }) => {
-    await setupE2EMocks(page); 
-    await page.goto('/admin', { waitUntil: 'domcontentloaded', timeout: 15000 }); 
+    await setupE2EMocks(page);
+    await page.goto('/admin', { waitUntil: 'domcontentloaded', timeout: 15000 });
   });
 
   test('Kullanıcı Şifremi Unuttum formu ile Giriş formu arasında geçiş yapabilmeli', async ({ page }) => {

@@ -8,7 +8,7 @@ describe('Zustand useAdminStore Testleri', () => {
 
   it('setAdminEmail ve setAdminPassword durumları doğru şekilde güncellemeli', () => {
     const { setAdminEmail, setAdminPassword } = useAdminStore.getState();
-    
+
     setAdminEmail('test@admin.com');
     setAdminPassword('123456');
 
@@ -18,7 +18,7 @@ describe('Zustand useAdminStore Testleri', () => {
 
   it('clearAdminAuth çağrıldığında hassas güvenlik verileri sıfırlanmalı', () => {
     const store = useAdminStore.getState();
-    
+
     store.setIsAdminUnlocked(true);
     store.setAdminPassword('gizli-sifre-123');
     store.setAdminError('Hatalı giriş');
@@ -27,7 +27,7 @@ describe('Zustand useAdminStore Testleri', () => {
     useAdminStore.getState().clearAdminAuth();
 
     const clearedStore = useAdminStore.getState();
-    
+
     expect(clearedStore.isAdminUnlocked).toBe(false);
     expect(clearedStore.adminPassword).toBe('');
     expect(clearedStore.adminError).toBe('');
@@ -36,10 +36,10 @@ describe('Zustand useAdminStore Testleri', () => {
 
   it('Şifre kurtarma (Recovery) akış durumları başarıyla set edilebilmeli', () => {
     const store = useAdminStore.getState();
-    
+
     store.setIsPasswordRecovery(true);
     store.setRecoveryPassword('yeni123');
-    
+
     expect(useAdminStore.getState().isPasswordRecovery).toBe(true);
     expect(useAdminStore.getState().recoveryPassword).toBe('yeni123');
   });

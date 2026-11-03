@@ -17,8 +17,8 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
   const { t, i18n } = useTranslation();
   const isEn = i18n.language.startsWith('en');
 
-  const openText = isEn 
-    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim() 
+  const openText = isEn
+    ? t('invitation.openButton').replace(' 💌', '').replace('💌', '').trim()
     : copy.openButton;
 
   const handleOpen = useCallback(() => {
@@ -57,7 +57,7 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
           <div aria-hidden="true" style={{ fontSize: "32px", color: "var(--rose-dark)", opacity: 0.6, marginBottom: "16px", lineHeight: 1 }}>
             ❀
           </div>
-          
+
           <p className="intro-small">{isEn ? t('invitation.introLabel') : copy.introLabel}</p>
 
           <h1 className="couple-title">
@@ -83,27 +83,27 @@ export default function IntroPage({ isOpening, copy, invitation, personalGuestNa
           </div>
         )}
 
-        <button 
-          className="envelope-seal" 
+        <button
+          className="envelope-seal"
           onClick={handleOpen}
           disabled={!isHeroLoaded || isOpening}
-          style={{ 
-            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8), 
+          style={{
+            opacity: isOpening ? 0 : (isHeroLoaded ? 1 : 0.8),
             pointerEvents: isOpening ? "none" : "auto",
             cursor: isHeroLoaded ? "pointer" : "wait",
             transition: "opacity 0.4s ease"
           }}
         >
-          <span 
-            style={{ 
-              display: 'flex', 
+          <span
+            style={{
+              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
               lineHeight: '1.2',
-              color: '#ffffff', 
+              color: '#ffffff',
               WebkitTextFillColor: '#ffffff',
-              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)', 
+              textShadow: '0 2px 6px rgba(0, 0, 0, 0.6)',
               fontWeight: '900',
               fontSize: isHeroLoaded ? '18px' : '15px',
               letterSpacing: '0.5px'

@@ -15,15 +15,15 @@ export function useWishesQuery() {
       const token = navigator.onLine ? newWishData.turnstileToken : "OFFLINE_SYNC";
 
       const { data, error } = await supabase.functions.invoke('submit-form', {
-        body: { 
-          type: 'wish', 
+        body: {
+          type: 'wish',
           data: {
             name: newWishData.name,
             message: newWishData.message,
             approved: newWishData.approved,
             ...(newWishData.audioUrl ? { audio_url: newWishData.audioUrl } : {})
-          }, 
-          turnstileToken: token 
+          },
+          turnstileToken: token
         }
       });
 
@@ -37,14 +37,14 @@ export function useWishesQuery() {
       const previousWishes = queryClient.getQueryData(['wishes']);
 
       queryClient.setQueryData(['wishes'], (old = []) => [
-        { 
-          id: `temp-${Date.now()}`, 
-          name: newWish.name, 
-          message: newWish.message, 
+        {
+          id: `temp-${Date.now()}`,
+          name: newWish.name,
+          message: newWish.message,
           approved: newWish.approved,
           ...(newWish.audioUrl ? { audioUrl: newWish.audioUrl } : {}),
           createdAt: new Date().toISOString()
-        }, 
+        },
         ...old
       ]);
 
@@ -61,10 +61,10 @@ export function useWishesQuery() {
     }
   });
 
-  return { 
-    wishes, 
-    isLoading, 
-    isError, 
+  return {
+    wishes,
+    isLoading,
+    isError,
     addWish: addWishMutation.mutateAsync,
     isAdding: addWishMutation.isPending
   };

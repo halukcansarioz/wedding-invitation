@@ -14,13 +14,13 @@ export function GuestPhotosTab({ isEn }: GuestPhotosTabProps) {
   const handleReject = useCallback((id: string, url: string) => () => rejectPhoto(id, url), [rejectPhoto]);
 
   return (
-    <AdminSection 
+    <AdminSection
       title={isEn ? "Guest Uploads (POV)" : "Misafir Fotoğrafları (POV)"}
       onSave={undefined}
     >
       <p className="admin-help-text">
-        {isEn 
-          ? "Photos uploaded by guests appear here. Approved photos are shown in the main gallery." 
+        {isEn
+          ? "Photos uploaded by guests appear here. Approved photos are shown in the main gallery."
           : "Misafirlerin yüklediği fotoğraflar burada onayınıza düşer. Onayladığınız kareler ana galeride ziyaretçilere gösterilir."}
       </p>
 
@@ -34,7 +34,7 @@ export function GuestPhotosTab({ isEn }: GuestPhotosTabProps) {
           <h4 style={{ color: "var(--rose-deep)", marginTop: "10px", marginBottom: "16px" }}>
             {isEn ? `Pending Approval (${pendingPhotos.length})` : `Onay Bekleyenler (${pendingPhotos.length})`}
           </h4>
-          
+
           <div className="gallery-grid" style={{ marginBottom: "40px" }}>
             {pendingPhotos.length === 0 && <p className="empty-text">{isEn ? "No pending photos." : "Onay bekleyen fotoğraf yok."}</p>}
             {pendingPhotos.map(photo => (
@@ -59,10 +59,10 @@ export function GuestPhotosTab({ isEn }: GuestPhotosTabProps) {
             {approvedPhotos.map(photo => (
               <div key={photo.id} style={{ position: "relative", borderRadius: "12px", overflow: "hidden" }}>
                 <img src={photo.image_url} alt="Guest Upload" style={{ width: "100%", height: "150px", objectFit: "cover", display: "block", filter: "brightness(0.8)" }} />
-                <button 
-                  type="button" 
-                  className="secondary-button danger-button" 
-                  style={{ position: "absolute", top: "8px", right: "8px", margin: 0, padding: "4px 8px", fontSize: "12px" }} 
+                <button
+                  type="button"
+                  className="secondary-button danger-button"
+                  style={{ position: "absolute", top: "8px", right: "8px", margin: 0, padding: "4px 8px", fontSize: "12px" }}
                   onClick={handleReject(photo.id, photo.image_url)}
                 >
                   {isEn ? "Remove" : "Kaldır"}

@@ -21,8 +21,8 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText = "
     try {
       const { successCount, failCount } = await syncFailedDeletes();
       setCleanupResult(
-        isEn 
-          ? `Cleanup complete: ${successCount} files deleted. ${failCount} files still pending.` 
+        isEn
+          ? `Cleanup complete: ${successCount} files deleted. ${failCount} files still pending.`
           : `Temizlik tamamlandı: ${successCount} yetim dosya silindi. ${failCount} dosya beklemede.`
       );
     } catch {
@@ -35,8 +35,8 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText = "
   return (
     <AdminSection title={isEn ? "Data & Storage Management" : "Veri ve Depolama Yönetimi"} onSave={saveSiteContent}>
       <p className="admin-help-text" style={{ marginBottom: "24px" }}>
-        {isEn 
-          ? "Manage your system backups and optimize storage by cleaning up orphaned media files." 
+        {isEn
+          ? "Manage your system backups and optimize storage by cleaning up orphaned media files."
           : "Sistem yedeklerinizi yönetin ve silinmemiş medya dosyalarını temizleyerek depolama alanınızı optimize edin."}
       </p>
 
@@ -60,20 +60,20 @@ export function DataTab({ saveSiteContent, exportAllDataJson, dataImportText = "
           {isEn ? "Storage Optimization (Garbage Collection)" : "Depolama Optimizasyonu (Çöp Temizliği)"}
         </h4>
         <p style={{ margin: "0 0 16px 0", fontSize: "14px", color: "var(--text-muted)" }}>
-          {isEn 
-            ? "Sometimes deleted photos remain on the server due to connection drops. Use this tool to permanently erase them from Supabase and free up space." 
+          {isEn
+            ? "Sometimes deleted photos remain on the server due to connection drops. Use this tool to permanently erase them from Supabase and free up space."
             : "Bazen bağlantı kopmaları nedeniyle silinen fotoğraflar sunucuda (Supabase) asılı kalabilir. Bu araç, yetim kalan dosyaları kalıcı olarak temizler ve yer açar."}
         </p>
-        
-        <button 
-          type="button" 
-          className="secondary-button" 
+
+        <button
+          type="button"
+          className="secondary-button"
           onClick={handleGarbageCollection}
           disabled={isCleaning}
           style={{ borderColor: "#d35400", color: "#d35400" }}
         >
-          {isCleaning 
-            ? (isEn ? "Cleaning..." : "Temizleniyor...") 
+          {isCleaning
+            ? (isEn ? "Cleaning..." : "Temizleniyor...")
             : (isEn ? "Run Storage Cleanup 🧹" : "Depolama Temizliğini Başlat 🧹")}
         </button>
 

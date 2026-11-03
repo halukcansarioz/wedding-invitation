@@ -1,21 +1,14 @@
-// src/hooks/useScrollNavigation.js
 import { useState, useRef, useCallback, useEffect } from "react";
 
 export function useScrollNavigation(isAdminPage, opened) {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  
-  // DÜZELTME 1: Başlangıç state'ini 'false' yapıyoruz. 
-  // Böylece ağır DOM (Video, Harita) yüklenirken animasyon erkenden başlayıp takılmayacak.
-  const [showScrollDown, setShowScrollDown] = useState(false); 
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   const isScrollingRef = useRef(false);
   const touchStartYRef = useRef(0);
-  // DÜZELTME 2: ResizeObserver'ın React'i saniyede 60 kez yormasını engellemek için timer referansı eklendi
-  const resizeTimerRef = useRef(null); 
-
-  // Ekran boyutunu izle
+  const resizeTimerRef = useRef(null);
   useEffect(() => {
     const checkMobile = () => {
       const compactLandscapePhone = window.matchMedia(
@@ -45,7 +38,7 @@ export function useScrollNavigation(isAdminPage, opened) {
     if (isMobile) {
       const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
       if (wrappers.length === 0) return;
-      
+
       setCurrentSlideIndex(prev => {
         const next = prev + 1;
         return next < wrappers.length ? next : prev;
@@ -53,10 +46,10 @@ export function useScrollNavigation(isAdminPage, opened) {
     } else {
       const sections = getDesktopSections();
       if (sections.length === 0) return;
-      
+
       const activeIdx = getActiveDesktopIndex(sections);
       const nextIdx = activeIdx + 1;
-      
+
       if (nextIdx < sections.length) {
         const nextSection = sections[nextIdx];
         const rect = nextSection.getBoundingClientRect();
@@ -77,22 +70,22 @@ export function useScrollNavigation(isAdminPage, opened) {
     if (isMobile) {
       const wrappers = Array.from(document.querySelectorAll('.slide-wrapper'));
       if (wrappers.length === 0) return;
-      
+
       const currentWrapper = wrappers[currentSlideIndex];
-      
+
       if (currentWrapper && currentWrapper.scrollTop > 150) {
         currentWrapper.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
-      
+
       setCurrentSlideIndex(prev => prev > 0 ? prev - 1 : 0);
     } else {
       const sections = getDesktopSections();
       if (sections.length === 0) return;
-      
+
       const activeIdx = getActiveDesktopIndex(sections);
       const currentSection = sections[activeIdx];
-      
+
       if (currentSection) {
         const currentRect = currentSection.getBoundingClientRect();
         if (currentRect.top < -150) {
@@ -121,7 +114,7 @@ export function useScrollNavigation(isAdminPage, opened) {
 
   const handleWheel = useCallback((e) => {
     if (isAdminPage || !opened || isScrollingRef.current || !isMobile) return;
-    
+
     const slideWrapper = e.target.closest('.slide-wrapper');
     if (slideWrapper) {
       const isScrollable = slideWrapper.scrollHeight > slideWrapper.clientHeight;
@@ -129,8 +122,8 @@ export function useScrollNavigation(isAdminPage, opened) {
         const atTop = slideWrapper.scrollTop <= 0;
         const atBottom = Math.ceil(slideWrapper.scrollTop + slideWrapper.clientHeight) >= slideWrapper.scrollHeight - 2;
 
-        if (e.deltaY > 0 && !atBottom) return; 
-        if (e.deltaY < 0 && !atTop) return;    
+        if (e.deltaY > 0 && !atBottom) return;
+        if (e.deltaY < 0 && !atTop) return;
       }
     }
 
@@ -153,7 +146,7 @@ export function useScrollNavigation(isAdminPage, opened) {
     const target = e.target instanceof Element ? e.target : e.target.parentElement;
     if (!target) return;
 
-    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return; 
+    if (target.closest('input, textarea, select, .gallery-lightbox-overlay, .admin-custom-select-menu')) return;
 
     const touchEndY = e.changedTouches[0].clientY;
     const diff = touchStartYRef.current - touchEndY;
@@ -169,16 +162,14 @@ export function useScrollNavigation(isAdminPage, opened) {
        }
     }
 
-    if (Math.abs(diff) > 40) { 
-      if (diff > 0) scrollToNext(); 
-      else scrollToPrev(); 
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) scrollToNext();
+      else scrollToPrev();
 
       isScrollingRef.current = true;
-      setTimeout(() => { isScrollingRef.current = false; }, 500); 
+      setTimeout(() => { isScrollingRef.current = false; }, 500);
     }
   }, [isAdminPage, opened, scrollToNext, scrollToPrev, isMobile]);
-
-  // Scroll olaylarını yönet ve butonların görünürlüğünü belirle
   useEffect(() => {
     if (isAdminPage || !opened) return;
 
@@ -191,16 +182,16 @@ export function useScrollNavigation(isAdminPage, opened) {
          const wrappers = document.querySelectorAll('.slide-wrapper');
          const currentWrapper = wrappers[currentSlideIndex];
          const isScrolledInside = currentWrapper ? currentWrapper.scrollTop > 100 : false;
-         
+
          setShowScrollTop(currentSlideIndex > 0 || isScrolledInside);
          setShowScrollDown(wrappers.length === 0 ? true : currentSlideIndex < wrappers.length - 1);
       } else {
         const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        
+
         setShowScrollTop(scrollTop > 100);
-        
+
         const isAtBottom = Math.ceil(window.innerHeight + scrollTop) >= document.documentElement.scrollHeight - 50;
-        
+
         if (scrollTop <= 10) {
           setShowScrollDown(true);
         } else {
@@ -208,18 +199,15 @@ export function useScrollNavigation(isAdminPage, opened) {
         }
       }
     };
-
-    // DÜZELTME 3: DOM'un tüm ağır elemanları (video, harita) çizmesini beklemesi için ufak bir gecikme ekledik.
-    // Bu sayede buton ekrana girerken main-thread meşgul olmadığı için takılmadan akıcı girecek.
     const mountDelayTimer = setTimeout(() => {
       if (!isMounted) return;
-      
+
       handleScroll();
 
       if (!isMobile) {
         window.addEventListener('scroll', handleScroll, { passive: true });
       }
-      
+
       if (isMobile) {
          const wrappers = document.querySelectorAll('.slide-wrapper');
          activeWrapper = wrappers[currentSlideIndex];
@@ -227,15 +215,13 @@ export function useScrollNavigation(isAdminPage, opened) {
             activeWrapper.addEventListener('scroll', handleScroll, { passive: true });
          }
       }
-
-      // ResizeObserver'ı Debounce ederek performansı artırıyoruz
       const resizeObserver = new ResizeObserver(() => {
         if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
         resizeTimerRef.current = setTimeout(() => {
           if (isMounted) handleScroll();
         }, 150); // 150ms gecikme ile tetikler, React'in kilitlenmesini önler
       });
-      
+
       resizeObserver.observe(document.body);
 
     }, 400); // DOM paint işleminin bitmesi için 400ms veriyoruz.
@@ -244,7 +230,7 @@ export function useScrollNavigation(isAdminPage, opened) {
       isMounted = false;
       clearTimeout(mountDelayTimer);
       if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
-      
+
       if (!isMobile) {
         window.removeEventListener('scroll', handleScroll);
       }
@@ -253,6 +239,6 @@ export function useScrollNavigation(isAdminPage, opened) {
       }
     };
   }, [isAdminPage, opened, isMobile, currentSlideIndex]);
-  
+
   return { currentSlideIndex, showScrollTop, showScrollDown, scrollToNext, scrollToPrev, handleWheel, handleTouchStart, handleTouchEnd };
 }

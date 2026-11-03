@@ -7,7 +7,7 @@ import { useAudioRecorder } from '../../../hooks/useAudioRecorder';
 
 vi.mock('../../../hooks/useAudioRecorder');
 
-vi.mock('@marsidev/react-turnstile', () => ({ 
+vi.mock('@marsidev/react-turnstile', () => ({
   Turnstile: ({ onSuccess }: any) => (
     <button type="button" data-testid="turnstile-btn" onClick={() => onSuccess('valid-token')}>
       Token Al
@@ -15,8 +15,8 @@ vi.mock('@marsidev/react-turnstile', () => ({
   )
 }));
 
-vi.mock('react-i18next', () => ({ 
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } }) 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'tr' } })
 }));
 
 vi.mock('../../../utils/helpers', async (importOriginal) => {
@@ -49,7 +49,7 @@ describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
 
   it('Zorunlu alanlar boş bırakıldığında Zod şeması hata mesajlarını göstermeli ve formu göndermemeli', async () => {
     render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
-    
+
     fireEvent.click(screen.getByTestId('turnstile-btn'));
     fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
 
@@ -62,10 +62,10 @@ describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
 
   it('Geçerli veriler girildiğinde submitWish fonksiyonu çağrılmalı ve form sıfırlanmalı', async () => {
     render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
-    
+
     fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Ahmet Yılmaz' } });
     fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Harika bir düğün, mutluluklar dilerim!' } });
-    
+
     fireEvent.click(screen.getByTestId('turnstile-btn'));
     fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
 
@@ -81,13 +81,13 @@ describe('WishesSection Form Validasyon ve Gönderim Testleri', () => {
 
   it('Honeypot alanı doldurulursa (Bot saldırısı simülasyonu) gönderim engellenmeli', async () => {
     const { container } = render(<WishesSection submitWish={mockSubmitWish as any} approvedWishes={[]} />);
-    
+
     const honeypotInput = container.querySelector('input[name="honeypot"]') as HTMLInputElement;
     fireEvent.change(honeypotInput, { target: { value: 'spam-bot-data' } });
-    
+
     fireEvent.change(screen.getByPlaceholderText('form.namePlaceholder'), { target: { value: 'Bot' } });
     fireEvent.change(screen.getByPlaceholderText('form.messagePlaceholder'), { target: { value: 'Spam mesaj' } });
-    
+
     fireEvent.click(screen.getByTestId('turnstile-btn'));
     fireEvent.click(screen.getByRole('button', { name: 'form.submitWish' }));
 

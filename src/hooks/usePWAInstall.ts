@@ -26,7 +26,7 @@ export function usePWAInstall(): UsePWAInstallReturn {
     const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
     const nav = window.navigator as Navigator & { standalone?: boolean };
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || Boolean(nav.standalone);
-    
+
     setIsIos(isIosDevice);
 
     if (isStandalone) return;
@@ -37,8 +37,8 @@ export function usePWAInstall(): UsePWAInstallReturn {
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault(); 
-      setDeferredPrompt(e as BeforeInstallPromptEvent); 
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setIsInstallable(true);
     };
 
@@ -60,7 +60,7 @@ export function usePWAInstall(): UsePWAInstallReturn {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       setIsInstallable(false);
     }

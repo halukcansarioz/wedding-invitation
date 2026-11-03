@@ -11,8 +11,8 @@ describe('GiftTab Admin Bileşen Testleri', () => {
     initialState = useStore.getState();
     useStore.setState({
       adminDraft: {
-        settings: { 
-          visibility: { iban: true, popupIban: true, creditCard: false } 
+        settings: {
+          visibility: { iban: true, popupIban: true, creditCard: false }
         },
         giftRegistry: {
           title: "Hediyeler",
@@ -33,28 +33,28 @@ describe('GiftTab Admin Bileşen Testleri', () => {
 
   it('Verilen taslak bilgilerini doğru şekilde inputlarda göstermeli', () => {
     render(<GiftTab isEn={false} />);
-    
+
     expect(screen.getByDisplayValue('Ahmet Yılmaz')).toBeInTheDocument();
     expect(screen.getByDisplayValue('TR123456')).toBeInTheDocument();
   });
 
   it('IBAN bilgisi güncellendiğinde store güncellenmeli', () => {
     render(<GiftTab isEn={false} />);
-    
+
     const ibanInput = screen.getByDisplayValue('TR123456');
     fireEvent.change(ibanInput, { target: { value: 'TR999999' } });
-    
+
     expect(useStore.getState().adminDraft.giftRegistry.iban).toBe('TR999999');
   });
 
   it('Kredi Kartı butonu görünürlüğü değiştirildiğinde ayarları güncellemeli', () => {
     render(<GiftTab isEn={false} />);
-    
+
     const creditCardCheckbox = screen.getByLabelText(/Kredi Kartı ile Gönder Butonunu Göster/i);
     expect(creditCardCheckbox).not.toBeChecked();
 
     fireEvent.click(creditCardCheckbox);
-    
+
     expect(useStore.getState().adminDraft.settings.visibility.creditCard).toBe(true);
   });
 });

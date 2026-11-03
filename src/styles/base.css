@@ -1163,10 +1163,10 @@ button[aria-disabled="true"]:hover {
 }
 
 html[data-theme] body .app .family-grid strong {
-  font-family: var(--font-script); 
-  font-size: 2.2rem; 
-  font-weight: normal; 
-  letter-spacing: 1px; 
+  font-family: var(--font-script);
+  font-size: 2.2rem;
+  font-weight: normal;
+  letter-spacing: 1px;
 }
 
 html[data-theme] body .app .family-grid span {

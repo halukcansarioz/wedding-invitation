@@ -58,6 +58,6 @@ const _createMockSupabase = () => {
   return dummyObj;
 };
 
-export const supabase = (supabaseUrl && supabaseAnonKey) 
+export const supabase = (supabaseUrl && supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createClient("https://mock-test.supabase.co", "mock-anon-key");

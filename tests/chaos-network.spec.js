@@ -4,10 +4,10 @@ import { setupE2EMocks } from './utils';
 test.describe('Ağ Gecikmesi ve Kaos Senaryoları', () => {
   test('Yavaş bağlantıda form gönderimi ve hata toleransı', async ({ page, context }) => {
     test.setTimeout(60000);
-    
+
     await setupE2EMocks(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
+
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
     await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });

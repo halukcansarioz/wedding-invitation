@@ -26,7 +26,7 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
 
   beforeEach(() => {
     initialState = useStore.getState();
-    
+
     useStore.setState({
       adminDraft: {
         settings: { visibility: { guests: true } },
@@ -47,7 +47,7 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
 
   it('Misafir istatistiklerini doğru hesaplamalı', () => {
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} isEn={false} />);
-    expect(screen.getByText('3', { selector: 'strong' })).toBeInTheDocument(); 
+    expect(screen.getByText('3', { selector: 'strong' })).toBeInTheDocument();
   });
 
   it('Davetiye taslağında davetli bilgisi yoksa paneli açabilmeli', () => {
@@ -58,7 +58,7 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
   it('Arama kutusuna yazıldığında setAdminGuestSearch fonksiyonunu tetiklemeli', () => {
     const mockSetSearch = vi.fn();
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} adminGuestSearch="" setAdminGuestSearch={mockSetSearch} isEn={false} />);
-    
+
     const searchInput = screen.getByPlaceholderText(/İsim veya tel ara/i);
     fireEvent.change(searchInput, { target: { value: 'Zeynep' } });
     expect(mockSetSearch).toHaveBeenCalledWith('Zeynep');
@@ -67,7 +67,7 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
   it('Filtre değiştirildiğinde setAdminGuestStatusFilter tetiklenmeli', () => {
     const mockSetFilter = vi.fn();
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={mockGuests} adminGuestAttendanceFilter="all" setAdminGuestAttendanceFilter={mockSetFilter} isEn={false} />);
-    
+
     const filterSelect = screen.getByTestId('status-filter');
     fireEvent.change(filterSelect, { target: { value: 'Katılacağım' } });
     expect(mockSetFilter).toHaveBeenCalledWith('Katılacağım');
@@ -76,7 +76,7 @@ describe('GuestsAdminPanel Bileşen Testleri', () => {
   it('Misafir sil butonuna basıldığında deleteGuest fonksiyonu tetiklenmeli', () => {
     const mockDelete = vi.fn();
     render(<GuestsAdminPanel guests={mockGuests} filteredGuests={[mockGuests[0]]} deleteGuest={mockDelete} isEn={false} />);
-    
+
     const deleteBtn = screen.getByRole('button', { name: /Sil 🗑️/i });
     fireEvent.click(deleteBtn);
     expect(mockDelete).toHaveBeenCalledWith('1');

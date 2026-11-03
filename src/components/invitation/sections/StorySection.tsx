@@ -24,22 +24,22 @@ export const StorySection = memo(function StorySection({ copy, storyTimeline }: 
     <m.section initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} variants={fadeUp} className="card story-card">
       <p className="section-label">{isEn ? t('invitation.storyLabel') : copy?.storyLabel}</p>
       <h2>{isEn ? t('invitation.storyTitle') : copy?.storyTitle}</h2>
-      
+
       <div className="story-timeline-container" role="list">
         <div className="story-line" aria-hidden="true"></div>
-        
+
         {stories.map((story, index) => (
-          <m.div 
-            initial={{ opacity: 0, y: 30 }} 
-            whileInView={{ opacity: 1, y: 0 }} 
-            transition={{ duration: 0.6, delay: index * 0.2 }} 
+          <m.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: index * 0.2 }}
             viewport={{ once: true, amount: 0.3 }}
-            className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`} 
+            className={`story-node ${index % 2 === 0 ? 'left' : 'right'}`}
             role="listitem"
             key={`${story.date}-${story.title}-${index}`}
           >
             <div className="story-dot" aria-hidden="true"></div>
-            
+
             <div className="story-content-box">
               <span className="story-date">{story.date}</span>
               <h3 className="story-heading">{story.title}</h3>

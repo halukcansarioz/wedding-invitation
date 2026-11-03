@@ -10,7 +10,7 @@ interface GeneralTabProps {
 
 export function GeneralTab({ isEn }: GeneralTabProps) {
   const { t } = useTranslation();
-  
+
   const invitation = useStore((state) => state.adminDraft.invitation);
   const settings = useStore((state) => state.adminDraft.settings);
   const visibility = settings?.visibility;
@@ -20,15 +20,15 @@ export function GeneralTab({ isEn }: GeneralTabProps) {
   return (
     <AdminSection title={t('admin.general.title', isEn ? "General Invitation Information" : "Genel Davetiye Bilgileri")} onSave={() => saveSiteContent(isEn)}>
       <div className="admin-visibility-card" style={{ marginBottom: "24px" }}>
-        <AdminCheckbox 
-          checked={visibility?.countdown ?? true} 
-          label={t('admin.general.showCountdown', isEn ? "Show Countdown Section" : "Geri Sayım bölümünü göster")} 
-          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...visibility, countdown: v })} 
+        <AdminCheckbox
+          checked={visibility?.countdown ?? true}
+          label={t('admin.general.showCountdown', isEn ? "Show Countdown Section" : "Geri Sayım bölümünü göster")}
+          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...visibility, countdown: v })}
         />
-        <AdminCheckbox 
-          checked={visibility?.location ?? true} 
-          label={t('admin.general.showLocation', isEn ? "Show Map & Location" : "Konum bölümünü göster")} 
-          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...visibility, location: v })} 
+        <AdminCheckbox
+          checked={visibility?.location ?? true}
+          label={t('admin.general.showLocation', isEn ? "Show Map & Location" : "Konum bölümünü göster")}
+          onChange={(v: boolean) => updateDraftObject("settings", "visibility", { ...visibility, location: v })}
         />
       </div>
       <div className="admin-edit-grid">
@@ -43,11 +43,11 @@ export function GeneralTab({ isEn }: GeneralTabProps) {
         <AdminField label={t('admin.general.address', isEn ? "Address" : "Adres")} onChange={(v: string) => updateDraftObject("invitation", "address", v)} value={invitation.address} />
         <AdminField label={t('admin.general.mapLink', isEn ? "Map Link" : "Harita linki")} onChange={(v: string) => updateDraftObject("invitation", "mapLink", v)} value={invitation.mapLink} />
         <AdminField label={t('admin.general.shareLink', isEn ? "Share Link" : "Paylaşım linki")} onChange={(v: string) => updateDraftObject("invitation", "shareLink", v)} value={invitation.shareLink} placeholder={getCurrentShareLink()} />
-        <AdminField 
-          type="number" 
-          label={isEn ? "Total Table Count (Seating & QR)" : "Toplam Masa Sayısı (Oturma Planı & QR)"} 
-          onChange={(v: string) => updateDraftObject("settings", "tableCount", Math.max(1, Number(v) || 15))} 
-          value={settings?.tableCount ?? 15} 
+        <AdminField
+          type="number"
+          label={isEn ? "Total Table Count (Seating & QR)" : "Toplam Masa Sayısı (Oturma Planı & QR)"}
+          onChange={(v: string) => updateDraftObject("settings", "tableCount", Math.max(1, Number(v) || 15))}
+          value={settings?.tableCount ?? 15}
         />
         <AdminTextarea label={t('admin.general.message', isEn ? "Main Invitation Text" : "Ana davet metni")} onChange={(v: string) => updateDraftObject("invitation", "message", v)} value={invitation.message} />
       </div>

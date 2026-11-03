@@ -54,10 +54,10 @@ function NavigationModal({ invitation, isOpen, onClose, t }: NavigationModalProp
   };
 
   return createPortal(
-    <div onClick={onClose} className="app-modal-backdrop" role="presentation">
+    <div onClick={onClose} className="app-modal-backdrop invitation-modal-backdrop" role="presentation">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="app-modal-card location-nav-modal"
+        className="app-modal-card invitation-modal-card location-nav-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="location-nav-title"
@@ -135,16 +135,21 @@ export function LocationSection({ copy, invitation, googleCalendarLink }: Locati
         <div className="info-row"><span>{t('ui.address', 'Adres')}</span><strong>{invitation?.address}</strong></div>
       </div>
       <div className="mini-map">
-        <iframe 
+        <iframe
           title={t('navigation.mapPreview', { defaultValue: 'Düğün mekanı harita önizlemesi' })}
-          src={mapIframeSrc} 
-          loading="lazy" 
-          allowFullScreen 
+          src={mapIframeSrc}
+          loading="lazy"
+          allowFullScreen
           referrerPolicy="no-referrer-when-downgrade"
         ></iframe>
       </div>
       <div className="button-group">
-        <button type="button" className="main-button" onClick={() => setIsNavOpen(true)}>
+        <button
+          type="button"
+          className="main-button"
+          data-testid="location-nav-trigger"
+          onClick={() => setIsNavOpen(true)}
+        >
           {t('ui.goToMap', 'Konuma Git')}
         </button>
         <button type="button" className="secondary-button" onClick={() => handleAddToCalendar(invitation, googleCalendarLink)}>

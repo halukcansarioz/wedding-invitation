@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Virtuoso } from "react-virtuoso";
-// jsPDF importu kaldırıldı (lazy loading yapılacak)
 import { AdminSection, AdminCheckbox } from "../../AdminUI";
 import { Dropdown } from "../../common/UIComponents";
 import { useStore } from "../../../store/useStore";
@@ -16,43 +15,43 @@ const normalizeTR = (text) => {
              .replace(/ç/g, 'c').replace(/Ç/g, 'C');
 };
 
-export function WishesAdminPanel({ 
+export function WishesAdminPanel({
   filteredWishes, adminWishSearch, setAdminWishSearch,
-  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel, 
-  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn 
+  adminWishStatusFilter, setAdminWishStatusFilter, exportWishesExcel,
+  exportWishesCsv, toggleWishApproval, editWish, deleteWish, clearWishes, isEn
 }) {
   const { t } = useTranslation();
-  
+
   const adminDraft = useStore((state) => state.adminDraft);
   const updateDraftObject = useStore((state) => state.updateDraftObject);
 
   const exportWishesPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
-    
+
     const doc = new jsPDF();
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text(isEn ? "Our Guestbook" : "Ani Defterimiz", 20, 20);
-    
+
     let yOffset = 35;
     doc.setFont("helvetica", "normal");
-    
+
     filteredWishes.filter(w => w.approved).forEach((wish) => {
       if (yOffset > 270) { doc.addPage(); yOffset = 20; }
-      
+
       const safeMessage = normalizeTR(wish.message);
       const safeName = normalizeTR(wish.name);
 
       doc.setFontSize(12);
       const splitText = doc.splitTextToSize(`"${safeMessage}"`, 170);
       doc.text(splitText, 20, yOffset);
-      
+
       yOffset += (splitText.length * 6) + 5;
       doc.setFontSize(10);
       doc.setFont("helvetica", "italic");
       doc.text(`- ${safeName}`, 20, yOffset);
       doc.setFont("helvetica", "normal");
-      
+
       yOffset += 15;
     });
     doc.save("ani-defteri.pdf");

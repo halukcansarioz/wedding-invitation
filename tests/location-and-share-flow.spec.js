@@ -17,7 +17,7 @@ test.describe('Konum Modalı ve Paylaşım Bölümü Testleri', () => {
     const mapIframe = page.locator('.mini-map iframe').first();
     if (await mapIframe.isVisible()) {
       await mapIframe.scrollIntoViewIfNeeded();
-      const navButton = page.locator('button').filter({ hasText: /Konuma Git|Go to Map/i }).first();
+      const navButton = page.getByTestId('location-nav-trigger');
       if (await navButton.isVisible()) {
         await navButton.click();
 

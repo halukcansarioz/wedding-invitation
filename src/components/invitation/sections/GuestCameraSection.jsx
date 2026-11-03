@@ -15,7 +15,7 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
   const isEn = i18n.language.startsWith('en');
   const showAppAlert = useStore((state) => state.showAppAlert);
   const siteData = useStore((state) => state.siteData);
-  
+
   const coupleName = `${siteData?.invitation?.bride || "Gelin"} & ${siteData?.invitation?.groom || "Damat"}`;
   const dateText = siteData?.invitation?.dateText || "";
 
@@ -26,11 +26,11 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.src = URL.createObjectURL(originalFile);
-      
+
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        
+
         const MAX_WIDTH = 1920;
         const MAX_HEIGHT = 1920;
         let width = img.width;
@@ -55,7 +55,7 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
 
         const gradientHeight = Math.floor(canvas.height * 0.15);
         const gradientY = canvas.height - gradientHeight;
-        
+
         const gradient = ctx.createLinearGradient(0, gradientY, 0, canvas.height);
         gradient.addColorStop(0, "transparent");
         gradient.addColorStop(1, "rgba(0,0,0,0.7)");
@@ -67,10 +67,10 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
         ctx.fillText(coupleName, canvas.width / 2, canvas.height - Math.floor(gradientHeight * 0.4));
-        
+
         const fontSizeDate = Math.floor(canvas.width * 0.025);
         ctx.font = `${fontSizeDate}px sans-serif`;
-        ctx.fillStyle = "#f1c40f"; 
+        ctx.fillStyle = "#f1c40f";
         ctx.fillText(dateText, canvas.width / 2, canvas.height - Math.floor(gradientHeight * 0.15));
 
         canvas.toBlob((blob) => {
@@ -89,12 +89,12 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
     setIsUploading(true);
     try {
       showAppAlert(isEn ? "Applying wedding frame..." : "Düğün çerçevesi uygulanıyor...", { title: "Fotoğraf Kabini" });
-      
+
       const watermarkedFile = await applyPhotoboothFilter(file);
 
       showAppAlert(isEn ? "Uploading to shared album..." : "Ortak albüme yükleniyor...", { title: "Yükleniyor" });
       const { isApproved } = await uploadAndModerateGuestPhoto(watermarkedFile);
-      
+
       if (isApproved) {
         triggerConfetti();
         showAppAlert(isEn ? "Awesome! Your photo is added to the gallery." : "Harika! Çerçeveli fotoğrafınız galeriye eklendi.", { tone: "success" });
@@ -114,25 +114,25 @@ export const GuestCameraSection = memo(function GuestCameraSection() {
       <p className="section-label">{isEn ? "AR Photobooth" : "Dijital Fotoğraf Kabini"}</p>
       <h2>{isEn ? "Share Your Memories" : "Anılarınızı Paylaşın"}</h2>
       <p>
-        {isEn 
-          ? "Take a photo right now! We will automatically add our wedding frame and put it in the shared album." 
+        {isEn
+          ? "Take a photo right now! We will automatically add our wedding frame and put it in the shared album."
           : "Şu an bir fotoğraf çekin! Düğün çerçevenizi otomatik olarak ekleyip dev ekrana ve ortak albümümüze yollayalım."}
       </p>
-      
+
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px' }}>
-        <input 
+        <input
           data-testid="camera-input"
-          type="file" 
-          accept="image/*" 
+          type="file"
+          accept="image/*"
           capture="environment"
-          ref={fileInputRef} 
-          style={{ display: "none" }} 
-          onChange={handleFileSelect} 
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleFileSelect}
         />
-        <button 
-          type="button" 
-          className="main-button" 
-          onClick={() => fileInputRef.current?.click()} 
+        <button
+          type="button"
+          className="main-button"
+          onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
           style={{ padding: "16px 32px", fontSize: "16px", background: "linear-gradient(135deg, #e67e22, #d35400)", borderColor: "#d35400" }}
         >

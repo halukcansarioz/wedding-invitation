@@ -15,8 +15,6 @@ describe('Zustand uiSlice Gelişmiş Kapsamlı Testleri', () => {
 
   it('showAppPrompt çağrıldığında customPrompt durumunu doğru set etmeli ve değer döndürmeli', async () => {
     const { showAppPrompt } = useStore.getState();
-
-    // Prompt modalını tetikle
     const promptPromise = showAppPrompt("Lütfen adınızı girin:", "Varsayılan Değer", { title: "Bilgi Girişi" });
 
     const state = useStore.getState();
@@ -24,8 +22,6 @@ describe('Zustand uiSlice Gelişmiş Kapsamlı Testleri', () => {
     expect(state.customPrompt?.label).toBe("Lütfen adınızı girin:");
     expect(state.customPrompt?.value).toBe("Varsayılan Değer");
     expect(state.customPrompt?.title).toBe("Bilgi Girişi");
-
-    // Kullanıcı giriş yapıp kaydettiğinde (resolve)
     if (state.customPrompt?.resolve) {
       state.customPrompt.resolve("Yeni Girilen Değer");
     }
@@ -34,12 +30,15 @@ describe('Zustand uiSlice Gelişmiş Kapsamlı Testleri', () => {
     expect(result).toBe("Yeni Girilen Değer");
   });
 
-  it('showAppAlert çağrıldığında toast bildirimini tetiklemeli ve başarılı dönmeli', async () => {
+  it('showAppAlert çağrıldığında toast ve gerçek popup durumunu üretmeli', async () => {
     const { showAppAlert } = useStore.getState();
 
     const alertPromise = showAppAlert("İşlem başarıyla tamamlandı", { title: "Başarılı" });
-    const result = await alertPromise;
+    const state = useStore.getState();
+    expect(state.customAlert?.title).toBe("Başarılı");
+    expect(state.customAlert?.message).toBe("İşlem başarıyla tamamlandı");
 
-    expect(result).toBe(true);
+    state.customAlert?.resolve(true);
+    expect(await alertPromise).toBe(true);
   });
 });

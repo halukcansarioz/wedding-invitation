@@ -209,7 +209,7 @@ export default function InvitationController() {
       <meta property="og:image" content={ogImage} />
       <meta property="og:site_name" content={coupleName} />
 
-      {/* Twitter */}
+
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={currentShareLink} />
       <meta

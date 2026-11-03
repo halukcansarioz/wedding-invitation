@@ -33,17 +33,17 @@ describe('ThemeTab İleri Seviye Admin Bileşen Testleri', () => {
 
   it('Tema kartına tıklandığında document HTML etiketine "data-theme" eklenmeli', () => {
     const { container } = render(<ThemeTab isEn={false} />);
-    
+
     const darkThemeButton = container.querySelector('[data-theme-preview="dark"]');
     fireEvent.click(darkThemeButton);
-    
+
     expect(mockUpdateDraftObject).toHaveBeenCalledWith('settings', 'theme', 'dark');
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
   it('Düğün Bitti (isPostWedding) checkboxı tıklanabilir olmalı ve state güncellenmeli', () => {
     render(<ThemeTab isEn={false} />);
-    
+
     const postWeddingCheckbox = screen.getByLabelText(/Düğün Bitti Modu/i);
     expect(postWeddingCheckbox).not.toBeChecked();
 

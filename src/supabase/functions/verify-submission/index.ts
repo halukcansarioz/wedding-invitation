@@ -2,11 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL'); 
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-// Başarısız işlemleri veritabanına loglayan yardımcı fonksiyon
 async function logFailedEmail(guestId: string, guestName: string, errorMsg: string) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return;
   const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -38,8 +36,8 @@ serve(async (req) => {
       },
       signal: controller.signal,
       body: JSON.stringify({
-        from: 'Düğün Davetiyesi <onboarding@resend.dev>', 
-        to: [ADMIN_EMAIL], 
+        from: 'Düğün Davetiyesi <onboarding@resend.dev>',
+        to: [ADMIN_EMAIL],
         subject: `Yeni LCV: ${guest.name} Düğüne Katılıyor! 🎉`,
         html: `
           <div style="font-family: sans-serif; padding: 20px; background: #fffafb; border: 1px solid #9f4f68; border-radius: 12px;">
@@ -61,11 +59,10 @@ serve(async (req) => {
       await logFailedEmail(guest.id, guest.name, `Resend API Error: ${res.status} - ${errorText}`);
       return new Response("E-posta gönderilemedi fakat hata loglandı.", { status: 200 });
     }
-    
+
     return new Response(JSON.stringify({ success: true, message: "E-posta başarıyla gönderildi" }), { status: 200 })
 
   } catch (err: any) {
-    // Timeout veya Network hatası durumunda catch bloğu çalışır
     const payload = await req.json().catch(() => null);
     if (payload?.record) {
       await logFailedEmail(payload.record.id, payload.record.name, err.message || "Timeout / Network Error");

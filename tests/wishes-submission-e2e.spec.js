@@ -5,7 +5,7 @@ test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2EMocks(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
+
     const envelopeSeal = page.locator('.envelope-seal');
     await envelopeSeal.click({ force: true });
     await expect(page.locator('.intro-page')).toBeHidden();
@@ -22,7 +22,7 @@ test.describe('Anı Defteri (Wishes) Gönderim Akışı', () => {
     await messageInput.fill('Ömür boyu mutluluklar dilerim!');
 
     const submitRequestPromise = page.waitForRequest(req => req.url().includes('submit-form') && req.method() === 'POST');
-    
+
     const submitButton = wishesForm.locator('button[type="submit"]');
     await submitButton.click();
 

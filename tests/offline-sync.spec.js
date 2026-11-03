@@ -5,7 +5,7 @@ test.describe('PWA Çevrimdışı (Offline) LCV Senkronizasyonu', () => {
   test.beforeEach(async ({ page }) => {
     await setupE2EMocks(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    
+
     const envelopeSeal = page.locator('.envelope-seal');
     await expect(envelopeSeal).toBeVisible({ timeout: 15000 });
     await expect(envelopeSeal).toBeEnabled({ timeout: 15000 });
@@ -38,7 +38,7 @@ test.describe('PWA Çevrimdışı (Offline) LCV Senkronizasyonu', () => {
       request => request.url().includes('submit-form') && request.method() === 'POST',
       { timeout: 15000 }
     );
-    
+
     const postData = JSON.parse(submitRequest.postData());
     expect(postData.turnstileToken).toBe('OFFLINE_SYNC');
     expect(postData.data.name).toBe('Çevrimdışı Misafir');

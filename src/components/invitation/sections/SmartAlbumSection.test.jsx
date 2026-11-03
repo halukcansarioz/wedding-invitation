@@ -13,7 +13,7 @@ vi.mock('../../../supabaseClient', () => ({
       from: vi.fn(() => ({
         upload: vi.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
         getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://mock.com/test.jpg' } }),
-        remove: vi.fn().mockResolvedValue({ data: {}, error: null }) 
+        remove: vi.fn().mockResolvedValue({ data: {}, error: null })
       }))
     }
   }
@@ -55,7 +55,7 @@ describe('SmartAlbumSection Kapsamlı Testleri', () => {
       window.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/test-image');
     }
     if (typeof window.URL.revokeObjectURL === 'undefined') {
-      window.URL.revokeObjectURL = vi.fn(); 
+      window.URL.revokeObjectURL = vi.fn();
     }
 
     global.Worker = class {
@@ -97,7 +97,7 @@ describe('SmartAlbumSection Kapsamlı Testleri', () => {
     });
 
     const { container } = render(<SmartAlbumSection />);
-    
+
     const fileInput = container.querySelector('input[type="file"]');
     fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'selfie.jpg', { type: 'image/jpeg' })] } });
 
@@ -117,7 +117,7 @@ describe('SmartAlbumSection Kapsamlı Testleri', () => {
     });
 
     const { container } = render(<SmartAlbumSection />);
-    
+
     const fileInput = container.querySelector('input[type="file"]');
     fireEvent.change(fileInput, { target: { files: [new File(['dummy'], 'selfie.jpg', { type: 'image/jpeg' })] } });
 

@@ -9,7 +9,7 @@ test.describe('Admin Paneli: Oturma ve Masa Planı Testleri', () => {
     const tableTab = page.locator('button:has-text("Masa"), button:has-text("Oturma Planı"), [data-tab="tables"]').first();
     if (await tableTab.isVisible()) {
       await tableTab.click();
-      
+
       const addTableBtn = page.locator('button:has-text("Masa Ekle"), button:has-text("Yeni Masa")').first();
       if (await addTableBtn.isVisible()) {
         await addTableBtn.click();

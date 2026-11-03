@@ -33,7 +33,7 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
         console.log('Paylaşım iptal edildi.', err);
       }
     } else {
-      copyInvitationLink(); 
+      copyInvitationLink();
     }
   };
 
@@ -42,22 +42,22 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
       <p className="section-label">{isEn ? t('invitation.shareLabel') : copy?.shareLabel}</p>
       <h2>{isEn ? t('invitation.shareTitle') : copy?.shareTitle}</h2>
       <p style={{ marginBottom: "20px" }}>{isEn ? t('invitation.shareDescription') : copy?.shareDescription}</p>
-      
-      <div style={{ 
-        margin: '0 auto 32px', 
-        padding: '20px', 
-        background: 'var(--paper)', 
-        borderRadius: '20px', 
-        display: 'inline-block', 
-        border: '1px solid rgba(var(--theme-rgb), 0.15)', 
-        boxShadow: '0 8px 24px rgba(0,0,0,0.04)' 
+
+      <div style={{
+        margin: '0 auto 32px',
+        padding: '20px',
+        background: 'var(--paper)',
+        borderRadius: '20px',
+        display: 'inline-block',
+        border: '1px solid rgba(var(--theme-rgb), 0.15)',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.04)'
       }}>
         <img src={safeQrUrl} alt="QR Code" loading="lazy" style={{ display: 'block', width: '160px', height: '160px', margin: '0 auto 12px', borderRadius: '8px' }} />
         <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
           {isEn ? "Share quickly via QR code." : "QR kod ile hızlıca paylaşın."}
         </span>
       </div>
-      
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '380px', margin: '0 auto' }}>
         <button className="main-button" onClick={handleNativeShare} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px', width: '100%', margin: 0, borderRadius: '14px', fontSize: '16px' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -77,7 +77,7 @@ export const ShareSection = memo(function ShareSection({ copy, qrImageUrl, share
             </svg>
             <span>WhatsApp</span>
           </a>
-          
+
           <button className="secondary-button" onClick={copyInvitationLink} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flex: 1, padding: '14px 12px', margin: 0, borderRadius: '14px', fontSize: '15px' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>

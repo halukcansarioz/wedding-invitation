@@ -1,7 +1,5 @@
-/// <reference types="vite/client" />
 import React, { memo } from "react";
 import "../../styles/modals.css";
-// GÜNCELLENDİ: storeTypes üzerinden güvenli tipler içeri aktarıldı
 import { CustomModalState } from "../../store/storeTypes";
 
 interface GlobalModalsProps {
@@ -14,22 +12,22 @@ interface GlobalModalsProps {
   t: (key: string) => string;
 }
 
-export const GlobalModals = memo(function GlobalModals({ 
-  customAlert, 
-  setCustomAlert, 
-  customConfirm, 
-  setCustomConfirm, 
-  customPrompt, 
-  setCustomPrompt, 
-  t 
+export const GlobalModals = memo(function GlobalModals({
+  customAlert,
+  setCustomAlert,
+  customConfirm,
+  setCustomConfirm,
+  customPrompt,
+  setCustomPrompt,
+  t
 }: GlobalModalsProps) {
-  
+
   if (!customAlert && !customConfirm && !customPrompt) return null;
 
   return (
     <>
       {customAlert && (
-        <div className="global-modal-overlay" onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
+        <div className="global-modal-overlay" role="dialog" aria-modal="true" aria-label={customAlert.title} onClick={() => { customAlert.resolve(true); setCustomAlert(null); }}>
           <div className="global-modal-container" onClick={e => e.stopPropagation()}>
             <h3 className="global-modal-title">{customAlert.title}</h3>
             <p className="global-modal-text">{customAlert.message}</p>
@@ -41,7 +39,7 @@ export const GlobalModals = memo(function GlobalModals({
       )}
 
       {customConfirm && (
-        <div className="global-modal-overlay" onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
+        <div className="global-modal-overlay" role="dialog" aria-modal="true" aria-label={customConfirm.title} onClick={() => { customConfirm.resolve(false); setCustomConfirm(null); }}>
           <div className="global-modal-container" onClick={e => e.stopPropagation()}>
             <h3 className="global-modal-title">{customConfirm.title}</h3>
             <p className="global-modal-text">{customConfirm.message}</p>
@@ -58,7 +56,7 @@ export const GlobalModals = memo(function GlobalModals({
       )}
 
       {customPrompt && (
-        <div className="global-modal-overlay" onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
+        <div className="global-modal-overlay" role="dialog" aria-modal="true" aria-label={customPrompt.title} onClick={() => { customPrompt.resolve(null); setCustomPrompt(null); }}>
           <form className="global-modal-container prompt-modal" onSubmit={(e) => { e.preventDefault(); customPrompt.resolve(customPrompt.value || null); setCustomPrompt(null); }} onClick={e => e.stopPropagation()}>
             <h3 className="global-modal-title">{customPrompt.title}</h3>
             <p className="global-modal-text">{customPrompt.label}</p>

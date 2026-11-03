@@ -1,4 +1,3 @@
-/// <reference types="@testing-library/jest-dom" />
 import React from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -24,11 +23,11 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
       isIos: true,
       isInstallable: true,
       promptInstall: vi.fn(),
-      setIsInstallable: vi.fn(), 
+      setIsInstallable: vi.fn(),
     });
 
     render(<PwaInstallBanner />);
-    
+
     expect(screen.getByText(/Ana Ekrana Ekle/i)).toBeDefined();
   });
 
@@ -38,11 +37,11 @@ describe('PwaInstallBanner İleri Seviye Testleri', () => {
       isIos: false,
       isInstallable: true,
       promptInstall,
-      setIsInstallable: vi.fn(), 
+      setIsInstallable: vi.fn(),
     });
 
     render(<PwaInstallBanner />);
-    
+
     fireEvent.click(screen.getByRole('button', { name: /Yükle/i }));
     expect(promptInstall).toHaveBeenCalledTimes(1);
   });

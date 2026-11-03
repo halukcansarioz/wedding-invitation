@@ -15,7 +15,7 @@ describe('ResponsiveSlideShow Bileşen Testleri', () => {
   afterEach(() => {
     window.innerWidth = originalInnerWidth;
     window.innerHeight = originalInnerHeight;
-    cleanup(); 
+    cleanup();
     vi.restoreAllMocks();
   });
 

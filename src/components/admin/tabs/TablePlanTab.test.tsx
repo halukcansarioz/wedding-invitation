@@ -22,17 +22,17 @@ describe('TablePlanTab Admin Bileşen Testleri', () => {
 
   it('Atanmamış (Bekleyen) misafirleri listeleyebilmeli', () => {
     render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
-    
+
     expect(screen.getByText('Ahmet Yılmaz')).toBeDefined();
-    
+
     expect(screen.getByText('Bekleyenler (1)')).toBeDefined();
   });
 
   it('Masaları ve atanan misafirleri render edebilmeli', () => {
     render(<TablePlanTab guests={mockGuests as any} assignTable={vi.fn()} isEn={false} />);
-    
+
     expect(screen.getByText('Masa 1')).toBeDefined();
-    
+
     expect(screen.getByText(/Ayşe Kaya/i)).toBeDefined();
   });
 });

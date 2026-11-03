@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
         body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64')
       });
     });
-    
+
     await page.goto('/', { waitUntil: 'domcontentloaded' });
 
     const envelopeSeal = page.locator('.envelope-seal');
@@ -22,23 +22,24 @@ test.beforeEach(async ({ page }) => {
   test('Galeri resmine tıklandığında Lightbox (Büyük Ekran) açılmalı ve kapanmalı', async ({ page }) => {
     const firstGalleryImage = page.locator('.gallery-image').first();
     await firstGalleryImage.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800); 
-    
+    await page.waitForTimeout(800);
+
     await firstGalleryImage.click();
 
     const lightboxOverlay = page.locator('.gallery-lightbox-overlay');
     await expect(lightboxOverlay).toBeVisible({ timeout: 10000 });
 
     const closeButton = page.locator('.lightbox-close');
-    await closeButton.click(); 
+    await closeButton.click();
     await expect(lightboxOverlay).toBeHidden();
   });
 
   test('Konuma Git butonuna tıklandığında Navigasyon Modalı açılmalı', async ({ page }) => {
-    const goToMapButton = page.locator('button', { hasText: /Konuma Git|Go to Map/i }).first();
+    const goToMapButton = page.getByTestId('location-nav-trigger');
+    await expect(goToMapButton).toBeVisible({ timeout: 10000 });
     await goToMapButton.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
-    
+
     await goToMapButton.click();
 
     const locationModal = page.locator('.location-nav-modal');
@@ -55,7 +56,7 @@ test.beforeEach(async ({ page }) => {
     const copyIbanButton = page.locator('.gift-copy-button, button').filter({ hasText: /Copy IBAN|Kopyala|Copy/i }).first();
     await copyIbanButton.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
-    
+
     await copyIbanButton.click();
     await page.waitForTimeout(500);
 

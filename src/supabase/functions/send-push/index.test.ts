@@ -22,7 +22,7 @@ describe("Send Push Edge Function Testleri", () => {
 
   it("Gecerli verilerle cagrildiginda basarili yanit donmeli", () => {
     const subscriptions = [{ sub_data: "data1" }, { sub_data: "data2" }];
-    
+
     const responseBody = {
       success: true,
       count: subscriptions.length
